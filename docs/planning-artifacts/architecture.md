@@ -124,8 +124,8 @@ For native iOS, the starter is Xcode 26's built-in iOS App template with SwiftUI
 ### Data Architecture
 
 **Comparison Record Model:**
-- Flat SwiftData `@Model` with explicit fields: note1 (MIDI note), note1CentOffset, note2 (MIDI note), note2CentOffset, isCorrect, timestamp
-- The first note in a comparison is always an exact MIDI note (cent offset = 0). The second note is the same MIDI note shifted by a cent difference.
+- Flat SwiftData `@Model` with explicit fields: note1 (MIDI note), note2 (MIDI note), note2CentOffset, isCorrect, timestamp
+- The first note in a comparison is always an exact MIDI note. The second note is the same MIDI note shifted by a cent difference.
 - MIDI note range: 0–127
 
 **Settings Storage:**
