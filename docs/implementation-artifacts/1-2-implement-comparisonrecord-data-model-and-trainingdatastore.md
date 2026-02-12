@@ -1,6 +1,6 @@
 # Story 1.2: Implement ComparisonRecord Data Model and TrainingDataStore
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
