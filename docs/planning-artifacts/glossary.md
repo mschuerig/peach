@@ -19,9 +19,10 @@
 
 | Term | Definition |
 |---|---|
-| **Start Screen** | The app's home screen. Shows the Start Training Button, a short app description, the Profile Preview (tappable), and a link to the Settings Screen. |
-| **Training Screen** | The active training interface. Shows the Higher Button, Lower Button, Stop Button, and Feedback Indicator. Minimal by design — no distractions. |
-| **Profile Screen** | The full perceptual profile visualization. Shows the piano keyboard with confidence band overlay, summary statistics (mean and standard deviation with trend). Accessed by tapping the Profile Preview on the Start Screen. |
+| **Start Screen** | The app's home screen. Shows the Start Training Button, a short app description, the Profile Preview (tappable), and buttons for Settings Screen, Profile Screen, and Info Screen. |
+| **Info Screen** | Displays app name, developer, copyright, and version number. Accessible from the Start Screen. |
+| **Training Screen** | The active training interface. Shows the Higher Button, Lower Button, and Feedback Indicator, plus buttons for Settings Screen and Profile Screen. Navigating to Settings or Profile stops training. Minimal by design — no distractions. |
+| **Profile Screen** | The full perceptual profile visualization. Shows the piano keyboard with confidence band overlay, summary statistics (mean and standard deviation with trend). Accessible from both Start Screen and Training Screen. Always returns to Start Screen. |
 | **Settings Screen** | Configuration interface. Contains the Natural vs. Mechanical slider, note range, note duration, reference pitch, and sound source selection. |
 
 ## Controls
@@ -31,6 +32,5 @@
 | **Start Training Button** | Prominent button on the Start Screen that immediately begins a training session. The primary call to action. |
 | **Higher Button** | Training Screen control. User taps this when they judge the second note to be higher than the first. Disabled during the first note, enabled when the second note plays. |
 | **Lower Button** | Training Screen control. User taps this when they judge the second note to be lower than the first. Disabled during the first note, enabled when the second note plays. |
-| **Stop Button** | Icon-only button on the Training Screen that ends the current training session. Discards any incomplete comparison. No confirmation dialog. |
 | **Profile Preview** | Stylized miniature of the perceptual profile shown on the Start Screen. Tappable to navigate to the full Profile Screen. |
 | **Feedback Indicator** | Visual element on the Training Screen showing thumbs up (correct) or thumbs down (incorrect) after each comparison. Accompanied by haptic feedback on incorrect answers. |

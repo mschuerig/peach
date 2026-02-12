@@ -76,13 +76,15 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - Core training loop (sequential comparisons, higher/lower, immediate feedback, haptic on wrong)
 - Adaptive algorithm with tunable parameters, cold start, profile continuity
 - Sine wave audio engine with proper attack/release envelopes
-- Start Screen, Training Screen, Profile Screen, Settings Screen
+- Start Screen, Training Screen, Profile Screen, Settings Screen, Info Screen
 - Perceptual profile visualization (piano keyboard + confidence band — current snapshot only)
 - Summary statistics: arithmetic mean and standard deviation of detectable cent differences over current training range (shown as trend)
 - Local persistence of all per-answer training data
 - iPhone + iPad, portrait + landscape
 - English + German localization
 - Audio interruption handling (discard incomplete comparison)
+- Consistent Settings/Profile navigation from both Start Screen and Training Screen
+- App backgrounding during training returns to Start Screen on foreground
 
 ### Post-MVP Features (Phase 2 — Growth)
 
@@ -112,9 +114,9 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 ### Journey 1: First Launch — "Just Let Me Start"
 
-**Persona:** Sarah, a semi-professional cellist who's been told her intonation in the upper registers is inconsistent. She's tried InTune but hated the test-anxiety feel of it.
+**Persona:** Sarah, a semi-professional cellist who's been told her intonation in the upper registers is inconsistent. She's tried InTune but found that its score-driven approach and slow round-trips between comparisons get in the way of actual training.
 
-**Opening Scene:** Sarah downloads Peach after a frustrating orchestra rehearsal. She opens the app and sees the Start Screen with a prominent Start Training Button, a brief description of what the app does, and a settings link she ignores. No sign-up, no tutorial, no onboarding wizard.
+**Opening Scene:** Sarah downloads Peach after a frustrating orchestra rehearsal. She opens the app and sees the Start Screen with a prominent Start Training Button, a brief description of what the app does, and buttons for Settings and Profile she ignores. No sign-up, no tutorial, no onboarding wizard.
 
 **Rising Action:** She taps "Start Training." Two notes play in sequence — she taps "Higher." Thumbs up. Two more notes. "Lower." Thumbs up. Another comparison — she's wrong, feels a subtle haptic buzz, sees the thumbs down, but the next comparison is already coming. Within 10 seconds she's in a rhythm. It feels like a reflex game, not a test.
 
@@ -132,11 +134,11 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 **Rising Action:** Comparisons come fast. She's tapping with her thumb — the buttons are large enough that she doesn't need to look carefully. Higher. Lower. Higher. Higher. She gets one wrong and feels the haptic. The algorithm shifts — the interval was tighter than usual, probing the edge of her perception around B5.
 
-**Climax:** Her bus stop comes. She taps the Stop Button mid-comparison. The incomplete comparison is silently discarded. No "are you sure?" dialog, no session summary, no guilt.
+**Climax:** Her bus stop comes. She just switches away from the app. The incomplete comparison is silently discarded. No "are you sure?" dialog, no session summary, no guilt.
 
 **Resolution:** Total elapsed time: 40 seconds. She answered maybe 15 comparisons. The app recorded every answer. Tomorrow, the algorithm will pick up exactly where the profile left off.
 
-**Requirements revealed:** One-handed operation, large tap targets, instant start/stop, no session boundaries, interrupted comparison handling, algorithm continuity across sessions, haptic feedback, portrait mode usability.
+**Requirements revealed:** One-handed operation, large tap targets, instant start/stop, no session boundaries, interrupted comparison handling, algorithm continuity across sessions, haptic feedback, portrait mode usability, app backgrounding returns to Start Screen.
 
 ### Journey 3: Checking Progress — "Is This Actually Working?"
 
@@ -198,6 +200,8 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 | Settings (slider, range, duration, pitch, sound) | 5 | MVP |
 | Algorithm resilience to skill regression | 4 | MVP |
 | No gamification / no guilt mechanics | 1, 4 | MVP (design constraint) |
+| Consistent Settings/Profile nav from Start + Training | 2, 3, 5 | MVP |
+| App backgrounding returns to Start Screen | 2 | MVP |
 | Temporal progress visualization | 3 | Post-MVP |
 | Per-note detail view | 3 | Post-MVP |
 
@@ -246,8 +250,9 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - **FR3:** User can answer whether the second note was higher or lower than the first
 - **FR4:** User can see immediate visual feedback (Feedback Indicator) after answering
 - **FR5:** User can feel haptic feedback when answering incorrectly
-- **FR6:** User can stop a training session at any time with a single tap (Stop Button)
-- **FR7:** System discards incomplete comparisons when training is interrupted (user stop, phone call, headphone disconnect)
+- **FR6:** User can stop training by navigating to Settings or Profile from the Training Screen, or by leaving the app
+- **FR7:** System discards incomplete comparisons when training is interrupted (navigation away, app backgrounding, phone call, headphone disconnect)
+- **FR7a:** System returns to the Start Screen when the app is foregrounded after being backgrounded during training
 - **FR8:** System disables answer controls during the first note and enables them when the second note begins playing
 
 ### Adaptive Algorithm
@@ -304,6 +309,10 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - **FR40:** User can use the app in portrait and landscape orientations
 - **FR41:** User can use the app in iPad windowed/compact mode
 - **FR42:** User can operate the training loop one-handed with large, imprecise-tap-friendly controls
+
+### Info Screen
+
+- **FR43:** User can view an Info Screen from the Start Screen showing app name, developer, copyright, and version number
 
 ## Non-Functional Requirements
 
