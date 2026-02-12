@@ -19,7 +19,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-42 FRs across 8 categories. The requirements cluster into three tiers of architectural significance:
+44 FRs (FR1–FR43 plus FR7a) across 8 categories. The requirements cluster into three tiers of architectural significance:
 1. **Algorithm layer** (FR9-FR15): The adaptive comparison selection engine — highest complexity, most design attention needed. Manages perceptual profile, difficulty adjustment, weak spot targeting, and cold start behavior.
 2. **Audio layer** (FR16-FR20): Precision tone generation with sub-10ms latency and 0.1-cent accuracy. Protocol-based for swappable sound sources. Envelope shaping to prevent artifacts.
 3. **Application layer** (FR1-FR8, FR21-FR42): Training loop UI, profile visualization, data persistence, settings, localization. Straightforward by design — the PRD explicitly keeps UI minimal to keep focus on the training experience.
@@ -380,7 +380,7 @@ PeachTests/
 
 ### Requirements Coverage
 
-**Functional Requirements:** All 42 FRs (FR1–FR42) have explicit architectural support mapped to specific components and directories.
+**Functional Requirements:** All 44 FRs (FR1–FR43 plus FR7a) have explicit architectural support mapped to specific components and directories.
 
 **Non-Functional Requirements:**
 - Audio latency < 10ms → AVAudioSourceNode with 64-sample buffer (~1.5ms)

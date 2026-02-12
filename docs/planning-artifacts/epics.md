@@ -157,8 +157,8 @@ NFR12: App updates must preserve all existing training data (no migration data l
 
 ## Epic List
 
-### Epic 1: Project Foundation & Core Data
-Establish the Xcode project, folder structure, and data persistence layer so that training data can be reliably stored and retrieved.
+### Epic 1: Remember Every Note — Data Foundation
+Every comparison the user answers is reliably stored and persists across sessions, crashes, and restarts — so that no training is ever lost.
 **FRs covered:** FR27, FR28, FR29
 
 ### Epic 2: Hear and Compare — Core Audio Engine
@@ -185,9 +185,9 @@ Users can customize the training experience: algorithm behavior, note range, dur
 Users can use the app in English or German, on iPhone and iPad, in both orientations, with accessibility support and an Info Screen.
 **FRs covered:** FR37, FR38, FR39, FR40, FR41, FR43
 
-## Epic 1: Project Foundation & Core Data
+## Epic 1: Remember Every Note — Data Foundation
 
-Establish the Xcode project, folder structure, and data persistence layer so that training data can be reliably stored and retrieved.
+Every comparison the user answers is reliably stored and persists across sessions, crashes, and restarts — so that no training is ever lost. This includes establishing the Xcode project and folder structure as the implementation foundation.
 
 ### Story 1.1: Create Xcode Project and Folder Structure
 

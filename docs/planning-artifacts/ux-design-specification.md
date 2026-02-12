@@ -649,7 +649,7 @@ Every screen in Peach is built primarily from stock SwiftUI components. The foll
 | Higher/Lower buttons | `Button` with `.disabled()` state | Training Screen |
 | Navigation | `NavigationStack` | App-wide |
 | Settings form | `Form` with `Slider`, `Stepper`, `Picker` | Settings Screen |
-| Sheet presentation | `.sheet()` modifier | Info Screen, potentially Settings |
+| Sheet presentation | `.sheet()` modifier | Info Screen |
 | Text hierarchy | `Text` with `.font(.largeTitle)`, `.title`, `.body`, etc. | All screens |
 | Back navigation | Standard NavigationStack back button / swipe | Profile, Settings, Info |
 
