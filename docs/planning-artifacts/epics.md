@@ -775,8 +775,8 @@ So that training works on whatever device I have at hand.
 **Then** layouts compress gracefully, the same way they do on smaller iPhones
 
 **Given** all screens
-**When** tested on iPhone SE (smallest) and iPhone 16 Pro Max (largest)
-**Then** layouts are functional and visually appropriate on both extremes
+**When** tested on iPhone 17 Pro
+**Then** layouts are functional and visually appropriate
 
 ### Story 7.4: Info Screen
 

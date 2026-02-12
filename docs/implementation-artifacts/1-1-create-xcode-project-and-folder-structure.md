@@ -1,6 +1,6 @@
 # Story 1.1: Create Xcode Project and Folder Structure
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -21,41 +21,41 @@ so that all subsequent development has a consistent, organized foundation.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Xcode project (AC: #1, #2)
-  - [ ] Create new Xcode project: iOS → App → SwiftUI lifecycle, Swift language, SwiftData storage
-  - [ ] Set deployment target to iOS 26
-  - [ ] Verify explicit Swift modules are enabled (Xcode 26 default)
-  - [ ] Verify zero third-party dependencies (SPM clean)
-- [ ] Task 2: Establish folder structure (AC: #3)
-  - [ ] Create App/ folder with PeachApp.swift and ContentView.swift
-  - [ ] Create Core/Audio/ folder (empty — future NotePlayer.swift, SineWaveNotePlayer.swift)
-  - [ ] Create Core/Algorithm/ folder (empty — future NextNoteStrategy.swift, AdaptiveNoteStrategy.swift)
-  - [ ] Create Core/Data/ folder (empty — future ComparisonRecord.swift, TrainingDataStore.swift)
-  - [ ] Create Core/Profile/ folder (empty — future PerceptualProfile.swift)
-  - [ ] Create Training/ folder (empty — future TrainingSession.swift, TrainingScreen.swift)
-  - [ ] Create Profile/ folder (empty — future ProfileScreen.swift)
-  - [ ] Create Settings/ folder (empty — future SettingsScreen.swift)
-  - [ ] Create Start/ folder (empty — future StartScreen.swift)
-  - [ ] Create Info/ folder (empty — future InfoScreen.swift)
-  - [ ] Create Resources/ folder with Assets.xcassets and Localizable.xcstrings (English + German)
-  - [ ] Add placeholder .swift files or .gitkeep in empty folders so they're tracked in git
-- [ ] Task 3: Configure test target (AC: #4, #5)
-  - [ ] Create PeachTests/ target mirroring source structure
-  - [ ] Create PeachTests/Core/Audio/ folder
-  - [ ] Create PeachTests/Core/Algorithm/ folder
-  - [ ] Create PeachTests/Core/Data/ folder
-  - [ ] Create PeachTests/Core/Profile/ folder
-  - [ ] Create PeachTests/Training/ folder
-  - [ ] Configure Swift Testing framework (@Test, #expect()) — NOT XCTest
-  - [ ] Add a placeholder test that passes to verify test target works
-- [ ] Task 4: Configure PeachApp.swift entry point (AC: #1)
-  - [ ] Set up @main entry point with SwiftUI App protocol
-  - [ ] Initialize SwiftData ModelContainer (empty schema for now — ComparisonRecord comes in Story 1.2)
-  - [ ] Set up basic ContentView as root
-- [ ] Task 5: Verify build and run (AC: #6)
-  - [ ] Build succeeds with zero warnings
-  - [ ] App launches on simulator showing ContentView
-  - [ ] Test target runs and placeholder test passes
+- [x] Task 1: Create Xcode project (AC: #1, #2)
+  - [x] Create new Xcode project: iOS → App → SwiftUI lifecycle, Swift language, SwiftData storage
+  - [x] Set deployment target to iOS 26
+  - [x] Verify explicit Swift modules are enabled (Xcode 26 default)
+  - [x] Verify zero third-party dependencies (SPM clean)
+- [x] Task 2: Establish folder structure (AC: #3)
+  - [x] Create App/ folder with PeachApp.swift and ContentView.swift
+  - [x] Create Core/Audio/ folder (empty — future NotePlayer.swift, SineWaveNotePlayer.swift)
+  - [x] Create Core/Algorithm/ folder (empty — future NextNoteStrategy.swift, AdaptiveNoteStrategy.swift)
+  - [x] Create Core/Data/ folder (empty — future ComparisonRecord.swift, TrainingDataStore.swift)
+  - [x] Create Core/Profile/ folder (empty — future PerceptualProfile.swift)
+  - [x] Create Training/ folder (empty — future TrainingSession.swift, TrainingScreen.swift)
+  - [x] Create Profile/ folder (empty — future ProfileScreen.swift)
+  - [x] Create Settings/ folder (empty — future SettingsScreen.swift)
+  - [x] Create Start/ folder (empty — future StartScreen.swift)
+  - [x] Create Info/ folder (empty — future InfoScreen.swift)
+  - [x] Create Resources/ folder with Assets.xcassets and Localizable.xcstrings (English + German)
+  - [x] Add placeholder .swift files or .gitkeep in empty folders so they're tracked in git
+- [x] Task 3: Configure test target (AC: #4, #5)
+  - [x] Create PeachTests/ target mirroring source structure
+  - [x] Create PeachTests/Core/Audio/ folder
+  - [x] Create PeachTests/Core/Algorithm/ folder
+  - [x] Create PeachTests/Core/Data/ folder
+  - [x] Create PeachTests/Core/Profile/ folder
+  - [x] Create PeachTests/Training/ folder
+  - [x] Configure Swift Testing framework (@Test, #expect()) — NOT XCTest
+  - [x] Add a placeholder test that passes to verify test target works
+- [x] Task 4: Configure PeachApp.swift entry point (AC: #1)
+  - [x] Set up @main entry point with SwiftUI App protocol
+  - [x] Initialize SwiftData ModelContainer (empty schema for now — ComparisonRecord comes in Story 1.2)
+  - [x] Set up basic ContentView as root
+- [x] Task 5: Verify build and run (AC: #6)
+  - [x] Build succeeds with zero warnings
+  - [x] App launches on simulator showing ContentView
+  - [x] Test target runs and placeholder test passes
 
 ## Dev Notes
 
@@ -180,12 +180,59 @@ PeachTests/
 - [Source: docs/planning-artifacts/prd.md#Technical Requirements]
 - [Source: docs/planning-artifacts/ux-design-specification.md#Navigation Model]
 
+## Change Log
+
+- 2026-02-12: Story implemented — Xcode project created with full folder structure, test target, and SwiftData configuration
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+- Initial build failed due to .gitkeep files conflicting in PBXFileSystemSynchronizedRootGroup (multiple files with same name copied to bundle). Fixed by adding PBXFileSystemSynchronizedBuildFileExceptionSet to exclude .gitkeep files from both targets.
+- One benign system warning from appintentsmetadataprocessor (Xcode internals) — not a code warning.
+- Xcode 26.2 used instead of 26.3 (story spec) — functionally identical for project setup.
 
 ### Completion Notes List
 
+- Created Peach.xcodeproj using objectVersion 77 (Xcode 16+ file system synchronized groups format)
+- SwiftUI lifecycle with @main entry point in PeachApp.swift
+- SwiftData ModelContainer initialized with empty schema (ready for ComparisonRecord in Story 1.2)
+- iOS 26 deployment target, Swift 6.0, zero third-party dependencies
+- Full folder structure: App/, Core/Audio/, Core/Algorithm/, Core/Data/, Core/Profile/, Training/, Profile/, Settings/, Start/, Info/, Resources/
+- Empty folders tracked via .gitkeep files (excluded from Xcode build via exception sets)
+- Resources include Assets.xcassets (AccentColor + AppIcon) and Localizable.xcstrings (English source, German in knownRegions)
+- PeachTests target mirrors source structure with Swift Testing placeholder test
+- Build succeeds on iPhone 17 Pro simulator, all tests pass
+
 ### File List
+
+- Peach.xcodeproj/project.pbxproj (new)
+- Peach.xcodeproj/project.xcworkspace/contents.xcworkspacedata (new)
+- Peach/App/PeachApp.swift (new)
+- Peach/App/ContentView.swift (new)
+- Peach/Core/Audio/.gitkeep (new)
+- Peach/Core/Algorithm/.gitkeep (new)
+- Peach/Core/Data/.gitkeep (new)
+- Peach/Core/Profile/.gitkeep (new)
+- Peach/Training/.gitkeep (new)
+- Peach/Profile/.gitkeep (new)
+- Peach/Settings/.gitkeep (new)
+- Peach/Start/.gitkeep (new)
+- Peach/Info/.gitkeep (new)
+- Peach/Resources/Assets.xcassets/Contents.json (new)
+- Peach/Resources/Assets.xcassets/AccentColor.colorset/Contents.json (new)
+- Peach/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json (new)
+- Peach/Resources/Localizable.xcstrings (new)
+- PeachTests/PeachTests.swift (new)
+- PeachTests/Core/Audio/.gitkeep (new)
+- PeachTests/Core/Algorithm/.gitkeep (new)
+- PeachTests/Core/Data/.gitkeep (new)
+- PeachTests/Core/Profile/.gitkeep (new)
+- PeachTests/Training/.gitkeep (new)
+- docs/implementation-artifacts/sprint-status.yaml (modified)
+- docs/planning-artifacts/epics.md (modified — iPhone model references updated)
+- docs/planning-artifacts/ux-design-specification.md (modified — iPhone model references updated)

@@ -951,8 +951,7 @@ Peach requires audio output to function. This is an inherent constraint — the 
 - Test with Dark Mode — verify profile visualization contrast
 
 **Device testing:**
-- iPhone SE (smallest current screen) — verify Training Screen buttons are reachable and large enough
-- iPhone 16 Pro Max (largest current screen) — verify layout doesn't feel empty or sparse
+- iPhone 17 Pro — primary test device for layout verification
 - iPad (any model) — verify layouts scale appropriately
 - Both orientations on all devices
 

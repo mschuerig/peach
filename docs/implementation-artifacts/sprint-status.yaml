@@ -42,7 +42,7 @@ story_location: docs/implementation-artifacts
 development_status:
   # Epic 1: Remember Every Note - Data Foundation
   epic-1: in-progress
-  1-1-create-xcode-project-and-folder-structure: ready-for-dev
+  1-1-create-xcode-project-and-folder-structure: review
   1-2-implement-comparisonrecord-data-model-and-trainingdatastore: backlog
   epic-1-retrospective: optional
 
