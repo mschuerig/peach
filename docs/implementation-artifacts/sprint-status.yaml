@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Remember Every Note - Data Foundation
   epic-1: in-progress
   1-1-create-xcode-project-and-folder-structure: done
-  1-2-implement-comparisonrecord-data-model-and-trainingdatastore: backlog
+  1-2-implement-comparisonrecord-data-model-and-trainingdatastore: review
   epic-1-retrospective: optional
 
   # Epic 2: Hear and Compare - Core Audio Engine

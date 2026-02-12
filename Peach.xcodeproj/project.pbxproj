@@ -37,21 +37,6 @@
 			);
 			target = 0E0000000000000000000001 /* Peach */;
 		};
-		500000000000000000000002 /* Exceptions for "PeachTests" folder in "PeachTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Core/Algorithm/.gitkeep,
-				Core/Audio/.gitkeep,
-				Core/Data/.gitkeep,
-				Core/Profile/.gitkeep,
-				Info/.gitkeep,
-				Profile/.gitkeep,
-				Settings/.gitkeep,
-				Start/.gitkeep,
-				Training/.gitkeep,
-			);
-			target = 0E0000000000000000000002 /* PeachTests */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -65,10 +50,12 @@
 		};
 		0B0000000000000000000002 /* PeachTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				500000000000000000000002 /* Exceptions for "PeachTests" folder in "PeachTests" target */,
-			);
 			path = PeachTests;
+			sourceTree = "<group>";
+		};
+		4CEF40492F3E763100BA099F /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -94,6 +81,7 @@
 		0C0000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				4CEF40492F3E763100BA099F /* docs */,
 				0B0000000000000000000001 /* Peach */,
 				0B0000000000000000000002 /* PeachTests */,
 				0C0000000000000000000002 /* Products */,

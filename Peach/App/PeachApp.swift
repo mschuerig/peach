@@ -7,7 +7,6 @@ struct PeachApp: App {
         WindowGroup {
             ContentView()
         }
-        // Empty schema for now — ComparisonRecord.self added in Story 1.2
-        .modelContainer(for: [])
+        .modelContainer(for: [ComparisonRecord.self])
     }
 }
