@@ -1,0 +1,89 @@
+# generated: 2026-02-12
+# project: peach
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: docs/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog -> in-progress: Automatically when first story is created (via create-story)
+#   - in-progress -> done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-12
+project: peach
+project_key: NOKEY
+tracking_system: file-system
+story_location: docs/implementation-artifacts
+
+development_status:
+  # Epic 1: Remember Every Note - Data Foundation
+  epic-1: in-progress
+  1-1-create-xcode-project-and-folder-structure: ready-for-dev
+  1-2-implement-comparisonrecord-data-model-and-trainingdatastore: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Hear and Compare - Core Audio Engine
+  epic-2: backlog
+  2-1-implement-noteplayer-protocol-and-sinewavenoteplayer: backlog
+  2-2-support-configurable-note-duration-and-reference-pitch: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Train Your Ear - The Comparison Loop
+  epic-3: backlog
+  3-1-start-screen-and-navigation-shell: backlog
+  3-2-trainingsession-state-machine-and-comparison-loop: backlog
+  3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: backlog
+  3-4-training-interruption-and-app-lifecycle-handling: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Smart Training - Adaptive Algorithm
+  epic-4: backlog
+  4-1-implement-perceptualprofile: backlog
+  4-2-implement-nextnotestrategy-protocol-and-adaptivenotestrategy: backlog
+  4-3-integrate-adaptive-algorithm-into-trainingsession: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: See Your Progress - Profile & Statistics
+  epic-5: backlog
+  5-1-profile-screen-with-perceptual-profile-visualization: backlog
+  5-2-summary-statistics-with-trend-indicator: backlog
+  5-3-profile-preview-on-start-screen-and-navigation: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Make It Yours - Settings & Configuration
+  epic-6: backlog
+  6-1-settings-screen-with-all-configuration-options: backlog
+  6-2-apply-settings-to-training-in-real-time: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Polish & Ship - Platform, Localization & Info
+  epic-7: backlog
+  7-1-english-and-german-localization: backlog
+  7-2-accessibility-audit-and-custom-component-labels: backlog
+  7-3-iphone-ipad-portrait-and-landscape-support: backlog
+  7-4-info-screen: backlog
+  epic-7-retrospective: optional
