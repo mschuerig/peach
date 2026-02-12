@@ -25,27 +25,21 @@ final class TrainingDataStore {
         }
     }
 
-    /// Returns a sequence for iterating over all records without loading them all into memory
-    /// Records are fetched in batches for memory efficiency
-    ///
-    /// - Important: Iteration MUST occur on the MainActor due to SwiftData's ModelContext requirement.
-    ///   In practice, this is safe because iteration will happen in SwiftUI views or other MainActor-isolated
-    ///   contexts. Do NOT iterate from Task.detached or other non-MainActor contexts.
-    ///
-    /// - Parameter batchSize: Number of records to fetch per batch (default: 100)
-    /// - Returns: A sequence that yields ComparisonRecords sorted by timestamp (oldest first)
-    ///
-    /// Example usage:
-    /// ```swift
-    /// @MainActor
-    /// func initializeProfile() {
-    ///     for record in store.records() {
-    ///         profile.process(record)
-    ///     }
-    /// }
-    /// ```
-    func records(batchSize: Int = 100) -> ComparisonRecordSequence {
-        ComparisonRecordSequence(modelContext: modelContext, batchSize: batchSize)
+    /// Fetches all comparison records from persistent storage
+    /// - Returns: All ComparisonRecord instances sorted by timestamp (oldest first)
+    /// - Throws: DataStoreError.fetchFailed if fetch operation fails
+    /// - Note: Loads all records into memory at once. For MVP with expected low data volumes (hundreds to low thousands
+    ///   of records), this is acceptable. Future optimization: implement batched iteration if data volume becomes large
+    ///   (tens of thousands of records or memory pressure observed).
+    func fetchAll() throws -> [ComparisonRecord] {
+        let descriptor = FetchDescriptor<ComparisonRecord>(
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)]
+        )
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            throw DataStoreError.fetchFailed("Failed to fetch records: \(error.localizedDescription)")
+        }
     }
 
     /// Deletes a comparison record from persistent storage
@@ -58,69 +52,5 @@ final class TrainingDataStore {
         } catch {
             throw DataStoreError.deleteFailed("Failed to delete record: \(error.localizedDescription)")
         }
-    }
-}
-
-// MARK: - Sequence and Iterator
-
-/// Sequence for iterating over ComparisonRecords in batches
-///
-/// - Important: This sequence holds a SwiftData ModelContext, which is main-thread bound.
-///   Iteration must occur on the MainActor. Created via TrainingDataStore.records()
-struct ComparisonRecordSequence: Sequence {
-    let modelContext: ModelContext
-    let batchSize: Int
-
-    func makeIterator() -> ComparisonRecordIterator {
-        ComparisonRecordIterator(modelContext: modelContext, batchSize: batchSize)
-    }
-}
-
-/// Iterator that fetches ComparisonRecords in batches to minimize memory usage
-///
-/// - Important: Calls modelContext.fetch() which requires MainActor.
-///   Do not use this iterator from background threads.
-struct ComparisonRecordIterator: IteratorProtocol {
-    private let modelContext: ModelContext
-    private let batchSize: Int
-    private var currentBatch: [ComparisonRecord] = []
-    private var currentIndex: Int = 0
-    private var offset: Int = 0
-    private var isExhausted: Bool = false
-
-    init(modelContext: ModelContext, batchSize: Int) {
-        self.modelContext = modelContext
-        self.batchSize = batchSize
-    }
-
-    mutating func next() -> ComparisonRecord? {
-        // If we've consumed current batch, fetch next batch
-        if currentIndex >= currentBatch.count {
-            guard !isExhausted else { return nil }
-
-            var descriptor = FetchDescriptor<ComparisonRecord>(
-                sortBy: [SortDescriptor(\.timestamp, order: .forward)]
-            )
-            descriptor.fetchLimit = batchSize
-            descriptor.fetchOffset = offset
-
-            do {
-                currentBatch = try modelContext.fetch(descriptor)
-                currentIndex = 0
-                offset += batchSize
-
-                if currentBatch.isEmpty {
-                    isExhausted = true
-                    return nil
-                }
-            } catch {
-                isExhausted = true
-                return nil
-            }
-        }
-
-        let record = currentBatch[currentIndex]
-        currentIndex += 1
-        return record
     }
 }
