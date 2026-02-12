@@ -1,7 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-
+    "Peach" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peach"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

@@ -1,6 +1,6 @@
 # Story 1.1: Create Xcode Project and Folder Structure
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -183,6 +183,7 @@ PeachTests/
 ## Change Log
 
 - 2026-02-12: Story implemented — Xcode project created with full folder structure, test target, and SwiftData configuration
+- 2026-02-12: Code review fixes — Added missing PeachTests mirror folders (Profile/, Settings/, Start/, Info/), added clarifying comment to ModelContainer, added SwiftData import and modelContainer to ContentView Preview, populated Localizable.xcstrings with "Peach" string for German
 
 ## Dev Agent Record
 
@@ -233,6 +234,10 @@ Claude Opus 4.6
 - PeachTests/Core/Data/.gitkeep (new)
 - PeachTests/Core/Profile/.gitkeep (new)
 - PeachTests/Training/.gitkeep (new)
+- PeachTests/Profile/.gitkeep (new — review fix)
+- PeachTests/Settings/.gitkeep (new — review fix)
+- PeachTests/Start/.gitkeep (new — review fix)
+- PeachTests/Info/.gitkeep (new — review fix)
 - docs/implementation-artifacts/sprint-status.yaml (modified)
-- docs/planning-artifacts/epics.md (modified — iPhone model references updated)
-- docs/planning-artifacts/ux-design-specification.md (modified — iPhone model references updated)
+- docs/planning-artifacts/epics.md (modified — iPhone model references updated, NOTE: out-of-scope change)
+- docs/planning-artifacts/ux-design-specification.md (modified — iPhone model references updated, NOTE: out-of-scope change)
