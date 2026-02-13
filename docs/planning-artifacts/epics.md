@@ -802,3 +802,57 @@ So that I know the version and who made it.
 **Given** the Info Screen text
 **When** localization is active
 **Then** static labels are localized (app name and developer name remain as-is)
+
+### Story 7.5: App Icon Design and Implementation
+
+As a **musician using Peach**,
+I want the app to have a distinctive icon that reflects its purpose,
+So that I can easily identify it on my home screen and it communicates the app's focus on pitch training.
+
+**Acceptance Criteria:**
+
+**Given** the app icon design requirements
+**When** creating the icon
+**Then** it incorporates a peach as the primary visual element (leveraging the "Peach"/"pitch" homophone)
+**And** it includes a musical element (such as a sound wave, musical note, or frequency visualization) integrated with the peach
+**And** the design works at all required iOS icon sizes (from 20pt to 1024pt)
+**And** it follows Apple's iOS icon design guidelines (no transparency, rounded square filled edge-to-edge)
+
+**Given** the icon design concept
+**When** selecting visual style
+**Then** it uses a simple, bold design that remains recognizable at small sizes (20pt-40pt on home screen)
+**And** it uses colors that stand out on iOS home screens (warm peach/orange tones with contrasting accent)
+
+**Given** the final icon assets
+**When** added to the Xcode project
+**Then** all required icon sizes are provided in Assets.xcassets/AppIcon
+**And** the icon appears correctly on the home screen, in Settings, in Spotlight search, and in the App Store
+
+**Given** the icon on a user's home screen
+**When** viewed alongside other music/education apps
+**Then** it is visually distinctive and clearly communicates "pitch training" through the peach/pitch wordplay
+
+**Design Notes:**
+
+**Concept Directions to Explore:**
+1. **Peach + Waveform:** A stylized peach with a sound wave or frequency curve flowing through it or emerging from it
+2. **Peach + Musical Staff:** A peach positioned on or integrated with a musical staff line, suggesting both fruit and pitch
+3. **Peach + Tuning Fork:** A tuning fork incorporated into the peach's stem or leaf, directly referencing pitch
+4. **Abstract Peach-Pitch:** Geometric/modern interpretation combining circular peach form with wave patterns
+
+**Color Palette:**
+- Primary: Warm peach/orange (#FF9966 to #FFCC99 range)
+- Accent: Teal or deep green for musical elements (sound waves, stems)
+- Background: Complementary gradient or solid color for depth
+
+**Technical Requirements:**
+- Provide 1024x1024px master artwork
+- Export all iOS icon sizes via Xcode or icon generator
+- Ensure legibility at 40x40px (smallest common home screen size)
+- Test on both light and dark home screen wallpapers
+
+**Implementation:**
+- Create icon assets (design tool: Figma, Sketch, or SF Symbols + image editing)
+- Add to `Peach/Resources/Assets.xcassets/AppIcon.appiconset/`
+- Verify in Xcode that all sizes are properly assigned
+- Test on device at various home screen densities
