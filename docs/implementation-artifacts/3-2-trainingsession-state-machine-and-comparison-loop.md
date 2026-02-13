@@ -1,6 +1,6 @@
 # Story 3.2: TrainingSession State Machine and Comparison Loop
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -888,15 +888,26 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
   - Code review identified 10 issues (2 Critical, 4 High, 3 Medium, 1 Low)
   - Applied fixes for 4 issues, remaining issues documented below
 
+- **2026-02-13**: Critical runtime bugs fixed and manual verification completed
+  - **CRITICAL FIX**: Fixed training loop never starting (while loop condition prevented first execution)
+  - **CRITICAL FIX**: Fixed race condition when answering during note2 (state overwrite bug)
+  - **UX FIX**: Stop note2 immediately when user answers during playback
+  - **UX FIX**: Ensure consistent 400ms feedback silence between all comparisons
+  - **UX IMPROVEMENT**: Redesigned button layout - Higher at top, Lower at bottom, fill screen for eyes-closed use
+  - Added comprehensive debug logging throughout state machine
+  - ✅ **Manual verification completed** - all acceptance criteria validated
+  - Known issue deferred to Story 3.3: Audio click when stopping note2 (requires fade-out envelope)
+
 ## Code Review Follow-ups (AI)
 
 **HIGH PRIORITY - Requires User Action:**
-- [ ] [AI-Review][HIGH] Perform manual verification of training loop (see lines 824-830 for checklist)
-  - Run app, tap Start Training, verify two notes play in sequence
-  - Verify Higher/Lower buttons disable/enable correctly during note playback
-  - Test 10+ comparisons to verify continuous loop with zero perceptible delay
-  - Verify data persistence (ComparisonRecord saved after each answer)
-  - Test navigation away during training (verify graceful stop)
+- [x] [AI-Review][HIGH] ✅ **COMPLETED** - Manual verification of training loop
+  - ✅ Two notes play in sequence (1 semitone apart, easily detectable)
+  - ✅ Higher/Lower buttons disable during note1, enable during note2
+  - ✅ Continuous loop works smoothly with proper feedback timing
+  - ✅ User can answer during note2 or after - both work correctly
+  - ✅ Data persistence works (ComparisonRecord saved after each answer)
+  - ✅ Navigation away during training stops gracefully
 
 **MEDIUM PRIORITY - Performance & Testing:**
 - [ ] [AI-Review][CRITICAL] Investigate and fix 16 failing async tests (67% test failure rate)
@@ -914,3 +925,10 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
   - Current: spawns Task with sleep, generates comparison on-demand
   - Better: pre-generate next comparison during feedback phase for true zero-delay
   - Impact: minimal (< 2ms improvement), but matches architecture intent
+
+**DEFERRED TO STORY 3.3:**
+- [ ] [Story-3.3][LOW] Fix audio click when stopping note2 during user answer
+  - Issue: When user answers during note2, stop() immediately halts playback without fade-out
+  - Cause: AVAudioPlayerNode.stop() is abrupt, no release envelope applied
+  - Solution: Use AVAudioMixerNode to fade volume before stopping, or schedule release buffer
+  - Defer to Story 3.3 which adds Feedback Indicator and audio/haptic polish
