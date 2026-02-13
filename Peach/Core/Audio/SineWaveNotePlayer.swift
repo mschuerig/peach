@@ -8,7 +8,7 @@ import Foundation
 /// training. It uses AVAudioPlayerNode to play pre-generated buffers, ensuring precise
 /// timing and envelope shaping.
 @MainActor
-final class SineWaveNotePlayer: NotePlayer {
+public final class SineWaveNotePlayer: NotePlayer {
 
     // MARK: - Audio Components
 
@@ -16,8 +16,13 @@ final class SineWaveNotePlayer: NotePlayer {
     private let playerNode: AVAudioPlayerNode
     private let format: AVAudioFormat
 
+    // MARK: - State
+
+    private var isSessionConfigured = false
+
     // MARK: - Constants
 
+    // Human audible frequency range: 20 Hz to 20 kHz
     private static let validFrequencyRange = 20.0...20000.0
     private static let sampleRate: Double = 44100.0
     private static let attackDuration: TimeInterval = 0.005  // 5ms
@@ -25,7 +30,7 @@ final class SineWaveNotePlayer: NotePlayer {
 
     // MARK: - Initialization
 
-    init() throws {
+    public init() throws {
         // Create audio format (standard 44.1kHz mono)
         guard let format = AVAudioFormat(
             standardFormatWithSampleRate: Self.sampleRate,
@@ -44,9 +49,15 @@ final class SineWaveNotePlayer: NotePlayer {
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
     }
 
+    nonisolated deinit {
+        // Clean up audio engine when player is deallocated
+        // Note: deinit cannot access MainActor-isolated properties in Swift 6
+        // Engine cleanup happens automatically when deallocated
+    }
+
     // MARK: - NotePlayer Protocol
 
-    func play(frequency: Double, duration: TimeInterval) async throws {
+    public func play(frequency: Double, duration: TimeInterval, amplitude: Double = 0.5) async throws {
         // Validate frequency
         guard Self.validFrequencyRange.contains(frequency) else {
             throw AudioError.invalidFrequency(
@@ -54,19 +65,28 @@ final class SineWaveNotePlayer: NotePlayer {
             )
         }
 
-        // Start engine if not already running
-        if !engine.isRunning {
-            // Configure audio session
+        // Validate amplitude
+        guard (0.0...1.0).contains(amplitude) else {
+            throw AudioError.invalidFrequency(
+                "Amplitude \(amplitude) is outside valid range 0.0-1.0"
+            )
+        }
+
+        // Configure audio session once
+        if !isSessionConfigured {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
+            isSessionConfigured = true
+        }
 
-            // Start engine
+        // Start engine if not already running
+        if !engine.isRunning {
             try engine.start()
         }
 
         // Generate audio buffer with sine wave and envelope
-        let buffer = try generateBuffer(frequency: frequency, duration: duration)
+        let buffer = try generateBuffer(frequency: frequency, duration: duration, amplitude: amplitude)
 
         // Play buffer and wait for completion
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -82,7 +102,7 @@ final class SineWaveNotePlayer: NotePlayer {
         }
     }
 
-    func stop() async throws {
+    public func stop() async throws {
         // Stop player immediately
         playerNode.stop()
     }
@@ -90,7 +110,7 @@ final class SineWaveNotePlayer: NotePlayer {
     // MARK: - Buffer Generation
 
     /// Generates an audio buffer containing a sine wave at the specified frequency with envelope.
-    private func generateBuffer(frequency: Double, duration: TimeInterval) throws -> AVAudioPCMBuffer {
+    private func generateBuffer(frequency: Double, duration: TimeInterval, amplitude: Double) throws -> AVAudioPCMBuffer {
         // Calculate buffer length in samples
         let attackSamples = Int(Self.attackDuration * Self.sampleRate)
         let releaseSamples = Int(Self.releaseDuration * Self.sampleRate)
@@ -130,8 +150,8 @@ final class SineWaveNotePlayer: NotePlayer {
                 envelope = 1.0 - (Float(releaseFrame) / Float(releaseSamples))
             }
 
-            // Generate sine sample with envelope
-            samples[frame] = Float(sin(phase)) * envelope
+            // Generate sine sample with envelope and amplitude
+            samples[frame] = Float(sin(phase)) * envelope * Float(amplitude)
 
             // Update phase
             phase += phaseIncrement

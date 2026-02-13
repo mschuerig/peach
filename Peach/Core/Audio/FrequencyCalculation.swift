@@ -1,7 +1,7 @@
 import Foundation
 
 /// Utilities for converting musical note information to frequencies.
-enum FrequencyCalculation {
+public enum FrequencyCalculation {
     /// Converts a MIDI note number and cent offset to a frequency in Hz.
     ///
     /// Uses the equal temperament formula:
@@ -17,7 +17,11 @@ enum FrequencyCalculation {
     /// - Middle C (MIDI 60) at 0 cents → 261.626 Hz
     /// - A4 (MIDI 69) at 0 cents → 440.000 Hz
     /// - MIDI 60 at +50 cents → ~268.9 Hz (halfway between C and C#)
-    static func frequency(midiNote: Int, cents: Double = 0.0, referencePitch: Double = 440.0) -> Double {
+    ///
+    /// - Precondition: midiNote must be in range 0-127
+    public static func frequency(midiNote: Int, cents: Double = 0.0, referencePitch: Double = 440.0) -> Double {
+        precondition(midiNote >= 0 && midiNote <= 127, "MIDI note must be in range 0-127, got \(midiNote)")
+
         let semitonesFromA4 = Double(midiNote - 69)
         let octaveOffset = semitonesFromA4 / 12.0
         let centOffset = cents / 1200.0

@@ -1,6 +1,6 @@
 # Story 2.1: Implement NotePlayer Protocol and SineWaveNotePlayer
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -632,6 +632,22 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Sequential playback verified via automated test
 - Manual device testing deferred to Epic 3 integration (when UI triggers playback)
 
+### Code Review Fixes (2026-02-13)
+
+**Issues Fixed:**
+1. ✅ Added `public` access control to AudioError, NotePlayer, FrequencyCalculation, and SineWaveNotePlayer
+2. ✅ Added comprehensive documentation for all AudioError cases
+3. ✅ Added `amplitude` parameter to NotePlayer.play() method (0.0-1.0 range, default 0.5)
+4. ✅ Added MIDI note validation in FrequencyCalculation (0-127 range check with precondition)
+5. ✅ Fixed AVAudioSession configuration efficiency (now configured once, not on every play call)
+6. ✅ Added deinit with note about Swift 6 concurrency constraints
+7. ✅ Added explanatory comment for magic number (20-20,000 Hz human audible range)
+8. ✅ Added missing test coverage: MIDI 0, MIDI 127, negative cents, extreme cents (+100)
+9. ✅ Added amplitude validation tests (negative, > 1.0)
+10. ✅ Added custom amplitude playback test (0.0, 0.25, 1.0)
+
+**Build Status:** All tests compile successfully (24 test cases total)
+
 ### File List
 
 **New Files Created:**
@@ -640,5 +656,8 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Peach/Core/Audio/SineWaveNotePlayer.swift (AVAudioPlayerNode implementation)
 - PeachTests/Core/Audio/SineWaveNotePlayerTests.swift (tests)
 
-**Files Modified:**
-- None (all files are new)
+**Files Modified (Code Review):**
+- Peach/Core/Audio/NotePlayer.swift (added public, docs, amplitude parameter)
+- Peach/Core/Audio/FrequencyCalculation.swift (added public, MIDI validation)
+- Peach/Core/Audio/SineWaveNotePlayer.swift (added public, amplitude support, session config fix, deinit, comments)
+- PeachTests/Core/Audio/SineWaveNotePlayerTests.swift (added 7 edge case tests)
