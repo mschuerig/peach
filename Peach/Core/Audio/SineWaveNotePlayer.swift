@@ -1,6 +1,7 @@
 import AVFoundation
 import AVFAudio
 import Foundation
+import os
 
 /// A NotePlayer implementation that generates sine wave tones using AVAudioEngine.
 ///
@@ -9,6 +10,10 @@ import Foundation
 /// timing and envelope shaping.
 @MainActor
 public final class SineWaveNotePlayer: NotePlayer {
+
+    // MARK: - Logger
+
+    private let logger = Logger(subsystem: "com.peach.app", category: "SineWaveNotePlayer")
 
     // MARK: - Audio Components
 
@@ -110,8 +115,10 @@ public final class SineWaveNotePlayer: NotePlayer {
     }
 
     public func stop() async throws {
+        logger.info("SineWaveNotePlayer.stop() called - stopping audio")
         // Stop player immediately
         playerNode.stop()
+        logger.info("AVAudioPlayerNode stopped")
     }
 
     // MARK: - Buffer Generation

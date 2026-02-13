@@ -208,14 +208,29 @@ final class TrainingSession {
     ///
     /// Safe to call multiple times or when training is not active.
     func stop() {
-        guard state != .idle else { return }
+        guard state != .idle else {
+            logger.debug("stop() called but already idle")
+            return
+        }
 
+        logger.info("Training stopped (state was: \(String(describing: self.state)))")
+
+        // Stop audio playback immediately
+        Task {
+            try? await notePlayer.stop()
+            logger.info("NotePlayer stopped")
+        }
+
+        // Cancel all running tasks
         trainingTask?.cancel()
         trainingTask = nil
         feedbackTask?.cancel()
         feedbackTask = nil
+
+        // Reset state
         state = .idle
         currentComparison = nil
+
         // Clear feedback state (Story 3.3)
         showFeedback = false
         isLastAnswerCorrect = nil

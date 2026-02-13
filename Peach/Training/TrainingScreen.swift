@@ -1,8 +1,12 @@
 import SwiftUI
+import os
 
 struct TrainingScreen: View {
     /// Training session injected via environment
     @Environment(\.trainingSession) private var trainingSession
+
+    /// Logger for debugging lifecycle events
+    private let logger = Logger(subsystem: "com.peach.app", category: "TrainingScreen")
 
     var body: some View {
         VStack(spacing: 8) {
@@ -74,10 +78,12 @@ struct TrainingScreen: View {
         }
         .onAppear {
             // Start training immediately when screen appears
+            logger.info("TrainingScreen appeared - starting training")
             trainingSession.startTraining()
         }
         .onDisappear {
             // Stop training when leaving screen
+            logger.info("TrainingScreen disappeared - stopping training")
             trainingSession.stop()
         }
     }

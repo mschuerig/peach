@@ -740,9 +740,42 @@ All technical details sourced from:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
+
+**Critical Bug Investigation - Audio Continues Playing After Navigation**
+
+**Root Cause Identified:** TrainingSession.stop() was missing the call to notePlayer.stop()
+
+**Analysis:**
+1. TrainingScreen.onDisappear correctly calls trainingSession.stop() ✅
+2. TrainingSession.stop() (lines 210-222) cancelled tasks and reset state BUT did not call notePlayer.stop() ❌
+3. SineWaveNotePlayer.stop() properly stops the AVAudioPlayerNode ✅
+
+**The Bug:** The audio stop chain was broken at step 2 - TrainingSession never told the NotePlayer to stop playing.
+
+**The Fix:** Added notePlayer.stop() call to TrainingSession.stop() with proper async handling
+
+**Comprehensive Logging Added:**
+- TrainingScreen.swift: Added logger and logging to onAppear/onDisappear
+- TrainingSession.swift: Added logging to stop() method with state information
+- SineWaveNotePlayer.swift: Added logger and logging to stop() method
+
+### Implementation Plan
+
+**Phase 0: Debug and Fix Critical Audio Bug** 🔴 COMPLETE
+- ✅ Added comprehensive logging chain: TrainingScreen → TrainingSession → SineWaveNotePlayer
+- ✅ Identified root cause: TrainingSession.stop() missing notePlayer.stop() call
+- ✅ Fixed: Added async Task to call notePlayer.stop() in TrainingSession.stop()
+- ✅ Build verified successful
+
+**Next Steps:**
+- Manual device/simulator testing to verify audio stops on navigation
+- Verify incomplete comparison discard behavior
+- Implement app lifecycle handling (scenePhase)
+- Add audio interruption observers
+- Comprehensive testing of all scenarios
 
 ### Completion Notes List
 

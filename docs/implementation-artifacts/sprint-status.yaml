@@ -57,7 +57,7 @@ development_status:
   3-1-start-screen-and-navigation-shell: done
   3-2-trainingsession-state-machine-and-comparison-loop: done
   3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: done
-  3-4-training-interruption-and-app-lifecycle-handling: ready-for-dev
+  3-4-training-interruption-and-app-lifecycle-handling: in-progress
   epic-3-retrospective: optional
 
   # Epic 4: Smart Training - Adaptive Algorithm
