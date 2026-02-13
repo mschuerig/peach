@@ -53,8 +53,8 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Train Your Ear - The Comparison Loop
-  epic-3: backlog
-  3-1-start-screen-and-navigation-shell: backlog
+  epic-3: in-progress
+  3-1-start-screen-and-navigation-shell: ready-for-dev
   3-2-trainingsession-state-machine-and-comparison-loop: backlog
   3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: backlog
   3-4-training-interruption-and-app-lifecycle-handling: backlog
