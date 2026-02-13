@@ -21,16 +21,22 @@ struct TrainingSessionLifecycleTests {
     @MainActor
     @Test("stop() during playingNote1 discards incomplete comparison")
     func stopDuringNote1DiscardsComparison() async {
-        let (session, _, mockDataStore) = makeTrainingSession()
+        let (session, mockPlayer, mockDataStore) = makeTrainingSession()
+
+        var stateWhenPlayCalled: TrainingState?
+        mockPlayer.onPlayCalled = {
+            // Capture state and stop immediately when first note starts
+            if stateWhenPlayCalled == nil {
+                stateWhenPlayCalled = session.state
+                session.stop()
+            }
+        }
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(20))  // Wait to enter playingNote1
+        await Task.yield()  // Let training task start
 
-        // Verify we're in playingNote1
-        #expect(session.state == .playingNote1 || session.state == .playingNote2)
-
-        // Stop training before answer
-        session.stop()
+        // Verify we captured playingNote1 state
+        #expect(stateWhenPlayCalled == .playingNote1)
 
         // Verify no data was saved
         #expect(mockDataStore.saveCallCount == 0)

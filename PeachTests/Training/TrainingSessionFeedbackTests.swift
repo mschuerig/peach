@@ -20,6 +20,45 @@ struct TrainingSessionFeedbackTests {
         return (session, mockPlayer, mockDataStore, mockHaptic)
     }
 
+    // MARK: - Test Helpers
+
+    /// Waits for the session to reach a specific state (or timeout after 1 second)
+    @MainActor
+    func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(1)) async throws {
+        // First, yield to allow any pending async tasks to progress
+        await Task.yield()
+
+        // Check immediately after yield - with instant playback, state should be ready
+        if session.state == expectedState {
+            return
+        }
+
+        // If not ready yet, poll with short intervals
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if session.state == expectedState {
+                return
+            }
+            try await Task.sleep(for: .milliseconds(5))  // Reduced from 10ms to 5ms
+            await Task.yield()  // Yield to allow state machine to progress
+        }
+        fatalError("Timeout waiting for state \(expectedState), current state: \(session.state)")
+    }
+
+    /// Waits for feedback to clear (showFeedback becomes false)
+    @MainActor
+    func waitForFeedbackToClear(_ session: TrainingSession, timeout: Duration = .seconds(1)) async throws {
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if !session.showFeedback {
+                return
+            }
+            try await Task.sleep(for: .milliseconds(10))
+            await Task.yield()
+        }
+        fatalError("Timeout waiting for feedback to clear")
+    }
+
     // MARK: - Feedback State Tests
 
     @MainActor
@@ -39,15 +78,13 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
-        // Answer correctly (second note is higher if centDifference > 0)
-        // Since Comparison.random() might give us either, we need to check and answer correctly
-        // For this test, we'll check the current comparison and answer correctly
-        let comparison = try #require(mockPlayer.playHistory.count >= 2)
-
-        // The second frequency is higher if it's greater than the first
+        // Answer correctly by checking which note was higher
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         session.handleAnswer(isHigher: isSecondHigher)
 
@@ -64,13 +101,13 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         // Answer incorrectly (opposite of what the comparison says)
-        let comparison = try #require(mockPlayer.playHistory.count >= 2)
-
-        // The second frequency is higher if it's greater than the first
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         // Answer incorrectly by saying the opposite
         session.handleAnswer(isHigher: !isSecondHigher)
@@ -88,18 +125,21 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for first notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         // Answer (correct or incorrect doesn't matter)
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         session.handleAnswer(isHigher: isSecondHigher)
 
         // Verify feedback is showing
         #expect(session.showFeedback == true)
 
-        // Wait for feedback duration to expire (400ms)
-        try await Task.sleep(for: .milliseconds(500))
+        // Wait for feedback to clear (polls until false)
+        try await waitForFeedbackToClear(session)
 
         // Verify feedback has cleared
         #expect(session.showFeedback == false)
@@ -115,10 +155,13 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         // Answer incorrectly
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         session.handleAnswer(isHigher: !isSecondHigher)
 
@@ -134,10 +177,13 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         // Answer correctly
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         session.handleAnswer(isHigher: isSecondHigher)
 
@@ -153,10 +199,13 @@ struct TrainingSessionFeedbackTests {
         // Start training
         session.startTraining()
 
-        // Wait for notes to play
-        try await Task.sleep(for: .milliseconds(100))
+        // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         // Answer to trigger feedback
+        guard mockPlayer.playHistory.count >= 2 else {
+            fatalError("Expected 2 notes to be played, got \(mockPlayer.playHistory.count)")
+        }
         let isSecondHigher = mockPlayer.playHistory[1].frequency > mockPlayer.playHistory[0].frequency
         session.handleAnswer(isHigher: isSecondHigher)
 

@@ -22,7 +22,7 @@ struct ContentView: View {
             StartScreen()
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            logger.info("Scene phase changed: \(String(describing: oldPhase)) → \(String(describing: newPhase))")
+            logger.debug("Scene phase changed: \(String(describing: oldPhase)) → \(String(describing: newPhase))")
 
             // Handle app backgrounding
             if newPhase == .background {

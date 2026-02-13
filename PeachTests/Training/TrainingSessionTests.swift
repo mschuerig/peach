@@ -15,6 +15,45 @@ struct TrainingSessionTests {
         return (session, mockPlayer, mockDataStore)
     }
 
+    // MARK: - Test Helpers
+
+    /// Waits for the session to reach a specific state (or timeout after 1 second)
+    @MainActor
+    func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(1)) async throws {
+        // First, yield to allow any pending async tasks to progress
+        await Task.yield()
+
+        // Check immediately after yield - with instant playback, state should be ready
+        if session.state == expectedState {
+            return
+        }
+
+        // If not ready yet, poll with short intervals
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if session.state == expectedState {
+                return
+            }
+            try await Task.sleep(for: .milliseconds(5))  // Reduced from 10ms to 5ms
+            await Task.yield()  // Yield to allow state machine to progress
+        }
+        fatalError("Timeout waiting for state \(expectedState), current state: \(session.state)")
+    }
+
+    /// Waits for mock player to reach a minimum play call count
+    @MainActor
+    func waitForPlayCallCount(_ mockPlayer: MockNotePlayer, _ minCount: Int, timeout: Duration = .seconds(1)) async throws {
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if mockPlayer.playCallCount >= minCount {
+                return
+            }
+            try await Task.sleep(for: .milliseconds(10))
+            await Task.yield()
+        }
+        fatalError("Timeout waiting for playCallCount >= \(minCount), current: \(mockPlayer.playCallCount)")
+    }
+
     // MARK: - State Transition Tests
 
     @MainActor
@@ -29,12 +68,18 @@ struct TrainingSessionTests {
     func startTrainingTransitionsToPlayingNote1() async {
         let (session, mockPlayer, _) = makeTrainingSession()
 
+        var capturedState: TrainingState?
+        mockPlayer.onPlayCalled = {
+            // Capture state synchronously when play() is called
+            if capturedState == nil {  // Only capture first call
+                capturedState = session.state
+            }
+        }
+
         session.startTraining()
+        await Task.yield()  // Let training task start
 
-        // Wait for first note to start playing
-        try? await Task.sleep(for: .milliseconds(20))
-
-        #expect(session.state == .playingNote1 || session.state == .playingNote2)
+        #expect(capturedState == .playingNote1)
         #expect(mockPlayer.playCallCount >= 1)
     }
 
@@ -69,11 +114,11 @@ struct TrainingSessionTests {
 
     @MainActor
     @Test("handleAnswer transitions to showingFeedback")
-    func handleAnswerTransitionsToShowingFeedback() async {
+    func handleAnswerTransitionsToShowingFeedback() async throws {
         let (session, _, _) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))  // Wait for awaitingAnswer state
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
 
@@ -82,17 +127,17 @@ struct TrainingSessionTests {
 
     @MainActor
     @Test("TrainingSession loops back to playingNote1 after feedback")
-    func loopsBackAfterFeedback() async {
+    func loopsBackAfterFeedback() async throws {
         let (session, mockPlayer, _) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))  // Wait for awaitingAnswer
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
         #expect(session.state == .showingFeedback)
 
-        // Wait for feedback duration + next comparison to start
-        try? await Task.sleep(for: .milliseconds(500))
+        // Wait for next comparison to start (feedback clears + new notes play)
+        try await waitForPlayCallCount(mockPlayer, 3)  // note1, note2, next note1
 
         // Should have looped back and started next comparison
         #expect(mockPlayer.playCallCount >= 3)  // At least note1, note2, next note1
@@ -213,11 +258,11 @@ struct TrainingSessionTests {
 
     @MainActor
     @Test("TrainingSession records comparison on answer")
-    func recordsComparisonOnAnswer() async {
+    func recordsComparisonOnAnswer() async throws {
         let (session, _, mockDataStore) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
 
@@ -227,11 +272,13 @@ struct TrainingSessionTests {
 
     @MainActor
     @Test("ComparisonRecord contains correct note data")
-    func comparisonRecordContainsCorrectData() async {
+    func comparisonRecordContainsCorrectData() async throws {
         let (session, _, mockDataStore) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))
+
+        // Wait for awaitingAnswer state before calling handleAnswer
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: false)
 
@@ -243,20 +290,20 @@ struct TrainingSessionTests {
 
     @MainActor
     @Test("Data error does not stop training")
-    func dataErrorDoesNotStopTraining() async {
+    func dataErrorDoesNotStopTraining() async throws {
         let (session, mockPlayer, mockDataStore) = makeTrainingSession()
         mockDataStore.shouldThrowError = true
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
 
         // Should continue to feedback state despite save error
         #expect(session.state == .showingFeedback)
 
-        // Wait for next comparison to start
-        try? await Task.sleep(for: .milliseconds(500))
+        // Wait for next comparison to start (feedback clears + new notes play)
+        try await waitForPlayCallCount(mockPlayer, 3)  // note1, note2, next note1
 
         // Training should have continued with next comparison
         #expect(mockPlayer.playCallCount >= 3)
@@ -267,13 +314,20 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Buttons disabled during playingNote1")
     func buttonsDisabledDuringNote1() async {
-        let (session, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _) = makeTrainingSession()
+
+        var capturedState: TrainingState?
+        mockPlayer.onPlayCalled = {
+            // Capture state synchronously when play() is called
+            if capturedState == nil {  // Only capture first call (note1)
+                capturedState = session.state
+            }
+        }
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(20))
+        await Task.yield()  // Let training task start
 
-        let state = session.state
-        #expect(state == .playingNote1 || state == .playingNote2)
+        #expect(capturedState == .playingNote1)
     }
 
     @MainActor

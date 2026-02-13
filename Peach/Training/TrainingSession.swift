@@ -142,11 +142,15 @@ final class TrainingSession {
         setupAudioInterruptionObservers()
     }
 
-    nonisolated deinit {
+    isolated deinit {
         // Clean up notification observers
-        // Note: We can't access actor-isolated properties in deinit with Swift 6
-        // Observers will be cleaned up automatically when the object is deallocated
-        // since we use weak self in the handlers
+        // Using isolated deinit (Swift 6.1+ SE-0371) to properly handle MainActor cleanup
+        if let observer = audioInterruptionObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = audioRouteChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     // MARK: - Public API
@@ -294,10 +298,22 @@ final class TrainingSession {
             logger.info("Playing note 1...")
             try await notePlayer.play(frequency: freq1, duration: noteDuration, amplitude: amplitude)
 
+            // Check if training was stopped during note 1
+            guard state != .idle && !Task.isCancelled else {
+                logger.info("Training stopped during note 1, aborting comparison")
+                return
+            }
+
             // Play note 2
             state = .playingNote2
             logger.info("Playing note 2...")
             try await notePlayer.play(frequency: freq2, duration: noteDuration, amplitude: amplitude)
+
+            // Check if training was stopped during note 2
+            guard state != .idle && !Task.isCancelled else {
+                logger.info("Training stopped during note 2, aborting comparison")
+                return
+            }
 
             // Only transition to awaitingAnswer if user hasn't answered yet
             // (handleAnswer() may have already set state to .showingFeedback)

@@ -15,10 +15,20 @@ final class MockNotePlayer: NotePlayer {
     var shouldThrowError = false
     var errorToThrow: AudioError = .renderFailed("Mock error")
 
-    // MARK: - Test Control
+    // MARK: - Test Control (Fully Synchronous)
 
-    /// Simulated playback duration (for fast tests, default 10ms)
+    /// If true, play() completes instantly without any delays (default: true for deterministic tests)
+    var instantPlayback: Bool = true
+
+    /// Simulated playback duration in seconds (only used if instantPlayback = false)
     var simulatedPlaybackDuration: TimeInterval = 0.01
+
+    /// Callback invoked when play() is called (before any delays)
+    /// Allows tests to synchronously respond to play events
+    var onPlayCalled: (() -> Void)?
+
+    /// Callback invoked when stop() is called
+    var onStopCalled: (() -> Void)?
 
     // MARK: - NotePlayer Protocol
 
@@ -29,16 +39,23 @@ final class MockNotePlayer: NotePlayer {
         lastAmplitude = amplitude
         playHistory.append((frequency: frequency, duration: duration, amplitude: amplitude))
 
+        // Invoke callback synchronously before any delays
+        onPlayCalled?()
+
         if shouldThrowError {
             throw errorToThrow
         }
 
-        // Simulate playback duration (much faster than real duration for tests)
-        try await Task.sleep(for: .milliseconds(Int(simulatedPlaybackDuration * 1000)))
+        // Only add delay if not using instant playback
+        if !instantPlayback {
+            try await Task.sleep(for: .milliseconds(Int(simulatedPlaybackDuration * 1000)))
+        }
+        // Otherwise complete immediately - no artificial timing
     }
 
     func stop() async throws {
         stopCallCount += 1
+        onStopCalled?()
     }
 
     // MARK: - Test Helpers
@@ -51,5 +68,7 @@ final class MockNotePlayer: NotePlayer {
         lastAmplitude = nil
         playHistory = []
         shouldThrowError = false
+        onPlayCalled = nil
+        onStopCalled = nil
     }
 }
