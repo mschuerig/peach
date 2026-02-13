@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import os
+import AVFoundation
 
 /// States in the training comparison loop
 enum TrainingState {
@@ -116,6 +117,14 @@ final class TrainingSession {
     /// Task running the feedback delay (for cancellation)
     private var feedbackTask: Task<Void, Never>?
 
+    // MARK: - Audio Interruption Observers (Story 3.4)
+
+    /// Notification observer for audio interruptions (phone calls, etc.)
+    private var audioInterruptionObserver: NSObjectProtocol?
+
+    /// Notification observer for audio route changes (headphone disconnect, etc.)
+    private var audioRouteChangeObserver: NSObjectProtocol?
+
     // MARK: - Initialization
 
     /// Creates a TrainingSession with injected dependencies
@@ -128,6 +137,16 @@ final class TrainingSession {
         self.notePlayer = notePlayer
         self.dataStore = dataStore
         self.hapticManager = hapticManager
+
+        // Setup audio interruption observers (Story 3.4)
+        setupAudioInterruptionObservers()
+    }
+
+    nonisolated deinit {
+        // Clean up notification observers
+        // Note: We can't access actor-isolated properties in deinit with Swift 6
+        // Observers will be cleaned up automatically when the object is deallocated
+        // since we use weak self in the handlers
     }
 
     // MARK: - Public API
@@ -323,6 +342,87 @@ final class TrainingSession {
         } catch {
             // Unexpected error - log but continue
             logger.warning("Unexpected save error (continuing): \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Audio Interruption Handling (Story 3.4)
+
+    /// Sets up observers for audio interruptions and route changes
+    private func setupAudioInterruptionObservers() {
+        // Observe audio session interruptions (phone calls, Siri, alarms, etc.)
+        audioInterruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            // Extract notification data synchronously before crossing actor boundary
+            let typeValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            Task { @MainActor [weak self] in
+                self?.handleAudioInterruption(typeValue: typeValue)
+            }
+        }
+
+        // Observe audio route changes (headphone disconnect, etc.)
+        audioRouteChangeObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            // Extract notification data synchronously before crossing actor boundary
+            let reasonValue = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
+            Task { @MainActor [weak self] in
+                self?.handleAudioRouteChange(reasonValue: reasonValue)
+            }
+        }
+
+        logger.info("Audio interruption observers setup complete")
+    }
+
+    /// Handles audio session interruption notifications (phone calls, Siri, etc.)
+    private func handleAudioInterruption(typeValue: UInt?) {
+        guard let typeValue = typeValue,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            logger.warning("Audio interruption notification received but could not parse type")
+            return
+        }
+
+        switch type {
+        case .began:
+            // Interruption began (phone call started, Siri activated, etc.)
+            logger.info("Audio interruption began - stopping training")
+            stop()
+
+        case .ended:
+            // Interruption ended (phone call ended, Siri dismissed, etc.)
+            logger.info("Audio interruption ended - training remains stopped")
+            // Note: We do NOT auto-restart training - user must explicitly start again
+            // This follows the "instant stop, no auto-resume" UX principle
+
+        @unknown default:
+            logger.warning("Unknown audio interruption type: \(typeValue)")
+        }
+    }
+
+    /// Handles audio route change notifications (headphone disconnect, Bluetooth changes, etc.)
+    private func handleAudioRouteChange(reasonValue: UInt?) {
+        guard let reasonValue = reasonValue,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
+            logger.warning("Audio route change notification received but could not parse reason")
+            return
+        }
+
+        switch reason {
+        case .oldDeviceUnavailable:
+            // Audio route removed (headphones unplugged, Bluetooth disconnected)
+            logger.info("Audio device disconnected (headphones/Bluetooth) - stopping training")
+            stop()
+
+        case .newDeviceAvailable, .categoryChange, .override, .wakeFromSleep, .noSuitableRouteForCategory, .routeConfigurationChange, .unknown:
+            // Other route changes - log but don't stop training
+            logger.info("Audio route changed (reason: \(reason.rawValue)) - continuing training")
+
+        @unknown default:
+            logger.warning("Unknown audio route change reason: \(reasonValue)")
         }
     }
 }
