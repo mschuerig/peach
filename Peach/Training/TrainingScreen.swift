@@ -5,7 +5,7 @@ struct TrainingScreen: View {
     @Environment(\.trainingSession) private var trainingSession
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             // Higher button - fills top half of screen
             Button {
                 trainingSession.handleAnswer(isHigher: true)
@@ -44,6 +44,7 @@ struct TrainingScreen: View {
             .disabled(!buttonsEnabled)
             .accessibilityLabel("Lower")
         }
+        .padding()
         .overlay {
             // Feedback indicator overlay (Story 3.3)
             FeedbackIndicator(isCorrect: trainingSession.isLastAnswerCorrect)
