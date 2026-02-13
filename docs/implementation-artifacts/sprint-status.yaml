@@ -56,7 +56,7 @@ development_status:
   epic-3: in-progress
   3-1-start-screen-and-navigation-shell: done
   3-2-trainingsession-state-machine-and-comparison-loop: done
-  3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: ready-for-dev
+  3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: review
   3-4-training-interruption-and-app-lifecycle-handling: backlog
   epic-3-retrospective: optional
 

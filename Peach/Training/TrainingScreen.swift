@@ -21,6 +21,7 @@ struct TrainingScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .disabled(!buttonsEnabled)
             .accessibilityLabel("Higher")
 
@@ -39,8 +40,15 @@ struct TrainingScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .disabled(!buttonsEnabled)
             .accessibilityLabel("Lower")
+        }
+        .overlay {
+            // Feedback indicator overlay (Story 3.3)
+            FeedbackIndicator(isCorrect: trainingSession.isLastAnswerCorrect)
+                .opacity(trainingSession.showFeedback ? 1 : 0)
+                .animation(.easeInOut(duration: 0.2), value: trainingSession.showFeedback)
         }
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
@@ -85,7 +93,8 @@ private struct TrainingSessionKey: EnvironmentKey {
         @MainActor func makeDefault() -> TrainingSession {
             TrainingSession(
                 notePlayer: MockNotePlayerForPreview(),
-                dataStore: MockDataStoreForPreview()
+                dataStore: MockDataStoreForPreview(),
+                hapticManager: MockHapticFeedbackManager()
             )
         }
         return MainActor.assumeIsolated {

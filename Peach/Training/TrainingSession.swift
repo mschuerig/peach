@@ -74,6 +74,15 @@ final class TrainingSession {
     /// Current state of the training loop
     private(set) var state: TrainingState = .idle
 
+    /// Whether to show feedback indicator (Story 3.3)
+    private(set) var showFeedback: Bool = false
+
+    /// Result of last answer for feedback display (Story 3.3)
+    /// - nil: No feedback to show
+    /// - true: Correct answer
+    /// - false: Incorrect answer
+    private(set) var isLastAnswerCorrect: Bool? = nil
+
     // MARK: - Dependencies
 
     /// Audio playback service (protocol-based for testing)
@@ -81,6 +90,9 @@ final class TrainingSession {
 
     /// Data persistence service (protocol-based for testing)
     private let dataStore: ComparisonRecordStoring
+
+    /// Haptic feedback service (protocol-based for testing, Story 3.3)
+    private let hapticManager: HapticFeedback
 
     // MARK: - Configuration
 
@@ -111,9 +123,11 @@ final class TrainingSession {
     /// - Parameters:
     ///   - notePlayer: Service for playing audio notes
     ///   - dataStore: Service for persisting comparison records
-    init(notePlayer: NotePlayer, dataStore: ComparisonRecordStoring) {
+    ///   - hapticManager: Service for haptic feedback (Story 3.3)
+    init(notePlayer: NotePlayer, dataStore: ComparisonRecordStoring, hapticManager: HapticFeedback = HapticFeedbackManager()) {
         self.notePlayer = notePlayer
         self.dataStore = dataStore
+        self.hapticManager = hapticManager
     }
 
     // MARK: - Public API
@@ -164,6 +178,16 @@ final class TrainingSession {
 
         recordComparison(comparison, isCorrect: isCorrect)
 
+        // Set feedback state (Story 3.3)
+        isLastAnswerCorrect = isCorrect
+        showFeedback = true
+
+        // Trigger haptic feedback if incorrect (Story 3.3)
+        if !isCorrect {
+            hapticManager.playIncorrectFeedback()
+            logger.info("Triggered haptic feedback for incorrect answer")
+        }
+
         // Transition to feedback state
         state = .showingFeedback
         logger.info("Entering feedback state (duration: \(self.feedbackDuration)s)")
@@ -172,6 +196,8 @@ final class TrainingSession {
         feedbackTask = Task {
             try? await Task.sleep(for: .milliseconds(Int(feedbackDuration * 1000)))
             if state == .showingFeedback && !Task.isCancelled {
+                // Clear feedback state before next comparison (Story 3.3)
+                showFeedback = false
                 logger.info("Feedback complete, starting next comparison")
                 await playNextComparison()
             }
@@ -190,6 +216,9 @@ final class TrainingSession {
         feedbackTask = nil
         state = .idle
         currentComparison = nil
+        // Clear feedback state (Story 3.3)
+        showFeedback = false
+        isLastAnswerCorrect = nil
     }
 
     // MARK: - Private Implementation
