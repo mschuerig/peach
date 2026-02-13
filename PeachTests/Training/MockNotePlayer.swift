@@ -1,0 +1,50 @@
+import Foundation
+@testable import Peach
+
+/// Mock NotePlayer for testing TrainingSession
+@MainActor
+final class MockNotePlayer: NotePlayer {
+    // MARK: - Test State Tracking
+
+    var playCallCount = 0
+    var lastFrequency: Double?
+    var lastDuration: TimeInterval?
+    var lastAmplitude: Double?
+    var shouldThrowError = false
+    var errorToThrow: AudioError = .renderFailed("Mock error")
+
+    // MARK: - Test Control
+
+    /// Simulated playback duration (for fast tests, default 10ms)
+    var simulatedPlaybackDuration: TimeInterval = 0.01
+
+    // MARK: - NotePlayer Protocol
+
+    func play(frequency: Double, duration: TimeInterval, amplitude: Double) async throws {
+        playCallCount += 1
+        lastFrequency = frequency
+        lastDuration = duration
+        lastAmplitude = amplitude
+
+        if shouldThrowError {
+            throw errorToThrow
+        }
+
+        // Simulate playback duration (much faster than real duration for tests)
+        try await Task.sleep(for: .milliseconds(Int(simulatedPlaybackDuration * 1000)))
+    }
+
+    func stop() async throws {
+        // Mock implementation - does nothing
+    }
+
+    // MARK: - Test Helpers
+
+    func reset() {
+        playCallCount = 0
+        lastFrequency = nil
+        lastDuration = nil
+        lastAmplitude = nil
+        shouldThrowError = false
+    }
+}

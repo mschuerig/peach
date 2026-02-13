@@ -45,6 +45,7 @@ public enum AudioError: Error {
 /// ```
 ///
 /// - Note: Implementations should ensure sub-10ms latency and frequency accuracy within 0.1 cent.
+@MainActor
 public protocol NotePlayer {
     /// Plays a note at the specified frequency for the given duration.
     ///
