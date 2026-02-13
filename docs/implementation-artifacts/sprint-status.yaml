@@ -48,7 +48,7 @@ development_status:
 
   # Epic 2: Hear and Compare - Core Audio Engine
   epic-2: in-progress
-  2-1-implement-noteplayer-protocol-and-sinewavenoteplayer: ready-for-dev
+  2-1-implement-noteplayer-protocol-and-sinewavenoteplayer: review
   2-2-support-configurable-note-duration-and-reference-pitch: backlog
   epic-2-retrospective: optional
 
