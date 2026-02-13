@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import os
 
 /// States in the training comparison loop
 enum TrainingState {
@@ -64,6 +65,10 @@ enum TrainingState {
 @MainActor
 @Observable
 final class TrainingSession {
+    // MARK: - Logger
+
+    private let logger = Logger(subsystem: "com.peach.app", category: "TrainingSession")
+
     // MARK: - Observable State
 
     /// Current state of the training loop
@@ -95,6 +100,9 @@ final class TrainingSession {
 
     /// Task running the training loop (for cancellation)
     private var trainingTask: Task<Void, Never>?
+
+    /// Task running the feedback delay (for cancellation)
+    private var feedbackTask: Task<Void, Never>?
 
     // MARK: - Initialization
 
@@ -137,18 +145,24 @@ final class TrainingSession {
         state = .showingFeedback
 
         // After feedback duration, continue loop
-        Task {
+        feedbackTask = Task {
             try? await Task.sleep(for: .milliseconds(Int(feedbackDuration * 1000)))
-            if state == .showingFeedback {
+            if state == .showingFeedback && !Task.isCancelled {
                 await playNextComparison()
             }
         }
     }
 
     /// Stops the training loop gracefully
+    ///
+    /// Safe to call multiple times or when training is not active.
     func stop() {
+        guard state != .idle else { return }
+
         trainingTask?.cancel()
         trainingTask = nil
+        feedbackTask?.cancel()
+        feedbackTask = nil
         state = .idle
         currentComparison = nil
     }
@@ -186,11 +200,11 @@ final class TrainingSession {
             // User will call handleAnswer() when they tap Higher/Lower
         } catch let error as AudioError {
             // Audio error - stop training silently
-            print("TrainingSession: Audio error, stopping training: \(error)")
+            logger.error("Audio error, stopping training: \(error.localizedDescription)")
             stop()
         } catch {
             // Unexpected error - stop training
-            print("TrainingSession: Unexpected error, stopping training: \(error)")
+            logger.error("Unexpected error, stopping training: \(error.localizedDescription)")
             stop()
         }
     }
@@ -214,10 +228,10 @@ final class TrainingSession {
             try dataStore.save(record)
         } catch let error as DataStoreError {
             // Data error - log but continue training
-            print("TrainingSession: Data save error (continuing): \(error)")
+            logger.warning("Data save error (continuing): \(error.localizedDescription)")
         } catch {
             // Unexpected error - log but continue
-            print("TrainingSession: Unexpected save error (continuing): \(error)")
+            logger.warning("Unexpected save error (continuing): \(error.localizedDescription)")
         }
     }
 }

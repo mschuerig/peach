@@ -1,6 +1,6 @@
 # Story 3.2: TrainingSession State Machine and Comparison Loop
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -849,10 +849,10 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 ### File List
 
 **Files Created:**
-- Peach/Training/TrainingSession.swift (234 lines) - State machine orchestrator
-- Peach/Training/Comparison.swift (87 lines) - Comparison value type
+- Peach/Training/TrainingSession.swift (238 lines) - State machine orchestrator with proper task management
+- Peach/Training/Comparison.swift (91 lines) - Comparison value type with configurable reference pitch
 - Peach/Core/Data/ComparisonRecordStoring.swift (24 lines) - Protocol for testing
-- PeachTests/Training/TrainingSessionTests.swift (321 lines) - 24 comprehensive tests
+- PeachTests/Training/TrainingSessionTests.swift (321 lines) - 24 comprehensive tests (8 passing, 16 need investigation)
 - PeachTests/Training/MockNotePlayer.swift (49 lines) - Mock for testing
 - PeachTests/Training/MockTrainingDataStore.swift (38 lines) - Mock for testing
 
@@ -860,6 +860,8 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Peach/Core/Audio/NotePlayer.swift - Added @MainActor to protocol
 - Peach/Training/TrainingScreen.swift - Replaced placeholder with functional UI (119 lines)
 - Peach/App/PeachApp.swift - Added TrainingSession initialization and environment injection
+- Peach/Training/TrainingSession.swift - Code review fixes: task leakage, logging, defensive stop
+- Peach/Training/Comparison.swift - Code review fixes: configurable reference pitch parameter
 - docs/implementation-artifacts/sprint-status.yaml - Updated story status to in-progress
 - docs/implementation-artifacts/3-2-trainingsession-state-machine-and-comparison-loop.md - This file
 
@@ -877,3 +879,38 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
   - Created ComparisonRecordStoring protocol for testable dependency injection
   - Integrated TrainingSession into app via SwiftUI environment
   - All acceptance criteria met per implementation
+
+- **2026-02-13**: Code review fixes applied
+  - **CRITICAL FIX**: Fixed task leakage bug in handleAnswer() - feedback Task now properly tracked and cancelled
+  - **HIGH FIX**: Replaced print() statements with os.Logger for production-quality logging
+  - **HIGH FIX**: Added reference pitch parameter to Comparison frequency methods (default 440.0 Hz)
+  - **MEDIUM FIX**: Added defensive state check to stop() method to prevent redundant calls
+  - Code review identified 10 issues (2 Critical, 4 High, 3 Medium, 1 Low)
+  - Applied fixes for 4 issues, remaining issues documented below
+
+## Code Review Follow-ups (AI)
+
+**HIGH PRIORITY - Requires User Action:**
+- [ ] [AI-Review][HIGH] Perform manual verification of training loop (see lines 824-830 for checklist)
+  - Run app, tap Start Training, verify two notes play in sequence
+  - Verify Higher/Lower buttons disable/enable correctly during note playback
+  - Test 10+ comparisons to verify continuous loop with zero perceptible delay
+  - Verify data persistence (ComparisonRecord saved after each answer)
+  - Test navigation away during training (verify graceful stop)
+
+**MEDIUM PRIORITY - Performance & Testing:**
+- [ ] [AI-Review][CRITICAL] Investigate and fix 16 failing async tests (67% test failure rate)
+  - Tests fail with 0.000s execution time (potential Swift Testing + MainActor timing issue)
+  - All Comparison value type tests passing (8/8)
+  - All async state transition tests failing (16/16)
+  - Need to determine if issue is test framework or implementation
+- [ ] [AI-Review][MEDIUM] Perform NFR2 performance profiling
+  - Use Instruments Time Profiler to measure comparison round-trip time
+  - Target: < 100ms from answer tap to next note1 playing
+  - Document results and optimize if needed
+
+**LOW PRIORITY - Future Enhancements:**
+- [ ] [AI-Review][LOW] Consider refactoring feedback loop to pre-generate next comparison
+  - Current: spawns Task with sleep, generates comparison on-demand
+  - Better: pre-generate next comparison during feedback phase for true zero-delay
+  - Impact: minimal (< 2ms improvement), but matches architecture intent

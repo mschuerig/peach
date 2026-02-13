@@ -55,13 +55,14 @@ struct Comparison {
 
     /// Calculates the frequency for note1 using standard reference pitch
     ///
-    /// Uses FrequencyCalculation utility with default reference pitch (440 Hz).
-    /// Epic 6 will add configurable reference pitch from Settings.
+    /// Uses FrequencyCalculation utility with configurable reference pitch.
+    /// Epic 6 will expose reference pitch configuration from Settings.
     ///
+    /// - Parameter referencePitch: The reference pitch in Hz (default: 440.0 for A4)
     /// - Returns: Frequency in Hz for the first note
     /// - Throws: AudioError.invalidFrequency if calculation fails (should never happen with valid MIDI)
-    func note1Frequency() throws -> Double {
-        return try FrequencyCalculation.frequency(midiNote: note1)
+    func note1Frequency(referencePitch: Double = 440.0) throws -> Double {
+        return try FrequencyCalculation.frequency(midiNote: note1, referencePitch: referencePitch)
     }
 
     /// Calculates the frequency for note2 with cent offset applied
@@ -70,11 +71,12 @@ struct Comparison {
     /// - If second note is higher: adds centDifference
     /// - If second note is lower: subtracts centDifference
     ///
+    /// - Parameter referencePitch: The reference pitch in Hz (default: 440.0 for A4)
     /// - Returns: Frequency in Hz for the second note
     /// - Throws: AudioError.invalidFrequency if calculation fails
-    func note2Frequency() throws -> Double {
+    func note2Frequency(referencePitch: Double = 440.0) throws -> Double {
         let cents = isSecondNoteHigher ? centDifference : -centDifference
-        return try FrequencyCalculation.frequency(midiNote: note2, cents: cents)
+        return try FrequencyCalculation.frequency(midiNote: note2, cents: cents, referencePitch: referencePitch)
     }
 
     /// Validates if the user's answer matches the correct comparison
