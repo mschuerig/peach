@@ -39,7 +39,7 @@ public enum AudioError: Error {
 /// @AppStorage("noteDuration") private var noteDuration: Double = 1.0
 ///
 /// func playNote() async throws {
-///     let frequency = FrequencyCalculation.frequency(midiNote: note, referencePitch: referencePitch)
+///     let frequency = try FrequencyCalculation.frequency(midiNote: note, referencePitch: referencePitch)
 ///     try await notePlayer.play(frequency: frequency, duration: noteDuration, amplitude: 0.5)
 /// }
 /// ```

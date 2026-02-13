@@ -13,8 +13,8 @@ import Foundation
 /// ```swift
 /// @AppStorage("referencePitch") private var referencePitch: Double = 440.0
 ///
-/// func calculateFrequency(midiNote: Int, cents: Double) -> Double {
-///     return FrequencyCalculation.frequency(midiNote: midiNote, cents: cents, referencePitch: referencePitch)
+/// func calculateFrequency(midiNote: Int, cents: Double) throws -> Double {
+///     return try FrequencyCalculation.frequency(midiNote: midiNote, cents: cents, referencePitch: referencePitch)
 /// }
 /// ```
 public enum FrequencyCalculation {
@@ -55,11 +55,16 @@ public enum FrequencyCalculation {
     /// ```
     ///
     /// - Precondition: midiNote must be in range 0-127
-    /// - Precondition: referencePitch must be in range 400-500 Hz
-    public static func frequency(midiNote: Int, cents: Double = 0.0, referencePitch: Double = 440.0) -> Double {
+    /// - Throws: `AudioError.invalidFrequency` if referencePitch is outside reasonable range (380-500 Hz)
+    public static func frequency(midiNote: Int, cents: Double = 0.0, referencePitch: Double = 440.0) throws -> Double {
         precondition(midiNote >= 0 && midiNote <= 127, "MIDI note must be in range 0-127, got \(midiNote)")
-        precondition(referencePitch >= 400.0 && referencePitch <= 500.0,
-                     "Reference pitch must be in reasonable range 400-500 Hz (got \(referencePitch) Hz). Common standards: A415 (baroque), A432 (alternative), A440 (standard), A442 (orchestral)")
+
+        // Validate reference pitch (380-500 Hz covers all common standards including A415)
+        guard (380.0...500.0).contains(referencePitch) else {
+            throw AudioError.invalidFrequency(
+                "Reference pitch \(referencePitch) Hz is outside reasonable range 380-500 Hz. Common standards: A415 (baroque), A432 (alternative), A440 (standard), A442 (orchestral)"
+            )
+        }
 
         let semitonesFromA4 = Double(midiNote - 69)
         let octaveOffset = semitonesFromA4 / 12.0
