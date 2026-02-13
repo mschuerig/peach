@@ -5,60 +5,62 @@ struct TrainingScreen: View {
     @Environment(\.trainingSession) private var trainingSession
 
     var body: some View {
-        VStack(spacing: 40) {
-            Spacer()
-
-            // Higher/Lower buttons
-            HStack(spacing: 60) {
-                Button {
-                    trainingSession.handleAnswer(isHigher: false)
-                } label: {
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .font(.system(size: 60))
-                        Text("Lower")
-                            .font(.title2)
-                    }
+        VStack(spacing: 0) {
+            // Higher button - fills top half of screen
+            Button {
+                trainingSession.handleAnswer(isHigher: true)
+            } label: {
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 80))
+                    Text("Higher")
+                        .font(.title)
+                        .fontWeight(.semibold)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(!buttonsEnabled)
-                .accessibilityLabel("Lower")
-
-                Button {
-                    trainingSession.handleAnswer(isHigher: true)
-                } label: {
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 60))
-                        Text("Higher")
-                            .font(.title2)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!buttonsEnabled)
-                .accessibilityLabel("Higher")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.borderedProminent)
+            .disabled(!buttonsEnabled)
+            .accessibilityLabel("Higher")
 
-            Spacer()
-
-            // Navigation buttons (Settings, Profile) - consistent with Start Screen
-            HStack(spacing: 32) {
-                NavigationLink(value: NavigationDestination.settings) {
-                    Image(systemName: "gearshape")
-                        .imageScale(.large)
+            // Lower button - fills bottom half of screen
+            Button {
+                trainingSession.handleAnswer(isHigher: false)
+            } label: {
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(size: 80))
+                    Text("Lower")
+                        .font(.title)
+                        .fontWeight(.semibold)
                 }
-                .accessibilityLabel("Settings")
-
-                NavigationLink(value: NavigationDestination.profile) {
-                    Image(systemName: "chart.xyaxis.line")
-                        .imageScale(.large)
-                }
-                .accessibilityLabel("Profile")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
             }
-            .padding(.bottom)
+            .buttonStyle(.borderedProminent)
+            .disabled(!buttonsEnabled)
+            .accessibilityLabel("Lower")
         }
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 20) {
+                    NavigationLink(value: NavigationDestination.settings) {
+                        Image(systemName: "gearshape")
+                            .imageScale(.large)
+                    }
+                    .accessibilityLabel("Settings")
+
+                    NavigationLink(value: NavigationDestination.profile) {
+                        Image(systemName: "chart.xyaxis.line")
+                            .imageScale(.large)
+                    }
+                    .accessibilityLabel("Profile")
+                }
+            }
+        }
         .onAppear {
             // Start training immediately when screen appears
             trainingSession.startTraining()

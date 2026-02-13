@@ -123,8 +123,12 @@ final class TrainingSession {
     /// Begins the first comparison immediately with no countdown or loading state.
     /// Training continues in a loop until stopped or an error occurs.
     func startTraining() {
-        guard state == .idle else { return }
+        guard state == .idle else {
+            logger.warning("startTraining() called but state is \(String(describing: self.state)), not idle")
+            return
+        }
 
+        logger.info("Starting training loop")
         trainingTask = Task {
             await runTrainingLoop()
         }
@@ -134,20 +138,41 @@ final class TrainingSession {
     ///
     /// - Parameter isHigher: True if user answered "higher", false if "lower"
     func handleAnswer(isHigher: Bool) {
-        guard state == .awaitingAnswer || state == .playingNote2 else { return }
-        guard let comparison = currentComparison else { return }
+        guard state == .awaitingAnswer || state == .playingNote2 else {
+            logger.warning("handleAnswer() called but state is \(String(describing: self.state))")
+            return
+        }
+        guard let comparison = currentComparison else {
+            logger.error("handleAnswer() called but currentComparison is nil")
+            return
+        }
+
+        logger.info("User answered: \(isHigher ? "HIGHER" : "LOWER")")
+
+        // If user answered during note2, stop it immediately
+        let wasPlayingNote2 = (state == .playingNote2)
+        if wasPlayingNote2 {
+            logger.info("Stopping note 2 immediately")
+            Task {
+                try? await notePlayer.stop()
+            }
+        }
 
         // Record the result
         let isCorrect = comparison.isCorrect(userAnswerHigher: isHigher)
+        logger.info("Answer was \(isCorrect ? "✓ CORRECT" : "✗ WRONG") (second note was \(comparison.isSecondNoteHigher ? "higher" : "lower"))")
+
         recordComparison(comparison, isCorrect: isCorrect)
 
         // Transition to feedback state
         state = .showingFeedback
+        logger.info("Entering feedback state (duration: \(self.feedbackDuration)s)")
 
         // After feedback duration, continue loop
         feedbackTask = Task {
             try? await Task.sleep(for: .milliseconds(Int(feedbackDuration * 1000)))
             if state == .showingFeedback && !Task.isCancelled {
+                logger.info("Feedback complete, starting next comparison")
                 await playNextComparison()
             }
         }
@@ -171,33 +196,55 @@ final class TrainingSession {
 
     /// Main training loop - runs continuously until stopped or error
     private func runTrainingLoop() async {
+        logger.info("runTrainingLoop() started")
+
+        // Start first comparison immediately
+        await playNextComparison()
+
+        // The loop continues through handleAnswer() -> feedbackTask -> playNextComparison()
+        // This Task just needs to stay alive while training is active
         while state != .idle && !Task.isCancelled {
-            await playNextComparison()
+            // Wait for state to change (user answers, error occurs, or stop() is called)
+            try? await Task.sleep(for: .milliseconds(100))
         }
+
+        logger.info("runTrainingLoop() ended, state: \(String(describing: self.state))")
     }
 
     /// Plays a single comparison: note1 → note2 → await answer
     private func playNextComparison() async {
+        logger.info("playNextComparison() started")
+
         // Generate next comparison
         let comparison = Comparison.random()
         currentComparison = comparison
+        logger.info("Generated comparison: note1=\(comparison.note1), centDiff=\(comparison.centDifference), higher=\(comparison.isSecondNoteHigher)")
 
         do {
             // Calculate frequencies
             let freq1 = try comparison.note1Frequency()
             let freq2 = try comparison.note2Frequency()
+            logger.info("Frequencies: note1=\(freq1)Hz, note2=\(freq2)Hz")
 
             // Play note 1
             state = .playingNote1
+            logger.info("Playing note 1...")
             try await notePlayer.play(frequency: freq1, duration: noteDuration, amplitude: amplitude)
 
             // Play note 2
             state = .playingNote2
+            logger.info("Playing note 2...")
             try await notePlayer.play(frequency: freq2, duration: noteDuration, amplitude: amplitude)
 
-            // Await answer
-            state = .awaitingAnswer
-            // User will call handleAnswer() when they tap Higher/Lower
+            // Only transition to awaitingAnswer if user hasn't answered yet
+            // (handleAnswer() may have already set state to .showingFeedback)
+            if state == .playingNote2 {
+                state = .awaitingAnswer
+                logger.info("Note 2 finished, awaiting answer")
+            } else {
+                logger.info("Note 2 finished, but user already answered (state: \(String(describing: self.state)))")
+            }
+            // User will call handleAnswer() when they tap Higher/Lower (if they haven't already)
         } catch let error as AudioError {
             // Audio error - stop training silently
             logger.error("Audio error, stopping training: \(error.localizedDescription)")
