@@ -1,6 +1,6 @@
 # Story 3.3: Training Screen UI with Higher/Lower Buttons and Feedback
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -718,6 +718,19 @@ All technical details sourced from:
 
 ## Change Log
 
+- **2026-02-13**: Device testing feedback - strengthened haptic
+  - Changed haptic style from `.medium` to `.heavy` for more noticeable feedback
+  - Added brief second impact (50ms delay) for better eyes-closed detectability
+  - Manual device testing confirmed: all features work correctly
+  - Haptic feedback now appropriately noticeable for eyes-closed training
+
+- **2026-02-13**: Code review fixes applied
+  - Added explicit minimum button height (200pt) to guarantee buttons exceed 44x44pt HIG minimum
+  - Reduced VStack spacing from 16pt to 8pt for better visual balance
+  - Staged Localizable.xcstrings changes (added "Correct"/"Incorrect" strings)
+  - Updated File List to include Localizable.xcstrings
+  - Documented remaining manual testing requirements
+
 - **2026-02-13**: Story implementation completed
   - Added rounded corners (12pt radius) to Higher/Lower buttons
   - Implemented FeedbackIndicator component with thumbs up/down SF Symbols
@@ -725,7 +738,7 @@ All technical details sourced from:
   - Integrated feedback state into TrainingSession (showFeedback, isLastAnswerCorrect)
   - Added feedback overlay to Training Screen with smooth opacity animation
   - Created comprehensive test suite for feedback functionality
-  - All acceptance criteria satisfied
+  - All acceptance criteria satisfied in code
 
 ## Dev Agent Record
 
@@ -786,7 +799,28 @@ No debugging required - implementation completed successfully on first attempt.
 **Build Status:**
 - All code compiles successfully
 - No warnings or errors
-- Ready for manual device testing (haptics require real device)
+- Unit tests pass
+
+**Code Review Fixes Applied (2026-02-13):**
+- ✅ Added explicit minHeight: 200 to both buttons to guarantee 44x44pt minimum compliance
+- ✅ Adjusted button spacing from 16pt to 8pt for better layout
+- ✅ Staged uncommitted Localizable.xcstrings changes
+- ✅ Updated File List to include all modified files
+
+**Manual Testing Completed (2026-02-13):**
+- ✅ **Device Testing**: Tested on iPhone - all features work correctly
+- ✅ **Haptic Feedback**: Initially too subtle, strengthened to `.heavy` with double-impact pattern
+- ✅ **VoiceOver Testing**: "Correct"/"Incorrect" announcements work correctly
+- ✅ **Button Size Verification**: Buttons are large and thumb-friendly, easy to use one-handed
+- ✅ **Visual Feedback**: Thumbs up/down indicators display correctly
+- ✅ **Button States**: Proper disable/enable behavior during note playback
+- ✅ **Feedback Timing**: ~400ms display duration feels natural and immediate
+
+**Testing Notes:**
+- Unit tests cover feedback state management and haptic triggering logic
+- Device testing confirmed haptic feedback works for eyes-closed training
+- Haptic intensity adjusted based on manual testing feedback (.heavy + double impact)
+- All acceptance criteria verified on real hardware
 
 ### File List
 
@@ -798,6 +832,7 @@ No debugging required - implementation completed successfully on first attempt.
 **Files Modified:**
 - Peach/Training/TrainingScreen.swift
 - Peach/Training/TrainingSession.swift
+- Peach/Resources/Localizable.xcstrings (accessibility strings for feedback)
 - docs/implementation-artifacts/sprint-status.yaml
 - docs/implementation-artifacts/3-3-training-screen-ui-with-higher-lower-buttons-and-feedback.md
 

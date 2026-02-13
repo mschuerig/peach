@@ -27,16 +27,21 @@ final class HapticFeedbackManager: HapticFeedback {
     ///
     /// Prepares the generator during initialization to minimize latency when feedback is triggered.
     init() {
-        self.generator = UIImpactFeedbackGenerator(style: .medium)
+        self.generator = UIImpactFeedbackGenerator(style: .heavy)
         generator.prepare()
     }
 
     /// Plays haptic feedback for incorrect answer
     ///
-    /// Triggers a single medium-intensity haptic tick. This method should be called
-    /// simultaneously with visual feedback appearance.
+    /// Triggers a noticeable haptic pattern for eyes-closed training.
+    /// Uses heavy-intensity impact for better tactile feedback.
     func playIncorrectFeedback() {
         generator.impactOccurred()
+        // Brief second impact for more noticeable feedback
+        Task {
+            try? await Task.sleep(for: .milliseconds(50))
+            generator.impactOccurred()
+        }
         // Prepare for next potential haptic to reduce latency
         generator.prepare()
     }
