@@ -2,9 +2,6 @@ import SwiftUI
 
 struct StartScreen: View {
     @State private var showInfoSheet = false
-    @State private var navigateToTraining = false
-    @State private var navigateToSettings = false
-    @State private var navigateToProfile = false
 
     var body: some View {
         VStack(spacing: 40) {
@@ -79,15 +76,9 @@ struct StartScreen: View {
         .frame(height: 150)
         .frame(maxWidth: .infinity)
         .background(.secondary.opacity(0.1))
-        .cornerRadius(12)
+        .clipShape(.rect(cornerRadius: 12))
         .accessibilityLabel("Profile preview: Start training to build your profile")
     }
-}
-
-enum NavigationDestination: Hashable {
-    case training
-    case settings
-    case profile
 }
 
 #Preview {

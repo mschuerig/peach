@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
     var body: some View {
@@ -11,5 +10,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [])
 }

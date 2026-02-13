@@ -2,6 +2,15 @@ import Testing
 import SwiftUI
 @testable import Peach
 
+/// Navigation and UI tests for Start Screen and related views.
+///
+/// **Test Limitations:** These tests verify structural validity (views can be instantiated,
+/// enums have expected cases) using reflection. Full behavioral testing (user interactions,
+/// navigation state changes, accessibility verification) would require UI testing frameworks
+/// beyond Swift Testing's current capabilities for SwiftUI views.
+///
+/// **Future Improvement:** Consider adding XCTest UI tests for complete interaction coverage
+/// when more complex navigation scenarios are implemented in Epic 3 Story 2+.
 @Suite("Start Screen Tests")
 struct StartScreenTests {
 

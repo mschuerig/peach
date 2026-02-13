@@ -34,16 +34,6 @@ struct TrainingScreen: View {
         }
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(for: NavigationDestination.self) { destination in
-            switch destination {
-            case .settings:
-                SettingsScreen()
-            case .profile:
-                ProfileScreen()
-            case .training:
-                TrainingScreen()
-            }
-        }
     }
 }
 

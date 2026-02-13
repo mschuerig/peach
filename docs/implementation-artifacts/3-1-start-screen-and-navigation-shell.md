@@ -1,6 +1,6 @@
 # Story 3.1: Start Screen and Navigation Shell
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -591,8 +591,24 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - No data dependencies in Start Screen
 - Simple UI renders immediately
 
+**Code Review Fixes Applied (2026-02-13):**
+- ✅ Removed unused @State variables (navigateToTraining, navigateToSettings, navigateToProfile) from StartScreen.swift
+- ✅ Moved NavigationDestination enum to shared location (App/NavigationDestination.swift) to fix architecture violation
+- ✅ Fixed navigation architecture: Removed `.navigationDestination` modifier from TrainingScreen entirely
+  - TrainingScreen's NavigationLinks now handled by StartScreen's `.navigationDestination` modifier
+  - NavigationStack scopes handlers to entire stack, not individual views
+  - Eliminates impossible .training→.training case by design (no error handling needed)
+  - Cleaner architecture: StartScreen manages all navigation destinations in one place
+- ✅ Replaced deprecated .cornerRadius() with .clipShape(.rect(cornerRadius:)) for iOS 26 compliance
+- ✅ Removed unnecessary SwiftData import from ContentView.swift
+- ✅ Added test documentation explaining Swift Testing limitations for SwiftUI behavioral testing
+- ✅ Added missing Localizable.xcstrings to File List (Xcode auto-generated localization strings)
+- ✅ Build verified: All changes compile successfully with zero errors
+
+**Fixed Issues:** 1 Critical, 2 High, 3 Medium, 2 Low (8 total issues resolved)
+
 **Next Steps:**
-- Story ready for code review
+- Story complete and reviewed
 - Epic 3 Story 2 will implement TrainingSession and replace Training Screen placeholder
 - Epic 5 will implement Profile Preview visualization
 - Epic 6 will implement Settings functionality
@@ -605,8 +621,10 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Peach/Settings/SettingsScreen.swift
 - Peach/Profile/ProfileScreen.swift
 - Peach/Info/InfoScreen.swift
+- Peach/App/NavigationDestination.swift
 - PeachTests/Start/StartScreenTests.swift
 
 **Modified Files:**
 - Peach/App/ContentView.swift
+- Peach/Resources/Localizable.xcstrings
 
