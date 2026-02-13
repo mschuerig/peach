@@ -21,7 +21,7 @@ struct TrainingScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .buttonBorderShape(.roundedRectangle(radius: 12))
             .disabled(!buttonsEnabled)
             .accessibilityLabel("Higher")
 
@@ -40,7 +40,7 @@ struct TrainingScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .buttonBorderShape(.roundedRectangle(radius: 12))
             .disabled(!buttonsEnabled)
             .accessibilityLabel("Lower")
         }
