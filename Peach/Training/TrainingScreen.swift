@@ -5,7 +5,7 @@ struct TrainingScreen: View {
     @Environment(\.trainingSession) private var trainingSession
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             // Higher button - fills top half of screen
             Button {
                 trainingSession.handleAnswer(isHigher: true)
@@ -18,6 +18,7 @@ struct TrainingScreen: View {
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minHeight: 200) // Ensure button exceeds 44x44pt minimum (AC #1)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
@@ -37,6 +38,7 @@ struct TrainingScreen: View {
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minHeight: 200) // Ensure button exceeds 44x44pt minimum (AC #1)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderedProminent)
