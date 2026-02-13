@@ -7,9 +7,11 @@ final class MockNotePlayer: NotePlayer {
     // MARK: - Test State Tracking
 
     var playCallCount = 0
+    var stopCallCount = 0
     var lastFrequency: Double?
     var lastDuration: TimeInterval?
     var lastAmplitude: Double?
+    var playHistory: [(frequency: Double, duration: TimeInterval, amplitude: Double)] = []
     var shouldThrowError = false
     var errorToThrow: AudioError = .renderFailed("Mock error")
 
@@ -25,6 +27,7 @@ final class MockNotePlayer: NotePlayer {
         lastFrequency = frequency
         lastDuration = duration
         lastAmplitude = amplitude
+        playHistory.append((frequency: frequency, duration: duration, amplitude: amplitude))
 
         if shouldThrowError {
             throw errorToThrow
@@ -35,16 +38,18 @@ final class MockNotePlayer: NotePlayer {
     }
 
     func stop() async throws {
-        // Mock implementation - does nothing
+        stopCallCount += 1
     }
 
     // MARK: - Test Helpers
 
     func reset() {
         playCallCount = 0
+        stopCallCount = 0
         lastFrequency = nil
         lastDuration = nil
         lastAmplitude = nil
+        playHistory = []
         shouldThrowError = false
     }
 }
