@@ -22,10 +22,15 @@ So that no data is lost and I return to the Start Screen seamlessly.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement Navigation-Based Training Stop (AC: #1)
-  - [ ] Verify TrainingScreen.onDisappear already calls trainingSession.stop()
-  - [ ] Test navigation to Settings - verify training stops
-  - [ ] Test navigation to Profile - verify training stops
+- [ ] Task 1: Debug and Fix Navigation-Based Audio Stop (AC: #1) 🔴 CRITICAL BUG
+  - [ ] Add logging to TrainingScreen.onDisappear to verify it fires during navigation
+  - [ ] Add logging to TrainingSession.stop() to verify it's called
+  - [ ] Add logging to NotePlayer.stop() to verify it's called
+  - [ ] Test navigation to Settings - currently audio KEEPS PLAYING (bug!)
+  - [ ] Test navigation to Profile - currently audio KEEPS PLAYING (bug!)
+  - [ ] Investigate why audio doesn't stop (onDisappear not firing? stop() not working?)
+  - [ ] Fix the audio stop issue - ensure AVAudioEngine.stop() is called
+  - [ ] Verify audio stops immediately and gracefully when navigating away
   - [ ] Verify incomplete comparison is discarded (not saved to dataStore)
   - [ ] Verify Settings/Profile return to Start Screen (already implemented)
 
@@ -72,7 +77,10 @@ So that no data is lost and I return to the Start Screen seamlessly.
 
 **This story completes Epic 3's core training loop** by ensuring that training can be interrupted at any moment without data loss, user confusion, or broken state. This is the final piece that makes Peach's "sessionless training" model work seamlessly.
 
+**🚨 KNOWN BUG TO FIX:** Currently, when navigating from Training Screen to Settings/Profile, the audio continues playing in the background. This violates AC#1 and creates a terrible UX. The audio must stop immediately and gracefully when leaving the Training Screen.
+
 **What makes this story critical:**
+- **🔴 BROKEN: Audio stop on navigation** - Sound keeps playing when navigating away (MUST FIX)
 - **Data integrity guarantee**: Users must never lose an answered comparison, even if they background mid-feedback
 - **Zero friction stop**: No confirmation dialogs, no "are you sure?" - just leave, anytime
 - **Navigation sanity**: After backgrounding during training, users must return to a known, clean state (Start Screen)
@@ -218,7 +226,7 @@ After weeks away, the app should look identical - no "welcome back", no streak r
 
 **Key Learnings from Story 3.3 (Visual and Haptic Feedback):**
 
-**1. TrainingScreen Already Has onDisappear Handler:**
+**1. TrainingScreen Already Has onDisappear Handler - BUT IT'S BROKEN:**
 
 From TrainingScreen.swift (lines 79-82):
 ```swift
@@ -228,10 +236,18 @@ From TrainingScreen.swift (lines 79-82):
 }
 ```
 
+**🚨 CRITICAL BUG IDENTIFIED BY USER:**
+The onDisappear handler exists and calls trainingSession.stop(), BUT the audio continues playing when navigating to Settings/Profile. This means either:
+1. onDisappear is not firing during navigation (SwiftUI navigation bug?)
+2. trainingSession.stop() is not properly stopping the NotePlayer
+3. NotePlayer.stop() is not cleaning up the AVAudioEngine
+
 **Implication for Story 3.4:**
-- Navigation to Settings/Profile already triggers stop() via onDisappear ✅
-- We DON'T need to add manual stop calls in navigation buttons
-- We DO need to ensure stop() properly discards incomplete comparisons
+- ❌ Navigation-based audio stop is BROKEN - must investigate and fix
+- Must verify onDisappear actually fires during navigation
+- Must verify trainingSession.stop() actually calls notePlayer.stop()
+- Must verify NotePlayer.stop() actually stops audio playback
+- Must add comprehensive logging to debug the issue
 - We DO need to add app lifecycle handling (scenePhase) for backgrounding
 
 **2. TrainingSession.stop() Already Exists:**
@@ -329,6 +345,64 @@ Training folder current files:
 **What Story 3.4 Will Create:**
 - Possibly LifecycleManager.swift if complexity warrants extraction
 - Additional test files for lifecycle scenarios
+
+### 🔴 CRITICAL BUG INVESTIGATION: Audio Continues Playing After Navigation
+
+**User-Reported Issue:**
+"Currently, when the user navigates from the Training Screen to another screen, the sound keeps playing. Instead, the sound should be (gracefully) stopped."
+
+**Expected Behavior (AC#1):**
+When user taps Settings or Profile on Training Screen → audio stops immediately → training stops → navigation proceeds
+
+**Actual Behavior:**
+When user taps Settings or Profile → audio CONTINUES PLAYING → training state unclear → bad UX
+
+**Debugging Strategy:**
+
+**Step 1: Verify Navigation Triggers onDisappear**
+- Add logging: `logger.info("TrainingScreen.onDisappear fired")`
+- Navigate to Settings/Profile and check logs
+- If log doesn't appear → SwiftUI navigation issue, need different approach
+- If log appears → problem is downstream in stop() chain
+
+**Step 2: Verify stop() Chain**
+- Add logging in TrainingSession.stop(): `logger.info("TrainingSession.stop() called, state: \(state)")`
+- Add logging in NotePlayer.stop(): `logger.info("NotePlayer.stop() called")`
+- Verify entire call chain executes
+
+**Step 3: Verify Audio Engine Cleanup**
+- Check SineWaveNotePlayer.stop() implementation
+- Ensure it calls AVAudioEngine.stop() or AVAudioEngine.pause()
+- Ensure audio nodes are disconnected
+- Verify audio session is properly released
+
+**Possible Root Causes:**
+
+1. **SwiftUI Navigation Issue**: onDisappear might not fire with NavigationStack/NavigationLink
+   - Solution: Use onDisappear on NavigationLink itself, or add explicit stop() call in navigation action
+
+2. **Async Audio Doesn't Stop**: Audio might be playing in background task that doesn't cancel
+   - Solution: Ensure trainingTask is cancelled in stop(), which should cancel any ongoing audio
+
+3. **AVAudioEngine Not Stopped**: NotePlayer.stop() might not call AVAudioEngine.stop()
+   - Solution: Review SineWaveNotePlayer.stop() implementation, ensure engine.stop() is called
+
+4. **Audio in Different Task**: Audio might be scheduled in a task that survives stop()
+   - Solution: Track all audio tasks, ensure they're all cancelled
+
+**Implementation Fix:**
+
+Once root cause identified, implement one of:
+- **Option A**: Fix onDisappear triggering (if that's the issue)
+- **Option B**: Add explicit stop() calls to navigation actions
+- **Option C**: Fix NotePlayer.stop() to properly stop AVAudioEngine
+- **Option D**: Improve task cancellation in TrainingSession
+
+**Verification:**
+- Navigate to Settings during note playback → audio must stop immediately
+- Navigate to Profile during note playback → audio must stop immediately
+- Background app during note playback → audio must stop immediately
+- Test during playingNote1, playingNote2, awaitingAnswer states
 
 ### Existing Codebase Analysis
 
@@ -531,11 +605,20 @@ Navigation uses NavigationDestination enum values. This suggests NavigationStack
 
 ### Implementation Strategy
 
-**Phase 1: Verify Current Implementation (AC#1)**
-- Test navigation to Settings - does stop() fire?
-- Test navigation to Profile - does stop() fire?
+**Phase 0: DEBUG AND FIX CRITICAL AUDIO BUG** 🔴 **MUST DO FIRST**
+- User reports audio continues playing when navigating away
+- Add comprehensive logging to onDisappear, stop(), notePlayer.stop()
+- Test navigation and check logs to identify where the chain breaks
+- Fix the root cause (likely NotePlayer.stop() not stopping AVAudioEngine)
+- Verify audio stops immediately when navigating to Settings/Profile
+- This MUST work before proceeding to other phases
+
+**Phase 1: Verify Navigation-Based Stop Works (AC#1)**
+- After fixing audio bug, verify stop() fires correctly
+- Test navigation to Settings - audio stops, training stops
+- Test navigation to Profile - audio stops, training stops
 - Verify incomplete comparison not saved
-- Document what already works
+- Document what works after fix
 
 **Phase 2: Add ScenePhase Observer (AC#2, AC#3)**
 - Add @Environment(\.scenePhase) to ContentView
