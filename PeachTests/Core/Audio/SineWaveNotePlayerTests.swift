@@ -237,4 +237,143 @@ struct SineWaveNotePlayerTests {
 
         #expect(true)
     }
+
+    // MARK: - Duration Configuration Tests (Story 2.2)
+
+    @Test("Duration: Short notes (100ms) play correctly")
+    @MainActor
+    func duration_ShortNote_100ms() async throws {
+        let player = try SineWaveNotePlayer()
+
+        // 100ms short note should play without error
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+        #expect(true)
+    }
+
+    @Test("Duration: Default notes (1000ms) play correctly")
+    @MainActor
+    func duration_DefaultNote_1000ms() async throws {
+        let player = try SineWaveNotePlayer()
+
+        // 1 second default note should play without error
+        try await player.play(frequency: 440.0, duration: 1.0, amplitude: 0.5)
+        #expect(true)
+    }
+
+    @Test("Duration: Long notes (2000ms) play correctly")
+    @MainActor
+    func duration_LongNote_2000ms() async throws {
+        let player = try SineWaveNotePlayer()
+
+        // 2 second long note should play without error
+        try await player.play(frequency: 440.0, duration: 2.0, amplitude: 0.5)
+        #expect(true)
+    }
+
+    @Test("Duration: Very short notes (5ms) play correctly within envelope constraints")
+    @MainActor
+    func duration_VeryShortNote_5ms() async throws {
+        let player = try SineWaveNotePlayer()
+
+        // 5ms note (shorter than envelope overhead) should still work
+        // Sustain will be 0, but attack/release should fit
+        try await player.play(frequency: 440.0, duration: 0.005, amplitude: 0.5)
+        #expect(true)
+    }
+
+    @Test("Duration: Negative duration throws error")
+    @MainActor
+    func duration_Negative_ThrowsError() async throws {
+        let player = try SineWaveNotePlayer()
+
+        await #expect(throws: AudioError.self) {
+            try await player.play(frequency: 440.0, duration: -0.5, amplitude: 0.5)
+        }
+    }
+
+    @Test("Duration: Zero duration throws error")
+    @MainActor
+    func duration_Zero_ThrowsError() async throws {
+        let player = try SineWaveNotePlayer()
+
+        await #expect(throws: AudioError.self) {
+            try await player.play(frequency: 440.0, duration: 0.0, amplitude: 0.5)
+        }
+    }
+
+    // MARK: - Reference Pitch Configuration Tests (Story 2.2)
+
+    @Test("Reference Pitch: Default (no parameter) uses A4=440Hz")
+    func referencePitch_Default_440Hz() {
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: 0.0)
+        #expect(abs(frequency - 440.0) < 0.001)
+    }
+
+    @Test("Reference Pitch: Baroque tuning (A4=442Hz)")
+    func referencePitch_Baroque_442Hz() {
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: 0.0, referencePitch: 442.0)
+        #expect(abs(frequency - 442.0) < 0.001)
+    }
+
+    @Test("Reference Pitch: Alternative tuning (A4=432Hz)")
+    func referencePitch_Alternative_432Hz() {
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: 0.0, referencePitch: 432.0)
+        #expect(abs(frequency - 432.0) < 0.001)
+    }
+
+    @Test("Reference Pitch: Historical tuning (A4=415Hz)")
+    func referencePitch_Historical_415Hz() {
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: 0.0, referencePitch: 415.0)
+        #expect(abs(frequency - 415.0) < 0.001)
+    }
+
+    @Test("Reference Pitch: Middle C at different reference pitches")
+    func referencePitch_MiddleC_VariousTunings() {
+        // C4 (MIDI 60) at A440 = 261.626 Hz
+        let c4_at_440 = FrequencyCalculation.frequency(midiNote: 60, cents: 0.0, referencePitch: 440.0)
+        #expect(abs(c4_at_440 - 261.626) < 0.01)
+
+        // C4 at A442 should be proportionally higher (factor: 442/440 = 1.00454...)
+        let c4_at_442 = FrequencyCalculation.frequency(midiNote: 60, cents: 0.0, referencePitch: 442.0)
+        let expectedC4_442 = 261.626 * (442.0 / 440.0)
+        #expect(abs(c4_at_442 - expectedC4_442) < 0.01)
+
+        // C4 at A432 should be proportionally lower (factor: 432/440 = 0.9818...)
+        let c4_at_432 = FrequencyCalculation.frequency(midiNote: 60, cents: 0.0, referencePitch: 432.0)
+        let expectedC4_432 = 261.626 * (432.0 / 440.0)
+        #expect(abs(c4_at_432 - expectedC4_432) < 0.01)
+    }
+
+    @Test("Reference Pitch: Cent offset with custom reference pitch (combined calculation)")
+    func referencePitch_WithCentOffset() {
+        // A4 at 442Hz + 50 cents should be halfway to Bb
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: 50.0, referencePitch: 442.0)
+
+        // Expected: 442 * 2^(50/1200) ≈ 454.66 Hz
+        let expected = 442.0 * pow(2.0, 50.0 / 1200.0)
+        #expect(abs(frequency - expected) < 0.01)
+    }
+
+    @Test("Reference Pitch: Fractional cent precision with custom reference pitch")
+    func referencePitch_FractionalCent() {
+        // Test 0.1 cent precision at 442Hz
+        let freq1 = FrequencyCalculation.frequency(midiNote: 69, cents: 0.0, referencePitch: 442.0)
+        let freq2 = FrequencyCalculation.frequency(midiNote: 69, cents: 0.1, referencePitch: 442.0)
+
+        // Frequencies should be different with 0.1 cent resolution
+        #expect(freq1 != freq2)
+
+        // Difference should be tiny (0.1 cent ≈ 0.025 Hz at A4=442)
+        #expect(abs(freq2 - freq1) < 0.1)
+    }
+
+    @Test("Reference Pitch: Negative cent offset with custom reference pitch")
+    func referencePitch_NegativeCentOffset() {
+        // A4 at 432Hz - 25 cents
+        let frequency = FrequencyCalculation.frequency(midiNote: 69, cents: -25.0, referencePitch: 432.0)
+
+        // Expected: 432 * 2^(-25/1200) ≈ 425.8 Hz
+        let expected = 432.0 * pow(2.0, -25.0 / 1200.0)
+        #expect(abs(frequency - expected) < 0.01)
+    }
 }

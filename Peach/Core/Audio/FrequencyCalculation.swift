@@ -1,26 +1,65 @@
 import Foundation
 
 /// Utilities for converting musical note information to frequencies.
+///
+/// # Settings Integration (Epic 6)
+///
+/// The reference pitch parameter enables configurable tuning standards. In Epic 6, the Settings
+/// screen will expose a reference pitch preference (stored in @AppStorage). TrainingSession will
+/// read this value and pass it to FrequencyCalculation.frequency(referencePitch:) when calculating
+/// note frequencies.
+///
+/// Example future integration:
+/// ```swift
+/// @AppStorage("referencePitch") private var referencePitch: Double = 440.0
+///
+/// func calculateFrequency(midiNote: Int, cents: Double) -> Double {
+///     return FrequencyCalculation.frequency(midiNote: midiNote, cents: cents, referencePitch: referencePitch)
+/// }
+/// ```
 public enum FrequencyCalculation {
     /// Converts a MIDI note number and cent offset to a frequency in Hz.
     ///
     /// Uses the equal temperament formula:
     /// `f = referencePitch * 2^((midiNote - 69) / 12) * 2^(cents / 1200)`
     ///
+    /// The reference pitch parameter allows supporting different tuning standards:
+    /// - **A440 (default)**: Modern standard tuning (440 Hz)
+    /// - **A442**: Baroque/orchestral tuning (442 Hz) - brighter sound
+    /// - **A432**: Alternative tuning (432 Hz) - "natural frequency"
+    /// - **A415**: Historical baroque tuning (415 Hz) - one semitone below A440
+    ///
     /// - Parameters:
     ///   - midiNote: MIDI note number (0-127, where 69 = A4)
     ///   - cents: Cent offset from the MIDI note (-100 to +100 typical range)
-    ///   - referencePitch: Reference pitch for A4 in Hz (default: 440.0)
+    ///   - referencePitch: Reference pitch for A4 in Hz (400-500 Hz, default: 440.0)
     /// - Returns: Frequency in Hz with 0.1 cent precision
     ///
     /// # Examples
-    /// - Middle C (MIDI 60) at 0 cents → 261.626 Hz
-    /// - A4 (MIDI 69) at 0 cents → 440.000 Hz
-    /// - MIDI 60 at +50 cents → ~268.9 Hz (halfway between C and C#)
+    /// ```swift
+    /// // Standard tuning (A440)
+    /// let c4 = FrequencyCalculation.frequency(midiNote: 60) // 261.626 Hz
+    /// let a4 = FrequencyCalculation.frequency(midiNote: 69) // 440.000 Hz
+    ///
+    /// // Baroque tuning (A442)
+    /// let a4_baroque = FrequencyCalculation.frequency(midiNote: 69, referencePitch: 442.0) // 442.000 Hz
+    ///
+    /// // Alternative tuning (A432)
+    /// let a4_alt = FrequencyCalculation.frequency(midiNote: 69, referencePitch: 432.0) // 432.000 Hz
+    ///
+    /// // With cent offset
+    /// let sharpC4 = FrequencyCalculation.frequency(midiNote: 60, cents: 50.0) // ~268.9 Hz (halfway to C#)
+    ///
+    /// // Custom reference pitch with cent offset
+    /// let freq = FrequencyCalculation.frequency(midiNote: 60, cents: 25.0, referencePitch: 442.0)
+    /// ```
     ///
     /// - Precondition: midiNote must be in range 0-127
+    /// - Precondition: referencePitch must be in range 400-500 Hz
     public static func frequency(midiNote: Int, cents: Double = 0.0, referencePitch: Double = 440.0) -> Double {
         precondition(midiNote >= 0 && midiNote <= 127, "MIDI note must be in range 0-127, got \(midiNote)")
+        precondition(referencePitch >= 400.0 && referencePitch <= 500.0,
+                     "Reference pitch must be in reasonable range 400-500 Hz (got \(referencePitch) Hz). Common standards: A415 (baroque), A432 (alternative), A440 (standard), A442 (orchestral)")
 
         let semitonesFromA4 = Double(midiNote - 69)
         let octaveOffset = semitonesFromA4 / 12.0

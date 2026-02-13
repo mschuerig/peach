@@ -65,6 +65,13 @@ public final class SineWaveNotePlayer: NotePlayer {
             )
         }
 
+        // Validate duration
+        guard duration > 0 else {
+            throw AudioError.invalidFrequency(
+                "Duration \(duration) seconds must be positive"
+            )
+        }
+
         // Validate amplitude
         guard (0.0...1.0).contains(amplitude) else {
             throw AudioError.invalidFrequency(
