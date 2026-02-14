@@ -3,11 +3,11 @@ import OSLog
 
 /// Adaptive comparison selection strategy for intelligent training
 ///
-/// Implements NextNoteStrategy as a pure, stateless function:
+/// Implements NextNoteStrategy with stateless comparison selection:
 /// - Reads user's PerceptualProfile for difficulty and weak spots
 /// - Uses TrainingSettings for configuration
 /// - Uses last completed comparison for nearby note selection
-/// - No internal state tracking
+/// - Updates profile difficulty state externally (no internal state)
 ///
 /// # Algorithm Design
 ///
@@ -65,7 +65,7 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
 
     /// Selects the next comparison based on perceptual profile and settings
     ///
-    /// This is a pure function with no side effects or internal state.
+    /// Stateless selection - updates profile difficulty via setDifficulty() for regional tracking.
     ///
     /// # Algorithm Flow
     ///

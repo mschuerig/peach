@@ -25,7 +25,8 @@ import Foundation
 protocol NextNoteStrategy {
     /// Selects the next comparison based on user's perceptual profile and settings
     ///
-    /// This is a pure function - all state is passed via parameters, no internal state tracking.
+    /// Stateless selection - all inputs passed via parameters, output depends only on inputs.
+    /// Profile state is updated externally via setDifficulty() for regional tracking.
     ///
     /// - Parameters:
     ///   - profile: User's perceptual profile with training statistics

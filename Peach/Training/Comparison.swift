@@ -19,7 +19,8 @@ struct Comparison {
     /// Second note as MIDI number (0-127, same as note1 for placeholder)
     let note2: Int
 
-    /// Cent difference applied to note2 (always 100.0 for placeholder)
+    /// Cent difference applied to note2 (always positive magnitude)
+    /// Note: This is converted to signed centOffset in PerceptualProfile based on direction
     let centDifference: Double
 
     /// Whether the second note is higher than the first

@@ -33,7 +33,7 @@ final class PerceptualProfile {
     /// Uses Welford's online algorithm to avoid re-aggregating all records
     /// - Parameters:
     ///   - note: MIDI note (0-127)
-    ///   - centOffset: Cent difference from comparison
+    ///   - centOffset: Signed cent value (+/- based on direction, from Comparison.centDifference)
     ///   - isCorrect: Whether user answered correctly
     func update(note: Int, centOffset: Double, isCorrect: Bool) {
         guard note >= 0 && note < 128 else {
