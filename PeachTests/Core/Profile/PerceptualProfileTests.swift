@@ -72,18 +72,19 @@ struct PerceptualProfileTests {
         #expect(profile.statsForNote(61).sampleCount == 0) // Untrained note
     }
 
-    @Test("Aggregation ignores incorrect answers")
-    func aggregationIgnoresIncorrect() async throws {
+    @Test("Aggregation includes all answers (both correct and incorrect)")
+    func aggregationIncludesAllAnswers() async throws {
         let profile = PerceptualProfile()
 
-        // Mix of correct and incorrect answers
+        // Mix of correct and incorrect answers - ALL should be tracked
         profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 200, isCorrect: false) // Should be ignored
+        profile.update(note: 60, centOffset: 200, isCorrect: false) // Now included
         profile.update(note: 60, centOffset: 60, isCorrect: true)
 
         let stats = profile.statsForNote(60)
-        #expect(stats.mean == 55.0) // (50+60)/2, ignoring the incorrect answer
-        #expect(stats.sampleCount == 2)
+        let expectedMean = (50.0 + 200.0 + 60.0) / 3.0  // All three comparisons
+        #expect(abs(stats.mean - expectedMean) < 0.01) // ~103.33
+        #expect(stats.sampleCount == 3)  // All answers counted
     }
 
     // MARK: - Task 3 Tests: Incremental Update
@@ -111,17 +112,18 @@ struct PerceptualProfileTests {
         #expect(stats.sampleCount == 2)
     }
 
-    @Test("Incremental update ignores incorrect answers")
-    func incrementalUpdateIgnoresIncorrect() async throws {
+    @Test("Incremental update includes all answers (both correct and incorrect)")
+    func incrementalUpdateIncludesAllAnswers() async throws {
         let profile = PerceptualProfile()
 
         profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 200, isCorrect: false) // Should be ignored
+        profile.update(note: 60, centOffset: 200, isCorrect: false) // Now included
         profile.update(note: 60, centOffset: 60, isCorrect: true)
 
         let stats = profile.statsForNote(60)
-        #expect(stats.mean == 55.0) // (50+60)/2
-        #expect(stats.sampleCount == 2)
+        let expectedMean = (50.0 + 200.0 + 60.0) / 3.0  // All three comparisons
+        #expect(abs(stats.mean - expectedMean) < 0.01) // ~103.33
+        #expect(stats.sampleCount == 3)  // All answers counted
     }
 
     @Test("Incremental update handles multiple notes independently")

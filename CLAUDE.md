@@ -2,7 +2,10 @@
 
 Before starting a new task, ensure that there are no uncommitted changes in the working directory.
 
-Before committing anything, make sure that all tests still run.
+Before committing anything, make sure that **ALL tests** still pass:
+- Run the full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+- Do NOT commit if any tests fail
+- Do NOT run only specific test files - always run the complete test suite
 
 ## Git Workflow
 
