@@ -1,6 +1,6 @@
 # Story 4.2: Implement NextNoteStrategy Protocol and AdaptiveNoteStrategy
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
