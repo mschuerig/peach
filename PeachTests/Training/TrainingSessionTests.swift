@@ -61,14 +61,14 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession starts in idle state")
     func startsInIdleState() {
-        let (session, _, _) = makeTrainingSession()
+        let (session, _, _, _) = makeTrainingSession()
         #expect(session.state == .idle)
     }
 
     @MainActor
     @Test("startTraining transitions from idle to playingNote1")
     func startTrainingTransitionsToPlayingNote1() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         var capturedState: TrainingState?
         mockPlayer.onPlayCalled = {
@@ -88,7 +88,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession transitions from playingNote1 to playingNote2")
     func transitionsFromNote1ToNote2() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
         mockPlayer.simulatedPlaybackDuration = 0.02  // 20ms
 
         session.startTraining()
@@ -104,7 +104,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession transitions from playingNote2 to awaitingAnswer")
     func transitionsFromNote2ToAwaitingAnswer() async {
-        let (session, _, _) = makeTrainingSession()
+        let (session, _, _, _) = makeTrainingSession()
 
         session.startTraining()
 
@@ -117,7 +117,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("handleAnswer transitions to showingFeedback")
     func handleAnswerTransitionsToShowingFeedback() async throws {
-        let (session, _, _) = makeTrainingSession()
+        let (session, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -130,7 +130,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession loops back to playingNote1 after feedback")
     func loopsBackAfterFeedback() async throws {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -148,7 +148,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("stop() transitions to idle from any state")
     func stopTransitionsToIdle() async {
-        let (session, _, _) = makeTrainingSession()
+        let (session, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(50))
@@ -161,7 +161,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Audio error transitions to idle")
     func audioErrorTransitionsToIdle() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
         mockPlayer.shouldThrowError = true
         mockPlayer.errorToThrow = .renderFailed("Test error")
 
@@ -210,7 +210,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession calls play twice per comparison")
     func callsPlayTwicePerComparison() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -221,7 +221,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession uses correct frequency calculation")
     func usesCorrectFrequencyCalculation() async throws {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -237,7 +237,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession passes correct duration to NotePlayer")
     func passesCorrectDuration() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -248,7 +248,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession passes correct amplitude to NotePlayer")
     func passesCorrectAmplitude() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -261,7 +261,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession records comparison on answer")
     func recordsComparisonOnAnswer() async throws {
-        let (session, _, mockDataStore) = makeTrainingSession()
+        let (session, _, mockDataStore, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -275,7 +275,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("ComparisonRecord contains correct note data")
     func comparisonRecordContainsCorrectData() async throws {
-        let (session, _, mockDataStore) = makeTrainingSession()
+        let (session, _, mockDataStore, _) = makeTrainingSession()
 
         session.startTraining()
 
@@ -293,7 +293,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Data error does not stop training")
     func dataErrorDoesNotStopTraining() async throws {
-        let (session, mockPlayer, mockDataStore) = makeTrainingSession()
+        let (session, mockPlayer, mockDataStore, _) = makeTrainingSession()
         mockDataStore.shouldThrowError = true
 
         session.startTraining()
@@ -316,7 +316,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Buttons disabled during playingNote1")
     func buttonsDisabledDuringNote1() async {
-        let (session, mockPlayer, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _) = makeTrainingSession()
 
         var capturedState: TrainingState?
         mockPlayer.onPlayCalled = {
@@ -335,7 +335,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Buttons enabled during playingNote2 and awaitingAnswer")
     func buttonsEnabledDuringNote2AndWaiting() async {
-        let (session, _, _) = makeTrainingSession()
+        let (session, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -348,7 +348,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession completes full comparison loop")
     func completesFullLoop() async {
-        let (session, mockPlayer, mockDataStore) = makeTrainingSession()
+        let (session, mockPlayer, mockDataStore, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
