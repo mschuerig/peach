@@ -18,65 +18,13 @@ final class PerceptualProfile {
 
     // MARK: - Initialization
 
-    /// Creates a PerceptualProfile by aggregating all comparison records from the data store
-    /// - Parameter dataStore: Data store providing comparison records (TrainingDataStore or mock)
-    init(from dataStore: ComparisonRecordStoring) {
+    /// Creates an empty PerceptualProfile
+    /// All 128 MIDI notes start with zero statistics (cold start state)
+    /// Populate the profile by calling update() for each comparison result
+    init() {
         // Initialize all 128 MIDI notes with empty statistics
         self.noteStats = Array(repeating: PerceptualNote(), count: 128)
-
-        // Load and aggregate existing data
-        do {
-            let records = try dataStore.fetchAll()
-            aggregateRecords(records)
-            logger.info("PerceptualProfile initialized with \(records.count) records")
-        } catch {
-            logger.error("Failed to load comparison records: \(error.localizedDescription)")
-        }
-    }
-
-    // MARK: - Aggregation
-
-    /// Aggregates comparison records into per-note statistics (initial load)
-    /// - Parameter records: All comparison records from TrainingDataStore
-    private func aggregateRecords(_ records: [ComparisonRecord]) {
-        // Group records by note1 (MIDI note)
-        let groupedRecords = Dictionary(grouping: records) { $0.note1 }
-
-        for (midiNote, noteRecords) in groupedRecords {
-            guard midiNote >= 0 && midiNote < 128 else { continue }
-
-            // Filter only correct answers (user CAN detect this difference)
-            let correctOffsets = noteRecords
-                .filter { $0.isCorrect }
-                .map { $0.note2CentOffset }
-
-            guard !correctOffsets.isEmpty else { continue }
-
-            // Calculate mean and standard deviation using Welford's algorithm
-            var count = 0
-            var mean = 0.0
-            var m2 = 0.0
-
-            for offset in correctOffsets {
-                count += 1
-                let delta = offset - mean
-                mean += delta / Double(count)
-                let delta2 = offset - mean
-                m2 += delta * delta2
-            }
-
-            let variance = count < 2 ? 0.0 : m2 / Double(count - 1)
-            let stdDev = sqrt(variance)
-
-            noteStats[midiNote] = PerceptualNote(
-                mean: mean,
-                stdDev: stdDev,
-                m2: m2,
-                sampleCount: count
-            )
-        }
-
-        logger.debug("Aggregated \(records.count) records across \(groupedRecords.keys.count) notes")
+        logger.info("PerceptualProfile initialized (cold start)")
     }
 
     // MARK: - Incremental Update

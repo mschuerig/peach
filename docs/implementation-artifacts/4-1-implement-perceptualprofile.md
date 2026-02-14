@@ -725,8 +725,8 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 ### Completion Notes List
 
 ✅ **Task 1**: Created PerceptualProfile.swift with PerceptualNote struct, @Observable conformance, and 128-slot MIDI array
-✅ **Task 2**: Implemented init(from:) with Welford's algorithm for startup aggregation from TrainingDataStore
-✅ **Task 3**: Implemented update(note:centOffset:isCorrect:) for O(1) incremental updates using online mean/variance
+✅ **Task 2**: Implemented init() for cold start (removed data store coupling per architectural review)
+✅ **Task 3**: Implemented update(note:centOffset:isCorrect:) for O(1) incremental updates using Welford's algorithm
 ✅ **Task 4**: Implemented weakSpots(count:) prioritizing untrained notes (infinity score) over trained high-threshold notes
 ✅ **Task 5**: Implemented overallMean and overallStdDev computed properties for summary statistics
 ✅ **Task 6**: Created comprehensive test suite (15 tests) covering all acceptance criteria
@@ -735,9 +735,17 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Used Welford's online algorithm for numerically stable mean and variance computation
 - Untrained notes assigned Double.infinity score for highest weak spot priority (AC#5)
 - @MainActor isolation ensures thread-safety for concurrent profile updates
-- Reused existing MockTrainingDataStore from Training tests
 - Only correct comparisons (isCorrect==true) count toward detection threshold statistics
 - PerceptualNote stores m2 (sum of squared differences) for incremental variance calculation
+
+**Architectural Refactoring (Post-Implementation Review):**
+- Removed `init(from: ComparisonRecordStoring)` - violated separation of concerns
+- Changed to `init()` - creates empty profile (cold start)
+- Removed `aggregateRecords()` method - was duplicate of update() logic
+- PerceptualProfile is now a pure statistical aggregator with ZERO dependencies
+- App initialization (PeachApp) will populate profile via update() calls (Story 4.3)
+- Tests simplified - no need for MockTrainingDataStore, just call update() directly
+- Better aligns with Dev Notes: "Pure computation. No persistence, no UI awareness."
 
 ### File List
 
@@ -745,6 +753,15 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - PeachTests/Core/Profile/PerceptualProfileTests.swift (new)
 
 ## Change Log
+
+### 2026-02-14 - Architectural Refactoring
+- **Removed data store coupling**: Changed `init(from: ComparisonRecordStoring)` to `init()`
+- **Removed aggregateRecords()**: Eliminated duplicate Welford algorithm implementation
+- **Simplified architecture**: PerceptualProfile is now a pure statistical aggregator with zero dependencies
+- **Tests simplified**: No MockTrainingDataStore needed, tests directly call update()
+- **Aligns with Dev Notes**: "Pure computation. No persistence, no UI awareness."
+- **App startup aggregation**: Deferred to PeachApp initialization (Story 4.3)
+- All 15 tests still pass after refactoring
 
 ### 2026-02-14 - Story 4.1 Implementation Complete
 - Created Core/Profile directory structure for perceptual profile logic

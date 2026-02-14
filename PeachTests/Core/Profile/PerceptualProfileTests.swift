@@ -12,8 +12,7 @@ struct PerceptualProfileTests {
 
     @Test("Cold start profile has no statistics")
     func coldStartProfile() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         // Cold start should have nil summary statistics
         #expect(profile.overallMean == nil)
@@ -22,8 +21,7 @@ struct PerceptualProfileTests {
 
     @Test("Cold start treats all notes as weak spots")
     func coldStartWeakSpots() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         // All 128 MIDI notes should be weak spots when no data exists
         let weakSpots = profile.weakSpots(count: 128)
@@ -35,8 +33,7 @@ struct PerceptualProfileTests {
 
     @Test("Untrained notes have zero sample count")
     func untrainedNoteStats() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         let stats = profile.statsForNote(60)
         #expect(stats.sampleCount == 0)
@@ -48,13 +45,12 @@ struct PerceptualProfileTests {
 
     @Test("Aggregation computes correct mean from multiple records")
     func aggregationMean() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 45, isCorrect: true),
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 55, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Populate profile via update() - simulates app startup aggregation
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 60, centOffset: 45, isCorrect: true)
+        profile.update(note: 60, centOffset: 55, isCorrect: true)
 
         let stats = profile.statsForNote(60)
         #expect(stats.mean == 50.0) // (50+45+55)/3
@@ -63,13 +59,12 @@ struct PerceptualProfileTests {
 
     @Test("Aggregation handles multiple notes independently")
     func aggregationMultipleNotes() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 62, note2: 62, note2CentOffset: 30, isCorrect: true),
-            ComparisonRecord(note1: 64, note2: 64, note2CentOffset: 40, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Populate multiple notes
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 62, centOffset: 30, isCorrect: true)
+        profile.update(note: 64, centOffset: 40, isCorrect: true)
 
         #expect(profile.statsForNote(60).mean == 50.0)
         #expect(profile.statsForNote(62).mean == 30.0)
@@ -79,13 +74,12 @@ struct PerceptualProfileTests {
 
     @Test("Aggregation ignores incorrect answers")
     func aggregationIgnoresIncorrect() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 200, isCorrect: false), // Ignored
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 60, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Mix of correct and incorrect answers
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 60, centOffset: 200, isCorrect: false) // Should be ignored
+        profile.update(note: 60, centOffset: 60, isCorrect: true)
 
         let stats = profile.statsForNote(60)
         #expect(stats.mean == 55.0) // (50+60)/2, ignoring the incorrect answer
@@ -96,8 +90,7 @@ struct PerceptualProfileTests {
 
     @Test("Incremental update from cold start")
     func incrementalUpdateColdStart() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         profile.update(note: 60, centOffset: 50, isCorrect: true)
 
@@ -108,8 +101,7 @@ struct PerceptualProfileTests {
 
     @Test("Incremental update computes correct running mean")
     func incrementalUpdateMean() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         profile.update(note: 60, centOffset: 50, isCorrect: true)
         profile.update(note: 60, centOffset: 40, isCorrect: true)
@@ -121,8 +113,7 @@ struct PerceptualProfileTests {
 
     @Test("Incremental update ignores incorrect answers")
     func incrementalUpdateIgnoresIncorrect() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         profile.update(note: 60, centOffset: 50, isCorrect: true)
         profile.update(note: 60, centOffset: 200, isCorrect: false) // Should be ignored
@@ -135,8 +126,7 @@ struct PerceptualProfileTests {
 
     @Test("Incremental update handles multiple notes independently")
     func incrementalUpdateMultipleNotes() async throws {
-        let mockStore = MockTrainingDataStore()
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
 
         profile.update(note: 60, centOffset: 50, isCorrect: true)
         profile.update(note: 62, centOffset: 30, isCorrect: true)
@@ -150,11 +140,10 @@ struct PerceptualProfileTests {
 
     @Test("Weak spots include untrained notes")
     func weakSpotsIncludeUntrained() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10, isCorrect: true), // Well trained
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Train only one note
+        profile.update(note: 60, centOffset: 10, isCorrect: true)
 
         let weakSpots = profile.weakSpots(count: 10)
 
@@ -169,15 +158,13 @@ struct PerceptualProfileTests {
 
     @Test("Weak spots prioritize high threshold trained notes over low threshold trained notes")
     func weakSpotsPrioritizeHighThreshold() async throws {
+        let profile = PerceptualProfile()
+
         // Train ALL notes to avoid untrained notes being in weak spots
-        let mockStore = MockTrainingDataStore()
         for note in 0..<128 {
             let threshold: Double = (note == 60) ? 80.0 : (note == 62) ? 10.0 : 30.0
-            mockStore.savedRecords.append(
-                ComparisonRecord(note1: note, note2: note, note2CentOffset: threshold, isCorrect: true)
-            )
+            profile.update(note: note, centOffset: threshold, isCorrect: true)
         }
-        let profile = PerceptualProfile(from: mockStore)
 
         let weakSpots = profile.weakSpots(count: 5)
 
@@ -191,26 +178,24 @@ struct PerceptualProfileTests {
 
     @Test("Overall mean across trained notes")
     func overallMeanComputation() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 62, note2: 62, note2CentOffset: 30, isCorrect: true),
-            ComparisonRecord(note1: 64, note2: 64, note2CentOffset: 40, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Train three notes
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 62, centOffset: 30, isCorrect: true)
+        profile.update(note: 64, centOffset: 40, isCorrect: true)
 
         #expect(profile.overallMean == 40.0) // (50+30+40)/3
     }
 
     @Test("Overall standard deviation computation")
     func overallStdDevComputation() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 62, note2: 62, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 64, note2: 64, note2CentOffset: 50, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Train three notes with same threshold
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 62, centOffset: 50, isCorrect: true)
+        profile.update(note: 64, centOffset: 50, isCorrect: true)
 
         // All same values = stdDev should be 0
         #expect(profile.overallStdDev == 0.0)
@@ -220,13 +205,12 @@ struct PerceptualProfileTests {
 
     @Test("Standard deviation for single note with variance")
     func standardDeviationSingleNote() async throws {
-        let mockStore = MockTrainingDataStore()
-        mockStore.savedRecords = [
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 40, isCorrect: true),
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50, isCorrect: true),
-            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 60, isCorrect: true),
-        ]
-        let profile = PerceptualProfile(from: mockStore)
+        let profile = PerceptualProfile()
+
+        // Add data with variance for note 60
+        profile.update(note: 60, centOffset: 40, isCorrect: true)
+        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.update(note: 60, centOffset: 60, isCorrect: true)
 
         let stats = profile.statsForNote(60)
         #expect(stats.mean == 50.0)
