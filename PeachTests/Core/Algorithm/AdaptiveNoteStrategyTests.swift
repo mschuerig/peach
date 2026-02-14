@@ -161,7 +161,7 @@ struct AdaptiveNoteStrategyTests {
 
         // Test multiple selections - should all be from weak spots
         var selectedNotes = Set<Int>()
-        for _ in 0..<20 {
+        for _ in 0..<1000 {
             let comparison = strategy.nextComparison(
                 profile: profile,
                 settings: settings,
@@ -199,7 +199,7 @@ struct AdaptiveNoteStrategyTests {
 
         // Test multiple selections - should be near note 48 (±12 semitones = 36-60)
         var selectedNotes = Set<Int>()
-        for _ in 0..<20 {
+        for _ in 0..<1000 {
             let comparison = strategy.nextComparison(
                 profile: profile,
                 settings: settings,
