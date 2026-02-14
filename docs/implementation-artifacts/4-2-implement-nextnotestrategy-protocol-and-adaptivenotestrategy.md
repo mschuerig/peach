@@ -1,6 +1,6 @@
 # Story 4.2: Implement NextNoteStrategy Protocol and AdaptiveNoteStrategy
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -28,63 +28,63 @@ So that every comparison maximally improves my pitch discrimination.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Define NextNoteStrategy Protocol and Comparison Type (AC: #1)
-  - [ ] Create NextNoteStrategy.swift in Core/Algorithm/
-  - [ ] Define Comparison struct (note1, note2, centDifference)
-  - [ ] Define protocol method: nextComparison(profile:, settings:) -> Comparison
-  - [ ] Document protocol contract and boundary
-  - [ ] Add protocol to project structure
+- [x] Task 1: Define NextNoteStrategy Protocol and Comparison Type (AC: #1)
+  - [x] Create NextNoteStrategy.swift in Core/Algorithm/
+  - [x] Define Comparison struct (note1, note2, centDifference)
+  - [x] Define protocol method: nextComparison(profile:, settings:) -> Comparison
+  - [x] Document protocol contract and boundary
+  - [x] Add protocol to project structure
 
-- [ ] Task 2: Implement AdaptiveNoteStrategy Cold Start Behavior (AC: #5)
-  - [ ] Create AdaptiveNoteStrategy.swift in Core/Algorithm/
-  - [ ] Implement init() with default algorithm parameters
-  - [ ] Implement cold start detection (all notes untrained)
-  - [ ] Random note selection across MIDI range 0-127
-  - [ ] Fixed 100 cent difference for cold start comparisons
-  - [ ] Add logging for cold start state
+- [x] Task 2: Implement AdaptiveNoteStrategy Cold Start Behavior (AC: #5)
+  - [x] Create AdaptiveNoteStrategy.swift in Core/Algorithm/
+  - [x] Implement init() with default algorithm parameters
+  - [x] Implement cold start detection (all notes untrained)
+  - [x] Random note selection across MIDI range 0-127
+  - [x] Fixed 100 cent difference for cold start comparisons
+  - [x] Add logging for cold start state
 
-- [ ] Task 3: Implement Difficulty Adjustment Logic (AC: #2, #3, #6)
-  - [ ] Track per-note difficulty state (current cent threshold)
-  - [ ] Implement narrowing logic on correct answer (e.g., multiply by 0.8)
-  - [ ] Implement widening logic on incorrect answer (e.g., multiply by 1.3)
-  - [ ] Enforce practical floor of ~1 cent
-  - [ ] Support fractional cent precision (0.1 cent resolution)
-  - [ ] Add difficulty bounds (min/max cent difference)
+- [x] Task 3: Implement Difficulty Adjustment Logic (AC: #2, #3, #6)
+  - [x] Track per-note difficulty state (current cent threshold)
+  - [x] Implement narrowing logic on correct answer (e.g., multiply by 0.8)
+  - [x] Implement widening logic on incorrect answer (e.g., multiply by 1.3)
+  - [x] Enforce practical floor of ~1 cent
+  - [x] Support fractional cent precision (0.1 cent resolution)
+  - [x] Add difficulty bounds (min/max cent difference)
 
-- [ ] Task 4: Implement Weak Spot Targeting (AC: #4)
-  - [ ] Read weak spots from PerceptualProfile
-  - [ ] Implement Natural vs. Mechanical ratio (tunable parameter)
-  - [ ] Selection logic: % chance to pick weak spot vs. nearby note
-  - [ ] "Nearby" strategy: select notes near previous comparison
-  - [ ] "Weak spot" strategy: select from profile.weakSpots(count:)
-  - [ ] Ensure all notes within configured range
+- [x] Task 4: Implement Weak Spot Targeting (AC: #4)
+  - [x] Read weak spots from PerceptualProfile
+  - [x] Implement Natural vs. Mechanical ratio (tunable parameter)
+  - [x] Selection logic: % chance to pick weak spot vs. nearby note
+  - [x] "Nearby" strategy: select notes near previous comparison
+  - [x] "Weak spot" strategy: select from profile.weakSpots(count:)
+  - [x] Ensure all notes within configured range
 
-- [ ] Task 5: Implement Settings Integration
-  - [ ] Read note range bounds from settings (min/max MIDI note)
-  - [ ] Filter weak spots and nearby notes to range
-  - [ ] Read Natural vs. Mechanical slider value (0.0 = all nearby, 1.0 = all weak spots)
-  - [ ] Handle range changes gracefully (no crashes if narrow range)
-  - [ ] Default values if settings unavailable
+- [x] Task 5: Implement Settings Integration
+  - [x] Read note range bounds from settings (min/max MIDI note)
+  - [x] Filter weak spots and nearby notes to range
+  - [x] Read Natural vs. Mechanical slider value (0.0 = all nearby, 1.0 = all weak spots)
+  - [x] Handle range changes gracefully (no crashes if narrow range)
+  - [x] Default values if settings unavailable
 
-- [ ] Task 6: Implement nextComparison() Orchestration Logic
-  - [ ] Check cold start condition (profile all untrained)
-  - [ ] If cold start → random selection at 100 cents
-  - [ ] If trained → apply Natural/Mechanical balance
-  - [ ] Select note (weak spot or nearby based on ratio)
-  - [ ] Determine cent difference (from difficulty state or profile)
-  - [ ] Generate Comparison with note1, note2 (same as note1), centDifference
-  - [ ] Update internal tracking state (last note selected, difficulty)
-  - [ ] Add comprehensive logging for transparency
+- [x] Task 6: Implement nextComparison() Orchestration Logic
+  - [x] Check cold start condition (profile all untrained)
+  - [x] If cold start → random selection at 100 cents
+  - [x] If trained → apply Natural/Mechanical balance
+  - [x] Select note (weak spot or nearby based on ratio)
+  - [x] Determine cent difference (from difficulty state or profile)
+  - [x] Generate Comparison with note1, note2 (same as note1), centDifference
+  - [x] Update internal tracking state (last note selected, difficulty)
+  - [x] Add comprehensive logging for transparency
 
-- [ ] Task 7: Comprehensive Unit Tests (AC: #7)
-  - [ ] Test cold start: all notes untrained → random at 100 cents
-  - [ ] Test difficulty adjustment: correct → narrower, incorrect → wider
-  - [ ] Test fractional cent precision and 1-cent floor
-  - [ ] Test weak spot targeting: profile with weak/strong notes
-  - [ ] Test Natural/Mechanical balance: 0.0, 0.5, 1.0 ratios
-  - [ ] Test note range filtering with various bounds
-  - [ ] Test edge cases: single note range, empty weak spots
-  - [ ] Use mock PerceptualProfile for deterministic testing
+- [x] Task 7: Comprehensive Unit Tests (AC: #7)
+  - [x] Test cold start: all notes untrained → random at 100 cents
+  - [x] Test difficulty adjustment: correct → narrower, incorrect → wider
+  - [x] Test fractional cent precision and 1-cent floor
+  - [x] Test weak spot targeting: profile with weak/strong notes
+  - [x] Test Natural/Mechanical balance: 0.0, 0.5, 1.0 ratios
+  - [x] Test note range filtering with various bounds
+  - [x] Test edge cases: single note range, empty weak spots
+  - [x] Use mock PerceptualProfile for deterministic testing
 
 ## Dev Notes
 
@@ -759,10 +759,33 @@ All technical details sourced from:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
+N/A
+
 ### Completion Notes List
 
+✅ **Task 1 Complete**: Defined NextNoteStrategy protocol with @MainActor annotation for Swift 6 concurrency compliance. Created TrainingSettings struct with default values (C2-C6 range, 0.5 Natural/Mechanical balance). Comparison struct already existed from Story 3.2, so protocol references it directly.
+
+✅ **Task 2 Complete**: Implemented AdaptiveNoteStrategy with cold start detection (isColdStart checks all 128 MIDI notes for training data). Cold start returns random note within settings range at fixed 100 cent difficulty.
+
+✅ **Task 3 Complete**: Implemented difficulty adjustment with narrowing factor 0.8 (correct answers) and widening factor 1.3 (incorrect answers). Enforced 1.0 cent floor and 100.0 cent ceiling. Fractional cent precision supported natively via Swift Double.
+
+✅ **Task 4 Complete**: Implemented weak spot targeting using PerceptualProfile.weakSpots(count:10). Natural/Mechanical ratio uses weighted random selection (mechanicalRatio = probability of selecting weak spot vs nearby note). Nearby selection uses ±12 semitones range from last selected note.
+
+✅ **Task 5 Complete**: Integrated TrainingSettings with note range filtering, Natural/Mechanical slider (0.0-1.0), and reference pitch. All selections filtered to settings.noteRangeMin...noteRangeMax. Graceful handling of narrow ranges (single note range works without crashing).
+
+✅ **Task 6 Complete**: Orchestrated nextComparison() with cold start check → Natural/Mechanical selection → note selection → difficulty determination → Comparison generation. Internal tracking state maintains difficultyState dictionary and lastSelectedNote. Comprehensive logging via OSLog for transparency.
+
+✅ **Task 7 Complete**: Created comprehensive unit test suite with tests for cold start, difficulty adjustment (narrowing, widening, floor, ceiling, fractional precision), weak spot targeting, Natural/Mechanical balance, note range filtering, and edge cases. Tests compile successfully.
+
+✅ **Additional Fix**: Fixed TrainingSessionTests.swift tuple destructuring issues from Story 4.1 changes (added 4th PerceptualProfile element to all tuple destructuring calls).
+
 ### File List
+
+- Peach/Core/Algorithm/NextNoteStrategy.swift (new)
+- Peach/Core/Algorithm/AdaptiveNoteStrategy.swift (new)
+- PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift (new)
+- PeachTests/Training/TrainingSessionTests.swift (modified - fixed tuple destructuring)
