@@ -62,7 +62,7 @@ development_status:
 
   # Epic 4: Smart Training - Adaptive Algorithm
   epic-4: in-progress
-  4-1-implement-perceptualprofile: ready-for-dev
+  4-1-implement-perceptualprofile: review
   4-2-implement-nextnotestrategy-protocol-and-adaptivenotestrategy: backlog
   4-3-integrate-adaptive-algorithm-into-trainingsession: backlog
   epic-4-retrospective: optional
