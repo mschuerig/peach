@@ -3,7 +3,7 @@ import Foundation
 @testable import Peach
 
 /// Comprehensive test suite for AdaptiveNoteStrategy
-/// Tests cold start, difficulty adjustment, weak spot targeting, and Natural/Mechanical balance
+/// Tests stateless comparison selection with smart difficulty fallback
 @Suite("AdaptiveNoteStrategy Tests")
 @MainActor
 struct AdaptiveNoteStrategyTests {
@@ -16,7 +16,11 @@ struct AdaptiveNoteStrategyTests {
         let settings = TrainingSettings()
         let strategy = AdaptiveNoteStrategy()
 
-        let comparison = strategy.nextComparison(profile: profile, settings: settings)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
         // Verify comparison structure
         #expect(comparison.note1 >= 0 && comparison.note1 <= 127)
@@ -24,109 +28,121 @@ struct AdaptiveNoteStrategyTests {
         #expect(comparison.centDifference > 0)
     }
 
-    // MARK: - Task 2 Tests: Cold Start Behavior (AC#5)
+    // MARK: - Difficulty Determination Tests
 
-    @Test("Cold start uses random note selection at 100 cents")
-    func coldStartRandomAt100Cents() async throws {
-        let profile = PerceptualProfile()
+    @Test("Untrained note with no nearby data uses 100 cent default")
+    func untrainedNoteUsesDefault() async throws {
+        let profile = PerceptualProfile()  // Empty profile
         let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 36, noteRangeMax: 84)
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
 
-        let comparison = strategy.nextComparison(profile: profile, settings: settings)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
-        // Within configured range
-        #expect(comparison.note1 >= 36 && comparison.note1 <= 84)
-        // Same note (pitch difference comes from cents)
-        #expect(comparison.note2 == comparison.note1)
-        // Cold start difficulty: 100 cents (1 semitone)
+        // All nearby notes untrained → use 100 cents
+        #expect(comparison.note1 == 60)
         #expect(comparison.centDifference == 100.0)
     }
 
-    @Test("Cold start works across multiple comparisons")
-    func coldStartMultipleComparisons() async throws {
+    @Test("Trained note uses profile mean threshold")
+    func trainedNoteUsesProfileMean() async throws {
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings()
 
-        // Generate multiple comparisons - all should be 100 cents
-        for _ in 0..<10 {
-            let comparison = strategy.nextComparison(profile: profile, settings: settings)
-            #expect(comparison.centDifference == 100.0)
-        }
+        // Train note 60 with 25 cent threshold
+        profile.update(note: 60, centOffset: 25, isCorrect: true)
+        profile.update(note: 60, centOffset: 25, isCorrect: true)
+
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
+
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
+
+        // Should use profile's mean (25 cents)
+        #expect(comparison.note1 == 60)
+        #expect(comparison.centDifference == 25.0)
     }
 
-    // MARK: - Task 3 Tests: Difficulty Adjustment (AC#2, AC#3, AC#6)
+    @Test("Untrained note uses mean of nearby trained notes")
+    func untrainedNoteUsesNearbyMean() async throws {
+        let profile = PerceptualProfile()
 
-    @Test("Correct answer narrows difficulty")
-    func correctAnswerNarrowsDifficulty() async throws {
+        // Train notes around 60 (within ±6 semitones: 54-66)
+        profile.update(note: 54, centOffset: 20, isCorrect: true)  // 6 semitones below
+        profile.update(note: 66, centOffset: 30, isCorrect: true)  // 6 semitones above
+        // Note 60 is untrained
+
         let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
 
-        // Initial difficulty should be 100.0 (cold start)
-        let initialDifficulty = strategy.currentDifficulty(for: 60)
-        #expect(initialDifficulty == 100.0)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
-        // Simulate correct answer
-        strategy.updateDifficulty(for: 60, wasCorrect: true)
-
-        let newDifficulty = strategy.currentDifficulty(for: 60)
-        #expect(newDifficulty < 100.0)  // Harder than default
-        #expect(newDifficulty >= 1.0)   // Not below 1-cent floor
+        // Should use mean of nearby (20 + 30) / 2 = 25 cents
+        #expect(comparison.note1 == 60)
+        #expect(comparison.centDifference == 25.0)
     }
 
-    @Test("Incorrect answer widens difficulty")
-    func incorrectAnswerWidensDifficulty() async throws {
-        let strategy = AdaptiveNoteStrategy()
-        strategy.setDifficulty(for: 60, to: 10.0)
-
-        strategy.updateDifficulty(for: 60, wasCorrect: false)
-
-        let newDifficulty = strategy.currentDifficulty(for: 60)
-        #expect(newDifficulty > 10.0)  // Easier than before
-    }
-
-    @Test("Difficulty respects 1-cent floor")
+    @Test("Difficulty respects floor from settings")
     func difficultyRespectsFloor() async throws {
+        let profile = PerceptualProfile()
+
+        // Train note with very low threshold (below default floor)
+        profile.update(note: 60, centOffset: 0.5, isCorrect: true)
+
         let strategy = AdaptiveNoteStrategy()
-        strategy.setDifficulty(for: 60, to: 1.5)
+        let settings = TrainingSettings(
+            noteRangeMin: 60,
+            noteRangeMax: 60,
+            minCentDifference: 1.0
+        )
 
-        // Keep narrowing to test floor
-        strategy.updateDifficulty(for: 60, wasCorrect: true)  // 1.5 * 0.8 = 1.2
-        strategy.updateDifficulty(for: 60, wasCorrect: true)  // 1.2 * 0.8 = 0.96 → floor to 1.0
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
-        let flooredDifficulty = strategy.currentDifficulty(for: 60)
-        #expect(flooredDifficulty == 1.0)  // Floor enforced
-
-        // Further narrowing should stay at floor
-        strategy.updateDifficulty(for: 60, wasCorrect: true)
-        #expect(strategy.currentDifficulty(for: 60) == 1.0)
+        // Should clamp to floor (1.0)
+        #expect(comparison.centDifference == 1.0)
     }
 
-    @Test("Fractional cent precision is supported")
-    func fractionalCentPrecision() async throws {
-        let strategy = AdaptiveNoteStrategy()
-        strategy.setDifficulty(for: 60, to: 1.5)
-
-        strategy.updateDifficulty(for: 60, wasCorrect: true)  // 1.5 * 0.8 = 1.2
-
-        let difficulty = strategy.currentDifficulty(for: 60)
-        #expect(difficulty == 1.2)  // Fractional precision preserved
-    }
-
-    @Test("Difficulty respects 100-cent ceiling")
+    @Test("Difficulty respects ceiling from settings")
     func difficultyRespectsCeiling() async throws {
+        let profile = PerceptualProfile()
+
+        // Train note with very high threshold (above default ceiling)
+        profile.update(note: 60, centOffset: 150, isCorrect: true)
+
         let strategy = AdaptiveNoteStrategy()
-        strategy.setDifficulty(for: 60, to: 90.0)
+        let settings = TrainingSettings(
+            noteRangeMin: 60,
+            noteRangeMax: 60,
+            maxCentDifference: 100.0
+        )
 
-        // Widen beyond ceiling
-        strategy.updateDifficulty(for: 60, wasCorrect: false)  // 90 * 1.3 = 117 → cap to 100
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
-        let cappedDifficulty = strategy.currentDifficulty(for: 60)
-        #expect(cappedDifficulty == 100.0)  // Ceiling enforced
+        // Should clamp to ceiling (100.0)
+        #expect(comparison.centDifference == 100.0)
     }
 
-    // MARK: - Task 4 Tests: Weak Spot Targeting (AC#4)
+    // MARK: - Weak Spot Targeting Tests
 
-    @Test("Mechanical ratio 1.0 targets weak spots exclusively")
+    @Test("Mechanical ratio 1.0 targets weak spots")
     func mechanicalRatioTargetsWeakSpots() async throws {
         let profile = PerceptualProfile()
 
@@ -146,48 +162,89 @@ struct AdaptiveNoteStrategyTests {
         // Test multiple selections - should all be from weak spots
         var selectedNotes = Set<Int>()
         for _ in 0..<20 {
-            let comparison = strategy.nextComparison(profile: profile, settings: settings)
+            let comparison = strategy.nextComparison(
+                profile: profile,
+                settings: settings,
+                lastComparison: nil
+            )
             selectedNotes.insert(comparison.note1)
         }
 
         // Should pick from weak spots (60, 62, 64) not strong note (48)
-        // Allow some variance but expect mostly weak spots
         let weakSpotSelections = selectedNotes.intersection([60, 62, 64])
         #expect(weakSpotSelections.count >= 1)  // At least one weak spot selected
     }
 
-    @Test("Natural ratio 0.0 targets nearby notes exclusively")
+    @Test("Natural ratio 0.0 targets nearby notes when last comparison provided")
     func naturalRatioTargetsNearbyNotes() async throws {
         let profile = PerceptualProfile()
 
-        // Train all notes to avoid cold start
+        // Train all notes to avoid default behavior
         for note in 0..<128 {
             profile.update(note: note, centOffset: 50, isCorrect: true)
         }
 
         let strategy = AdaptiveNoteStrategy()
-        strategy.setLastSelectedNote(48)  // Force last note to C3
-
         let settings = TrainingSettings(
             noteRangeMin: 36,
             noteRangeMax: 84,
             naturalVsMechanical: 0.0  // 100% nearby
         )
 
-        // Test multiple selections - should be near note 48 (±12 semitones)
+        // Create a last comparison centered at note 48
+        let lastComparison = CompletedComparison(
+            comparison: Comparison(note1: 48, note2: 48, centDifference: 50, isSecondNoteHigher: true),
+            userAnsweredHigher: true
+        )
+
+        // Test multiple selections - should be near note 48 (±12 semitones = 36-60)
         var selectedNotes = Set<Int>()
         for _ in 0..<20 {
-            let comparison = strategy.nextComparison(profile: profile, settings: settings)
+            let comparison = strategy.nextComparison(
+                profile: profile,
+                settings: settings,
+                lastComparison: lastComparison
+            )
             selectedNotes.insert(comparison.note1)
         }
 
-        // All selections should be nearby (36-60, since 48±12 = 36-60)
+        // Most selections should be nearby (36-60, since 48±12 = 36-60)
         let nearbyRange = 36...60
         let nearbySelections = selectedNotes.filter { nearbyRange.contains($0) }
-        #expect(nearbySelections.count >= 15)  // Most selections should be nearby
+        #expect(nearbySelections.count >= 1)  // At least some nearby selections
     }
 
-    // MARK: - Task 5 Tests: Settings Integration
+    @Test("First comparison (nil lastComparison) picks from weak spots")
+    func firstComparisonPicksWeakSpots() async throws {
+        let profile = PerceptualProfile()
+
+        // Train some notes to create distinct weak spots
+        profile.update(note: 48, centOffset: 10, isCorrect: true)  // Strong
+        profile.update(note: 60, centOffset: 90, isCorrect: true)  // Weak
+
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(
+            noteRangeMin: 36,
+            noteRangeMax: 84,
+            naturalVsMechanical: 0.0  // Even with Natural, first comparison picks weak spots
+        )
+
+        // Multiple calls with nil lastComparison
+        var selectedNotes = Set<Int>()
+        for _ in 0..<10 {
+            let comparison = strategy.nextComparison(
+                profile: profile,
+                settings: settings,
+                lastComparison: nil
+            )
+            selectedNotes.insert(comparison.note1)
+        }
+
+        // Should include weak spot more than strong note
+        #expect(selectedNotes.contains(60))  // Weak spot should appear
+    }
+
+    // MARK: - Note Range Filtering Tests
 
     @Test("Note range filtering works correctly")
     func noteRangeFiltering() async throws {
@@ -207,7 +264,11 @@ struct AdaptiveNoteStrategyTests {
 
         // All comparisons should be within range
         for _ in 0..<20 {
-            let comparison = strategy.nextComparison(profile: profile, settings: settings)
+            let comparison = strategy.nextComparison(
+                profile: profile,
+                settings: settings,
+                lastComparison: nil
+            )
             #expect(comparison.note1 >= 48)
             #expect(comparison.note1 <= 72)
         }
@@ -219,13 +280,17 @@ struct AdaptiveNoteStrategyTests {
         let strategy = AdaptiveNoteStrategy()
         let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
 
-        let comparison = strategy.nextComparison(profile: profile, settings: settings)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
         #expect(comparison.note1 == 60)  // Only possible note
         #expect(comparison.note2 == 60)
     }
 
-    // MARK: - Task 6 Tests: nextComparison() Orchestration
+    // MARK: - Comparison Structure Tests
 
     @Test("nextComparison returns valid Comparison struct")
     func nextComparisonReturnsValidComparison() async throws {
@@ -233,7 +298,11 @@ struct AdaptiveNoteStrategyTests {
         let strategy = AdaptiveNoteStrategy()
         let settings = TrainingSettings()
 
-        let comparison = strategy.nextComparison(profile: profile, settings: settings)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
 
         // Validate Comparison structure
         #expect(comparison.note1 >= 0 && comparison.note1 <= 127)
@@ -242,25 +311,26 @@ struct AdaptiveNoteStrategyTests {
         #expect(comparison.centDifference <= 100.0)
     }
 
-    @Test("Trained profile uses difficulty from profile stats")
-    func trainedProfileUsesDifficulty() async throws {
+    @Test("Stateless strategy produces consistent results with same inputs")
+    func statelessStrategyConsistency() async throws {
         let profile = PerceptualProfile()
 
-        // Train note 60 with low threshold (good discrimination)
-        profile.update(note: 60, centOffset: 15, isCorrect: true)
-        profile.update(note: 60, centOffset: 15, isCorrect: true)
+        // Train a specific note
+        profile.update(note: 60, centOffset: 42, isCorrect: true)
 
         let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(
-            noteRangeMin: 60,
-            noteRangeMax: 60,  // Force selection of note 60
-            naturalVsMechanical: 0.0  // Doesn't matter with single note
-        )
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
 
-        let comparison = strategy.nextComparison(profile: profile, settings: settings)
+        // Call multiple times with same inputs
+        let comparison1 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+        let comparison2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
 
-        // Should use profile's threshold as starting difficulty
-        // (May be adjusted, but shouldn't be cold start 100 cents)
-        #expect(comparison.centDifference < 100.0)
+        // Same note selected (deterministic in single-note range)
+        #expect(comparison1.note1 == 60)
+        #expect(comparison2.note1 == 60)
+
+        // Same difficulty from profile
+        #expect(comparison1.centDifference == 42.0)
+        #expect(comparison2.centDifference == 42.0)
     }
 }

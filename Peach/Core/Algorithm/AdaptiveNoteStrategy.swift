@@ -3,29 +3,29 @@ import OSLog
 
 /// Adaptive comparison selection strategy for intelligent training
 ///
-/// Implements NextNoteStrategy with:
-/// - Cold start handling (random selection at 100 cents for new users)
-/// - Difficulty adjustment (narrower on correct, wider on incorrect)
-/// - Weak spot targeting (prioritizes notes with poor discrimination)
-/// - Natural/Mechanical balance (nearby notes vs. weak spots)
-/// - Fractional cent precision with 1-cent floor
+/// Implements NextNoteStrategy as a pure, stateless function:
+/// - Reads user's PerceptualProfile for difficulty and weak spots
+/// - Uses TrainingSettings for configuration
+/// - Uses last completed comparison for nearby note selection
+/// - No internal state tracking
 ///
 /// # Algorithm Design
 ///
-/// **Cold Start:** All untrained → random note at 100 cents
-/// **Trained:** Balances between:
-/// - Natural (0.0): Nearby notes (±12 semitones from last)
+/// **Note Selection:**
+/// - Natural (0.0): Nearby notes (±12 semitones from last comparison)
 /// - Mechanical (1.0): Weak spots from profile
+/// - Blended: Weighted probability between the two
 ///
-/// **Difficulty Adjustment:**
-/// - Correct: multiply by 0.8 (harder, minimum 1.0 cent)
-/// - Incorrect: multiply by 1.3 (easier, maximum 100.0 cents)
+/// **Difficulty Determination:**
+/// - Trained note: Use profile's mean detection threshold
+/// - Untrained note: Use mean of nearby notes (±6 semitones)
+/// - All nearby untrained: Default to 100 cents
 ///
 /// # Performance
 ///
 /// Must be fast (< 1ms) to meet NFR2 (no perceptible delay).
 /// - In-memory only, no database queries
-/// - Simple math: random selection, weighted probability, multiplication
+/// - Simple math: random selection, weighted probability, mean calculation
 @MainActor
 final class AdaptiveNoteStrategy: NextNoteStrategy {
 
@@ -34,67 +34,56 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
     /// Logger for algorithm decisions
     private let logger = Logger(subsystem: "com.peach.app", category: "AdaptiveNoteStrategy")
 
-    /// Per-note difficulty state (MIDI note -> current cent threshold)
-    /// Tracks ephemeral session difficulty separate from profile's long-term statistics
-    private var difficultyState: [Int: Double] = [:]
-
-    /// Last selected note for nearby note selection
-    private var lastSelectedNote: Int = 60  // Default: Middle C
-
-    // MARK: - Algorithm Parameters
-
-    /// Difficulty narrowing factor on correct answer (multiply by this)
-    private let narrowingFactor: Double = 0.8
-
-    /// Difficulty widening factor on incorrect answer (multiply by this)
-    private let wideningFactor: Double = 1.3
-
-    /// Minimum cent difficulty (practical floor for human pitch discrimination)
-    private let minCentDifference: Double = 1.0
-
-    /// Maximum cent difficulty (ceiling to prevent excessive widening)
-    private let maxCentDifference: Double = 100.0
-
-    /// Nearby note range in semitones (±12 = one octave)
+    /// Nearby note range in semitones for Natural selection (±12 = one octave)
     private let nearbyRange: Int = 12
+
+    /// Half octave range for calculating default difficulty (±6 semitones)
+    private let halfOctaveRange: Int = 6
 
     // MARK: - Initialization
 
-    /// Creates an AdaptiveNoteStrategy with default algorithm parameters
+    /// Creates an AdaptiveNoteStrategy
     init() {
-        logger.info("AdaptiveNoteStrategy initialized")
+        logger.info("AdaptiveNoteStrategy initialized (stateless)")
     }
 
     // MARK: - NextNoteStrategy Protocol
 
     /// Selects the next comparison based on perceptual profile and settings
     ///
+    /// This is a pure function with no side effects or internal state.
+    ///
     /// # Algorithm Flow
     ///
-    /// 1. Check cold start (all notes untrained) → random at 100 cents
-    /// 2. If trained → apply Natural/Mechanical balance
-    /// 3. Select note (weak spot or nearby based on ratio)
-    /// 4. Determine cent difference (from difficulty state or profile)
-    /// 5. Return Comparison with note1, note2 (same), centDifference
+    /// 1. Select note using Natural/Mechanical balance
+    /// 2. Determine cent difference from profile or default calculation
+    /// 3. Return Comparison with note1, note2 (same), centDifference
     ///
     /// - Parameters:
     ///   - profile: User's perceptual profile
     ///   - settings: Training configuration
+    ///   - lastComparison: Most recently completed comparison (nil on first)
     /// - Returns: Comparison ready for NotePlayer
-    func nextComparison(profile: PerceptualProfile, settings: TrainingSettings) -> Comparison {
-        // Cold start detection: all notes untrained
-        if isColdStart(profile: profile) {
-            return coldStartComparison(settings: settings)
-        }
+    func nextComparison(
+        profile: PerceptualProfile,
+        settings: TrainingSettings,
+        lastComparison: CompletedComparison?
+    ) -> Comparison {
+        // Select note using Natural/Mechanical balance
+        let selectedNote = selectNote(
+            profile: profile,
+            settings: settings,
+            lastComparison: lastComparison
+        )
 
-        // Trained: apply Natural/Mechanical selection
-        let selectedNote = selectNote(profile: profile, settings: settings)
-        let centDifference = determineCentDifference(for: selectedNote, profile: profile)
+        // Determine difficulty from profile
+        let centDifference = determineCentDifference(
+            for: selectedNote,
+            profile: profile,
+            settings: settings
+        )
 
         logger.info("Selected note=\(selectedNote), centDiff=\(centDifference)")
-
-        // Update tracking state
-        lastSelectedNote = selectedNote
 
         return Comparison(
             note1: selectedNote,
@@ -104,95 +93,20 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         )
     }
 
-    // MARK: - Difficulty Management
-
-    /// Returns current difficulty for a note
-    ///
-    /// - Parameter note: MIDI note (0-127)
-    /// - Returns: Current cent threshold (defaults to 100.0 if untrained)
-    func currentDifficulty(for note: Int) -> Double {
-        return difficultyState[note] ?? maxCentDifference
-    }
-
-    /// Updates difficulty based on answer correctness
-    ///
-    /// - Parameters:
-    ///   - note: MIDI note (0-127)
-    ///   - wasCorrect: Whether user answered correctly
-    func updateDifficulty(for note: Int, wasCorrect: Bool) {
-        let current = currentDifficulty(for: note)
-
-        let newDifficulty: Double
-        if wasCorrect {
-            // Make harder: narrow the difference
-            newDifficulty = max(current * narrowingFactor, minCentDifference)
-            logger.debug("Narrowing difficulty for note \(note): \(current) → \(newDifficulty)")
-        } else {
-            // Make easier: widen the difference
-            newDifficulty = min(current * wideningFactor, maxCentDifference)
-            logger.debug("Widening difficulty for note \(note): \(current) → \(newDifficulty)")
-        }
-
-        difficultyState[note] = newDifficulty
-    }
-
-    /// Sets difficulty for a note (used by tests)
-    ///
-    /// - Parameters:
-    ///   - note: MIDI note (0-127)
-    ///   - difficulty: Cent threshold
-    func setDifficulty(for note: Int, to difficulty: Double) {
-        difficultyState[note] = difficulty
-    }
-
-    /// Sets last selected note (used by tests)
-    ///
-    /// - Parameter note: MIDI note (0-127)
-    func setLastSelectedNote(_ note: Int) {
-        lastSelectedNote = note
-    }
-
     // MARK: - Private Implementation
-
-    /// Checks if profile is in cold start state (all notes untrained)
-    ///
-    /// - Parameter profile: User's perceptual profile
-    /// - Returns: True if no notes have been trained
-    private func isColdStart(profile: PerceptualProfile) -> Bool {
-        // Check if any note has training data
-        for midiNote in 0..<128 {
-            let stats = profile.statsForNote(midiNote)
-            if stats.isTrained {
-                return false  // At least one trained note exists
-            }
-        }
-        return true  // All notes untrained
-    }
-
-    /// Generates cold start comparison (random note at 100 cents)
-    ///
-    /// - Parameter settings: Training configuration
-    /// - Returns: Random comparison within range at 100 cents
-    private func coldStartComparison(settings: TrainingSettings) -> Comparison {
-        let randomNote = Int.random(in: settings.noteRangeMin...settings.noteRangeMax)
-
-        logger.info("Cold start: random note=\(randomNote), centDiff=100.0")
-
-        return Comparison(
-            note1: randomNote,
-            note2: randomNote,
-            centDifference: maxCentDifference,  // 100 cents
-            isSecondNoteHigher: Bool.random()
-        )
-    }
 
     /// Selects note using Natural/Mechanical balance
     ///
     /// - Parameters:
     ///   - profile: User's perceptual profile
     ///   - settings: Training configuration
+    ///   - lastComparison: Last completed comparison (for nearby selection)
     /// - Returns: Selected MIDI note
-    private func selectNote(profile: PerceptualProfile, settings: TrainingSettings) -> Int {
+    private func selectNote(
+        profile: PerceptualProfile,
+        settings: TrainingSettings,
+        lastComparison: CompletedComparison?
+    ) -> Int {
         let mechanicalRatio = settings.naturalVsMechanical
 
         // Weighted random: % chance to pick weak spot vs. nearby
@@ -200,8 +114,13 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
             // Pick weak spot
             return selectWeakSpot(profile: profile, settings: settings)
         } else {
-            // Pick nearby note
-            return selectNearbyNote(settings: settings)
+            // Pick nearby note (if we have a last comparison)
+            if let lastNote = lastComparison?.comparison.note1 {
+                return selectNearbyNote(around: lastNote, settings: settings)
+            } else {
+                // First comparison: pick from weak spots
+                return selectWeakSpot(profile: profile, settings: settings)
+            }
         }
     }
 
@@ -227,46 +146,103 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
 
     /// Selects a nearby note within range
     ///
-    /// - Parameter settings: Training configuration
-    /// - Returns: MIDI note near lastSelectedNote
-    private func selectNearbyNote(settings: TrainingSettings) -> Int {
+    /// - Parameters:
+    ///   - note: Center note for nearby selection
+    ///   - settings: Training configuration
+    /// - Returns: MIDI note near the center note
+    private func selectNearbyNote(around note: Int, settings: TrainingSettings) -> Int {
         // Calculate nearby range (±12 semitones)
-        let minNearby = max(settings.noteRangeMin, self.lastSelectedNote - nearbyRange)
-        let maxNearby = min(settings.noteRangeMax, self.lastSelectedNote + nearbyRange)
+        let minNearby = max(settings.noteRangeMin, note - nearbyRange)
+        let maxNearby = min(settings.noteRangeMax, note + nearbyRange)
 
         // Ensure valid range
         let actualMin = min(minNearby, settings.noteRangeMax)
         let actualMax = max(maxNearby, settings.noteRangeMin)
 
         let selected = Int.random(in: actualMin...actualMax)
-        logger.debug("Selected nearby note: \(selected) (near \(self.lastSelectedNote))")
+        logger.debug("Selected nearby note: \(selected) (near \(note))")
         return selected
     }
 
     /// Determines cent difference for a note
     ///
-    /// Uses difficulty state if available, otherwise falls back to profile statistics
+    /// Uses smart fallback strategy:
+    /// 1. If trained: use profile's mean threshold
+    /// 2. If untrained: use mean of nearby notes (±6 semitones)
+    /// 3. If all nearby untrained: use default 100 cents
     ///
     /// - Parameters:
     ///   - note: MIDI note
     ///   - profile: User's perceptual profile
+    ///   - settings: Training configuration (for difficulty bounds)
     /// - Returns: Cent difference (clamped to min/max)
-    private func determineCentDifference(for note: Int, profile: PerceptualProfile) -> Double {
-        // Check if we have session difficulty state
-        if let sessionDifficulty = difficultyState[note] {
-            return sessionDifficulty
+    private func determineCentDifference(
+        for note: Int,
+        profile: PerceptualProfile,
+        settings: TrainingSettings
+    ) -> Double {
+        let stats = profile.statsForNote(note)
+
+        // If trained, use the profile's mean threshold
+        if stats.isTrained && stats.mean > 0.0 {
+            let difficulty = clamp(
+                stats.mean,
+                min: settings.minCentDifference,
+                max: settings.maxCentDifference
+            )
+            logger.debug("Using profile difficulty for note \(note): \(difficulty)")
+            return difficulty
         }
 
-        // Fall back to profile statistics
-        let stats = profile.statsForNote(note)
-        if stats.isTrained {
-            // Use profile's mean threshold as starting difficulty
-            let profileDifficulty = max(minCentDifference, min(stats.mean, maxCentDifference))
-            logger.debug("Using profile difficulty for note \(note): \(profileDifficulty)")
-            return profileDifficulty
-        } else {
-            // Untrained note: use maximum difficulty
-            return maxCentDifference
+        // Untrained: calculate mean from nearby notes (±6 semitones)
+        let nearbyMean = calculateNearbyMean(around: note, profile: profile)
+        if nearbyMean > 0.0 {
+            let difficulty = clamp(
+                nearbyMean,
+                min: settings.minCentDifference,
+                max: settings.maxCentDifference
+            )
+            logger.debug("Using nearby mean for note \(note): \(difficulty)")
+            return difficulty
         }
+
+        // All nearby notes untrained: use default 100 cents
+        logger.debug("All nearby notes untrained for note \(note), using default 100 cents")
+        return 100.0
+    }
+
+    /// Calculates mean detection threshold from nearby notes
+    ///
+    /// - Parameters:
+    ///   - note: Center note
+    ///   - profile: User's perceptual profile
+    /// - Returns: Mean threshold of nearby trained notes, or 0.0 if none trained
+    private func calculateNearbyMean(around note: Int, profile: PerceptualProfile) -> Double {
+        let minNote = max(0, note - halfOctaveRange)
+        let maxNote = min(127, note + halfOctaveRange)
+
+        var sum = 0.0
+        var count = 0
+
+        for n in minNote...maxNote {
+            let stats = profile.statsForNote(n)
+            if stats.isTrained && stats.mean > 0.0 {
+                sum += stats.mean
+                count += 1
+            }
+        }
+
+        return count > 0 ? sum / Double(count) : 0.0
+    }
+
+    /// Clamps a value between min and max bounds
+    ///
+    /// - Parameters:
+    ///   - value: Value to clamp
+    ///   - min: Minimum bound
+    ///   - max: Maximum bound
+    /// - Returns: Clamped value
+    private func clamp(_ value: Double, min: Double, max: Double) -> Double {
+        return Swift.max(min, Swift.min(max, value))
     }
 }
