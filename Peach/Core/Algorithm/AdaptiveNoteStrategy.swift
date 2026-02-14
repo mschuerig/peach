@@ -39,11 +39,10 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         /// Widening factor applied per incorrect answer (30% easier)
         static let wideningFactor: Double = 1.3
 
-        /// Regional range in semitones - difficulty persists within this range (±6 = half octave)
-        static let regionalRange: Int = 6
-
-        /// Nearby note selection range for Natural mode (±12 = one octave)
-        static let nearbySelectionRange: Int = 12
+        /// Regional range in semitones (±12 = one octave)
+        /// Used for both: (1) difficulty persistence/adjustment, (2) nearby note selection in Natural mode
+        /// When jumping beyond this range, difficulty resets to mean
+        static let regionalRange: Int = 12
 
         /// Default difficulty for untrained regions (100 cents = 1 semitone)
         static let defaultDifficulty: Double = 100.0
@@ -166,9 +165,9 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
     ///   - settings: Training configuration
     /// - Returns: MIDI note near the center note
     private func selectNearbyNote(around note: Int, settings: TrainingSettings) -> Int {
-        // Calculate nearby range using nearbySelectionRange (±12 semitones)
-        let minNearby = max(settings.noteRangeMin, note - DifficultyParameters.nearbySelectionRange)
-        let maxNearby = min(settings.noteRangeMax, note + DifficultyParameters.nearbySelectionRange)
+        // Calculate nearby range using regionalRange (±12 semitones = one octave)
+        let minNearby = max(settings.noteRangeMin, note - DifficultyParameters.regionalRange)
+        let maxNearby = min(settings.noteRangeMax, note + DifficultyParameters.regionalRange)
 
         // Ensure valid range
         let actualMin = min(minNearby, settings.noteRangeMax)

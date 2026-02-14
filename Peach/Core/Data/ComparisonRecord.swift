@@ -9,7 +9,8 @@ final class ComparisonRecord {
     /// Second note - same MIDI note as note1
     var note2: Int
 
-    /// Cent difference applied to note2 (fractional cents, 0.1 cent resolution)
+    /// Signed cent offset applied to note2 (positive = higher, negative = lower)
+    /// Fractional precision with 0.1 cent resolution
     var note2CentOffset: Double
 
     /// Did the user answer correctly?

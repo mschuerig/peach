@@ -385,31 +385,31 @@ struct AdaptiveNoteStrategyTests {
         profile.update(note: 48, centOffset: 40, isCorrect: true)
         profile.setDifficulty(note: 48, difficulty: 20.0)
 
-        // Train note 60 with mean of 80 cents
-        profile.update(note: 60, centOffset: 80, isCorrect: true)
+        // Train note 72 with mean of 80 cents (24 semitones from note 48)
+        profile.update(note: 72, centOffset: 80, isCorrect: true)
 
         let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 60)
+        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 72)
 
         // Start at note 48 with current difficulty 20 cents
         let comp1 = Comparison(note1: 48, note2: 48, centDifference: 20.0, isSecondNoteHigher: true)
         let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: true)
 
-        // Next comparison might pick note 60 (12 semitones away > regionalRange of 6)
-        // If it does, should reset to note 60's abs(mean) = 80 cents
-        // Run multiple times to hit note 60 (probabilistic test)
+        // Next comparison might pick note 72 (24 semitones away > regionalRange of 12)
+        // If it does, should reset to note 72's abs(mean) = 80 cents
+        // Run multiple times to hit note 72 (probabilistic test)
         var foundJump = false
         for _ in 0..<100 {
             let comp2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: completed1)
-            if comp2.note1 == 60 {
+            if comp2.note1 == 72 {
                 #expect(comp2.centDifference == 80.0)  // Reset to abs(mean), not adjusted from 20
                 foundJump = true
                 break
             }
         }
 
-        // With weak spot targeting, note 60 should be selected frequently
-        #expect(foundJump, "Should have jumped to note 60 at least once in 100 iterations")
+        // With weak spot targeting, note 72 should be selected frequently
+        #expect(foundJump, "Should have jumped to note 72 at least once in 100 iterations")
     }
 
     @Test("Negative means handled with absolute value")

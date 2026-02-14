@@ -24,29 +24,25 @@
 | **Adaptive Note Strategy** | The intelligent comparison selection algorithm. Balances between exploring nearby notes (Natural mode) and targeting weak spots (Mechanical mode). Adjusts difficulty regionally based on user performance. |
 | **Natural vs. Mechanical** | The user-facing algorithm behavior slider (0.0 to 1.0). Natural (0.0) selects nearby notes for regional training. Mechanical (1.0) jumps to weak spots across the range. Values in between use weighted probability. |
 | **Weak Spot** | A note where the user's detection threshold is relatively large, indicating lower discrimination ability. Identified by comparing absolute mean values across notes - untrained notes are considered the weakest spots. The algorithm prioritizes these in Mechanical mode. |
-| **Nearby Note** | A note selected from within a certain range of the previous comparison's note (±12 semitones by default). Used in Natural mode to keep training focused in one pitch region before jumping elsewhere. |
-| **Regional Range** | The pitch range (±6 semitones by default) within which difficulty persists and adjusts gradually. When jumping beyond this range, difficulty resets to the mean detection threshold. |
+| **Regional Range** | The pitch range (±12 semitones = one octave) defining a training region. Within this range: (1) difficulty persists and adjusts gradually based on performance, (2) Natural mode selects nearby notes to maintain regional focus. Jumping beyond this range resets difficulty to the mean detection threshold and switches training zones. |
 | **Narrowing Factor** | The multiplier (0.95 = 5% harder) applied to cent difference after a correct answer within the same regional range. Makes subsequent comparisons progressively more challenging. |
 | **Widening Factor** | The multiplier (1.3 = 30% easier) applied to cent difference after an incorrect answer within the same regional range. Makes subsequent comparisons easier to help the user succeed. |
-| **Difficulty** | The current cent difference being used for a note or region. Starts at the mean detection threshold when jumping to a new region, then narrows or widens based on performance. Also called "current difficulty." |
-| **Current Difficulty** | The active cent difference being used for a note during regional training. Adjusted by narrowing/widening factors based on correctness. Distinct from mean detection threshold, which tracks historical averages. |
-| **Range Mean** | The average detection threshold calculated across all trained notes in the training range. Used as the initial difficulty for untrained notes when no nearby trained notes exist. Falls back to 100 cents if no notes are trained. |
+| **Current Difficulty** | The active cent difference being used for a note during regional training. Starts at the mean detection threshold when jumping to a new region, then adjusts via narrowing/widening factors based on correctness. Distinct from mean detection threshold, which tracks historical averages across all comparisons. |
+| **Range Mean** | The average detection threshold calculated across all trained notes in the note range. Used as the initial difficulty for untrained notes when no nearby trained notes exist. Falls back to 100 cents if no notes are trained. |
 
 ### Profile & Statistics
 
 | Term | Definition |
 |---|---|
-| **Perceptual Profile** | A map of the user's pitch discrimination ability across their training range. Tracks per-note statistics (mean detection threshold, standard deviation, sample count) for all 128 MIDI notes. Updated incrementally as comparisons complete. Identifies weak spots and informs difficulty selection. Visualized as a confidence band over a piano keyboard. |
-| **Perceptual Note** | The statistical record for a single MIDI note in the perceptual profile. Contains mean detection threshold, standard deviation, sample count, and current difficulty. Updated incrementally using Welford's algorithm. |
-| **Detection Threshold** | The mean cent offset at which comparisons have been presented for a given note, tracked as a signed value. Represents the estimated pitch difference the user can discriminate. Derived incrementally from comparison history using Welford's algorithm. |
-| **Mean Detection Threshold** | The average cent offset at which comparisons have been presented for a specific note. Signed value where positive indicates more "higher" comparisons, negative indicates more "lower" comparisons. Used to identify weak spots and set difficulty. |
+| **Perceptual Profile** | A map of the user's pitch discrimination ability across the note range. Tracks per-note statistics (mean detection threshold, standard deviation, sample count) for all 128 MIDI notes. Updated incrementally as comparisons complete. Identifies weak spots and informs difficulty selection. Visualized as a confidence band over a piano keyboard. |
+| **Mean Detection Threshold** | The average signed cent offset at which comparisons have been presented for a specific note. Positive values indicate more "higher" comparisons, negative values indicate more "lower" comparisons. Represents the estimated pitch difference the user can discriminate at that note. Derived incrementally from comparison history using Welford's algorithm. Used to identify weak spots and set difficulty. |
 | **Standard Deviation** | A measure of consistency in pitch discrimination for a note. Lower values indicate more consistent performance. Calculated incrementally using Welford's algorithm. |
 | **Sample Count** | The number of comparisons completed for a specific note. Notes with zero sample count are considered untrained. Used to determine whether a note has sufficient training data. |
 | **Trained Note** | A note with at least one completed comparison (sample count > 0). Has statistical data (mean, standard deviation) that can inform difficulty selection. |
 | **Untrained Note** | A note with zero completed comparisons. Receives highest priority as a weak spot. Initial difficulty determined from range mean or defaults to 100 cents. |
 | **Welford's Algorithm** | An incremental statistical method for calculating mean and variance without storing all historical data. Enables efficient real-time profile updates as each comparison completes. |
 | **Cold Start** | The initial state for a new user or untrained note. All notes have zero sample count, no statistical data exists. Comparisons default to 100-cent differences, and note selection is either random or prioritizes untrained notes as weak spots. |
-| **Confidence Band** | The visual representation of detection thresholds across the training range, overlaid on the piano keyboard in the perceptual profile visualization. |
+| **Confidence Band** | The visual representation of detection thresholds across the note range, overlaid on the piano keyboard in the perceptual profile visualization. |
 
 ### Training & State
 
@@ -62,8 +58,7 @@
 | Term | Definition |
 |---|---|
 | **Reference Pitch** | The tuning standard used to derive all note frequencies. Default: A4 = 440Hz (standard concert pitch). Supports alternative tunings including A442 (orchestral), A432 (alternative), and A415 (baroque). Configurable in settings. |
-| **Training Range** | The span of musical notes the app uses for comparisons, defined by minimum and maximum MIDI note boundaries. Default: C2 to C6 (MIDI 36-84). Configurable manually in settings. |
-| **Note Range** | The span of MIDI notes used for comparisons, defined by minimum and maximum boundaries. Default: C2 to C6 (MIDI 36-84), covering typical vocal and instrument ranges. Configurable in settings. |
+| **Note Range** | The span of MIDI notes used for comparisons, defined by minimum and maximum boundaries (noteRangeMin and noteRangeMax in TrainingSettings). Default: C2 to C6 (MIDI 36-84), covering typical vocal and instrument ranges. Configurable in settings. Also referred to as "training range" in user-facing contexts. |
 | **Training Settings** | Configuration parameters that control the adaptive algorithm's behavior. Includes note range boundaries, Natural/Mechanical balance, reference pitch, and difficulty bounds (min/max cent difference). |
 | **Min Cent Difference** | The difficulty floor - the smallest cent difference the algorithm will use. Default: 1.0 cent, representing the practical limit of human pitch discrimination. Prevents comparisons from becoming impossibly difficult. |
 | **Max Cent Difference** | The difficulty ceiling - the largest cent difference the algorithm will use. Default: 100.0 cents (1 semitone), representing easily detectable intervals. Prevents comparisons from becoming too easy. |
