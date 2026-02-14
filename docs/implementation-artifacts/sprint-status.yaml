@@ -57,13 +57,13 @@ development_status:
   3-1-start-screen-and-navigation-shell: done
   3-2-trainingsession-state-machine-and-comparison-loop: done
   3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: done
-  3-4-training-interruption-and-app-lifecycle-handling: in-progress
+  3-4-training-interruption-and-app-lifecycle-handling: done
   epic-3-retrospective: optional
 
   # Epic 4: Smart Training - Adaptive Algorithm
   epic-4: in-progress
-  4-1-implement-perceptualprofile: review
-  4-2-implement-nextnotestrategy-protocol-and-adaptivenotestrategy: backlog
+  4-1-implement-perceptualprofile: done
+  4-2-implement-nextnotestrategy-protocol-and-adaptivenotestrategy: ready-for-dev
   4-3-integrate-adaptive-algorithm-into-trainingsession: backlog
   epic-4-retrospective: optional
 
