@@ -64,6 +64,7 @@ final class PerceptualProfile {
 
     /// Identifies weak spots (notes with poorest discrimination)
     /// Prioritizes: 1) Untrained notes, 2) High threshold notes
+    /// Uses absolute value of mean to ignore directional bias
     /// - Parameter count: Number of weak spots to return (default: 10)
     /// - Returns: Array of MIDI notes (0-127) representing weak spots
     func weakSpots(count: Int = 10) -> [Int] {
@@ -75,8 +76,8 @@ final class PerceptualProfile {
                 // Untrained notes get highest priority (infinite threshold)
                 score = Double.infinity
             } else {
-                // Trained notes: higher mean = worse discrimination = higher score
-                score = stats.mean
+                // Trained notes: higher absolute threshold = worse discrimination = higher score
+                score = abs(stats.mean)
             }
             scoredNotes.append((note: midiNote, score: score))
         }
@@ -128,13 +129,31 @@ final class PerceptualProfile {
         }
         return noteStats[note]
     }
+
+    // MARK: - Regional Difficulty Management
+
+    /// Sets the current active difficulty for a note (for regional training)
+    /// Used by AdaptiveNoteStrategy to track gradual difficulty adjustments
+    /// - Parameters:
+    ///   - note: MIDI note (0-127)
+    ///   - difficulty: Difficulty in cents
+    func setDifficulty(note: Int, difficulty: Double) {
+        guard note >= 0 && note < 128 else {
+            logger.error("Invalid MIDI note: \(note)")
+            return
+        }
+
+        noteStats[note].currentDifficulty = difficulty
+        logger.debug("Set difficulty for note \(note): \(difficulty) cents")
+    }
 }
 
 // MARK: - PerceptualNote
 
 /// Per-note statistics for pitch discrimination
 struct PerceptualNote {
-    /// Mean detection threshold (cents) - average of correct comparisons
+    /// Mean detection threshold (cents) - signed average tracking directional bias
+    /// Positive = more "higher" comparisons, Negative = more "lower" comparisons
     var mean: Double
 
     /// Standard deviation (cents) - consistency measure
@@ -143,15 +162,20 @@ struct PerceptualNote {
     /// Sum of squared differences (for Welford's algorithm)
     var m2: Double
 
-    /// Number of correct comparisons for this note
+    /// Number of comparisons for this note (correct and incorrect)
     var sampleCount: Int
 
+    /// Current active difficulty for regional training (cents)
+    /// Used by AdaptiveNoteStrategy for gradual difficulty adjustment
+    var currentDifficulty: Double
+
     /// Creates an empty PerceptualNote (cold start state)
-    init(mean: Double = 0.0, stdDev: Double = 0.0, m2: Double = 0.0, sampleCount: Int = 0) {
+    init(mean: Double = 0.0, stdDev: Double = 0.0, m2: Double = 0.0, sampleCount: Int = 0, currentDifficulty: Double = 100.0) {
         self.mean = mean
         self.stdDev = stdDev
         self.m2 = m2
         self.sampleCount = sampleCount
+        self.currentDifficulty = currentDifficulty
     }
 
     /// Whether this note has been trained

@@ -29,16 +29,30 @@ import OSLog
 @MainActor
 final class AdaptiveNoteStrategy: NextNoteStrategy {
 
+    // MARK: - Difficulty Parameters
+
+    /// Tunable parameters for adaptive difficulty adjustment
+    private enum DifficultyParameters {
+        /// Narrowing factor applied per correct answer (5% harder)
+        static let narrowingFactor: Double = 0.95
+
+        /// Widening factor applied per incorrect answer (30% easier)
+        static let wideningFactor: Double = 1.3
+
+        /// Regional range in semitones - difficulty persists within this range (±6 = half octave)
+        static let regionalRange: Int = 6
+
+        /// Nearby note selection range for Natural mode (±12 = one octave)
+        static let nearbySelectionRange: Int = 12
+
+        /// Default difficulty for untrained regions (100 cents = 1 semitone)
+        static let defaultDifficulty: Double = 100.0
+    }
+
     // MARK: - Properties
 
     /// Logger for algorithm decisions
     private let logger = Logger(subsystem: "com.peach.app", category: "AdaptiveNoteStrategy")
-
-    /// Nearby note range in semitones for Natural selection (±12 = one octave)
-    private let nearbyRange: Int = 12
-
-    /// Half octave range for calculating default difficulty (±6 semitones)
-    private let halfOctaveRange: Int = 6
 
     // MARK: - Initialization
 
@@ -76,11 +90,12 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
             lastComparison: lastComparison
         )
 
-        // Determine difficulty from profile
+        // Determine difficulty from profile (with regional adjustment)
         let centDifference = determineCentDifference(
             for: selectedNote,
             profile: profile,
-            settings: settings
+            settings: settings,
+            lastComparison: lastComparison
         )
 
         logger.info("Selected note=\(selectedNote), centDiff=\(centDifference)")
@@ -151,9 +166,9 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
     ///   - settings: Training configuration
     /// - Returns: MIDI note near the center note
     private func selectNearbyNote(around note: Int, settings: TrainingSettings) -> Int {
-        // Calculate nearby range (±12 semitones)
-        let minNearby = max(settings.noteRangeMin, note - nearbyRange)
-        let maxNearby = min(settings.noteRangeMax, note + nearbyRange)
+        // Calculate nearby range using nearbySelectionRange (±12 semitones)
+        let minNearby = max(settings.noteRangeMin, note - DifficultyParameters.nearbySelectionRange)
+        let maxNearby = min(settings.noteRangeMax, note + DifficultyParameters.nearbySelectionRange)
 
         // Ensure valid range
         let actualMin = min(minNearby, settings.noteRangeMax)
@@ -164,75 +179,84 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         return selected
     }
 
-    /// Determines cent difference for a note
+    /// Determines cent difference for a note using regional difficulty logic
     ///
-    /// Uses smart fallback strategy:
-    /// 1. If trained: use profile's mean threshold
-    /// 2. If untrained: use mean of nearby notes (±6 semitones)
-    /// 3. If all nearby untrained: use default 100 cents
+    /// Strategy:
+    /// 1. If jumping to different region: reset to mean (absolute value)
+    /// 2. If staying in same region: adjust based on last result
+    ///    - Correct answer → narrow by narrowingFactor
+    ///    - Incorrect answer → widen by wideningFactor
+    /// 3. For untrained notes: use range mean or default
     ///
     /// - Parameters:
     ///   - note: MIDI note
     ///   - profile: User's perceptual profile
     ///   - settings: Training configuration (for difficulty bounds)
+    ///   - lastComparison: Most recently completed comparison (nil on first)
     /// - Returns: Cent difference (clamped to min/max)
     private func determineCentDifference(
         for note: Int,
         profile: PerceptualProfile,
-        settings: TrainingSettings
+        settings: TrainingSettings,
+        lastComparison: CompletedComparison?
     ) -> Double {
         let stats = profile.statsForNote(note)
 
-        // If trained, use the profile's mean threshold
-        if stats.isTrained && stats.mean > 0.0 {
-            let difficulty = clamp(
-                stats.mean,
-                min: settings.minCentDifference,
-                max: settings.maxCentDifference
-            )
-            logger.debug("Using profile difficulty for note \(note): \(difficulty)")
-            return difficulty
+        // Check if we're jumping to a different region
+        let isJump = lastComparison == nil ||
+                     abs(note - lastComparison!.comparison.note1) > DifficultyParameters.regionalRange
+
+        if isJump {
+            // Reset to mean (use absolute value to ignore direction)
+            let difficulty: Double
+            if stats.isTrained {
+                difficulty = abs(stats.mean)
+            } else {
+                // For untrained notes, calculate mean across entire training range
+                difficulty = calculateRangeMean(profile: profile, settings: settings)
+            }
+
+            profile.setDifficulty(note: note, difficulty: difficulty)
+            let clamped = clamp(difficulty, min: settings.minCentDifference, max: settings.maxCentDifference)
+            logger.debug("Jump to note \(note): reset difficulty to \(clamped) cents")
+            return clamped
         }
 
-        // Untrained: calculate mean from nearby notes (±6 semitones)
-        let nearbyMean = calculateNearbyMean(around: note, profile: profile)
-        if nearbyMean > 0.0 {
-            let difficulty = clamp(
-                nearbyMean,
-                min: settings.minCentDifference,
-                max: settings.maxCentDifference
-            )
-            logger.debug("Using nearby mean for note \(note): \(difficulty)")
-            return difficulty
-        }
+        // Staying in same region - adjust based on last result
+        let wasCorrect = lastComparison!.isCorrect
+        let currentDiff = stats.currentDifficulty
 
-        // All nearby notes untrained: use default 100 cents
-        logger.debug("All nearby notes untrained for note \(note), using default 100 cents")
-        return 100.0
+        let adjustedDiff = wasCorrect
+            ? max(currentDiff * DifficultyParameters.narrowingFactor, settings.minCentDifference)
+            : min(currentDiff * DifficultyParameters.wideningFactor, settings.maxCentDifference)
+
+        profile.setDifficulty(note: note, difficulty: adjustedDiff)
+        logger.debug("Regional adjustment for note \(note): \(wasCorrect ? "correct" : "incorrect") → \(adjustedDiff) cents")
+        return adjustedDiff
     }
 
-    /// Calculates mean detection threshold from nearby notes
+    /// Calculates mean detection threshold across entire training range
+    ///
+    /// Used for cold start when a note has no training history.
+    /// Scans entire range (not just nearby notes) to get best estimate.
     ///
     /// - Parameters:
-    ///   - note: Center note
     ///   - profile: User's perceptual profile
-    /// - Returns: Mean threshold of nearby trained notes, or 0.0 if none trained
-    private func calculateNearbyMean(around note: Int, profile: PerceptualProfile) -> Double {
-        let minNote = max(0, note - halfOctaveRange)
-        let maxNote = min(127, note + halfOctaveRange)
-
+    ///   - settings: Training configuration (defines range to scan)
+    /// - Returns: Mean threshold of trained notes, or default if none trained
+    private func calculateRangeMean(profile: PerceptualProfile, settings: TrainingSettings) -> Double {
         var sum = 0.0
         var count = 0
 
-        for n in minNote...maxNote {
-            let stats = profile.statsForNote(n)
-            if stats.isTrained && stats.mean > 0.0 {
-                sum += stats.mean
+        for note in settings.noteRangeMin...settings.noteRangeMax {
+            let stats = profile.statsForNote(note)
+            if stats.isTrained {
+                sum += abs(stats.mean)  // Use absolute value to ignore direction
                 count += 1
             }
         }
 
-        return count > 0 ? sum / Double(count) : 0.0
+        return count > 0 ? sum / Double(count) : DifficultyParameters.defaultDifficulty
     }
 
     /// Clamps a value between min and max bounds
