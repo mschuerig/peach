@@ -1,6 +1,6 @@
 # Story 4.1: Implement PerceptualProfile
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -743,7 +743,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Changed to `init()` - creates empty profile (cold start)
 - Removed `aggregateRecords()` method - was duplicate of update() logic
 - PerceptualProfile is now a pure statistical aggregator with ZERO dependencies
-- App initialization (PeachApp) will populate profile via update() calls (Story 4.3)
+- App initialization (PeachApp) populates profile via update() calls - proper separation of concerns
 - Tests simplified - no need for MockTrainingDataStore, just call update() directly
 - Better aligns with Dev Notes: "Pure computation. No persistence, no UI awareness."
 
@@ -751,8 +751,37 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 - Peach/Core/Profile/PerceptualProfile.swift (new)
 - PeachTests/Core/Profile/PerceptualProfileTests.swift (new)
+- Peach/Training/ComparisonObserver.swift (new - observer protocol)
+- Peach/App/PeachApp.swift (modified - profile creation, startup aggregation, observer pattern)
+- Peach/Training/TrainingSession.swift (modified - refactored to use observer pattern)
+- Peach/Core/Data/TrainingDataStore.swift (modified - ComparisonObserver conformance)
+- Peach/Training/TrainingScreen.swift (modified - observer pattern in preview environment)
+- PeachTests/Training/TrainingSessionTests.swift (modified - observer pattern, 4 integration tests added)
+- PeachTests/Training/TrainingSessionFeedbackTests.swift (modified - observer pattern)
+- PeachTests/Training/TrainingSessionLifecycleTests.swift (modified - observer pattern)
+- PeachTests/Training/MockTrainingDataStore.swift (modified - ComparisonObserver conformance)
 
 ## Change Log
+
+### 2026-02-14 - Observer Pattern Refactoring (Code Review)
+- **Architectural improvement**: Decoupled TrainingSession from concrete dependencies
+- **Created ComparisonObserver protocol**: Anonymous event notification for comparison completion
+- **TrainingDataStore observer**: Moved persistence logic from TrainingSession to observer method
+- **PerceptualProfile observer**: Moved update logic from TrainingSession to observer method
+- **Single Responsibility Principle**: TrainingSession now only orchestrates, doesn't know about persistence/analytics
+- **Open/Closed Principle**: Can add new observers (analytics, haptics) without modifying TrainingSession
+- **Dependency Inversion**: TrainingSession depends on ComparisonObserver abstraction, not concretions
+- **Benefits**: Better testability, loose coupling, extensibility for future features
+- Build verified: All changes compile successfully
+
+### 2026-02-14 - Code Review Integration Fixes
+- **AC2 Implementation**: Added PerceptualProfile creation and startup aggregation in PeachApp
+- **AC3 Implementation**: TrainingSession now calls profile.update() after each comparison
+- **Preserves directional bias**: Using signed centOffset to detect up/down perception differences
+- **Full integration**: Profile passed to TrainingSession, updated incrementally during training
+- **Test updates**: All TrainingSession test fixtures updated to include PerceptualProfile
+- **Data flow complete**: App startup loads records → populates profile; training loop updates profile incrementally
+- Build verified: All changes compile successfully
 
 ### 2026-02-14 - Architectural Refactoring
 - **Removed data store coupling**: Changed `init(from: ComparisonRecordStoring)` to `init()`
@@ -760,7 +789,6 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - **Simplified architecture**: PerceptualProfile is now a pure statistical aggregator with zero dependencies
 - **Tests simplified**: No MockTrainingDataStore needed, tests directly call update()
 - **Aligns with Dev Notes**: "Pure computation. No persistence, no UI awareness."
-- **App startup aggregation**: Deferred to PeachApp initialization (Story 4.3)
 - All 15 tests still pass after refactoring
 
 ### 2026-02-14 - Story 4.1 Implementation Complete

@@ -8,11 +8,13 @@ struct TrainingSessionTests {
     // MARK: - Test Fixtures
 
     @MainActor
-    func makeTrainingSession() -> (TrainingSession, MockNotePlayer, MockTrainingDataStore) {
+    func makeTrainingSession() -> (TrainingSession, MockNotePlayer, MockTrainingDataStore, PerceptualProfile) {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
-        let session = TrainingSession(notePlayer: mockPlayer, dataStore: mockDataStore)
-        return (session, mockPlayer, mockDataStore)
+        let profile = PerceptualProfile()
+        let observers: [ComparisonObserver] = [mockDataStore, profile]
+        let session = TrainingSession(notePlayer: mockPlayer, observers: observers)
+        return (session, mockPlayer, mockDataStore, profile)
     }
 
     // MARK: - Test Helpers
@@ -409,5 +411,105 @@ struct TrainingSessionTests {
         #expect(comparisonHigher.isCorrect(userAnswerHigher: false) == false)
         #expect(comparisonLower.isCorrect(userAnswerHigher: false) == true)
         #expect(comparisonLower.isCorrect(userAnswerHigher: true) == false)
+    }
+
+    // MARK: - Integration Tests: PerceptualProfile Updates (Story 4.1)
+
+    @MainActor
+    @Test("Profile is updated incrementally when comparison is recorded")
+    func profileUpdatesIncrementallyAfterComparison() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let observers: [ComparisonObserver] = [mockDataStore, profile]
+        let session = TrainingSession(notePlayer: mockPlayer, observers: observers)
+
+        // Verify profile starts empty (cold start)
+        #expect(profile.statsForNote(60).sampleCount == 0)
+
+        // Start training and answer a comparison
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Answer comparison (note1 will be 60, centDifference 100.0)
+        session.handleAnswer(isHigher: true)
+
+        // Wait for answer processing
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Verify profile was updated for note 60
+        let stats = profile.statsForNote(60)
+        #expect(stats.sampleCount == 1)
+        #expect(stats.mean == 100.0)  // First correct answer at 100 cents
+    }
+
+    @MainActor
+    @Test("Profile updates preserve directional bias (signed centOffset)")
+    func profilePreservesDirectionalBias() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let observers: [ComparisonObserver] = [mockDataStore, profile]
+        let session = TrainingSession(notePlayer: mockPlayer, observers: observers)
+
+        // Manually update profile with directional data
+        profile.update(note: 60, centOffset: 50.0, isCorrect: true)   // Higher
+        profile.update(note: 60, centOffset: -30.0, isCorrect: true)  // Lower
+
+        // Mean should reflect signed values: (50 + -30) / 2 = 10
+        let stats = profile.statsForNote(60)
+        #expect(stats.sampleCount == 2)
+        #expect(stats.mean == 10.0)
+    }
+
+    @MainActor
+    @Test("Profile statistics accumulate correctly over multiple comparisons")
+    func profileAccumulatesMultipleComparisons() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let observers: [ComparisonObserver] = [mockDataStore, profile]
+        let session = TrainingSession(notePlayer: mockPlayer, observers: observers)
+
+        // Start training
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Answer first comparison
+        session.handleAnswer(isHigher: true)
+        try? await Task.sleep(for: .milliseconds(600))  // Wait for feedback + next comparison
+
+        // Answer second comparison
+        session.handleAnswer(isHigher: false)
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Profile should have recorded both comparisons for note 60
+        let stats = profile.statsForNote(60)
+        #expect(stats.sampleCount == 2)
+        // Mean should be average of two 100-cent offsets (one positive, one negative)
+        #expect(stats.mean == 0.0)  // (100 + -100) / 2 = 0
+    }
+
+    @MainActor
+    @Test("Profile only updates for correct answers")
+    func profileOnlyUpdatesForCorrectAnswers() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let observers: [ComparisonObserver] = [mockDataStore, profile]
+        let session = TrainingSession(notePlayer: mockPlayer, observers: observers)
+
+        // Start training
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Answer INCORRECTLY (isHigher: false when second note is higher)
+        session.handleAnswer(isHigher: false)
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Profile should NOT be updated for incorrect answer
+        let stats = profile.statsForNote(60)
+        #expect(stats.sampleCount == 0)
+        #expect(stats.mean == 0.0)
     }
 }

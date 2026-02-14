@@ -161,3 +161,23 @@ struct PerceptualNote {
         sampleCount > 0
     }
 }
+
+// MARK: - ComparisonObserver Conformance
+
+extension PerceptualProfile: ComparisonObserver {
+    /// Observes comparison completion and updates detection threshold statistics
+    /// - Parameter completed: The completed comparison with user's answer and result
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        let comparison = completed.comparison
+
+        // Calculate signed centOffset (preserves directional bias)
+        let centOffset = comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference
+
+        // Update profile incrementally using Welford's algorithm
+        update(
+            note: comparison.note1,
+            centOffset: centOffset,
+            isCorrect: completed.isCorrect
+        )
+    }
+}

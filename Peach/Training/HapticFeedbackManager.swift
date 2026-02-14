@@ -19,7 +19,7 @@ protocol HapticFeedback {
 /// # Testing Note
 /// Haptics don't work in iOS Simulator - must test on real device.
 @MainActor
-final class HapticFeedbackManager: HapticFeedback {
+final class HapticFeedbackManager: HapticFeedback, ComparisonObserver {
     /// UIKit haptic generator
     private let generator: UIImpactFeedbackGenerator
 
@@ -45,18 +45,38 @@ final class HapticFeedbackManager: HapticFeedback {
         // Prepare for next potential haptic to reduce latency
         generator.prepare()
     }
+
+    // MARK: - ComparisonObserver
+
+    /// Called when a comparison is completed - triggers haptic feedback if incorrect
+    ///
+    /// - Parameter completed: The completed comparison with result
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        if !completed.isCorrect {
+            playIncorrectFeedback()
+        }
+    }
 }
 
 // MARK: - Mock for Testing
 
 /// Mock haptic feedback manager for unit tests
 @MainActor
-final class MockHapticFeedbackManager: HapticFeedback {
+final class MockHapticFeedbackManager: HapticFeedback, ComparisonObserver {
     /// Number of times playIncorrectFeedback() was called
     private(set) var incorrectFeedbackCount = 0
 
     func playIncorrectFeedback() {
         incorrectFeedbackCount += 1
+    }
+
+    // MARK: - ComparisonObserver
+
+    /// Called when a comparison is completed - tracks haptic feedback for incorrect answers
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        if !completed.isCorrect {
+            playIncorrectFeedback()
+        }
     }
 
     /// Resets the mock state (for test cleanup)

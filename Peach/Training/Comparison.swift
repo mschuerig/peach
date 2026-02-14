@@ -87,3 +87,35 @@ struct Comparison {
         return userAnswerHigher == isSecondNoteHigher
     }
 }
+
+/// Represents a completed comparison with the user's answer
+///
+/// Bundles together a comparison and the user's response for recording and analysis.
+/// This eliminates redundant parameters when passing comparison results to observers.
+struct CompletedComparison {
+    /// The comparison that was presented
+    let comparison: Comparison
+
+    /// Whether the user answered "higher" (true) or "lower" (false)
+    let userAnsweredHigher: Bool
+
+    /// Whether the user's answer was correct (computed property)
+    var isCorrect: Bool {
+        comparison.isCorrect(userAnswerHigher: userAnsweredHigher)
+    }
+
+    /// Timestamp when the comparison was completed
+    let timestamp: Date
+
+    /// Creates a completed comparison
+    ///
+    /// - Parameters:
+    ///   - comparison: The comparison that was presented
+    ///   - userAnsweredHigher: Whether the user answered "higher"
+    ///   - timestamp: When the comparison was completed (defaults to now)
+    init(comparison: Comparison, userAnsweredHigher: Bool, timestamp: Date = Date()) {
+        self.comparison = comparison
+        self.userAnsweredHigher = userAnsweredHigher
+        self.timestamp = timestamp
+    }
+}

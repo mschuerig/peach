@@ -16,10 +16,24 @@ struct PeachApp: App {
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
             let notePlayer = try SineWaveNotePlayer()
 
-            // Create training session
+            // Create and populate perceptual profile from existing data (Story 4.1)
+            let profile = PerceptualProfile()
+            let existingRecords = try dataStore.fetchAll()
+            for record in existingRecords {
+                profile.update(
+                    note: record.note1,
+                    centOffset: record.note2CentOffset,
+                    isCorrect: record.isCorrect
+                )
+            }
+
+            // Create training session with observer pattern (Story 4.1)
+            // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback)
+            let hapticManager = HapticFeedbackManager()
+            let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
             _trainingSession = State(wrappedValue: TrainingSession(
                 notePlayer: notePlayer,
-                dataStore: dataStore
+                observers: observers
             ))
         } catch {
             fatalError("Failed to initialize app: \(error)")

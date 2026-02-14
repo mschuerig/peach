@@ -54,3 +54,30 @@ final class TrainingDataStore {
         }
     }
 }
+
+// MARK: - ComparisonObserver Conformance
+
+extension TrainingDataStore: ComparisonObserver {
+    /// Observes comparison completion and persists the result
+    /// - Parameter completed: The completed comparison with user's answer and result
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        let comparison = completed.comparison
+        let record = ComparisonRecord(
+            note1: comparison.note1,
+            note2: comparison.note2,
+            note2CentOffset: comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference,
+            isCorrect: completed.isCorrect,
+            timestamp: completed.timestamp
+        )
+
+        do {
+            try save(record)
+        } catch let error as DataStoreError {
+            // Data error - log but don't propagate (observers shouldn't fail training)
+            print("⚠️ TrainingDataStore save error: \(error.localizedDescription)")
+        } catch {
+            // Unexpected error - log but don't propagate
+            print("⚠️ TrainingDataStore unexpected error: \(error.localizedDescription)")
+        }
+    }
+}

@@ -100,10 +100,13 @@ private struct TrainingSessionKey: EnvironmentKey {
     nonisolated(unsafe) static var defaultValue: TrainingSession = {
         // Default value for previews - uses mock dependencies
         @MainActor func makeDefault() -> TrainingSession {
-            TrainingSession(
+            let dataStore = MockDataStoreForPreview()
+            let profile = PerceptualProfile()
+            let hapticManager = MockHapticFeedbackManager()
+            let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
+            return TrainingSession(
                 notePlayer: MockNotePlayerForPreview(),
-                dataStore: MockDataStoreForPreview(),
-                hapticManager: MockHapticFeedbackManager()
+                observers: observers
             )
         }
         return MainActor.assumeIsolated {
@@ -131,9 +134,13 @@ private final class MockNotePlayerForPreview: NotePlayer {
 }
 
 @MainActor
-private final class MockDataStoreForPreview: ComparisonRecordStoring {
+private final class MockDataStoreForPreview: ComparisonRecordStoring, ComparisonObserver {
     func save(_ record: ComparisonRecord) throws {}
     func fetchAll() throws -> [ComparisonRecord] { [] }
+
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        // No-op for preview
+    }
 }
 
 // MARK: - Previews

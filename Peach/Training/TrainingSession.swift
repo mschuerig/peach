@@ -89,11 +89,9 @@ final class TrainingSession {
     /// Audio playback service (protocol-based for testing)
     private let notePlayer: NotePlayer
 
-    /// Data persistence service (protocol-based for testing)
-    private let dataStore: ComparisonRecordStoring
-
-    /// Haptic feedback service (protocol-based for testing, Story 3.3)
-    private let hapticManager: HapticFeedback
+    /// Observers notified when comparisons are completed (Story 4.1)
+    /// Decouples TrainingSession from specific persistence and analytics implementations
+    private let observers: [ComparisonObserver]
 
     // MARK: - Configuration
 
@@ -131,12 +129,10 @@ final class TrainingSession {
     ///
     /// - Parameters:
     ///   - notePlayer: Service for playing audio notes
-    ///   - dataStore: Service for persisting comparison records
-    ///   - hapticManager: Service for haptic feedback (Story 3.3)
-    init(notePlayer: NotePlayer, dataStore: ComparisonRecordStoring, hapticManager: HapticFeedback = HapticFeedbackManager()) {
+    ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
+    init(notePlayer: NotePlayer, observers: [ComparisonObserver] = []) {
         self.notePlayer = notePlayer
-        self.dataStore = dataStore
-        self.hapticManager = hapticManager
+        self.observers = observers
 
         // Setup audio interruption observers (Story 3.4)
         setupAudioInterruptionObservers()
@@ -195,21 +191,16 @@ final class TrainingSession {
             }
         }
 
-        // Record the result
-        let isCorrect = comparison.isCorrect(userAnswerHigher: isHigher)
-        logger.info("Answer was \(isCorrect ? "✓ CORRECT" : "✗ WRONG") (second note was \(comparison.isSecondNoteHigher ? "higher" : "lower"))")
+        // Create completed comparison with user's answer
+        let completed = CompletedComparison(comparison: comparison, userAnsweredHigher: isHigher)
+        logger.info("Answer was \(completed.isCorrect ? "✓ CORRECT" : "✗ WRONG") (second note was \(comparison.isSecondNoteHigher ? "higher" : "lower"))")
 
-        recordComparison(comparison, isCorrect: isCorrect)
+        // Notify observers (includes data store, profile, and haptic feedback)
+        recordComparison(completed)
 
         // Set feedback state (Story 3.3)
-        isLastAnswerCorrect = isCorrect
+        isLastAnswerCorrect = completed.isCorrect
         showFeedback = true
-
-        // Trigger haptic feedback if incorrect (Story 3.3)
-        if !isCorrect {
-            hapticManager.playIncorrectFeedback()
-            logger.info("Triggered haptic feedback for incorrect answer")
-        }
 
         // Transition to feedback state
         state = .showingFeedback
@@ -335,29 +326,16 @@ final class TrainingSession {
         }
     }
 
-    /// Records a comparison result to persistent storage
+    /// Notifies observers that a comparison was completed
     ///
-    /// Data errors are logged but don't stop training (one lost record is acceptable).
+    /// Observers handle their own error management and don't block training.
     ///
-    /// - Parameters:
-    ///   - comparison: The comparison that was answered
-    ///   - isCorrect: Whether the user answered correctly
-    private func recordComparison(_ comparison: Comparison, isCorrect: Bool) {
-        let record = ComparisonRecord(
-            note1: comparison.note1,
-            note2: comparison.note2,
-            note2CentOffset: comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference,
-            isCorrect: isCorrect
-        )
-
-        do {
-            try dataStore.save(record)
-        } catch let error as DataStoreError {
-            // Data error - log but continue training
-            logger.warning("Data save error (continuing): \(error.localizedDescription)")
-        } catch {
-            // Unexpected error - log but continue
-            logger.warning("Unexpected save error (continuing): \(error.localizedDescription)")
+    /// - Parameter completed: The completed comparison with user's answer and result
+    private func recordComparison(_ completed: CompletedComparison) {
+        // Notify all observers (dataStore, profile, hapticFeedback, etc.)
+        // Each observer is responsible for its own error handling
+        observers.forEach { observer in
+            observer.comparisonCompleted(completed)
         }
     }
 

@@ -1,9 +1,9 @@
 import Foundation
 @testable import Peach
 
-/// Mock ComparisonRecordStoring for testing TrainingSession
+/// Mock ComparisonRecordStoring and ComparisonObserver for testing TrainingSession
 @MainActor
-final class MockTrainingDataStore: ComparisonRecordStoring {
+final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver {
     // MARK: - Test State Tracking
 
     var saveCallCount = 0
@@ -39,5 +39,19 @@ final class MockTrainingDataStore: ComparisonRecordStoring {
         lastSavedRecord = nil
         savedRecords = []
         shouldThrowError = false
+    }
+
+    // MARK: - ComparisonObserver Protocol
+
+    func comparisonCompleted(_ completed: CompletedComparison) {
+        let comparison = completed.comparison
+        let record = ComparisonRecord(
+            note1: comparison.note1,
+            note2: comparison.note2,
+            note2CentOffset: comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference,
+            isCorrect: completed.isCorrect,
+            timestamp: completed.timestamp
+        )
+        try? save(record)
     }
 }
