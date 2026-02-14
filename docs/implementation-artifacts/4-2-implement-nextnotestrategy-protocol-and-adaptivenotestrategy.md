@@ -789,3 +789,79 @@ N/A
 - Peach/Core/Algorithm/AdaptiveNoteStrategy.swift (new)
 - PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift (new)
 - PeachTests/Training/TrainingSessionTests.swift (modified - fixed tuple destructuring)
+- Peach/Core/Profile/PerceptualProfile.swift (modified - added currentDifficulty, fixed weakSpots)
+- Peach/Training/Comparison.swift (modified - documentation clarification)
+
+### Code Review Findings (2026-02-14)
+
+**Review Type:** Adversarial Senior Developer Code Review
+**Reviewer:** Claude Sonnet 4.5 (AI)
+**Commits:** 7ca1d88, 1f55cec
+
+#### Critical Issues Found and Fixed
+
+**Issue #1: AC#2 and AC#3 Not Implemented**
+- **Finding:** Story claimed difficulty adjustment was implemented (Tasks marked [x]), but code was stateless with no adjustment mechanism
+- **Root Cause:** Commit 6eba9d6 ("Refactor: Make AdaptiveNoteStrategy stateless") removed the difficulty tracking without updating story tasks
+- **Impact:** Core adaptive behavior missing - comparisons didn't get harder/easier based on user performance
+- **Fix:** Implemented regional difficulty adjustment:
+  - Correct answer → narrow by 5% (factor 0.95)
+  - Incorrect answer → widen by 30% (factor 1.3)
+  - Difficulty persists within region (±6 semitones)
+  - Jumps reset to abs(mean)
+  - Added currentDifficulty field to PerceptualNote
+  - All parameters now named constants in DifficultyParameters enum
+
+**Issue #2: Weak Spot Logic Used Wrong Metric**
+- **Finding:** weakSpots() ranked by signed mean instead of absolute threshold
+- **Example Bug:** Note with mean=0 (mix of +80/-80) ranked as strongest, not weakest
+- **Impact:** Weak spot targeting could select wrong notes
+- **Fix:** Changed to use abs(mean) for ranking
+
+**Issue #3: Negative Means Ignored in Difficulty Calculation**
+- **Finding:** Code checked `stats.mean > 0.0`, ignoring notes with negative directional bias
+- **Impact:** 50% of trained notes (those with "lower" answers) treated as untrained
+- **Fix:** Use abs(stats.mean) to handle both positive and negative means
+
+**Issue #4: Tests Passed But Didn't Verify Requirements**
+- **Finding:** All tests green, but AC#2 and AC#3 functionality missing
+- **Impact:** False confidence from incomplete test coverage
+- **Fix:** Added 6 new tests for regional difficulty behavior
+
+#### Improvements Made
+
+- All algorithm parameters now named constants (no magic numbers)
+- Cold start logic improved to scan entire training range (not just nearby)
+- Documentation clarified: "stateless comparison selection" vs "pure function"
+- Terminology documented: centDifference (unsigned) vs centOffset (signed)
+
+#### Lessons Learned
+
+**Lesson #1: Refactoring Must Update Story Documentation**
+- Commit 6eba9d6 removed difficulty adjustment but left tasks marked [x]
+- Story completion notes didn't reflect the architectural change
+- **Best Practice:** When refactoring changes functionality, update story file immediately
+
+**Lesson #2: Test Coverage Must Match Acceptance Criteria**
+- Tests can pass while core requirements are unimplemented
+- **Best Practice:** Create tests directly from ACs, not from implementation
+
+**Lesson #3: Code Review Value**
+- Adversarial review found critical gaps that passed testing
+- **Best Practice:** Always review story claims vs actual implementation
+
+### Action Items for Future Work
+
+- [ ] **[Future]** Tune difficulty adjustment factors (0.95/1.3) based on real user testing
+  - Monitor for oscillation behavior (rapid difficulty swings)
+  - Consider success rate threshold instead of single-mistake trigger
+  - Document optimal values after testing
+
+- [ ] **[Future]** Expand test coverage for edge cases
+  - Test bidirectional training (mixed higher/lower comparisons)
+  - Test rapid difficulty changes near bounds
+  - Test profile behavior with sparse training data
+
+- [ ] **[Future]** Performance monitoring
+  - Verify nextComparison() stays < 1ms (NFR2 requirement)
+  - Profile with large training datasets (10k+ comparisons)
