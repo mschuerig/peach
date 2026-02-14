@@ -285,10 +285,15 @@ class PerceptualProfile {
 From ComparisonRecords to PerceptualNote statistics:
 1. Group all ComparisonRecords by `note1` (MIDI note)
 2. For each MIDI note:
-   - Extract all `note2CentOffset` values where `isCorrect == true` (user CAN detect this difference)
-   - Calculate arithmetic mean → detection threshold
-   - Calculate standard deviation → consistency/confidence
+   - Extract all `note2CentOffset` values from ALL comparisons (both correct and incorrect)
+   - Calculate arithmetic mean → average difficulty attempted for this note
+   - Calculate standard deviation → consistency/spread of attempted difficulties
    - Count samples → confidence weighting
+
+**Rationale for tracking ALL comparisons:**
+- To properly estimate a detection threshold, we need both successes (correct answers) and failures (incorrect answers)
+- The threshold is the boundary between what the user can and cannot detect
+- Tracking only correct answers loses critical information about where the user struggles
 
 **Incremental Update Logic:**
 
@@ -395,12 +400,13 @@ Story 3.4 required multiple commits (bug fixes, code review improvements, test r
 **Statistical Concepts:**
 
 **Detection Threshold**: The smallest cent difference a user can reliably detect for a given note.
-- Measured from ComparisonRecord where `isCorrect == true`
-- Larger `note2CentOffset` required = worse discrimination = higher threshold
+- Measured from ALL ComparisonRecords (both correct and incorrect)
+- The threshold is estimated by analyzing the distribution of attempted difficulties
+- Larger mean = more difficult comparisons attempted on average
 
-**Arithmetic Mean**: Average detection threshold across all correct answers for a note.
+**Arithmetic Mean**: Average centOffset across all comparisons for a note.
 ```
-mean = sum(centOffsets where isCorrect == true) / count(isCorrect == true)
+mean = sum(all centOffsets) / count(all comparisons)
 ```
 
 **Standard Deviation**: Variability in detection — high stdDev = inconsistent, low stdDev = reliable.
@@ -735,7 +741,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Used Welford's online algorithm for numerically stable mean and variance computation
 - Untrained notes assigned Double.infinity score for highest weak spot priority (AC#5)
 - @MainActor isolation ensures thread-safety for concurrent profile updates
-- Only correct comparisons (isCorrect==true) count toward detection threshold statistics
+- ALL comparisons (both correct and incorrect) count toward statistics to properly estimate detection thresholds
 - PerceptualNote stores m2 (sum of squared differences) for incremental variance calculation
 
 **Architectural Refactoring (Post-Implementation Review):**

@@ -41,12 +41,10 @@ final class PerceptualProfile {
             return
         }
 
-        // Only update for correct answers (detection threshold)
-        guard isCorrect else { return }
-
         var stats = noteStats[note]
 
         // Welford's online algorithm for incremental mean and variance
+        // Track ALL comparisons (correct and incorrect) to properly estimate detection threshold
         stats.sampleCount += 1
         let delta = centOffset - stats.mean
         stats.mean += delta / Double(stats.sampleCount)
@@ -59,7 +57,7 @@ final class PerceptualProfile {
 
         noteStats[note] = stats
 
-        logger.debug("Updated note \(note): mean=\(stats.mean), stdDev=\(stats.stdDev), count=\(stats.sampleCount)")
+        logger.debug("Updated note \(note): mean=\(stats.mean), stdDev=\(stats.stdDev), count=\(stats.sampleCount), correct=\(isCorrect)")
     }
 
     // MARK: - Weak Spot Identification
