@@ -47,56 +47,12 @@ struct AdaptiveNoteStrategyTests {
         #expect(comparison.centDifference == 100.0)
     }
 
-    @Test("Trained note uses profile mean threshold")
-    func trainedNoteUsesProfileMean() async throws {
-        let profile = PerceptualProfile()
-
-        // Train note 60 with 25 cent threshold
-        profile.update(note: 60, centOffset: 25, isCorrect: true)
-        profile.update(note: 60, centOffset: 25, isCorrect: true)
-
-        let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
-
-        let comparison = strategy.nextComparison(
-            profile: profile,
-            settings: settings,
-            lastComparison: nil
-        )
-
-        // Should use profile's mean (25 cents)
-        #expect(comparison.note1 == 60)
-        #expect(comparison.centDifference == 25.0)
-    }
-
-    @Test("Untrained note uses mean across training range")
-    func untrainedNoteUsesRangeMean() async throws {
-        let profile = PerceptualProfile()
-
-        // Train notes across the range
-        profile.update(note: 36, centOffset: 20, isCorrect: true)  // Min of range
-        profile.update(note: 84, centOffset: 30, isCorrect: true)  // Max of range
-        // Note 60 is untrained (mean of range = (20 + 30) / 2 = 25)
-
-        let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 36, noteRangeMax: 84)
-
-        let comparison = strategy.nextComparison(
-            profile: profile,
-            settings: settings,
-            lastComparison: nil
-        )
-
-        // Should use mean across entire range (20 + 30) / 2 = 25 cents
-        #expect(comparison.centDifference == 25.0)
-    }
-
     @Test("Difficulty respects floor from settings")
     func difficultyRespectsFloor() async throws {
         let profile = PerceptualProfile()
 
-        // Train note with very low threshold (below default floor)
-        profile.update(note: 60, centOffset: 0.5, isCorrect: true)
+        // Set current difficulty below the floor
+        profile.setDifficulty(note: 60, difficulty: 0.5)
 
         let strategy = AdaptiveNoteStrategy()
         let settings = TrainingSettings(
@@ -119,8 +75,8 @@ struct AdaptiveNoteStrategyTests {
     func difficultyRespectsCeiling() async throws {
         let profile = PerceptualProfile()
 
-        // Train note with very high threshold (above default ceiling)
-        profile.update(note: 60, centOffset: 150, isCorrect: true)
+        // Set current difficulty above the ceiling
+        profile.setDifficulty(note: 60, difficulty: 150.0)
 
         let strategy = AdaptiveNoteStrategy()
         let settings = TrainingSettings(
@@ -317,13 +273,13 @@ struct AdaptiveNoteStrategyTests {
     func statelessStrategyConsistency() async throws {
         let profile = PerceptualProfile()
 
-        // Train a specific note
-        profile.update(note: 60, centOffset: 42, isCorrect: true)
+        // Set a specific difficulty for note 60
+        profile.setDifficulty(note: 60, difficulty: 42.0)
 
         let strategy = AdaptiveNoteStrategy()
         let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
 
-        // Call multiple times with same inputs
+        // Call multiple times with same inputs (nil lastComparison = no adjustment)
         let comparison1 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
         let comparison2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
 
@@ -331,7 +287,7 @@ struct AdaptiveNoteStrategyTests {
         #expect(comparison1.note1 == 60)
         #expect(comparison2.note1 == 60)
 
-        // Same difficulty from profile (absolute value of mean)
+        // Same difficulty from currentDifficulty
         #expect(comparison1.centDifference == 42.0)
         #expect(comparison2.centDifference == 42.0)
     }
@@ -377,59 +333,6 @@ struct AdaptiveNoteStrategyTests {
         #expect(comp2.centDifference == 65.0)  // Widened by 30%
     }
 
-    @Test("Jumping to different region resets to mean")
-    func jumpingResetsToMean() async throws {
-        let profile = PerceptualProfile()
-
-        // Train note 48 with mean of 40 cents, current difficulty at 20 cents
-        profile.update(note: 48, centOffset: 40, isCorrect: true)
-        profile.setDifficulty(note: 48, difficulty: 20.0)
-
-        // Train note 72 with mean of 80 cents (24 semitones from note 48)
-        profile.update(note: 72, centOffset: 80, isCorrect: true)
-
-        let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 72)
-
-        // Start at note 48 with current difficulty 20 cents
-        let comp1 = Comparison(note1: 48, note2: 48, centDifference: 20.0, isSecondNoteHigher: true)
-        let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: true)
-
-        // Next comparison might pick note 72 (24 semitones away > regionalRange of 12)
-        // If it does, should reset to note 72's abs(mean) = 80 cents
-        // Run multiple times to hit note 72 (probabilistic test)
-        var foundJump = false
-        for _ in 0..<100 {
-            let comp2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: completed1)
-            if comp2.note1 == 72 {
-                #expect(comp2.centDifference == 80.0)  // Reset to abs(mean), not adjusted from 20
-                foundJump = true
-                break
-            }
-        }
-
-        // With weak spot targeting, note 72 should be selected frequently
-        #expect(foundJump, "Should have jumped to note 72 at least once in 100 iterations")
-    }
-
-    @Test("Negative means handled with absolute value")
-    func negativeMeansHandledCorrectly() async throws {
-        let profile = PerceptualProfile()
-
-        // Train note with negative mean (more "lower" comparisons)
-        profile.update(note: 60, centOffset: -30.0, isCorrect: true)
-        profile.update(note: 60, centOffset: -50.0, isCorrect: true)
-        // Mean = -40.0
-
-        let strategy = AdaptiveNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
-
-        let comparison = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
-
-        // Should use absolute value (40.0), not ignore negative mean
-        #expect(comparison.centDifference == 40.0)
-    }
-
     @Test("Weak spots use absolute value ranking")
     func weakSpotsUseAbsoluteValue() async throws {
         let profile = PerceptualProfile()
@@ -453,6 +356,30 @@ struct AdaptiveNoteStrategyTests {
         // Note: Untrained notes (infinity) will be first, then trained notes by abs(mean)
         #expect(pos72 < pos60, "Note 72 (abs=90) should rank worse than note 60 (abs=80)")
         #expect(pos60 < pos48, "Note 60 (abs=80) should rank worse than note 48 (abs=10)")
+    }
+
+    @Test("Difficulty narrows even when jumping between notes")
+    func difficultyNarrowsAcrossJumps() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 36, noteRangeMax: 84)
+
+        // First comparison at note 36 (default difficulty 100)
+        let fixedSettings36 = TrainingSettings(noteRangeMin: 36, noteRangeMax: 36)
+        let comp1 = strategy.nextComparison(profile: profile, settings: fixedSettings36, lastComparison: nil)
+        #expect(comp1.note1 == 36)
+        #expect(comp1.centDifference == 100.0)
+
+        // User answers correctly
+        let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: comp1.isSecondNoteHigher)
+
+        // Force next comparison at note 84 (48 semitones away — a jump beyond regionalRange of 12)
+        let fixedSettings84 = TrainingSettings(noteRangeMin: 84, noteRangeMax: 84)
+        let comp2 = strategy.nextComparison(profile: profile, settings: fixedSettings84, lastComparison: completed1)
+
+        #expect(comp2.note1 == 84)
+        #expect(comp2.centDifference < 100.0,
+            "Difficulty should narrow after correct answer, even across a region jump. Got: \(comp2.centDifference)")
     }
 
     @Test("Regional difficulty respects min/max bounds")

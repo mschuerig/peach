@@ -17,9 +17,9 @@ import OSLog
 /// - Blended: Weighted probability between the two
 ///
 /// **Difficulty Determination:**
-/// - Trained note: Use profile's mean detection threshold
-/// - Untrained note: Use mean of nearby notes (±6 semitones)
-/// - All nearby untrained: Default to 100 cents
+/// - Uses per-note currentDifficulty (defaults to 100 cents)
+/// - Narrows on correct answer, widens on incorrect
+/// - No special cases for jumps or cold start
 ///
 /// # Performance
 ///
@@ -40,8 +40,7 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         static let wideningFactor: Double = 1.3
 
         /// Regional range in semitones (±12 = one octave)
-        /// Used for both: (1) difficulty persistence/adjustment, (2) nearby note selection in Natural mode
-        /// When jumping beyond this range, difficulty resets to mean
+        /// Used for nearby note selection in Natural mode
         static let regionalRange: Int = 12
 
         /// Default difficulty for untrained regions (100 cents = 1 semitone)
@@ -178,14 +177,16 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         return selected
     }
 
-    /// Determines cent difference for a note using regional difficulty logic
+    /// Determines cent difference for a note using per-note difficulty tracking
     ///
     /// Strategy:
-    /// 1. If jumping to different region: reset to mean (absolute value)
-    /// 2. If staying in same region: adjust based on last result
-    ///    - Correct answer → narrow by narrowingFactor
-    ///    - Incorrect answer → widen by wideningFactor
-    /// 3. For untrained notes: use range mean or default
+    /// - First comparison (nil lastComparison): use current difficulty as-is
+    /// - Subsequent comparisons: adjust based on last answer's correctness
+    ///   - Correct answer → narrow by narrowingFactor
+    ///   - Incorrect answer → widen by wideningFactor
+    ///
+    /// No special cases for jumps or cold start — per-note currentDifficulty
+    /// (defaulting to 100 cents) handles both implicitly.
     ///
     /// - Parameters:
     ///   - note: MIDI note
@@ -201,61 +202,21 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
     ) -> Double {
         let stats = profile.statsForNote(note)
 
-        // Check if we're jumping to a different region
-        let isJump = lastComparison == nil ||
-                     abs(note - lastComparison!.comparison.note1) > DifficultyParameters.regionalRange
-
-        if isJump {
-            // Reset to mean (use absolute value to ignore direction)
-            let difficulty: Double
-            if stats.isTrained {
-                difficulty = abs(stats.mean)
-            } else {
-                // For untrained notes, calculate mean across entire training range
-                difficulty = calculateRangeMean(profile: profile, settings: settings)
-            }
-
-            profile.setDifficulty(note: note, difficulty: difficulty)
-            let clamped = clamp(difficulty, min: settings.minCentDifference, max: settings.maxCentDifference)
-            logger.debug("Jump to note \(note): reset difficulty to \(clamped) cents")
-            return clamped
+        guard let last = lastComparison else {
+            return clamp(stats.currentDifficulty,
+                         min: settings.minCentDifference,
+                         max: settings.maxCentDifference)
         }
 
-        // Staying in same region - adjust based on last result
-        let wasCorrect = lastComparison!.isCorrect
-        let currentDiff = stats.currentDifficulty
-
-        let adjustedDiff = wasCorrect
-            ? max(currentDiff * DifficultyParameters.narrowingFactor, settings.minCentDifference)
-            : min(currentDiff * DifficultyParameters.wideningFactor, settings.maxCentDifference)
+        let adjustedDiff = last.isCorrect
+            ? max(stats.currentDifficulty * DifficultyParameters.narrowingFactor,
+                  settings.minCentDifference)
+            : min(stats.currentDifficulty * DifficultyParameters.wideningFactor,
+                  settings.maxCentDifference)
 
         profile.setDifficulty(note: note, difficulty: adjustedDiff)
-        logger.debug("Regional adjustment for note \(note): \(wasCorrect ? "correct" : "incorrect") → \(adjustedDiff) cents")
+        logger.debug("Difficulty for note \(note): \(last.isCorrect ? "correct" : "incorrect") → \(adjustedDiff) cents")
         return adjustedDiff
-    }
-
-    /// Calculates mean detection threshold across entire training range
-    ///
-    /// Used for cold start when a note has no training history.
-    /// Scans entire range (not just nearby notes) to get best estimate.
-    ///
-    /// - Parameters:
-    ///   - profile: User's perceptual profile
-    ///   - settings: Training configuration (defines range to scan)
-    /// - Returns: Mean threshold of trained notes, or default if none trained
-    private func calculateRangeMean(profile: PerceptualProfile, settings: TrainingSettings) -> Double {
-        var sum = 0.0
-        var count = 0
-
-        for note in settings.noteRangeMin...settings.noteRangeMax {
-            let stats = profile.statsForNote(note)
-            if stats.isTrained {
-                sum += abs(stats.mean)  // Use absolute value to ignore direction
-                count += 1
-            }
-        }
-
-        return count > 0 ? sum / Double(count) : DifficultyParameters.defaultDifficulty
     }
 
     /// Clamps a value between min and max bounds
