@@ -33,8 +33,8 @@ struct PeachApp: App {
             let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             Self.logger.info("Profile loaded from \(existingRecords.count) records in \(elapsed, format: .fixed(precision: 1))ms")
 
-            // Create adaptive strategy (Story 4.3)
-            let strategy = AdaptiveNoteStrategy()
+            // Kazez evaluation strategy (hotfix — replaces AdaptiveNoteStrategy temporarily)
+            let strategy = KazezNoteStrategy()
 
             // Create training session with observer pattern (Story 4.1) and adaptive strategy (Story 4.3)
             // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback)
