@@ -24,49 +24,49 @@ So that my training is personalized and my profile persists across sessions.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update TrainingSession to Use AdaptiveNoteStrategy (AC: #1)
-  - [ ] Replace random comparison placeholder with NextNoteStrategy protocol dependency
-  - [ ] Inject AdaptiveNoteStrategy instance via TrainingSession initializer
-  - [ ] Update startNextComparison() to call strategy.nextComparison(profile:settings:)
-  - [ ] Pass PerceptualProfile and TrainingSettings to nextComparison() call
-  - [ ] Remove temporary random comparison logic from Story 3.2
-  - [ ] Verify TrainingSession still respects protocol boundary (no direct strategy internals access)
+- [x] Task 1: Update TrainingSession to Use AdaptiveNoteStrategy (AC: #1)
+  - [x] Replace random comparison placeholder with NextNoteStrategy protocol dependency
+  - [x] Inject AdaptiveNoteStrategy instance via TrainingSession initializer
+  - [x] Update startNextComparison() to call strategy.nextComparison(profile:settings:)
+  - [x] Pass PerceptualProfile and TrainingSettings to nextComparison() call
+  - [x] Remove temporary random comparison logic from Story 3.2
+  - [x] Verify TrainingSession still respects protocol boundary (no direct strategy internals access)
 
-- [ ] Task 2: Implement App Startup Profile Loading (AC: #2)
-  - [ ] Update PeachApp.swift to load PerceptualProfile from TrainingDataStore on app launch
-  - [ ] Fetch all ComparisonRecords from dataStore
-  - [ ] Populate PerceptualProfile via update() calls for each record
-  - [ ] Pass loaded profile to TrainingSession initializer
-  - [ ] Add startup logging for profile aggregation (record count, time taken)
-  - [ ] Verify profile persistence across app restarts
+- [x] Task 2: Implement App Startup Profile Loading (AC: #2)
+  - [x] Update PeachApp.swift to load PerceptualProfile from TrainingDataStore on app launch
+  - [x] Fetch all ComparisonRecords from dataStore
+  - [x] Populate PerceptualProfile via update() calls for each record
+  - [x] Pass loaded profile to TrainingSession initializer
+  - [x] Add startup logging for profile aggregation (record count, time taken)
+  - [x] Verify profile persistence across app restarts
 
-- [ ] Task 3: Implement Incremental Profile Updates After Each Answer (AC: #3)
-  - [ ] Update TrainingSession.handleAnswer() to update PerceptualProfile after recording comparison
-  - [ ] Ensure profile.update() called with correct parameters (note, centOffset, isCorrect)
-  - [ ] Verify next comparison reflects updated profile (difficulty adjustment, weak spot changes)
-  - [ ] Maintain ComparisonObserver pattern from Story 4.1
-  - [ ] Add logging for profile updates during training
+- [x] Task 3: Implement Incremental Profile Updates After Each Answer (AC: #3)
+  - [x] Update TrainingSession.handleAnswer() to update PerceptualProfile after recording comparison
+  - [x] Ensure profile.update() called with correct parameters (note, centOffset, isCorrect)
+  - [x] Verify next comparison reflects updated profile (difficulty adjustment, weak spot changes)
+  - [x] Maintain ComparisonObserver pattern from Story 4.1
+  - [x] Add logging for profile updates during training
 
-- [ ] Task 4: Integrate TrainingSettings with AdaptiveNoteStrategy (AC: #4)
-  - [ ] Read TrainingSettings from @AppStorage in TrainingSession or environment
-  - [ ] Pass current settings to strategy.nextComparison(profile:settings:)
-  - [ ] Expose algorithm parameters via TrainingSettings struct
-  - [ ] Support runtime parameter adjustment (for development/testing)
-  - [ ] Add default values for all settings (noteRangeMin: 36, noteRangeMax: 84, naturalVsMechanical: 0.5)
+- [x] Task 4: Integrate TrainingSettings with AdaptiveNoteStrategy (AC: #4)
+  - [x] Read TrainingSettings from @AppStorage in TrainingSession or environment
+  - [x] Pass current settings to strategy.nextComparison(profile:settings:)
+  - [x] Expose algorithm parameters via TrainingSettings struct
+  - [x] Support runtime parameter adjustment (for development/testing)
+  - [x] Add default values for all settings (noteRangeMin: 36, noteRangeMax: 84, naturalVsMechanical: 0.5)
 
-- [ ] Task 5: Update Unit Tests for End-to-End Integration (AC: #5)
-  - [ ] Create integration tests verifying full flow: startup → select comparison → answer → update profile → next comparison
-  - [ ] Test with MockNextNoteStrategy for deterministic comparison sequences
-  - [ ] Test profile loading from populated MockTrainingDataStore
-  - [ ] Test profile updates after each answer (verify incremental changes)
-  - [ ] Test settings propagation to strategy
-  - [ ] Verify no regressions in existing TrainingSession tests
+- [x] Task 5: Update Unit Tests for End-to-End Integration (AC: #5)
+  - [x] Create integration tests verifying full flow: startup → select comparison → answer → update profile → next comparison
+  - [x] Test with MockNextNoteStrategy for deterministic comparison sequences
+  - [x] Test profile loading from populated MockTrainingDataStore
+  - [x] Test profile updates after each answer (verify incremental changes)
+  - [x] Test settings propagation to strategy
+  - [x] Verify no regressions in existing TrainingSession tests
 
-- [ ] Task 6: Remove Cold Start Random Placeholder from Epic 3
-  - [ ] Identify and remove temporary random comparison logic from TrainingSession
-  - [ ] Verify cold start behavior now handled by AdaptiveNoteStrategy (100 cents, random selection)
-  - [ ] Update tests that relied on random placeholder
-  - [ ] Clean up any temporary code comments or TODOs related to placeholder
+- [x] Task 6: Remove Cold Start Random Placeholder from Epic 3
+  - [x] Identify and remove temporary random comparison logic from TrainingSession
+  - [x] Verify cold start behavior now handled by AdaptiveNoteStrategy (100 cents, random selection)
+  - [x] Update tests that relied on random placeholder
+  - [x] Clean up any temporary code comments or TODOs related to placeholder
 
 ## Dev Notes
 
@@ -982,3 +982,7 @@ Modified files:
 - PeachTests/Training/TrainingSessionTests.swift (updated fixtures + note range test)
 - PeachTests/Training/TrainingSessionFeedbackTests.swift (updated fixture)
 - PeachTests/Training/TrainingSessionLifecycleTests.swift (updated fixture)
+
+## Change Log
+
+- 2026-02-15: Story 4.3 implemented - Integrated AdaptiveNoteStrategy into TrainingSession, replaced random placeholder, updated all test fixtures, added TrainingSettings support
