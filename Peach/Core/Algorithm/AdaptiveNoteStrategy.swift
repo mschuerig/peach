@@ -39,6 +39,9 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
 
         /// Default difficulty for untrained regions (100 cents = 1 semitone)
         static let defaultDifficulty: Double = 100.0
+
+        /// Maximum number of trained neighbors to consider in each direction
+        static let maxNeighbors: Int = 5
     }
 
     // MARK: - Properties
@@ -194,15 +197,14 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         settings: TrainingSettings,
         lastComparison: CompletedComparison?
     ) -> Double {
-        let stats = profile.statsForNote(note)
-
         guard let last = lastComparison else {
-            return clamp(stats.currentDifficulty,
+            let effective = weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
+            return clamp(effective,
                          min: settings.minCentDifference,
                          max: settings.maxCentDifference)
         }
 
-        let p = stats.currentDifficulty
+        let p = weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
         let adjustedDiff = last.isCorrect
             ? max(p * (1.0 - 0.05 * p.squareRoot()),
                   settings.minCentDifference)
@@ -212,6 +214,69 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         profile.setDifficulty(note: note, difficulty: adjustedDiff)
         logger.debug("Difficulty for note \(note): \(last.isCorrect ? "correct" : "incorrect") → \(adjustedDiff) cents")
         return adjustedDiff
+    }
+
+    /// Computes weighted effective difficulty for a note using nearby trained neighbors
+    ///
+    /// Borrows evidence from up to 5 nearest trained notes in each direction,
+    /// weighted by `1 / (1 + distance)`. When no trained data exists, returns the default (100 cents).
+    ///
+    /// - Parameters:
+    ///   - note: MIDI note to compute difficulty for
+    ///   - profile: User's perceptual profile
+    ///   - settings: Training configuration (for note range bounds)
+    /// - Returns: Weighted effective difficulty in cents
+    private func weightedEffectiveDifficulty(
+        for note: Int,
+        profile: PerceptualProfile,
+        settings: TrainingSettings
+    ) -> Double {
+        let range = settings.noteRangeMin...settings.noteRangeMax
+
+        // Include the current note at distance 0 if it has data:
+        // either from user comparisons (sampleCount > 0) or from Kazez updates
+        var candidates: [(distance: Int, difficulty: Double)] = []
+        let currentStats = profile.statsForNote(note)
+        if currentStats.sampleCount > 0
+            || currentStats.currentDifficulty != DifficultyParameters.defaultDifficulty {
+            candidates.append((distance: 0, difficulty: currentStats.currentDifficulty))
+        }
+
+        // Collect up to maxNeighbors trained notes below
+        var leftCount = 0
+        for i in stride(from: note - 1, through: range.lowerBound, by: -1) {
+            guard leftCount < DifficultyParameters.maxNeighbors else { break }
+            let stats = profile.statsForNote(i)
+            if stats.sampleCount > 0 {
+                candidates.append((distance: note - i, difficulty: stats.currentDifficulty))
+                leftCount += 1
+            }
+        }
+
+        // Collect up to maxNeighbors trained notes above
+        var rightCount = 0
+        for i in stride(from: note + 1, through: range.upperBound, by: 1) {
+            guard rightCount < DifficultyParameters.maxNeighbors else { break }
+            let stats = profile.statsForNote(i)
+            if stats.sampleCount > 0 {
+                candidates.append((distance: i - note, difficulty: stats.currentDifficulty))
+                rightCount += 1
+            }
+        }
+
+        guard !candidates.isEmpty else {
+            return DifficultyParameters.defaultDifficulty
+        }
+
+        var weightSum = 0.0
+        var weightedSum = 0.0
+        for candidate in candidates {
+            let w = 1.0 / (1.0 + Double(candidate.distance))
+            weightSum += w
+            weightedSum += w * candidate.difficulty
+        }
+
+        return weightedSum / weightSum
     }
 
     /// Clamps a value between min and max bounds

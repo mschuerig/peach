@@ -51,7 +51,8 @@ struct AdaptiveNoteStrategyTests {
     func difficultyRespectsFloor() async throws {
         let profile = PerceptualProfile()
 
-        // Set current difficulty below the floor
+        // Train the note so sampleCount > 0, then set difficulty below the floor
+        profile.update(note: 60, centOffset: 1.0, isCorrect: true)
         profile.setDifficulty(note: 60, difficulty: 0.5)
 
         let strategy = AdaptiveNoteStrategy()
@@ -75,7 +76,8 @@ struct AdaptiveNoteStrategyTests {
     func difficultyRespectsCeiling() async throws {
         let profile = PerceptualProfile()
 
-        // Set current difficulty above the ceiling
+        // Train the note so sampleCount > 0, then set difficulty above the ceiling
+        profile.update(note: 60, centOffset: 1.0, isCorrect: true)
         profile.setDifficulty(note: 60, difficulty: 150.0)
 
         let strategy = AdaptiveNoteStrategy()
@@ -273,7 +275,8 @@ struct AdaptiveNoteStrategyTests {
     func statelessStrategyConsistency() async throws {
         let profile = PerceptualProfile()
 
-        // Set a specific difficulty for note 60
+        // Train the note so sampleCount > 0, then set a specific difficulty
+        profile.update(note: 60, centOffset: 42.0, isCorrect: true)
         profile.setDifficulty(note: 60, difficulty: 42.0)
 
         let strategy = AdaptiveNoteStrategy()
@@ -413,12 +416,12 @@ struct AdaptiveNoteStrategyTests {
         #expect(finalComp.centDifference >= 1.0, "Difficulty should not go below minimum. Got: \(finalComp.centDifference)")
     }
 
-    @Test("Per-note tracking: different notes have independent difficulties")
+    @Test("Per-note tracking: different notes have independent difficulties in isolated ranges")
     func perNoteIndependentDifficulties() async throws {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
 
-        // Train note 60 down to a lower difficulty
+        // Train note 60 down to a lower difficulty (isolated range)
         let settings60 = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
         var lastComp: CompletedComparison? = nil
         for _ in 0..<5 {
@@ -428,12 +431,178 @@ struct AdaptiveNoteStrategyTests {
 
         let comp60 = strategy.nextComparison(profile: profile, settings: settings60, lastComparison: lastComp)
 
-        // Note 72 should still be at default (100 cents) — untrained
+        // Note 72 in isolated range — no neighbors in [72,72], so defaults to 100
         let settings72 = TrainingSettings(noteRangeMin: 72, noteRangeMax: 72)
         let comp72 = strategy.nextComparison(profile: profile, settings: settings72, lastComparison: nil)
 
         #expect(comp60.centDifference < 100.0, "Note 60 should have narrowed difficulty")
-        #expect(comp72.centDifference == 100.0, "Note 72 should still be at default 100 cents")
+        #expect(comp72.centDifference == 100.0, "Note 72 in isolated range should still be at default 100 cents")
+    }
+
+    // MARK: - Weighted Effective Difficulty Tests
+
+    @Test("Weighted difficulty: no data anywhere returns default 100")
+    func weightedDifficultyNoDataReturnsDefault() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
+
+        let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+
+        #expect(comp.centDifference == 100.0, "No trained data → default 100 cents")
+    }
+
+    @Test("Weighted difficulty: current note only returns own difficulty")
+    func weightedDifficultyCurrentNoteOnlyReturnsOwnDifficulty() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        profile.update(note: 60, centOffset: 30.0, isCorrect: true)
+        profile.setDifficulty(note: 60, difficulty: 30.0)
+
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
+        let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+
+        #expect(comp.centDifference == 30.0, "Single trained note should return its own difficulty")
+    }
+
+    @Test("Weighted difficulty: untrained note uses neighbor data")
+    func weightedDifficultyNeighborsOnly() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Train neighbor note 59 at 40.0
+        profile.update(note: 59, centOffset: 40.0, isCorrect: true)
+        profile.setDifficulty(note: 59, difficulty: 40.0)
+
+        // Range [59,61]: note 60 untrained, neighbor 59 trained at 40.0
+        // Single candidate → weighted avg = 40.0
+        let settings = TrainingSettings(noteRangeMin: 59, noteRangeMax: 61)
+
+        var note60Difficulty: Double? = nil
+        for _ in 0..<200 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+            if comp.note1 == 60 {
+                note60Difficulty = comp.centDifference
+                break
+            }
+        }
+
+        if let diff = note60Difficulty {
+            #expect(diff == 40.0,
+                "Untrained note 60 should get neighbor 59's difficulty (40.0). Got: \(diff)")
+        }
+    }
+
+    @Test("Weighted difficulty: trained note with neighbors, own difficulty dominates")
+    func weightedDifficultyCurrentNoteDominates() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Train note 60 at difficulty 30
+        profile.update(note: 60, centOffset: 30.0, isCorrect: true)
+        profile.setDifficulty(note: 60, difficulty: 30.0)
+
+        // Train neighbors at difficulty 80
+        profile.update(note: 59, centOffset: 80.0, isCorrect: true)
+        profile.setDifficulty(note: 59, difficulty: 80.0)
+        profile.update(note: 61, centOffset: 80.0, isCorrect: true)
+        profile.setDifficulty(note: 61, difficulty: 80.0)
+
+        // Weighted for note 60 in range [59,61]:
+        // note60 w=1.0×30 + note59 w=0.5×80 + note61 w=0.5×80
+        // = (30 + 40 + 40) / (1.0 + 0.5 + 0.5) = 110 / 2.0 = 55.0
+        let settings = TrainingSettings(noteRangeMin: 59, noteRangeMax: 61)
+
+        var note60Difficulty: Double? = nil
+        for _ in 0..<200 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+            if comp.note1 == 60 {
+                note60Difficulty = comp.centDifference
+                break
+            }
+        }
+
+        if let diff = note60Difficulty {
+            #expect(abs(diff - 55.0) < 0.01,
+                "Trained note's own difficulty should dominate. Expected 55.0, got \(diff)")
+            #expect(diff < 80.0, "Weighted average should be pulled toward own difficulty (30), not neighbors (80)")
+        }
+    }
+
+    @Test("Weighted difficulty: 5-nearest neighbor limit")
+    func weightedDifficultyKernelNarrowing() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Train ALL notes in range [52,59] to eliminate weak-spot randomness
+        for i in 52...59 {
+            profile.update(note: i, centOffset: 50.0, isCorrect: true)
+            profile.setDifficulty(note: i, difficulty: 50.0)
+        }
+        // Override note 52 to a different difficulty
+        profile.setDifficulty(note: 52, difficulty: 10.0)
+
+        // Also train all other MIDI notes outside range so weakSpots only returns note 60
+        for i in 0...51 {
+            profile.update(note: i, centOffset: 1.0, isCorrect: true)
+        }
+        for i in 61...127 {
+            profile.update(note: i, centOffset: 1.0, isCorrect: true)
+        }
+
+        // Range [52,60]: note 60 is the only untrained note
+        // Neighbors: 59(d=1),58(d=2),57(d=3),56(d=4),55(d=5) — closest 5, all at 50.0
+        // Note 54(d=6),53(d=7),52(d=8) excluded by 5-neighbor limit
+        let settings = TrainingSettings(noteRangeMin: 52, noteRangeMax: 60)
+
+        var note60Difficulty: Double? = nil
+        for _ in 0..<1000 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+            if comp.note1 == 60 {
+                note60Difficulty = comp.centDifference
+                break
+            }
+        }
+
+        #expect(note60Difficulty != nil, "Note 60 should have been selected within 1000 iterations")
+        if let diff = note60Difficulty {
+            #expect(abs(diff - 50.0) < 0.01, "5-nearest neighbors all at 50.0 → weighted avg should be 50.0. Got: \(diff)")
+        }
+    }
+
+    @Test("Weighted difficulty: boundary note with asymmetric neighbors")
+    func weightedDifficultyBoundaryNote() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Train notes only above the boundary note 36
+        profile.update(note: 37, centOffset: 30.0, isCorrect: true)
+        profile.setDifficulty(note: 37, difficulty: 30.0)
+        profile.update(note: 38, centOffset: 50.0, isCorrect: true)
+        profile.setDifficulty(note: 38, difficulty: 50.0)
+
+        // Range starts at 36, so no notes below 36 to search
+        let settings = TrainingSettings(noteRangeMin: 36, noteRangeMax: 40)
+
+        var note36Difficulty: Double? = nil
+        for _ in 0..<200 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
+            if comp.note1 == 36 {
+                note36Difficulty = comp.centDifference
+                break
+            }
+        }
+
+        if let diff = note36Difficulty {
+            // Note 36 untrained, neighbors: 37(d=1,w=0.5,diff=30), 38(d=2,w=0.333,diff=50)
+            // weighted = (0.5×30 + 0.333×50) / (0.5 + 0.333) = (15 + 16.667) / 0.833 ≈ 38.0
+            let w37 = 1.0 / (1.0 + 1.0)  // 0.5
+            let w38 = 1.0 / (1.0 + 2.0)  // 0.333...
+            let expected = (w37 * 30.0 + w38 * 50.0) / (w37 + w38)
+            #expect(abs(diff - expected) < 0.01,
+                "Boundary note should use asymmetric neighbors. Expected \(expected), got \(diff)")
+        }
     }
 
     @Test("Regional difficulty respects min/max bounds")
