@@ -37,6 +37,29 @@ Signed values make sense in other contexts (e.g., `centOffset` for frequency cal
 - Prototype alternative approaches
 - Assess impact on existing training data migration
 
+### AdaptiveNoteStrategy: Slow Difficulty Convergence
+
+**Priority:** High
+**Category:** Algorithm Design
+**Date Added:** 2026-02-15
+
+**Issue:**
+The `AdaptiveNoteStrategy` uses a fixed multiplicative factor (`narrowingFactor: 0.95`) for difficulty reduction on correct answers. This requires ~60 consecutive correct answers to reach the 5-cent range from the starting 100 cents. During manual testing, the user remains stuck in the 100–80 cent range for an unacceptably long time, even when answering correctly every time.
+
+**Root Cause:**
+A fixed percentage reduction converges linearly in log-space — 5% reduction per step regardless of current difficulty. Large intervals should shrink faster; small intervals near the user's threshold should shrink gently. The current algorithm treats both the same.
+
+**Evaluation Approach:**
+A separate `KazezNoteStrategy` was implemented (see `hotfix-kazez-evaluation-strategy.md`) to validate the Kazez convergence formulas (`N = P × [1 - 0.05 × sqrt(P)]`) which use `sqrt(P)` scaling for proportional convergence. This reaches the 5-cent range in ~10 correct answers.
+
+**Future Resolution:**
+Once the Kazez formulas are validated via manual testing, integrate the `sqrt(P)` scaling approach into `AdaptiveNoteStrategy`'s per-note difficulty tracking. The per-note architecture should be preserved — only the narrowing/widening math needs to change.
+
+**Related Code:**
+- `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift` — `DifficultyParameters.narrowingFactor` / `wideningFactor`
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift` — evaluation implementation
+- `docs/implementation-artifacts/hotfix-kazez-evaluation-strategy.md` — story document
+
 ---
 
 ## Technical Debt
