@@ -62,6 +62,61 @@ Implement `hotfix-integrate-kazez-into-adaptive-strategy.md` — replace fixed f
 - `Peach/Core/Algorithm/KazezNoteStrategy.swift` — evaluation implementation
 - `docs/implementation-artifacts/hotfix-kazez-evaluation-strategy.md` — story document
 
+### Weighted Effective Difficulty: Convergence Still Too Slow
+
+**Priority:** Critical
+**Category:** Algorithm Design
+**Date Added:** 2026-02-15
+
+**Issue:**
+After implementing weighted effective difficulty (neighbor-based bootstrapping), manual testing on device shows the algorithm still cannot reach the 3–10 cent range within 10 comparisons on a cold start. After ~100 correct answers, difficulty remains above 20 cents. The user's target is 3–10 cents within 10 comparisons.
+
+**Current State (as implemented):**
+- `weightedEffectiveDifficulty` borrows from up to 5 nearest trained neighbors in each direction, weighted by `1/(1+distance)`
+- Kazez formula: `N = P × (1 - 0.05 × √P)` for correct, `N = P × (1 + 0.09 × √P)` for incorrect
+- Kazez input uses raw `currentDifficulty` for notes that have been Kazez-updated, weighted difficulty only for first encounter (bootstrapping)
+
+**Root Causes Identified:**
+
+1. **Kazez narrowing coefficient (0.05) is too conservative for multi-note convergence.** On a single note, 10 correct answers from 100 cents reaches ~6 cents. But with a 48-note range (36–84), comparisons are spread across many notes — each note gets ~2 of 100 comparisons, barely converging. Increasing to **0.08** would give: 100 → 20 → 12.8 → 9.1 → 6.9 → 5.5 (5 steps on a single note), making bootstrapping far more effective since early-trained notes converge faster and new notes inherit lower starting points.
+
+2. **Unrefined notes anchor weighted averages at 100 cents.** The first note in every session gets `profile.update()` (sampleCount=1) but never Kazez-refined (nil `lastComparison`). Its `currentDifficulty` stays at 100.0. The neighbor search includes any note with `sampleCount > 0`, so this 100-cent anchor pulls up weighted averages for all nearby untrained notes. **Fix:** neighbors should require `currentDifficulty != DifficultyParameters.defaultDifficulty` in addition to `sampleCount > 0`, ensuring only Kazez-refined notes contribute to bootstrapping.
+
+**Proposed Changes:**
+
+File: `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift`
+
+1. Change Kazez correct-answer coefficient from `0.05` to `0.08`:
+   ```swift
+   // Line 215, in determineCentDifference:
+   ? max(p * (1.0 - 0.08 * p.squareRoot()),   // was 0.05
+   ```
+
+2. Add `!= defaultDifficulty` guard to neighbor collection (lines 256, 267):
+   ```swift
+   if stats.sampleCount > 0
+       && stats.currentDifficulty != DifficultyParameters.defaultDifficulty {
+   ```
+
+**Expected Convergence With Both Fixes (cold start, all correct):**
+- Comp 1: Note A presented at 100 (nil lastComparison, no Kazez)
+- Comp 2: Note B → weighted=100 (no refined neighbors yet) → Kazez: 100×0.2=20 → stored
+- Comp 3: Note C → bootstraps from B(20) → Kazez: 20→12.8 → stored
+- Comp 4: Note D → bootstraps from B(20),C(12.8) → weighted≈15 → Kazez: 15→10.2
+- Comp 5: Note E → bootstraps≈12 → Kazez: 12→8.5
+- Comp 6–10: Presented difficulties in 5–10 cent range
+
+**Tests That Need Updating:**
+- `regionalDifficultyNarrowsOnCorrect`: expects 50.0, should become 20.0
+- `difficultyNarrowsAcrossJumps`: expects 50.0, should become 20.0
+- `kazezConvergenceFromDefault`: expects <10 after 10 correct — will pass (converges faster)
+- Other Kazez-related tests: verify expectations still hold with 0.08 coefficient
+- `weightedDifficultyKernelNarrowing`: neighbor condition change may affect setup — verify
+
+**Related Code:**
+- `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift` — `determineCentDifference()`, `weightedEffectiveDifficulty()`
+- `PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift` — Kazez convergence tests
+
 ---
 
 ## Technical Debt
