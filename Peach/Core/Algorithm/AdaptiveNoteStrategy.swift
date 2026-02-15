@@ -204,7 +204,13 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
                          max: settings.maxCentDifference)
         }
 
-        let p = weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
+        // Use weighted difficulty only to bootstrap untrained notes.
+        // Once a note has its own Kazez data, use raw difficulty so
+        // neighbors don't create a convergence floor.
+        let stats = profile.statsForNote(note)
+        let p = stats.currentDifficulty != DifficultyParameters.defaultDifficulty
+            ? stats.currentDifficulty
+            : weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
         let adjustedDiff = last.isCorrect
             ? max(p * (1.0 - 0.05 * p.squareRoot()),
                   settings.minCentDifference)
