@@ -41,19 +41,19 @@ story_location: docs/implementation-artifacts
 
 development_status:
   # Epic 1: Remember Every Note - Data Foundation
-  epic-1: in-progress
+  epic-1: done
   1-1-create-xcode-project-and-folder-structure: done
   1-2-implement-comparisonrecord-data-model-and-trainingdatastore: done
   epic-1-retrospective: optional
 
   # Epic 2: Hear and Compare - Core Audio Engine
-  epic-2: in-progress
+  epic-2: done
   2-1-implement-noteplayer-protocol-and-sinewavenoteplayer: done
   2-2-support-configurable-note-duration-and-reference-pitch: done
   epic-2-retrospective: optional
 
   # Epic 3: Train Your Ear - The Comparison Loop
-  epic-3: in-progress
+  epic-3: done
   3-1-start-screen-and-navigation-shell: done
   3-2-trainingsession-state-machine-and-comparison-loop: done
   3-3-training-screen-ui-with-higher-lower-buttons-and-feedback: done
@@ -61,7 +61,7 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Smart Training - Adaptive Algorithm
-  epic-4: in-progress
+  epic-4: done
   4-1-implement-perceptualprofile: done
   4-2-implement-nextnotestrategy-protocol-and-adaptivenotestrategy: done
   4-3-integrate-adaptive-algorithm-into-trainingsession: done

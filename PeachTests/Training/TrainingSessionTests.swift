@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import Peach
 
 /// Comprehensive tests for TrainingSession state machine and training loop
@@ -8,19 +9,24 @@ struct TrainingSessionTests {
     // MARK: - Test Fixtures
 
     @MainActor
-    func makeTrainingSession() -> (TrainingSession, MockNotePlayer, MockTrainingDataStore, PerceptualProfile) {
+    func makeTrainingSession(
+        comparisons: [Comparison] = [
+            Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true),
+            Comparison(note1: 62, note2: 62, centDifference: 95.0, isSecondNoteHigher: false)
+        ]
+    ) -> (TrainingSession, MockNotePlayer, MockTrainingDataStore, PerceptualProfile, MockNextNoteStrategy) {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let mockStrategy = MockNextNoteStrategy(comparisons: comparisons)
         let observers: [ComparisonObserver] = [mockDataStore, profile]
         let session = TrainingSession(
             notePlayer: mockPlayer,
-            strategy: strategy,
+            strategy: mockStrategy,
             profile: profile,
             observers: observers
         )
-        return (session, mockPlayer, mockDataStore, profile)
+        return (session, mockPlayer, mockDataStore, profile, mockStrategy)
     }
 
     // MARK: - Test Helpers
@@ -67,14 +73,14 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession starts in idle state")
     func startsInIdleState() {
-        let (session, _, _, _) = makeTrainingSession()
+        let (session, _, _, _, _) = makeTrainingSession()
         #expect(session.state == .idle)
     }
 
     @MainActor
     @Test("startTraining transitions from idle to playingNote1")
     func startTrainingTransitionsToPlayingNote1() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         var capturedState: TrainingState?
         mockPlayer.onPlayCalled = {
@@ -94,7 +100,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession transitions from playingNote1 to playingNote2")
     func transitionsFromNote1ToNote2() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
         mockPlayer.simulatedPlaybackDuration = 0.02  // 20ms
 
         session.startTraining()
@@ -110,7 +116,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession transitions from playingNote2 to awaitingAnswer")
     func transitionsFromNote2ToAwaitingAnswer() async {
-        let (session, _, _, _) = makeTrainingSession()
+        let (session, _, _, _, _) = makeTrainingSession()
 
         session.startTraining()
 
@@ -123,7 +129,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("handleAnswer transitions to showingFeedback")
     func handleAnswerTransitionsToShowingFeedback() async throws {
-        let (session, _, _, _) = makeTrainingSession()
+        let (session, _, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -136,7 +142,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession loops back to playingNote1 after feedback")
     func loopsBackAfterFeedback() async throws {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -154,7 +160,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("stop() transitions to idle from any state")
     func stopTransitionsToIdle() async {
-        let (session, _, _, _) = makeTrainingSession()
+        let (session, _, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(50))
@@ -167,7 +173,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Audio error transitions to idle")
     func audioErrorTransitionsToIdle() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
         mockPlayer.shouldThrowError = true
         mockPlayer.errorToThrow = .renderFailed("Test error")
 
@@ -177,46 +183,12 @@ struct TrainingSessionTests {
         #expect(session.state == .idle)
     }
 
-    // MARK: - Comparison Generation Tests
-
-    @Test("Comparison.random generates note1 in valid MIDI range")
-    func comparisonGeneratesValidMidiNote() {
-        for _ in 0..<100 {
-            let comparison = Comparison.random()
-            #expect(comparison.note1 >= 48 && comparison.note1 <= 72)
-        }
-    }
-
-    @Test("Comparison uses 100 cent difference")
-    func comparisonUses100Cents() {
-        let comparison = Comparison.random()
-        #expect(comparison.centDifference == 100.0)
-    }
-
-    @Test("Comparison randomly chooses higher or lower")
-    func comparisonRandomizesDirection() {
-        var hasHigher = false
-        var hasLower = false
-
-        // Generate many comparisons to ensure randomness
-        for _ in 0..<50 {
-            let comparison = Comparison.random()
-            if comparison.isSecondNoteHigher {
-                hasHigher = true
-            } else {
-                hasLower = true
-            }
-        }
-
-        #expect(hasHigher && hasLower, "Should generate both higher and lower comparisons")
-    }
-
     // MARK: - NotePlayer Integration Tests
 
     @MainActor
     @Test("TrainingSession calls play twice per comparison")
     func callsPlayTwicePerComparison() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -227,7 +199,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession uses correct frequency calculation")
     func usesCorrectFrequencyCalculation() async throws {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -243,7 +215,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession passes correct duration to NotePlayer")
     func passesCorrectDuration() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -254,7 +226,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession passes correct amplitude to NotePlayer")
     func passesCorrectAmplitude() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -267,7 +239,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession records comparison on answer")
     func recordsComparisonOnAnswer() async throws {
-        let (session, _, mockDataStore, _) = makeTrainingSession()
+        let (session, _, mockDataStore, _, _) = makeTrainingSession()
 
         session.startTraining()
         try await waitForState(session, .awaitingAnswer)
@@ -281,7 +253,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("ComparisonRecord contains correct note data")
     func comparisonRecordContainsCorrectData() async throws {
-        let (session, _, mockDataStore, _) = makeTrainingSession()
+        let (session, _, mockDataStore, _, _) = makeTrainingSession()
 
         session.startTraining()
 
@@ -291,17 +263,17 @@ struct TrainingSessionTests {
         session.handleAnswer(isHigher: false)
 
         let record = mockDataStore.lastSavedRecord!
-        // With AdaptiveNoteStrategy, notes are in default range 36-84 (C2-C6)
-        #expect(record.note1 >= 36 && record.note1 <= 84)
-        #expect(record.note2 >= 36 && record.note2 <= 84)
-        // Cold start uses 100 cents, which may be positive or negative
-        #expect(abs(record.note2CentOffset) == 100.0 || abs(record.note2CentOffset) <= 100.0)  // Cold start difficulty
+        // MockNextNoteStrategy returns note1=60, note2=60, centDifference=100.0, isSecondNoteHigher=true
+        #expect(record.note1 == 60)
+        #expect(record.note2 == 60)
+        // isSecondNoteHigher=true → centOffset is positive 100.0
+        #expect(record.note2CentOffset == 100.0)
     }
 
     @MainActor
     @Test("Data error does not stop training")
     func dataErrorDoesNotStopTraining() async throws {
-        let (session, mockPlayer, mockDataStore, _) = makeTrainingSession()
+        let (session, mockPlayer, mockDataStore, _, _) = makeTrainingSession()
         mockDataStore.shouldThrowError = true
 
         session.startTraining()
@@ -324,7 +296,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Buttons disabled during playingNote1")
     func buttonsDisabledDuringNote1() async {
-        let (session, mockPlayer, _, _) = makeTrainingSession()
+        let (session, mockPlayer, _, _, _) = makeTrainingSession()
 
         var capturedState: TrainingState?
         mockPlayer.onPlayCalled = {
@@ -343,7 +315,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Buttons enabled during playingNote2 and awaitingAnswer")
     func buttonsEnabledDuringNote2AndWaiting() async {
-        let (session, _, _, _) = makeTrainingSession()
+        let (session, _, _, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -356,7 +328,7 @@ struct TrainingSessionTests {
     @MainActor
     @Test("TrainingSession completes full comparison loop")
     func completesFullLoop() async {
-        let (session, mockPlayer, mockDataStore, _) = makeTrainingSession()
+        let (session, mockPlayer, mockDataStore, _, _) = makeTrainingSession()
 
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
@@ -426,43 +398,33 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Profile is updated incrementally when comparison is recorded")
     func profileUpdatesIncrementallyAfterComparison() async {
-        let mockPlayer = MockNotePlayer()
-        let mockDataStore = MockTrainingDataStore()
-        let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
-        let observers: [ComparisonObserver] = [mockDataStore, profile]
-        let session = TrainingSession(notePlayer: mockPlayer, strategy: strategy, profile: profile, observers: observers)
+        // Mock returns: note1=60, centDifference=100.0, isSecondNoteHigher=true
+        let (session, _, mockDataStore, profile, _) = makeTrainingSession()
 
         // Start training
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
 
-        // Answer comparison (doesn't matter if correct or incorrect - profile updates either way)
+        // Answer "higher" (correct, since isSecondNoteHigher=true)
         session.handleAnswer(isHigher: true)
         try? await Task.sleep(for: .milliseconds(100))
 
-        // Get the actual note that was generated from the saved record
-        guard let savedRecord = mockDataStore.lastSavedRecord else {
+        // Verify comparison was recorded
+        guard mockDataStore.lastSavedRecord != nil else {
             Issue.record("No comparison was recorded")
             return
         }
-        let actualNote = savedRecord.note1
 
-        // Verify profile was updated for the actual note used (regardless of correctness)
-        let stats = profile.statsForNote(actualNote)
+        // Verify profile was updated for note 60 with +100 cents (higher direction)
+        let stats = profile.statsForNote(60)
         #expect(stats.sampleCount == 1)
-        #expect(abs(stats.mean) == 100.0)  // ±100 cents (sign depends on direction)
+        #expect(stats.mean == 100.0)
     }
 
     @MainActor
     @Test("Profile updates preserve directional bias (signed centOffset)")
     func profilePreservesDirectionalBias() async {
-        let mockPlayer = MockNotePlayer()
-        let mockDataStore = MockTrainingDataStore()
-        let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
-        let observers: [ComparisonObserver] = [mockDataStore, profile]
-        let session = TrainingSession(notePlayer: mockPlayer, strategy: strategy, profile: profile, observers: observers)
+        let (_, _, _, profile, _) = makeTrainingSession()
 
         // Manually update profile with directional data
         profile.update(note: 60, centOffset: 50.0, isCorrect: true)   // Higher
@@ -477,74 +439,160 @@ struct TrainingSessionTests {
     @MainActor
     @Test("Profile statistics accumulate correctly over multiple comparisons")
     func profileAccumulatesMultipleComparisons() async {
-        let mockPlayer = MockNotePlayer()
-        let mockDataStore = MockTrainingDataStore()
-        let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
-        let observers: [ComparisonObserver] = [mockDataStore, profile]
-        let session = TrainingSession(notePlayer: mockPlayer, strategy: strategy, profile: profile, observers: observers)
+        // Two comparisons: note 60 (higher, 100 cents) then note 62 (lower, 95 cents)
+        let (session, _, mockDataStore, profile, _) = makeTrainingSession()
 
         // Start training
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
 
-        // Answer first comparison
+        // Answer first comparison (note 60, isSecondNoteHigher=true, answer "higher" = correct)
         session.handleAnswer(isHigher: true)
         try? await Task.sleep(for: .milliseconds(600))  // Wait for feedback + next comparison
 
-        // Answer second comparison
+        // Answer second comparison (note 62, isSecondNoteHigher=false, answer "lower" = correct)
         session.handleAnswer(isHigher: false)
         try? await Task.sleep(for: .milliseconds(100))
 
         // Verify two comparisons were recorded
         #expect(mockDataStore.savedRecords.count == 2)
 
-        // Get the notes that were actually used
-        let note1 = mockDataStore.savedRecords[0].note1
-        let note2 = mockDataStore.savedRecords[1].note1
+        // First comparison: note 60, centOffset = +100 (isSecondNoteHigher=true)
+        let stats60 = profile.statsForNote(60)
+        #expect(stats60.sampleCount == 1)
+        #expect(stats60.mean == 100.0)
 
-        // If both comparisons used the same note, verify accumulation
-        if note1 == note2 {
-            let stats = profile.statsForNote(note1)
-            #expect(stats.sampleCount == 2)
-            // Mean will depend on the directions (could be 0, 100, or -100)
-            #expect(abs(stats.mean) <= 100.0)  // Should be within ±100 cents
-        } else {
-            // Different notes - each should have 1 sample
-            let stats1 = profile.statsForNote(note1)
-            let stats2 = profile.statsForNote(note2)
-            #expect(stats1.sampleCount == 1)
-            #expect(stats2.sampleCount == 1)
-        }
+        // Second comparison: note 62, centOffset = -95 (isSecondNoteHigher=false)
+        let stats62 = profile.statsForNote(62)
+        #expect(stats62.sampleCount == 1)
+        #expect(stats62.mean == -95.0)
     }
 
     @MainActor
     @Test("Profile updates for all answers (both correct and incorrect)")
     func profileUpdatesForAllAnswers() async {
-        let mockPlayer = MockNotePlayer()
-        let mockDataStore = MockTrainingDataStore()
-        let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
-        let observers: [ComparisonObserver] = [mockDataStore, profile]
-        let session = TrainingSession(notePlayer: mockPlayer, strategy: strategy, profile: profile, observers: observers)
+        // Mock returns: note1=60, centDifference=100.0, isSecondNoteHigher=true
+        let (session, _, mockDataStore, profile, _) = makeTrainingSession()
 
         // Start training
         session.startTraining()
         try? await Task.sleep(for: .milliseconds(100))
 
-        // Answer (doesn't matter if correct or incorrect)
+        // Answer incorrectly (say "lower" when second note is higher)
         session.handleAnswer(isHigher: false)
         try? await Task.sleep(for: .milliseconds(100))
 
-        // Get the actual note that was used
-        guard let savedRecord = mockDataStore.lastSavedRecord else {
+        guard mockDataStore.lastSavedRecord != nil else {
             Issue.record("No comparison was recorded")
             return
         }
 
         // Profile SHOULD be updated regardless of correctness
-        let stats = profile.statsForNote(savedRecord.note1)
+        let stats = profile.statsForNote(60)
         #expect(stats.sampleCount == 1, "Profile should update for all answers, not just correct ones")
-        #expect(abs(stats.mean) == 100.0)  // ±100 cents
+        #expect(stats.mean == 100.0)  // +100 cents (isSecondNoteHigher=true)
+    }
+
+    // MARK: - Integration Tests: Settings Propagation (Story 4.3)
+
+    @MainActor
+    @Test("Strategy receives correct settings")
+    func strategyReceivesCorrectSettings() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+        let customSettings = TrainingSettings(
+            noteRangeMin: 48,
+            noteRangeMax: 72,
+            naturalVsMechanical: 0.8
+        )
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            settings: customSettings,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Strategy should have received the custom settings
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
+        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.8)
+    }
+
+    @MainActor
+    @Test("Strategy receives updated profile after answer")
+    func strategyReceivesUpdatedProfileAfterAnswer() async {
+        let (session, _, _, profile, mockStrategy) = makeTrainingSession()
+
+        // Start training — first comparison requested
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        #expect(mockStrategy.callCount == 1)
+
+        // Answer triggers profile update + next comparison
+        session.handleAnswer(isHigher: true)
+        try? await Task.sleep(for: .milliseconds(600))
+
+        // Second comparison should have been requested with same (now-updated) profile
+        #expect(mockStrategy.callCount == 2)
+        #expect(mockStrategy.lastReceivedProfile === profile)
+
+        // Profile should have been updated before second call
+        let stats = profile.statsForNote(60)
+        #expect(stats.sampleCount == 1)
+    }
+
+    // MARK: - Integration Tests: Profile Loading from DataStore (Story 4.3 AC#2)
+
+    @MainActor
+    @Test("Profile loaded from pre-populated data store reflects stored records")
+    func profileLoadedFromDataStore() async {
+        // Simulate app startup: populate profile from existing records
+        let profile = PerceptualProfile()
+        let records = [
+            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50.0, isCorrect: true, timestamp: Date()),
+            ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 30.0, isCorrect: true, timestamp: Date()),
+            ComparisonRecord(note1: 62, note2: 62, note2CentOffset: -40.0, isCorrect: false, timestamp: Date())
+        ]
+
+        for record in records {
+            profile.update(note: record.note1, centOffset: record.note2CentOffset, isCorrect: record.isCorrect)
+        }
+
+        // Verify profile populated correctly
+        let stats60 = profile.statsForNote(60)
+        #expect(stats60.sampleCount == 2)
+        #expect(stats60.mean == 40.0)  // (50 + 30) / 2
+
+        let stats62 = profile.statsForNote(62)
+        #expect(stats62.sampleCount == 1)
+        #expect(stats62.mean == -40.0)
+    }
+
+    // MARK: - Integration Tests: Cold Start (Story 4.3)
+
+    @MainActor
+    @Test("Cold start with empty profile uses default difficulty")
+    func coldStartWithEmptyProfile() async {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Cold start: no training data
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: TrainingSettings(),
+            lastComparison: nil
+        )
+
+        // Cold start should use default 100 cent difficulty
+        #expect(comparison.centDifference == 100.0)
+        // Note should be within default range
+        #expect(comparison.note1 >= 36 && comparison.note1 <= 84)
     }
 }

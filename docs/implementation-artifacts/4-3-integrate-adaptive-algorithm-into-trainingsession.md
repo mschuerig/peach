@@ -976,13 +976,18 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 ### File List
 
 Modified files:
-- Peach/App/PeachApp.swift (added AdaptiveNoteStrategy creation)
-- Peach/Training/TrainingSession.swift (integrated strategy + profile)
+- Peach/App/PeachApp.swift (added AdaptiveNoteStrategy creation, startup logging)
+- Peach/Training/TrainingSession.swift (integrated strategy + profile, injectable settings)
 - Peach/Training/TrainingScreen.swift (updated preview environment)
-- PeachTests/Training/TrainingSessionTests.swift (updated fixtures + note range test)
-- PeachTests/Training/TrainingSessionFeedbackTests.swift (updated fixture)
-- PeachTests/Training/TrainingSessionLifecycleTests.swift (updated fixture)
+- Peach/Training/Comparison.swift (removed dead Comparison.random(), updated header)
+- PeachTests/Training/TrainingSessionTests.swift (deterministic mock strategy, new integration tests)
+- PeachTests/Training/TrainingSessionFeedbackTests.swift (updated fixture to mock strategy)
+- PeachTests/Training/TrainingSessionLifecycleTests.swift (updated fixture to mock strategy)
+
+New files:
+- PeachTests/Training/MockNextNoteStrategy.swift (deterministic test double for NextNoteStrategy)
 
 ## Change Log
 
 - 2026-02-15: Story 4.3 implemented - Integrated AdaptiveNoteStrategy into TrainingSession, replaced random placeholder, updated all test fixtures, added TrainingSettings support
+- 2026-02-15: Code review fixes (Claude Opus 4.6) - Removed dead Comparison.random() code, created MockNextNoteStrategy for deterministic tests, added startup logging to PeachApp, made TrainingSettings injectable, fixed stale docstrings, added tests for settings propagation/profile loading/cold start, fixed tautological assertion

@@ -26,7 +26,7 @@ enum TrainingState {
 /// # Responsibilities
 ///
 /// TrainingSession coordinates the complete training loop:
-/// 1. Generate next comparison (placeholder: random 100 cents until Epic 4)
+/// 1. Generate next comparison via NextNoteStrategy (adaptive algorithm)
 /// 2. Play note 1 (transition to playingNote1)
 /// 3. Play note 2 (transition to playingNote2)
 /// 4. Await answer (transition to awaitingAnswer)
@@ -102,10 +102,10 @@ final class TrainingSession {
     // MARK: - Configuration
 
     /// Training settings for adaptive algorithm (Story 4.3)
-    /// TODO Epic 6: Read from @AppStorage instead of using defaults
-    private let settings: TrainingSettings = TrainingSettings()
+    /// Injected via initializer for testability; Epic 6 will read from @AppStorage
+    private let settings: TrainingSettings
 
-    /// Note duration in seconds (hardcoded for Story 3.2, configurable in Epic 6)
+    /// Note duration in seconds (configurable in Epic 6)
     private let noteDuration: TimeInterval = 1.0
 
     /// Amplitude for note playback (0.0-1.0)
@@ -144,16 +144,19 @@ final class TrainingSession {
     ///   - notePlayer: Service for playing audio notes
     ///   - strategy: Comparison selection strategy (Story 4.3)
     ///   - profile: User's perceptual profile (Story 4.3)
+    ///   - settings: Training settings for algorithm tuning (defaults to TrainingSettings())
     ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
     init(
         notePlayer: NotePlayer,
         strategy: NextNoteStrategy,
         profile: PerceptualProfile,
+        settings: TrainingSettings = TrainingSettings(),
         observers: [ComparisonObserver] = []
     ) {
         self.notePlayer = notePlayer
         self.strategy = strategy
         self.profile = profile
+        self.settings = settings
         self.observers = observers
 
         // Setup audio interruption observers (Story 3.4)

@@ -1,10 +1,13 @@
 import SwiftUI
 import SwiftData
+import os
 
 @main
 struct PeachApp: App {
     @State private var modelContainer: ModelContainer
     @State private var trainingSession: TrainingSession
+
+    private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
     init() {
         // Create model container
@@ -18,6 +21,7 @@ struct PeachApp: App {
 
             // Create and populate perceptual profile from existing data (Story 4.1)
             let profile = PerceptualProfile()
+            let startTime = CFAbsoluteTimeGetCurrent()
             let existingRecords = try dataStore.fetchAll()
             for record in existingRecords {
                 profile.update(
@@ -26,6 +30,8 @@ struct PeachApp: App {
                     isCorrect: record.isCorrect
                 )
             }
+            let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            Self.logger.info("Profile loaded from \(existingRecords.count) records in \(elapsed, format: .fixed(precision: 1))ms")
 
             // Create adaptive strategy (Story 4.3)
             let strategy = AdaptiveNoteStrategy()

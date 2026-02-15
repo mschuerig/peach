@@ -13,11 +13,11 @@ struct TrainingSessionLifecycleTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let mockStrategy = MockNextNoteStrategy()
         let observers: [ComparisonObserver] = [mockDataStore, profile]
         let session = TrainingSession(
             notePlayer: mockPlayer,
-            strategy: strategy,
+            strategy: mockStrategy,
             profile: profile,
             observers: observers
         )

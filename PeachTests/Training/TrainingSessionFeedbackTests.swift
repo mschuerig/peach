@@ -13,11 +13,11 @@ struct TrainingSessionFeedbackTests {
         let mockDataStore = MockTrainingDataStore()
         let mockHaptic = MockHapticFeedbackManager()
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let mockStrategy = MockNextNoteStrategy()
         let observers: [ComparisonObserver] = [mockDataStore, profile, mockHaptic]
         let session = TrainingSession(
             notePlayer: mockPlayer,
-            strategy: strategy,
+            strategy: mockStrategy,
             profile: profile,
             observers: observers
         )
