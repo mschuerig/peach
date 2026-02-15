@@ -18,7 +18,7 @@ import OSLog
 ///
 /// **Difficulty Determination:**
 /// - Uses per-note currentDifficulty (defaults to 100 cents)
-/// - Narrows on correct answer, widens on incorrect
+/// - Narrows on correct (Kazez formula), widens on incorrect (Kazez formula)
 /// - No special cases for jumps or cold start
 ///
 /// # Performance
@@ -33,12 +33,6 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
 
     /// Tunable parameters for adaptive difficulty adjustment
     private enum DifficultyParameters {
-        /// Narrowing factor applied per correct answer (5% harder)
-        static let narrowingFactor: Double = 0.95
-
-        /// Widening factor applied per incorrect answer (30% easier)
-        static let wideningFactor: Double = 1.3
-
         /// Regional range in semitones (±12 = one octave)
         /// Used for nearby note selection in Natural mode
         static let regionalRange: Int = 12
@@ -179,11 +173,11 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
 
     /// Determines cent difference for a note using per-note difficulty tracking
     ///
-    /// Strategy:
-    /// - First comparison (nil lastComparison): use current difficulty as-is
-    /// - Subsequent comparisons: adjust based on last answer's correctness
-    ///   - Correct answer → narrow by narrowingFactor
-    ///   - Incorrect answer → widen by wideningFactor
+    /// Uses Kazez sqrt(P)-scaled formulas for difficulty convergence:
+    /// - Correct answer: `N = P × [1 - (0.05 × √P)]`
+    /// - Incorrect answer: `N = P × [1 + (0.09 × √P)]`
+    ///
+    /// Where P = per-note currentDifficulty, N = new difficulty.
     ///
     /// No special cases for jumps or cold start — per-note currentDifficulty
     /// (defaulting to 100 cents) handles both implicitly.
@@ -208,10 +202,11 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
                          max: settings.maxCentDifference)
         }
 
+        let p = stats.currentDifficulty
         let adjustedDiff = last.isCorrect
-            ? max(stats.currentDifficulty * DifficultyParameters.narrowingFactor,
+            ? max(p * (1.0 - 0.05 * p.squareRoot()),
                   settings.minCentDifference)
-            : min(stats.currentDifficulty * DifficultyParameters.wideningFactor,
+            : min(p * (1.0 + 0.09 * p.squareRoot()),
                   settings.maxCentDifference)
 
         profile.setDifficulty(note: note, difficulty: adjustedDiff)

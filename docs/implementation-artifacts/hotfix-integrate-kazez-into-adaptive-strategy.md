@@ -1,6 +1,6 @@
 # Hotfix: Integrate Kazez Convergence into AdaptiveNoteStrategy
 
-Status: pending
+Status: review
 
 ## Motivation
 
@@ -28,24 +28,24 @@ So that training feels responsive and targets my actual skill level from the sta
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Replace fixed factors with Kazez formulas in AdaptiveNoteStrategy
-  - [ ] Remove `narrowingFactor` and `wideningFactor` from `DifficultyParameters`
-  - [ ] Replace difficulty math in `determineCentDifference()` with Kazez formulas
-  - [ ] Keep per-note `currentDifficulty` as P (input to formula)
-  - [ ] Keep `profile.setDifficulty(note:difficulty:)` call (output of formula)
-  - [ ] Keep clamping to `settings.minCentDifference` / `settings.maxCentDifference`
+- [x] Task 1: Replace fixed factors with Kazez formulas in AdaptiveNoteStrategy
+  - [x] Remove `narrowingFactor` and `wideningFactor` from `DifficultyParameters`
+  - [x] Replace difficulty math in `determineCentDifference()` with Kazez formulas
+  - [x] Keep per-note `currentDifficulty` as P (input to formula)
+  - [x] Keep `profile.setDifficulty(note:difficulty:)` call (output of formula)
+  - [x] Keep clamping to `settings.minCentDifference` / `settings.maxCentDifference`
 
-- [ ] Task 2: Restore AdaptiveNoteStrategy in PeachApp
-  - [ ] Change `KazezNoteStrategy()` back to `AdaptiveNoteStrategy()` in PeachApp.swift
-  - [ ] Restore comment to reference Story 4.3
+- [x] Task 2: Restore AdaptiveNoteStrategy in PeachApp
+  - [x] Change `KazezNoteStrategy()` back to `AdaptiveNoteStrategy()` in PeachApp.swift
+  - [x] Restore comment to reference Story 4.3
 
-- [ ] Task 3: Update AdaptiveNoteStrategy tests
-  - [ ] Update narrowing tests: expect Kazez formula output instead of `× 0.95`
-  - [ ] Update widening tests: expect Kazez formula output instead of `× 1.3`
-  - [ ] Add convergence test similar to KazezNoteStrategyTests (10 correct → ~5 cents)
-  - [ ] Verify per-note tracking still works (different notes have independent difficulties)
+- [x] Task 3: Update AdaptiveNoteStrategy tests
+  - [x] Update narrowing tests: expect Kazez formula output instead of `× 0.95`
+  - [x] Update widening tests: expect Kazez formula output instead of `× 1.3`
+  - [x] Add convergence test similar to KazezNoteStrategyTests (10 correct → ~5 cents)
+  - [x] Verify per-note tracking still works (different notes have independent difficulties)
 
-- [ ] Task 4: Run full test suite and verify no regressions
+- [x] Task 4: Run full test suite and verify no regressions
 
 ## Dev Notes
 
@@ -114,6 +114,31 @@ In `AdaptiveNoteStrategyTests.swift`, tests that assert `× 0.95` or `× 1.3` be
 - `Peach/App/PeachApp.swift` — strategy swap back to AdaptiveNoteStrategy
 - `docs/implementation-artifacts/hotfix-kazez-evaluation-strategy.md` — evaluation story with convergence table
 
+## Dev Agent Record
+
+### Implementation Plan
+
+Surgical replacement of fixed narrowing/widening factors with Kazez sqrt(P)-scaled formulas in `determineCentDifference()`. Three files modified: strategy source, app entry point, and tests.
+
+### Completion Notes
+
+- Removed `narrowingFactor` (0.95) and `wideningFactor` (1.3) from `DifficultyParameters` enum
+- Replaced fixed multiplication with Kazez formulas: correct → `P × (1 - 0.05 × √P)`, incorrect → `P × (1 + 0.09 × √P)`
+- Per-note difficulty tracking preserved — `stats.currentDifficulty` used as P, result written via `profile.setDifficulty()`
+- Restored `AdaptiveNoteStrategy()` in `PeachApp.swift` (was temporarily using `KazezNoteStrategy()`)
+- Updated narrowing test expectation: 100 cents → 50.0 (was 95.0)
+- Updated widening test expectation: 50 cents → ~81.82 (was 65.0)
+- Added convergence test: 10 correct answers from 100 cents → below 10 cents
+- Added per-note independence test: training note 60 doesn't affect note 72
+- Full test suite: all tests pass, zero regressions
+
+## File List
+
+- Peach/Core/Algorithm/AdaptiveNoteStrategy.swift (modified)
+- Peach/App/PeachApp.swift (modified)
+- PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift (modified)
+
 ## Change Log
 
 - 2026-02-15: Story created — integrate validated Kazez formulas into AdaptiveNoteStrategy
+- 2026-02-15: Implementation complete — all 4 tasks done, all tests passing

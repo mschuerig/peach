@@ -294,7 +294,7 @@ struct AdaptiveNoteStrategyTests {
 
     // MARK: - Regional Difficulty Adjustment Tests (AC#2, AC#3)
 
-    @Test("Regional difficulty narrows on correct answer")
+    @Test("Regional difficulty narrows on correct answer using Kazez formula")
     func regionalDifficultyNarrowsOnCorrect() async throws {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
@@ -304,14 +304,14 @@ struct AdaptiveNoteStrategyTests {
         let comp1 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
         #expect(comp1.centDifference == 100.0)  // Default for untrained
 
-        // User answers correctly - should narrow (100 * 0.95 = 95)
+        // User answers correctly - Kazez: 100 × (1 - 0.05 × √100) = 100 × 0.5 = 50.0
         let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: comp1.isSecondNoteHigher)
         let comp2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: completed1)
 
-        #expect(comp2.centDifference == 95.0)  // Narrowed by 5%
+        #expect(comp2.centDifference == 50.0)  // Kazez narrowing from 100 cents
     }
 
-    @Test("Regional difficulty widens on incorrect answer")
+    @Test("Regional difficulty widens on incorrect answer using Kazez formula")
     func regionalDifficultyWidensOnIncorrect() async throws {
         let profile = PerceptualProfile()
 
@@ -326,11 +326,13 @@ struct AdaptiveNoteStrategyTests {
         let comp1 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
         #expect(comp1.centDifference == 50.0)
 
-        // User answers INCORRECTLY - should widen (50 * 1.3 = 65)
+        // User answers INCORRECTLY - Kazez: 50 × (1 + 0.09 × √50) ≈ 81.82
         let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: !comp1.isSecondNoteHigher)
         let comp2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: completed1)
 
-        #expect(comp2.centDifference == 65.0)  // Widened by 30%
+        // 50 × (1 + 0.09 × 7.0710678...) = 50 × 1.63639610... ≈ 81.82
+        let expected = 50.0 * (1.0 + 0.09 * 50.0.squareRoot())
+        #expect(abs(comp2.centDifference - expected) < 0.01)
     }
 
     @Test("Weak spots use absolute value ranking")
@@ -378,8 +380,60 @@ struct AdaptiveNoteStrategyTests {
         let comp2 = strategy.nextComparison(profile: profile, settings: fixedSettings84, lastComparison: completed1)
 
         #expect(comp2.note1 == 84)
-        #expect(comp2.centDifference < 100.0,
-            "Difficulty should narrow after correct answer, even across a region jump. Got: \(comp2.centDifference)")
+        // Kazez narrowing from 100: 100 × (1 - 0.05 × √100) = 50.0
+        #expect(comp2.centDifference == 50.0,
+            "Difficulty should narrow via Kazez formula after correct answer, even across a region jump. Got: \(comp2.centDifference)")
+    }
+
+    @Test("Kazez convergence: 10 correct answers from 100 cents reaches ~5 cents")
+    func kazezConvergenceFromDefault() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(
+            noteRangeMin: 60,
+            noteRangeMax: 60,
+            minCentDifference: 1.0,
+            maxCentDifference: 100.0
+        )
+
+        // First comparison: 100 cents (default)
+        var lastComp: CompletedComparison? = nil
+
+        // Simulate 10 consecutive correct answers
+        for _ in 0..<10 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: lastComp)
+            lastComp = CompletedComparison(comparison: comp, userAnsweredHigher: comp.isSecondNoteHigher)
+        }
+
+        // After 10 correct answers, get the resulting difficulty
+        let finalComp = strategy.nextComparison(profile: profile, settings: settings, lastComparison: lastComp)
+
+        // Should converge to approximately 5 cents (between 1 and 10)
+        #expect(finalComp.centDifference < 10.0, "After 10 correct answers, difficulty should be below 10 cents. Got: \(finalComp.centDifference)")
+        #expect(finalComp.centDifference >= 1.0, "Difficulty should not go below minimum. Got: \(finalComp.centDifference)")
+    }
+
+    @Test("Per-note tracking: different notes have independent difficulties")
+    func perNoteIndependentDifficulties() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+
+        // Train note 60 down to a lower difficulty
+        let settings60 = TrainingSettings(noteRangeMin: 60, noteRangeMax: 60)
+        var lastComp: CompletedComparison? = nil
+        for _ in 0..<5 {
+            let comp = strategy.nextComparison(profile: profile, settings: settings60, lastComparison: lastComp)
+            lastComp = CompletedComparison(comparison: comp, userAnsweredHigher: comp.isSecondNoteHigher)
+        }
+
+        let comp60 = strategy.nextComparison(profile: profile, settings: settings60, lastComparison: lastComp)
+
+        // Note 72 should still be at default (100 cents) — untrained
+        let settings72 = TrainingSettings(noteRangeMin: 72, noteRangeMax: 72)
+        let comp72 = strategy.nextComparison(profile: profile, settings: settings72, lastComparison: nil)
+
+        #expect(comp60.centDifference < 100.0, "Note 60 should have narrowed difficulty")
+        #expect(comp72.centDifference == 100.0, "Note 72 should still be at default 100 cents")
     }
 
     @Test("Regional difficulty respects min/max bounds")
@@ -399,7 +453,7 @@ struct AdaptiveNoteStrategyTests {
         )
 
         // Simulate answering correctly multiple times
-        // 2.0 * 0.95^7 ≈ 1.32, 2.0 * 0.95^8 ≈ 1.25, 2.0 * 0.95^9 ≈ 1.19, 2.0 * 0.95^10 ≈ 1.13
+        // With Kazez narrowing, each step: N = P × (1 - 0.05 × √P)
         // Should hit floor at 1.0 after enough iterations
         var lastComparison: CompletedComparison? = nil
 
