@@ -52,8 +52,10 @@ A fixed percentage reduction converges linearly in log-space — 5% reduction pe
 **Evaluation Approach:**
 A separate `KazezNoteStrategy` was implemented (see `hotfix-kazez-evaluation-strategy.md`) to validate the Kazez convergence formulas (`N = P × [1 - 0.05 × sqrt(P)]`) which use `sqrt(P)` scaling for proportional convergence. This reaches the 5-cent range in ~10 correct answers.
 
-**Future Resolution:**
-Once the Kazez formulas are validated via manual testing, integrate the `sqrt(P)` scaling approach into `AdaptiveNoteStrategy`'s per-note difficulty tracking. The per-note architecture should be preserved — only the narrowing/widening math needs to change.
+**Status:** Kazez formulas validated via manual testing. Integration story created.
+
+**Next Step:**
+Implement `hotfix-integrate-kazez-into-adaptive-strategy.md` — replace fixed factors in `AdaptiveNoteStrategy.determineCentDifference()` with Kazez sqrt(P) formulas, preserving per-note tracking. Restore `AdaptiveNoteStrategy` as active strategy in `PeachApp`.
 
 **Related Code:**
 - `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift` — `DifficultyParameters.narrowingFactor` / `wideningFactor`
