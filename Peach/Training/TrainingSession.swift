@@ -89,11 +89,21 @@ final class TrainingSession {
     /// Audio playback service (protocol-based for testing)
     private let notePlayer: NotePlayer
 
+    /// Comparison selection strategy (Story 4.3)
+    private let strategy: NextNoteStrategy
+
+    /// User's perceptual profile (Story 4.1)
+    private let profile: PerceptualProfile
+
     /// Observers notified when comparisons are completed (Story 4.1)
     /// Decouples TrainingSession from specific persistence and analytics implementations
     private let observers: [ComparisonObserver]
 
     // MARK: - Configuration
+
+    /// Training settings for adaptive algorithm (Story 4.3)
+    /// TODO Epic 6: Read from @AppStorage instead of using defaults
+    private let settings: TrainingSettings = TrainingSettings()
 
     /// Note duration in seconds (hardcoded for Story 3.2, configurable in Epic 6)
     private let noteDuration: TimeInterval = 1.0
@@ -108,6 +118,9 @@ final class TrainingSession {
 
     /// Current comparison being trained
     private var currentComparison: Comparison?
+
+    /// Last completed comparison (for strategy's nearby note selection)
+    private var lastCompletedComparison: CompletedComparison?
 
     /// Task running the training loop (for cancellation)
     private var trainingTask: Task<Void, Never>?
@@ -129,9 +142,18 @@ final class TrainingSession {
     ///
     /// - Parameters:
     ///   - notePlayer: Service for playing audio notes
+    ///   - strategy: Comparison selection strategy (Story 4.3)
+    ///   - profile: User's perceptual profile (Story 4.3)
     ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
-    init(notePlayer: NotePlayer, observers: [ComparisonObserver] = []) {
+    init(
+        notePlayer: NotePlayer,
+        strategy: NextNoteStrategy,
+        profile: PerceptualProfile,
+        observers: [ComparisonObserver] = []
+    ) {
         self.notePlayer = notePlayer
+        self.strategy = strategy
+        self.profile = profile
         self.observers = observers
 
         // Setup audio interruption observers (Story 3.4)
@@ -195,6 +217,9 @@ final class TrainingSession {
         let completed = CompletedComparison(comparison: comparison, userAnsweredHigher: isHigher)
         logger.info("Answer was \(completed.isCorrect ? "✓ CORRECT" : "✗ WRONG") (second note was \(comparison.isSecondNoteHigher ? "higher" : "lower"))")
 
+        // Store last completed comparison for strategy (Story 4.3)
+        lastCompletedComparison = completed
+
         // Notify observers (includes data store, profile, and haptic feedback)
         recordComparison(completed)
 
@@ -244,6 +269,7 @@ final class TrainingSession {
         // Reset state
         state = .idle
         currentComparison = nil
+        lastCompletedComparison = nil
 
         // Clear feedback state (Story 3.3)
         showFeedback = false
@@ -273,8 +299,12 @@ final class TrainingSession {
     private func playNextComparison() async {
         logger.info("playNextComparison() started")
 
-        // Generate next comparison
-        let comparison = Comparison.random()
+        // Generate next comparison using adaptive strategy (Story 4.3)
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: lastCompletedComparison
+        )
         currentComparison = comparison
         logger.info("Generated comparison: note1=\(comparison.note1), centDiff=\(comparison.centDifference), higher=\(comparison.isSecondNoteHigher)")
 

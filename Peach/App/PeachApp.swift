@@ -27,12 +27,17 @@ struct PeachApp: App {
                 )
             }
 
-            // Create training session with observer pattern (Story 4.1)
+            // Create adaptive strategy (Story 4.3)
+            let strategy = AdaptiveNoteStrategy()
+
+            // Create training session with observer pattern (Story 4.1) and adaptive strategy (Story 4.3)
             // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback)
             let hapticManager = HapticFeedbackManager()
             let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
             _trainingSession = State(wrappedValue: TrainingSession(
                 notePlayer: notePlayer,
+                strategy: strategy,
+                profile: profile,
                 observers: observers
             ))
         } catch {

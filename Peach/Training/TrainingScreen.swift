@@ -102,10 +102,13 @@ private struct TrainingSessionKey: EnvironmentKey {
         @MainActor func makeDefault() -> TrainingSession {
             let dataStore = MockDataStoreForPreview()
             let profile = PerceptualProfile()
+            let strategy = AdaptiveNoteStrategy()
             let hapticManager = MockHapticFeedbackManager()
             let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
             return TrainingSession(
                 notePlayer: MockNotePlayerForPreview(),
+                strategy: strategy,
+                profile: profile,
                 observers: observers
             )
         }
