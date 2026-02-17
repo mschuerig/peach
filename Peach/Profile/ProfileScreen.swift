@@ -4,7 +4,6 @@ import Charts
 struct ProfileScreen: View {
     @Environment(\.perceptualProfile) private var profile
 
-    private let midiRange = 36...84
     private let layout = PianoKeyboardLayout(midiRange: 36...84)
 
     var body: some View {
@@ -24,7 +23,7 @@ struct ProfileScreen: View {
     // MARK: - Trained State
 
     private var profileVisualization: some View {
-        let dataPoints = ConfidenceBandData.prepare(from: profile, midiRange: midiRange)
+        let dataPoints = ConfidenceBandData.prepare(from: profile, midiRange: layout.midiRange)
 
         return VStack(spacing: 0) {
             Spacer()
@@ -33,7 +32,7 @@ struct ProfileScreen: View {
                 .frame(minHeight: 200)
                 .padding(.horizontal)
 
-            PianoKeyboardView(midiRange: midiRange)
+            PianoKeyboardView(midiRange: layout.midiRange)
                 .padding(.horizontal)
 
             Spacer()
@@ -54,7 +53,7 @@ struct ProfileScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 24)
 
-            PianoKeyboardView(midiRange: midiRange)
+            PianoKeyboardView(midiRange: layout.midiRange)
                 .padding(.horizontal)
 
             Spacer()
@@ -69,18 +68,25 @@ struct ProfileScreen: View {
     }
 
     private var accessibilitySummary: String {
-        let trainedNotes = (midiRange.lowerBound...midiRange.upperBound)
-            .filter { profile.statsForNote($0).isTrained }
+        Self.accessibilitySummary(profile: profile, midiRange: layout.midiRange)
+    }
+
+    /// Computes VoiceOver summary using absolute per-note means
+    /// to avoid directional cancellation of signed centOffset values
+    @MainActor
+    static func accessibilitySummary(profile: PerceptualProfile, midiRange: ClosedRange<Int>) -> String {
+        let trainedNotes = midiRange.filter { profile.statsForNote($0).isTrained }
 
         guard let lowestTrained = trainedNotes.first,
               let highestTrained = trainedNotes.last,
-              let avgThreshold = profile.overallMean else {
+              !trainedNotes.isEmpty else {
             return "Perceptual profile. No training data available."
         }
 
         let lowestName = PianoKeyboardLayout.noteName(midiNote: lowestTrained)
         let highestName = PianoKeyboardLayout.noteName(midiNote: highestTrained)
-        let roundedThreshold = Int(abs(avgThreshold))
+        let avgThreshold = trainedNotes.map { abs(profile.statsForNote($0).mean) }.reduce(0.0, +) / Double(trainedNotes.count)
+        let roundedThreshold = Int(avgThreshold)
 
         return "Perceptual profile showing detection thresholds from \(lowestName) to \(highestName). Average threshold: \(roundedThreshold) cents."
     }

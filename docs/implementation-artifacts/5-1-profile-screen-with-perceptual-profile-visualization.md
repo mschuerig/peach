@@ -1,6 +1,6 @@
 # Story 5.1: Profile Screen with Perceptual Profile Visualization
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -170,12 +170,13 @@ None — clean implementation, no debug issues encountered.
 - **Task 4:** Cold start shows piano keyboard with centered "Start training to build your profile" text. No band rendered when no data exists (conditioned on `profile.overallMean != nil`).
 - **Task 5:** Replaced placeholder ProfileScreen with full implementation. VStack composition: confidence band above, keyboard below. Preserved `.navigationTitle("Profile")` and `.navigationBarTitleDisplayMode(.inline)`.
 - **Task 6:** Added `.accessibilityElement(children: .ignore)` with `.accessibilityLabel()` providing aggregate summary: note range and average threshold in cents.
-- **Task 7:** 17 tests covering environment key, keyboard layout calculations, confidence band data preparation, segmentation, cold start, and sparse data handling. All passing.
+- **Task 7:** 17 tests covering environment key, keyboard layout calculations, confidence band data preparation, segmentation, cold start, sparse data handling, and accessibility summary. All passing.
 
 ### Change Log
 
 - 2026-02-17: Implemented Story 5.1 — Profile Screen with perceptual profile visualization
 - 2026-02-17: Fixed visualization: Y-axis orientation (0 cents at bottom near keyboard), logarithmic Y-axis scale, sparse data segmentation (no interpolation across gaps)
+- 2026-02-17: Code review fixes: chart X-axis aligned to keyboard layout positions, accessibility summary uses absolute per-note means (fixes directional cancellation), removed duplicate midiRange property, added accessibility summary test
 
 ### File List
 
@@ -183,4 +184,5 @@ None — clean implementation, no debug issues encountered.
 - `Peach/Profile/PianoKeyboardView.swift` — new: piano keyboard Canvas renderer + layout calculations
 - `Peach/Profile/ConfidenceBandView.swift` — new: confidence band Chart overlay + data preparation
 - `Peach/App/PeachApp.swift` — modified: added `@State profile` and environment injection
-- `PeachTests/Profile/ProfileScreenTests.swift` — new: 13 tests for all tasks
+- `Peach/Resources/Localizable.xcstrings` — modified: added chart string entries, removed placeholder strings
+- `PeachTests/Profile/ProfileScreenTests.swift` — new: 17 tests for all tasks

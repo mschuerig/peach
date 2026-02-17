@@ -206,6 +206,25 @@ struct ProfileScreenTests {
         #expect(segments.isEmpty)
     }
 
+    // MARK: - Accessibility Summary (AC4)
+
+    @Test("Accessibility summary uses absolute per-note means and correct format")
+    func accessibilitySummaryFormat() async throws {
+        let profile = PerceptualProfile()
+        // Note with positive mean
+        profile.update(note: 48, centOffset: 50, isCorrect: true)
+        // Note with negative mean (tests directional cancellation handling)
+        profile.update(note: 60, centOffset: -30, isCorrect: true)
+
+        let summary = ProfileScreen.accessibilitySummary(profile: profile, midiRange: 36...84)
+
+        // Should use absolute means: (abs(50) + abs(-30)) / 2 = 40
+        // NOT abs((50 + -30) / 2) = 10 (directional cancellation)
+        #expect(summary.contains("C3"))
+        #expect(summary.contains("C4"))
+        #expect(summary.contains("Average threshold: 40 cents"))
+    }
+
     // MARK: - Cold Start / Empty State
 
     @Test("Cold start has no trained data points")

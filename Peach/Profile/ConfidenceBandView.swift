@@ -92,12 +92,18 @@ struct ConfidenceBandView: View {
 
     var body: some View {
         let segments = ConfidenceBandData.segments(from: dataPoints)
+        // Pre-compute keyboard-aligned X positions so chart data aligns with PianoKeyboardView
+        let xPositions: [Int: Double] = Dictionary(
+            uniqueKeysWithValues: dataPoints.map {
+                ($0.midiNote, Double(layout.xPosition(forMidiNote: $0.midiNote, totalWidth: 1.0)))
+            }
+        )
 
         Chart {
             ForEach(segments) { segment in
                 ForEach(segment.points) { point in
                     AreaMark(
-                        x: .value("Note", point.midiNote),
+                        x: .value("Note", xPositions[point.midiNote] ?? 0),
                         yStart: .value("Lower", point.lowerBound),
                         yEnd: .value("Upper", point.upperBound),
                         series: .value("Segment", segment.id)
@@ -105,7 +111,7 @@ struct ConfidenceBandView: View {
                     .foregroundStyle(.tint.opacity(0.3))
 
                     LineMark(
-                        x: .value("Note", point.midiNote),
+                        x: .value("Note", xPositions[point.midiNote] ?? 0),
                         y: .value("Threshold", point.threshold),
                         series: .value("Segment", segment.id)
                     )
@@ -114,20 +120,10 @@ struct ConfidenceBandView: View {
                 }
             }
         }
-        .chartXScale(domain: layout.midiRange)
+        .chartXScale(domain: 0...1.0)
         .chartXAxis(.hidden)
         .chartYScale(domain: ConfidenceBandData.logFloor...yAxisMax, type: .log)
-        .chartYAxis {
-            AxisMarks(position: .leading) { value in
-                AxisValueLabel {
-                    if let cents = value.as(Double.self) {
-                        Text("\(Int(cents))¢")
-                            .font(.system(size: 9))
-                    }
-                }
-                AxisGridLine()
-            }
-        }
+        .chartYAxis(.hidden)
     }
 
     private var yAxisMax: Double {
