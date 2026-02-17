@@ -68,7 +68,7 @@ development_status:
   epic-4-retrospective: optional
 
   # Hotfixes: Algorithm Convergence & Profile Accuracy
-  hotfix-tune-kazez-convergence: ready-for-dev
+  hotfix-tune-kazez-convergence: review
   hotfix-investigate-signed-mean: ready-for-dev
 
   # Epic 5: See Your Progress - Profile & Statistics

@@ -177,7 +177,7 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
     /// Determines cent difference for a note using per-note difficulty tracking
     ///
     /// Uses Kazez sqrt(P)-scaled formulas for difficulty convergence:
-    /// - Correct answer: `N = P × [1 - (0.05 × √P)]`
+    /// - Correct answer: `N = P × [1 - (0.08 × √P)]`
     /// - Incorrect answer: `N = P × [1 + (0.09 × √P)]`
     ///
     /// Where P = per-note currentDifficulty, N = new difficulty.
@@ -212,7 +212,7 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
             ? stats.currentDifficulty
             : weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
         let adjustedDiff = last.isCorrect
-            ? max(p * (1.0 - 0.05 * p.squareRoot()),
+            ? max(p * (1.0 - 0.08 * p.squareRoot()),
                   settings.minCentDifference)
             : min(p * (1.0 + 0.09 * p.squareRoot()),
                   settings.maxCentDifference)
@@ -249,22 +249,26 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         }
 
         // Collect up to maxNeighbors trained notes below
+        // Require non-default difficulty to exclude unrefined notes still at 100 cents
         var leftCount = 0
         for i in stride(from: note - 1, through: range.lowerBound, by: -1) {
             guard leftCount < DifficultyParameters.maxNeighbors else { break }
             let stats = profile.statsForNote(i)
-            if stats.sampleCount > 0 {
+            if stats.sampleCount > 0
+                && stats.currentDifficulty != DifficultyParameters.defaultDifficulty {
                 candidates.append((distance: note - i, difficulty: stats.currentDifficulty))
                 leftCount += 1
             }
         }
 
         // Collect up to maxNeighbors trained notes above
+        // Require non-default difficulty to exclude unrefined notes still at 100 cents
         var rightCount = 0
         for i in stride(from: note + 1, through: range.upperBound, by: 1) {
             guard rightCount < DifficultyParameters.maxNeighbors else { break }
             let stats = profile.statsForNote(i)
-            if stats.sampleCount > 0 {
+            if stats.sampleCount > 0
+                && stats.currentDifficulty != DifficultyParameters.defaultDifficulty {
                 candidates.append((distance: i - note, difficulty: stats.currentDifficulty))
                 rightCount += 1
             }

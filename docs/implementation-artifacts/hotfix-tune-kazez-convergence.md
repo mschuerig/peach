@@ -1,6 +1,6 @@
 # Hotfix: Tune Kazez Convergence Coefficient and Filter Unrefined Neighbors
 
-Status: ready-for-dev
+Status: review
 
 ## Motivation
 
@@ -28,25 +28,25 @@ So that training immediately targets my actual skill level instead of lingering 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Increase Kazez correct-answer coefficient from 0.05 to 0.08
-  - [ ] Change `0.05` to `0.08` in `determineCentDifference()` (line 215 of AdaptiveNoteStrategy.swift)
-  - [ ] Update doc comment on `determineCentDifference()` to reflect new coefficient
-  - [ ] Verify incorrect-answer coefficient (0.09) is NOT changed
+- [x] Task 1: Increase Kazez correct-answer coefficient from 0.05 to 0.08
+  - [x] Change `0.05` to `0.08` in `determineCentDifference()` (line 215 of AdaptiveNoteStrategy.swift)
+  - [x] Update doc comment on `determineCentDifference()` to reflect new coefficient
+  - [x] Verify incorrect-answer coefficient (0.09) is NOT changed
 
-- [ ] Task 2: Filter unrefined neighbors in `weightedEffectiveDifficulty()`
-  - [ ] Add `&& stats.currentDifficulty != DifficultyParameters.defaultDifficulty` guard to left-neighbor loop (line 256)
-  - [ ] Add `&& stats.currentDifficulty != DifficultyParameters.defaultDifficulty` guard to right-neighbor loop (line 267)
+- [x] Task 2: Filter unrefined neighbors in `weightedEffectiveDifficulty()`
+  - [x] Add `&& stats.currentDifficulty != DifficultyParameters.defaultDifficulty` guard to left-neighbor loop (line 256)
+  - [x] Add `&& stats.currentDifficulty != DifficultyParameters.defaultDifficulty` guard to right-neighbor loop (line 267)
 
-- [ ] Task 3: Update existing tests for new coefficient
-  - [ ] Update `regionalDifficultyNarrowsOnCorrect`: expected value 50.0 → 20.0 (100 × (1 - 0.08 × √100) = 100 × 0.2 = 20.0)
-  - [ ] Update `difficultyNarrowsAcrossJumps`: expected value 50.0 → 20.0
-  - [ ] Verify `kazezConvergenceFromDefault` still passes (converges faster with 0.08)
-  - [ ] Verify `regionalDifficultyWidensOnIncorrect` is unaffected (0.09 unchanged)
-  - [ ] Verify `regionalDifficultyRespectsBounds` still passes
-  - [ ] Review `weightedDifficultyKernelNarrowing` — neighbor condition change may affect test setup; update if needed
-  - [ ] Review `weightedDifficultyNeighborsOnly` — neighbor must have non-default difficulty to be included; verify test setup sets difficulty explicitly
+- [x] Task 3: Update existing tests for new coefficient
+  - [x] Update `regionalDifficultyNarrowsOnCorrect`: expected value 50.0 → 20.0 (100 × (1 - 0.08 × √100) = 100 × 0.2 = 20.0)
+  - [x] Update `difficultyNarrowsAcrossJumps`: expected value 50.0 → 20.0
+  - [x] Verify `kazezConvergenceFromDefault` still passes (converges faster with 0.08)
+  - [x] Verify `regionalDifficultyWidensOnIncorrect` is unaffected (0.09 unchanged)
+  - [x] Verify `regionalDifficultyRespectsBounds` still passes
+  - [x] Review `weightedDifficultyKernelNarrowing` — neighbor condition change may affect test setup; update if needed
+  - [x] Review `weightedDifficultyNeighborsOnly` — neighbor must have non-default difficulty to be included; verify test setup sets difficulty explicitly
 
-- [ ] Task 4: Run full test suite and verify no regressions
+- [x] Task 4: Run full test suite and verify no regressions
 
 ## Dev Notes
 
@@ -117,16 +117,29 @@ Same change for the right-neighbor loop.
 
 ### Implementation Plan
 
-*(To be filled during implementation)*
+Surgical two-change implementation: (1) coefficient bump in `determineCentDifference()`, (2) neighbor filter guard in `weightedEffectiveDifficulty()`. Both changes are single-line edits. Test updates for new expected values using approximate comparison (floating-point precision).
 
 ### Completion Notes
 
-*(To be filled during implementation)*
+- Changed Kazez correct-answer coefficient from 0.05 to 0.08 in `determineCentDifference()` (line 215)
+- Updated doc comment to reflect new coefficient value
+- Verified incorrect-answer coefficient (0.09) unchanged
+- Added `&& stats.currentDifficulty != DifficultyParameters.defaultDifficulty` guard to both left-neighbor (line 258) and right-neighbor (line 270) loops in `weightedEffectiveDifficulty()`
+- Updated `regionalDifficultyNarrowsOnCorrect` test: expected 50.0 → 20.0 with approximate comparison
+- Updated `difficultyNarrowsAcrossJumps` test: expected 50.0 → 20.0 with approximate comparison
+- Both tests required `abs(diff - 20.0) < 0.01` instead of exact equality due to floating-point precision (0.08 × 10.0 = 0.7999... not 0.8)
+- Verified all other tests unaffected: `kazezConvergenceFromDefault`, `regionalDifficultyWidensOnIncorrect`, `regionalDifficultyRespectsBounds`, `weightedDifficultyKernelNarrowing`, `weightedDifficultyNeighborsOnly` all pass without changes
+- Full test suite: 172 tests, all passing, zero regressions
 
 ## File List
 
-*(To be filled during implementation)*
+- Peach/Core/Algorithm/AdaptiveNoteStrategy.swift (modified)
+- PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift (modified)
+- docs/implementation-artifacts/hotfix-tune-kazez-convergence.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)
+- docs/implementation-artifacts/future-work.md (modified)
 
 ## Change Log
 
 - 2026-02-17: Story created from future-work.md item "Weighted Effective Difficulty: Convergence Still Too Slow"
+- 2026-02-17: Implementation complete — all 4 tasks done, all 172 tests passing

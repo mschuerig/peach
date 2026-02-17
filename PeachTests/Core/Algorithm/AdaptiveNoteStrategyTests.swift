@@ -307,11 +307,11 @@ struct AdaptiveNoteStrategyTests {
         let comp1 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
         #expect(comp1.centDifference == 100.0)  // Default for untrained
 
-        // User answers correctly - Kazez: 100 × (1 - 0.05 × √100) = 100 × 0.5 = 50.0
+        // User answers correctly - Kazez: 100 × (1 - 0.08 × √100) = 100 × 0.2 = 20.0
         let completed1 = CompletedComparison(comparison: comp1, userAnsweredHigher: comp1.isSecondNoteHigher)
         let comp2 = strategy.nextComparison(profile: profile, settings: settings, lastComparison: completed1)
 
-        #expect(comp2.centDifference == 50.0)  // Kazez narrowing from 100 cents
+        #expect(abs(comp2.centDifference - 20.0) < 0.01)  // Kazez narrowing from 100 cents
     }
 
     @Test("Regional difficulty widens on incorrect answer using Kazez formula")
@@ -383,8 +383,8 @@ struct AdaptiveNoteStrategyTests {
         let comp2 = strategy.nextComparison(profile: profile, settings: fixedSettings84, lastComparison: completed1)
 
         #expect(comp2.note1 == 84)
-        // Kazez narrowing from 100: 100 × (1 - 0.05 × √100) = 50.0
-        #expect(comp2.centDifference == 50.0,
+        // Kazez narrowing from 100: 100 × (1 - 0.08 × √100) = 20.0
+        #expect(abs(comp2.centDifference - 20.0) < 0.01,
             "Difficulty should narrow via Kazez formula after correct answer, even across a region jump. Got: \(comp2.centDifference)")
     }
 
