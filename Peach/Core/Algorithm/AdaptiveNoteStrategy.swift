@@ -17,9 +17,10 @@ import OSLog
 /// - Blended: Weighted probability between the two
 ///
 /// **Difficulty Determination:**
-/// - Uses per-note currentDifficulty (defaults to 100 cents)
+/// - Chain-based: uses previous comparison's cent difference as Kazez input
 /// - Narrows on correct (Kazez formula), widens on incorrect (Kazez formula)
-/// - No special cases for jumps or cold start
+/// - Per-note difficulty still updated for profile tracking and weak spots
+/// - Bootstrap (nil lastComparison): weighted effective difficulty from neighbors
 ///
 /// # Performance
 ///
@@ -174,16 +175,18 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         return selected
     }
 
-    /// Determines cent difference for a note using per-note difficulty tracking
+    /// Determines cent difference for a note using chain-based convergence
     ///
     /// Uses Kazez sqrt(P)-scaled formulas for difficulty convergence:
     /// - Correct answer: `N = P × [1 - (0.08 × √P)]`
     /// - Incorrect answer: `N = P × [1 + (0.09 × √P)]`
     ///
-    /// Where P = per-note currentDifficulty, N = new difficulty.
+    /// Where P = previous comparison's cent difference, N = new difficulty.
     ///
-    /// No special cases for jumps or cold start — per-note currentDifficulty
-    /// (defaulting to 100 cents) handles both implicitly.
+    /// Uses the last comparison's actual cent difference as input (not per-note
+    /// stored difficulty) so the user sees a single smooth convergence chain
+    /// regardless of which note is selected. Per-note difficulty is still
+    /// updated for profile tracking and weak spot analysis.
     ///
     /// - Parameters:
     ///   - note: MIDI note
@@ -204,13 +207,11 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
                          max: settings.maxCentDifference)
         }
 
-        // Use weighted difficulty only to bootstrap untrained notes.
-        // Once a note has its own Kazez data, use raw difficulty so
-        // neighbors don't create a convergence floor.
-        let stats = profile.statsForNote(note)
-        let p = stats.currentDifficulty != DifficultyParameters.defaultDifficulty
-            ? stats.currentDifficulty
-            : weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
+        // Use the previous comparison's cent difference as Kazez input.
+        // This creates a single smooth convergence chain regardless of
+        // which note is selected, so the user sees steadily narrowing
+        // difficulty instead of jumps when switching notes.
+        let p = last.comparison.centDifference
         let adjustedDiff = last.isCorrect
             ? max(p * (1.0 - 0.08 * p.squareRoot()),
                   settings.minCentDifference)
