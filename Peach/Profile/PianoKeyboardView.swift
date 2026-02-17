@@ -72,10 +72,12 @@ struct PianoKeyboardLayout {
 struct PianoKeyboardView: View {
     let layout: PianoKeyboardLayout
     let height: CGFloat
+    let showLabels: Bool
 
-    init(midiRange: ClosedRange<Int> = 36...84, height: CGFloat = 60) {
+    init(midiRange: ClosedRange<Int> = 36...84, height: CGFloat = 60, showLabels: Bool = true) {
         self.layout = PianoKeyboardLayout(midiRange: midiRange)
         self.height = height
+        self.showLabels = showLabels
     }
 
     var body: some View {
@@ -110,17 +112,19 @@ struct PianoKeyboardView: View {
             }
             .frame(height: height)
 
-            // Note names at octave boundaries
-            GeometryReader { geometry in
-                ForEach(layout.octaveBoundaries, id: \.midiNote) { boundary in
-                    let x = layout.xPosition(forMidiNote: boundary.midiNote, totalWidth: geometry.size.width)
-                    Text(boundary.name)
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                        .position(x: x, y: 8)
+            if showLabels {
+                // Note names at octave boundaries
+                GeometryReader { geometry in
+                    ForEach(layout.octaveBoundaries, id: \.midiNote) { boundary in
+                        let x = layout.xPosition(forMidiNote: boundary.midiNote, totalWidth: geometry.size.width)
+                        Text(boundary.name)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .position(x: x, y: 8)
+                    }
                 }
+                .frame(height: 16)
             }
-            .frame(height: 16)
         }
     }
 }

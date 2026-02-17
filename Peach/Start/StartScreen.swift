@@ -7,8 +7,11 @@ struct StartScreen: View {
         VStack(spacing: 40) {
             Spacer()
 
-            // Profile Preview Placeholder (Epic 5)
-            profilePreviewPlaceholder
+            // Profile Preview (navigates to full Profile Screen)
+            NavigationLink(value: NavigationDestination.profile) {
+                ProfilePreviewView()
+            }
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -62,23 +65,6 @@ struct StartScreen: View {
         }
     }
 
-    private var profilePreviewPlaceholder: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "chart.xyaxis.line")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-
-            Text("Start training to build your profile")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(height: 150)
-        .frame(maxWidth: .infinity)
-        .background(.secondary.opacity(0.1))
-        .clipShape(.rect(cornerRadius: 12))
-        .accessibilityLabel("Profile preview: Start training to build your profile")
-    }
 }
 
 #Preview {

@@ -1,6 +1,6 @@
 # Story 5.3: Profile Preview on Start Screen and Navigation
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -19,30 +19,30 @@ so that I can glance at my progress without navigating away.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `ProfilePreviewView` component (AC: #1, #3, #6)
-  - [ ] Create `Peach/Start/ProfilePreviewView.swift`
-  - [ ] Reuse `ConfidenceBandData.prepare()` and `ConfidenceBandData.segments()` for data
-  - [ ] Reuse `PianoKeyboardLayout(midiRange: 36...84)` for x-position alignment
-  - [ ] Render confidence band using same `AreaMark`/`LineMark` pattern as `ConfidenceBandView`
-  - [ ] Strip all axis labels, note names, and numerical values
-  - [ ] Render a simplified mini piano keyboard (no note labels, no octave boundary text)
-  - [ ] Frame at ~60-80pt tall, full width
-  - [ ] Cold start: show mini keyboard with intentional empty-state styling (no icon, no text — just the keyboard strip looking ready)
-- [ ] Task 2: Make preview tappable with navigation (AC: #2, #5)
-  - [ ] Wrap in `NavigationLink(value: NavigationDestination.profile)`
-  - [ ] Verify back navigation returns to Start Screen (already works via NavigationStack)
-- [ ] Task 3: Replace placeholder in `StartScreen` (AC: #1, #2)
-  - [ ] Remove `profilePreviewPlaceholder` computed property
-  - [ ] Replace with `ProfilePreviewView()` in the VStack
-  - [ ] Inject `@Environment(\.perceptualProfile)` in `StartScreen`
-- [ ] Task 4: Add VoiceOver accessibility (AC: #4)
-  - [ ] Add `.accessibilityLabel` that says "Your pitch profile. Tap to view details."
-  - [ ] When training data exists, append threshold info: "Average threshold: X cents."
-  - [ ] Add `.accessibilityAddTraits(.isButton)` for tap hint
-- [ ] Task 5: Write tests (AC: #1-#6)
-  - [ ] Test ProfilePreviewView renders without crashing (cold start and with data)
-  - [ ] Test accessibility label text for cold start vs. trained states
-  - [ ] Test that ProfilePreviewView uses same data pipeline as ProfileScreen
+- [x] Task 1: Create `ProfilePreviewView` component (AC: #1, #3, #6)
+  - [x] Create `Peach/Start/ProfilePreviewView.swift`
+  - [x] Reuse `ConfidenceBandData.prepare()` and `ConfidenceBandData.segments()` for data
+  - [x] Reuse `PianoKeyboardLayout(midiRange: 36...84)` for x-position alignment
+  - [x] Render confidence band using same `AreaMark`/`LineMark` pattern as `ConfidenceBandView`
+  - [x] Strip all axis labels, note names, and numerical values
+  - [x] Render a simplified mini piano keyboard (no note labels, no octave boundary text)
+  - [x] Frame at ~60-80pt tall, full width
+  - [x] Cold start: show mini keyboard with intentional empty-state styling (no icon, no text — just the keyboard strip looking ready)
+- [x] Task 2: Make preview tappable with navigation (AC: #2, #5)
+  - [x] Wrap in `NavigationLink(value: NavigationDestination.profile)`
+  - [x] Verify back navigation returns to Start Screen (already works via NavigationStack)
+- [x] Task 3: Replace placeholder in `StartScreen` (AC: #1, #2)
+  - [x] Remove `profilePreviewPlaceholder` computed property
+  - [x] Replace with `ProfilePreviewView()` in the VStack
+  - [x] Inject `@Environment(\.perceptualProfile)` in `StartScreen`
+- [x] Task 4: Add VoiceOver accessibility (AC: #4)
+  - [x] Add `.accessibilityLabel` that says "Your pitch profile. Tap to view details."
+  - [x] When training data exists, append threshold info: "Average threshold: X cents."
+  - [x] Add `.accessibilityAddTraits(.isButton)` for tap hint
+- [x] Task 5: Write tests (AC: #1-#6)
+  - [x] Test ProfilePreviewView renders without crashing (cold start and with data)
+  - [x] Test accessibility label text for cold start vs. trained states
+  - [x] Test that ProfilePreviewView uses same data pipeline as ProfileScreen
 
 ## Dev Notes
 
@@ -137,8 +137,32 @@ Pattern: stories are implemented in a single commit, then code review fixes foll
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+No issues encountered during implementation.
 
 ### Completion Notes List
 
+- Created `ProfilePreviewView` as a compact profile visualization reusing `ConfidenceBandView` (45pt) + `PianoKeyboardView` (25pt, no labels) = ~70pt total height
+- Added `showLabels: Bool` parameter to `PianoKeyboardView` (defaults to `true`) to allow label stripping for preview
+- Wrapped preview in `NavigationLink(value: .profile)` in `StartScreen` for tap-to-navigate
+- Removed old `profilePreviewPlaceholder` from `StartScreen`
+- Cold start shows just the mini keyboard strip — intentional empty-state, no icon/text
+- VoiceOver: "Your pitch profile. Tap to view details." with `.isButton` trait; trained state appends "Average threshold: X cents."
+- 8 new tests in `ProfilePreviewViewTests` covering instantiation, accessibility labels, data pipeline reuse, showLabels parameter, and MIDI range consistency
+- All 217 tests pass (0 failures, 0 regressions)
+
+### Change Log
+
+- 2026-02-17: Implemented story 5.3 — Profile Preview on Start Screen and Navigation
+
 ### File List
+
+- `Peach/Start/ProfilePreviewView.swift` (NEW)
+- `Peach/Start/StartScreen.swift` (MODIFIED — replaced placeholder with ProfilePreviewView + NavigationLink)
+- `Peach/Profile/PianoKeyboardView.swift` (MODIFIED — added showLabels parameter)
+- `PeachTests/Start/ProfilePreviewViewTests.swift` (NEW)
+- `docs/implementation-artifacts/5-3-profile-preview-on-start-screen-and-navigation.md` (MODIFIED — status, tasks, dev agent record)
+- `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED — status updated to review)
