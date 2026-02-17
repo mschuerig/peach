@@ -67,6 +67,10 @@ development_status:
   4-3-integrate-adaptive-algorithm-into-trainingsession: done
   epic-4-retrospective: optional
 
+  # Hotfixes: Algorithm Convergence & Profile Accuracy
+  hotfix-tune-kazez-convergence: ready-for-dev
+  hotfix-investigate-signed-mean: ready-for-dev
+
   # Epic 5: See Your Progress - Profile & Statistics
   epic-5: backlog
   5-1-profile-screen-with-perceptual-profile-visualization: backlog
