@@ -50,7 +50,7 @@ protocol NextNoteStrategy {
 /// - Note range: C2 to C6 (MIDI 36-84) — typical vocal/instrument range
 /// - Natural/Mechanical: 0.5 — balanced between exploration and weak spot focus
 /// - Reference pitch: 440Hz — standard concert pitch (A4)
-/// - Difficulty bounds: 1.0 to 100.0 cents — practical human discrimination range
+/// - Difficulty bounds: 0.1 to 100.0 cents — practical human discrimination range
 struct TrainingSettings {
     /// Minimum MIDI note for comparisons (0-127)
     var noteRangeMin: Int
@@ -68,7 +68,7 @@ struct TrainingSettings {
     /// Standard concert pitch: A4 = 440Hz
     var referencePitch: Double
 
-    /// Minimum cent difference (difficulty floor, practical limit ~1 cent)
+    /// Minimum cent difference (difficulty floor)
     var minCentDifference: Double
 
     /// Maximum cent difference (difficulty ceiling, 100 cents = 1 semitone)
@@ -81,14 +81,14 @@ struct TrainingSettings {
     ///   - noteRangeMax: Maximum MIDI note (default: 84 = C6)
     ///   - naturalVsMechanical: Natural/Mechanical balance (default: 0.5 = balanced)
     ///   - referencePitch: Reference pitch in Hz (default: 440.0 = A4)
-    ///   - minCentDifference: Difficulty floor in cents (default: 1.0)
+    ///   - minCentDifference: Difficulty floor in cents (default: 0.1)
     ///   - maxCentDifference: Difficulty ceiling in cents (default: 100.0)
     init(
         noteRangeMin: Int = 36,
         noteRangeMax: Int = 84,
         naturalVsMechanical: Double = 0.5,
         referencePitch: Double = 440.0,
-        minCentDifference: Double = 1.0,
+        minCentDifference: Double = 0.1,
         maxCentDifference: Double = 100.0
     ) {
         self.noteRangeMin = noteRangeMin

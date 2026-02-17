@@ -37,6 +37,33 @@ Signed values make sense in other contexts (e.g., `centOffset` for frequency cal
 - Prototype alternative approaches
 - Assess impact on existing training data migration
 
+### Investigate Whether Seamless Playback Makes Pitch Comparison Easier
+
+**Priority:** Medium
+**Category:** Algorithm Design / Calibration
+**Date Added:** 2026-02-17
+
+**Observation:**
+After implementing chain-based Kazez convergence, the algorithm quickly converges to sub-2-cent differences. However, the user consistently achieves much finer discrimination in Peach than in InTune (a reference app), where they typically plateau around 5 cents and only occasionally reach below 3 cents.
+
+**Hypothesis:**
+Peach plays the two comparison tones seamlessly (back-to-back without a gap), which may make pitch differences perceptually easier to detect than when tones are separated by silence. This could mean the difficulty levels in Peach are not directly comparable to those in apps that use gaps between tones.
+
+**Impact:**
+- Peach's difficulty numbers may overstate the user's actual pitch discrimination ability
+- Comparison with other ear training apps may be misleading
+- The training may be less effective if the task is artificially easier
+
+**Investigation Areas:**
+- Compare perceptual difficulty of seamless vs. gap-separated tone pairs at the same cent difference
+- Research psychoacoustic literature on the effect of inter-stimulus intervals on pitch discrimination
+- Consider adding a configurable gap between tones as an advanced setting
+- Evaluate whether the current approach is still valuable for training (even if "easier")
+
+**Related Code:**
+- `Peach/Core/Audio/SineWaveNotePlayer.swift` — tone generation and playback
+- `Peach/Training/TrainingSession.swift` — playback sequencing
+
 ### ~~AdaptiveNoteStrategy: Slow Difficulty Convergence~~ (RESOLVED)
 
 **Status:** Resolved — 2026-02-15
