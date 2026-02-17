@@ -35,7 +35,7 @@ struct SummaryStatisticsView: View {
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: stats == nil ? .ignore : .contain)
-        .accessibilityLabel(stats == nil ? "No training data yet" : "")
+        .accessibilityLabel(stats == nil ? "No training data yet" : "Summary statistics")
         .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 
@@ -106,32 +106,28 @@ struct SummaryStatisticsView: View {
 
     static func formatMean(_ value: Double?) -> String {
         guard let value else { return "—" }
-        return "\(Int(value.rounded())) cents"
-    }
-
-    static func formatMean(_ value: Double) -> String {
-        formatMean(Optional(value))
+        let rounded = Int(value.rounded())
+        return "\(rounded) \(rounded == 1 ? "cent" : "cents")"
     }
 
     static func formatStdDev(_ value: Double?) -> String {
         guard let value else { return "—" }
-        return "±\(Int(value.rounded())) cents"
-    }
-
-    static func formatStdDev(_ value: Double) -> String {
-        formatStdDev(Optional(value))
+        let rounded = Int(value.rounded())
+        return "±\(rounded) \(rounded == 1 ? "cent" : "cents")"
     }
 
     // MARK: - Accessibility
 
     static func accessibilityMean(_ value: Double?) -> String {
         guard let value else { return "No training data yet" }
-        return "Mean detection threshold: \(Int(value.rounded())) cents"
+        let rounded = Int(value.rounded())
+        return "Mean detection threshold: \(rounded) \(rounded == 1 ? "cent" : "cents")"
     }
 
     static func accessibilityStdDev(_ value: Double?) -> String {
         guard let value else { return "" }
-        return "Standard deviation: \(Int(value.rounded())) cents"
+        let rounded = Int(value.rounded())
+        return "Standard deviation: \(rounded) \(rounded == 1 ? "cent" : "cents")"
     }
 
     static func accessibilityTrend(_ trend: Trend) -> String {
@@ -152,6 +148,17 @@ struct SummaryStatisticsView: View {
                 p.update(note: note, centOffset: threshold, isCorrect: true)
             }
             return p
+        }())
+        .environment(\.trendAnalyzer, {
+            let records = (0..<20).map { i in
+                ComparisonRecord(
+                    note1: 60, note2: 60,
+                    note2CentOffset: i < 10 ? 50.0 : 30.0,
+                    isCorrect: true,
+                    timestamp: Date(timeIntervalSince1970: Double(i) * 60)
+                )
+            }
+            return TrendAnalyzer(records: records)
         }())
 }
 

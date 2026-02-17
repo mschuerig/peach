@@ -68,7 +68,7 @@ struct SummaryStatisticsTests {
     @Test("Mean formatted as integer cent value")
     func meanFormatted() async throws {
         #expect(SummaryStatisticsView.formatMean(32.7) == "33 cents")
-        #expect(SummaryStatisticsView.formatMean(1.2) == "1 cents")
+        #expect(SummaryStatisticsView.formatMean(1.2) == "1 cent")
     }
 
     @Test("StdDev formatted with plus-minus prefix")
@@ -80,5 +80,14 @@ struct SummaryStatisticsTests {
     func coldStartDisplaysDashes() async throws {
         #expect(SummaryStatisticsView.formatMean(nil) == "—")
         #expect(SummaryStatisticsView.formatStdDev(nil) == "—")
+    }
+
+    // MARK: - Trend Symbol Mapping
+
+    @Test("Trend symbols map to correct SF Symbol names")
+    func trendSymbols() async throws {
+        #expect(SummaryStatisticsView.trendSymbol(.improving) == "arrow.down.right")
+        #expect(SummaryStatisticsView.trendSymbol(.stable) == "arrow.right")
+        #expect(SummaryStatisticsView.trendSymbol(.declining) == "arrow.up.right")
     }
 }

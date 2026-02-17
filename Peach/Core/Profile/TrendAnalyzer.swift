@@ -75,9 +75,7 @@ final class TrendAnalyzer {
 
 extension TrendAnalyzer: ComparisonObserver {
     func comparisonCompleted(_ completed: CompletedComparison) {
-        let comparison = completed.comparison
-        let centOffset = comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference
-        absOffsets.append(abs(centOffset))
+        absOffsets.append(completed.comparison.centDifference)
         recompute()
     }
 }

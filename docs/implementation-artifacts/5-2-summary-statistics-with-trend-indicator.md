@@ -1,6 +1,6 @@
 # Story 5.2: Summary Statistics with Trend Indicator
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -34,7 +34,7 @@ so that I have factual confirmation that training is working.
   - [x] 2.4 Define threshold for classification: >5% decrease → improving, >5% increase → declining, else stable
   - [x] 2.5 Require minimum record count (e.g., ≥20 records) before showing any trend; return nil otherwise
   - [x] 2.6 Conform to `ComparisonObserver` for incremental updates during training
-  - [x] 2.7 Store baseline and recent statistics for efficient incremental computation
+  - [x] 2.7 Store all absolute offsets and recompute trend on each update (simple full-recompute approach)
 
 - [x] Task 3: Display trend indicator (AC: 1, 2)
   - [x] 3.1 Show trend as an understated SF Symbol arrow: `arrow.down.right` (improving — threshold going down), `arrow.right` (stable), `arrow.up.right` (declining — threshold going up)
@@ -207,9 +207,11 @@ None — implementation proceeded without blockers.
 **Modified files:**
 - `Peach/Profile/ProfileScreen.swift`
 - `Peach/App/PeachApp.swift`
+- `Peach/Resources/Localizable.xcstrings`
 - `docs/implementation-artifacts/sprint-status.yaml`
 - `docs/implementation-artifacts/5-2-summary-statistics-with-trend-indicator.md`
 
 ## Change Log
 
 - 2026-02-17: Implemented Story 5.2 — Summary Statistics with Trend Indicator. Added `SummaryStatisticsView` displaying mean, stdDev, and trend direction. Created `TrendAnalyzer` with `ComparisonObserver` conformance for incremental updates. 19 new tests covering all acceptance criteria.
+- 2026-02-17: Code review fixes — Fixed empty string `""` polluting Localizable.xcstrings (M2). Added TrendAnalyzer with data to previews so trend arrow is visible (M4). Fixed singular "1 cent" vs plural "cents" formatting (M5). Simplified redundant sign computation in TrendAnalyzer.comparisonCompleted (L1). Removed test-only formatMean/formatStdDev overloads (L2). Added trendSymbol SF Symbol mapping test (L3). Updated task 2.7 description to match implementation (M3). Added Localizable.xcstrings to File List (M1). 20 tests total.
