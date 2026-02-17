@@ -81,7 +81,7 @@ development_status:
 
   # Epic 6: Make It Yours - Settings & Configuration
   epic-6: in-progress
-  6-1-settings-screen-with-all-configuration-options: review # Include "Reset all training data" action
+  6-1-settings-screen-with-all-configuration-options: done # Include "Reset all training data" action
   6-2-apply-settings-to-training-in-real-time: backlog
   epic-6-retrospective: optional
 

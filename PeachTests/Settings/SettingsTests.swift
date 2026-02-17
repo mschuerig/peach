@@ -8,15 +8,21 @@ struct SettingsTests {
 
     // MARK: - Task 1: @AppStorage Keys and Defaults
 
-    @Test("Default values match TrainingSettings defaults")
-    func defaultsMatchTrainingSettings() {
+    @Test("Algorithm defaults match TrainingSettings defaults")
+    func algorithmDefaultsMatchTrainingSettings() {
         let trainingDefaults = TrainingSettings()
 
         #expect(SettingsKeys.defaultNaturalVsMechanical == trainingDefaults.naturalVsMechanical)
         #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRangeMin)
         #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRangeMax)
-        #expect(SettingsKeys.defaultNoteDuration == 1.0)
         #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch)
+    }
+
+    @Test("Audio defaults use expected standalone values")
+    func audioDefaultsAreCorrect() {
+        // noteDuration and soundSource are not TrainingSettings properties —
+        // they are standalone settings with hardcoded defaults
+        #expect(SettingsKeys.defaultNoteDuration == 1.0)
         #expect(SettingsKeys.defaultSoundSource == "sine")
     }
 
@@ -32,25 +38,28 @@ struct SettingsTests {
 
     // MARK: - Task 2: Note Range Validation
 
-    @Test("Clamping upper bound when lower bound increases past gap")
-    func clampUpperWhenLowerIncreasesTooHigh() {
-        // If lower = 78 and upper = 84, increasing lower to 78 is fine (gap = 6? no, gap must be 12)
-        // Actually: lower < upper with minimum gap of 12
-        // If lower goes to 73, upper is 84 → gap = 11 → must clamp upper to 73 + 12 = 85
-        let lower = 73
-        let upper = 84
-        let minGap = 12
-        let adjustedUpper = max(upper, lower + minGap)
-        #expect(adjustedUpper == 85)
+    @Test("Lower bound range enforces minimum gap from upper bound")
+    func lowerBoundRangeEnforcesGap() {
+        // With upper at 84 (C6), lower can go up to 72 (C5)
+        let range = SettingsKeys.lowerBoundRange(noteRangeMax: 84)
+        #expect(range == 21...72)
+        #expect(!range.contains(73))
+
+        // With upper at 48 (C3), lower can go up to 36 (C2)
+        let smallRange = SettingsKeys.lowerBoundRange(noteRangeMax: 48)
+        #expect(smallRange == 21...36)
     }
 
-    @Test("Clamping lower bound when upper bound decreases past gap")
-    func clampLowerWhenUpperDecreasesTooLow() {
-        let lower = 36
-        let upper = 47
-        let minGap = 12
-        let adjustedLower = min(lower, upper - minGap)
-        #expect(adjustedLower == 35)
+    @Test("Upper bound range enforces minimum gap from lower bound")
+    func upperBoundRangeEnforcesGap() {
+        // With lower at 36 (C2), upper must be at least 48 (C3)
+        let range = SettingsKeys.upperBoundRange(noteRangeMin: 36)
+        #expect(range == 48...108)
+        #expect(!range.contains(47))
+
+        // With lower at 60 (C4), upper must be at least 72 (C5)
+        let highRange = SettingsKeys.upperBoundRange(noteRangeMin: 60)
+        #expect(highRange == 72...108)
     }
 
     @Test("Note name display uses PianoKeyboardLayout")
@@ -140,8 +149,9 @@ struct SettingsTests {
         let countBefore = try context.fetchCount(fetchBefore)
         #expect(countBefore == 2)
 
-        // Delete all using the same approach as SettingsScreen
-        try context.delete(model: ComparisonRecord.self)
+        // Delete all using TrainingDataStore.deleteAll() (same as SettingsScreen)
+        let dataStore = TrainingDataStore(modelContext: context)
+        try dataStore.deleteAll()
 
         // Verify records deleted
         let fetchAfter = FetchDescriptor<ComparisonRecord>()
@@ -149,13 +159,16 @@ struct SettingsTests {
         #expect(countAfter == 0)
     }
 
-    // MARK: - Task 5: SettingsScreen Rendering
+    // MARK: - Task 5: Range Functions
 
-    @Test("SettingsScreen body can be created without crashing")
-    @MainActor
-    func settingsScreenCreation() {
-        // Verify SettingsScreen can be instantiated
-        let screen = SettingsScreen()
-        #expect(type(of: screen.body) != Never.self)
+    @Test("Range functions produce valid ranges with default values")
+    func rangeValidityWithDefaults() {
+        let lowerRange = SettingsKeys.lowerBoundRange(noteRangeMax: SettingsKeys.defaultNoteRangeMax)
+        let upperRange = SettingsKeys.upperBoundRange(noteRangeMin: SettingsKeys.defaultNoteRangeMin)
+
+        #expect(lowerRange.contains(SettingsKeys.defaultNoteRangeMin))
+        #expect(upperRange.contains(SettingsKeys.defaultNoteRangeMax))
+        #expect(lowerRange.lowerBound == SettingsKeys.absoluteMinNote)
+        #expect(upperRange.upperBound == SettingsKeys.absoluteMaxNote)
     }
 }

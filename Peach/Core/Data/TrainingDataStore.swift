@@ -53,6 +53,17 @@ final class TrainingDataStore {
             throw DataStoreError.deleteFailed("Failed to delete record: \(error.localizedDescription)")
         }
     }
+
+    /// Deletes all comparison records from persistent storage
+    /// Used by Settings "Reset All Training Data" action
+    /// - Throws: DataStoreError.deleteFailed if batch delete fails
+    func deleteAll() throws {
+        do {
+            try modelContext.delete(model: ComparisonRecord.self)
+        } catch {
+            throw DataStoreError.deleteFailed("Failed to delete all records: \(error.localizedDescription)")
+        }
+    }
 }
 
 // MARK: - ComparisonObserver Conformance

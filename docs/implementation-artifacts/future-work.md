@@ -80,7 +80,30 @@ Peach plays the two comparison tones seamlessly (back-to-back without a gap), wh
 
 ## Technical Debt
 
-*(Items from story development will be added here during retrospectives)*
+### Extract Environment Keys to Shared Locations
+
+**Priority:** Low
+**Category:** Code Organization
+**Date Added:** 2026-02-17
+**Source:** Story 6.1 code review (finding L1)
+
+**Issue:**
+`PerceptualProfileKey` and its `EnvironmentValues` extension are defined in `Peach/Profile/ProfileScreen.swift` (lines 131-149), but `@Environment(\.perceptualProfile)` is used across multiple features: Settings, Start, and Profile. This couples unrelated feature modules to a specific View file for infrastructure plumbing.
+
+**Impact:**
+- `SettingsScreen` implicitly depends on `ProfileScreen.swift` for the environment key definition
+- `ProfilePreviewView` (Start feature) has the same hidden dependency
+- If `ProfileScreen.swift` were ever moved or split, the environment key would need to be relocated
+
+**Proposed Fix:**
+Move environment key definitions next to their corresponding types:
+- `PerceptualProfileKey` → `Peach/Core/Profile/PerceptualProfile.swift` (alongside the class, matching the `TrendAnalyzerKey` pattern in `TrendAnalyzer.swift`)
+
+**Related Code:**
+- `Peach/Profile/ProfileScreen.swift:131-149` — current location of `PerceptualProfileKey`
+- `Peach/Core/Profile/TrendAnalyzer.swift:92-108` — reference pattern (key defined alongside type)
+- `Peach/Settings/SettingsScreen.swift:24` — consumer of `\.perceptualProfile`
+- `Peach/Start/ProfilePreviewView.swift:7` — consumer of `\.perceptualProfile`
 
 ---
 

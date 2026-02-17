@@ -1,6 +1,6 @@
 # Story 6.1: Settings Screen with All Configuration Options
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -178,6 +178,7 @@ This enhancement requires adding drag gesture handling to the Canvas-based keybo
 ## Change Log
 
 - 2026-02-17: Implemented Settings Screen with all configuration options — @AppStorage keys, Form UI with 4 sections (Algorithm, Note Range, Audio, Data), reset training data action with confirmation, and 9 unit tests. Added reset() methods to PerceptualProfile and TrendAnalyzer. 225 total tests pass (was 217).
+- 2026-02-17: Code review fixes — (H1) Reset now uses TrainingDataStore.deleteAll() instead of raw modelContext; (H2) atomic reset with error alert if deletion fails; (H3) extracted range functions to SettingsKeys and rewrote tests to verify actual implementation; (M1) split defaults test to separate TrainingSettings-linked vs standalone; (M2) replaced meaningless screen creation test with range validity test. 227 total tests pass.
 
 ## Dev Agent Record
 
@@ -199,10 +200,11 @@ Claude Opus 4.6 (claude-opus-4-6)
 
 ### File List
 
-- Peach/Settings/SettingsKeys.swift (new)
-- Peach/Settings/SettingsScreen.swift (modified)
+- Peach/Settings/SettingsKeys.swift (new — added range constants and functions in review)
+- Peach/Settings/SettingsScreen.swift (modified — review: uses SettingsKeys range functions, atomic reset via TrainingDataStore, error alert)
 - Peach/Core/Profile/PerceptualProfile.swift (modified — added reset() method)
 - Peach/Core/Profile/TrendAnalyzer.swift (modified — added reset() method)
-- PeachTests/Settings/SettingsTests.swift (new)
+- Peach/Core/Data/TrainingDataStore.swift (modified — added deleteAll() method in review)
+- PeachTests/Settings/SettingsTests.swift (new — review: rewrote range tests, split defaults test, replaced screen creation test)
 - docs/implementation-artifacts/6-1-settings-screen-with-all-configuration-options.md (modified)
 - docs/implementation-artifacts/sprint-status.yaml (modified)

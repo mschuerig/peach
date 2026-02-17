@@ -25,8 +25,7 @@ struct SettingsScreen: View {
     @Environment(\.trendAnalyzer) private var trendAnalyzer
 
     @State private var showResetConfirmation = false
-
-    private static let minimumNoteGap = 12
+    @State private var showResetError = false
 
     var body: some View {
         Form {
@@ -37,6 +36,11 @@ struct SettingsScreen: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Reset Failed", isPresented: $showResetError) {
+            Button("OK") { }
+        } message: {
+            Text("Could not delete training records. Please try again.")
+        }
     }
 
     // MARK: - Sections
@@ -63,13 +67,13 @@ struct SettingsScreen: View {
             Stepper(
                 "Lower: \(PianoKeyboardLayout.noteName(midiNote: noteRangeMin))",
                 value: $noteRangeMin,
-                in: 21...(noteRangeMax - Self.minimumNoteGap),
+                in: SettingsKeys.lowerBoundRange(noteRangeMax: noteRangeMax),
                 step: 1
             )
             Stepper(
                 "Upper: \(PianoKeyboardLayout.noteName(midiNote: noteRangeMax))",
                 value: $noteRangeMax,
-                in: (noteRangeMin + Self.minimumNoteGap)...108,
+                in: SettingsKeys.upperBoundRange(noteRangeMin: noteRangeMin),
                 step: 1
             )
         }
@@ -117,17 +121,16 @@ struct SettingsScreen: View {
     // MARK: - Actions
 
     private func resetAllTrainingData() {
-        // Delete all ComparisonRecords from SwiftData
+        // Atomic reset: only clear profile/trend if data deletion succeeds
+        let dataStore = TrainingDataStore(modelContext: modelContext)
         do {
-            try modelContext.delete(model: ComparisonRecord.self)
+            try dataStore.deleteAll()
         } catch {
-            // SwiftData delete failure — non-fatal, profile/trend still reset
+            showResetError = true
+            return
         }
 
-        // Reset PerceptualProfile
         profile.reset()
-
-        // Reset TrendAnalyzer
         trendAnalyzer.reset()
     }
 }
