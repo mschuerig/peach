@@ -87,7 +87,7 @@ development_status:
 
   # Epic 7: Polish & Ship - Platform, Localization & Info
   epic-7: in-progress
-  7-1-english-and-german-localization: ready-for-dev
+  7-1-english-and-german-localization: review
   7-2-accessibility-audit-and-custom-component-labels: backlog
   7-3-iphone-ipad-portrait-and-landscape-support: backlog
   7-4-info-screen: backlog

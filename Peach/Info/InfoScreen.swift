@@ -13,7 +13,7 @@ struct InfoScreen: View {
                     .font(.largeTitle)
                     .bold()
 
-                Text("Developer: Michael")
+                Text("Developer: \("Michael")")
                     .font(.body)
 
                 Text("© 2026")

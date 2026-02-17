@@ -16,10 +16,10 @@ struct ProfilePreviewViewTests {
 
     // MARK: - Accessibility Labels
 
-    @Test("Cold start accessibility label says tap to view details")
+    @Test("Cold start accessibility label is localized cold start string")
     func coldStartAccessibilityLabel() async throws {
-        let view = ProfilePreviewView()
-        #expect(view.accessibilityLabel == "Your pitch profile. Tap to view details.")
+        let label = ProfilePreviewView.accessibilityLabel(profile: PerceptualProfile(), midiRange: 36...84)
+        #expect(label == String(localized: "Your pitch profile. Tap to view details."))
     }
 
     @Test("Trained state accessibility label includes average threshold")
@@ -29,7 +29,7 @@ struct ProfilePreviewViewTests {
         profile.update(note: 60, centOffset: 30, isCorrect: true)
 
         let label = ProfilePreviewView.accessibilityLabel(profile: profile, midiRange: 36...84)
-        #expect(label == "Your pitch profile. Tap to view details. Average threshold: 40 cents.")
+        #expect(label == String(localized: "Your pitch profile. Tap to view details. Average threshold: \(40) cents."))
     }
 
     @Test("Accessibility label falls back to cold start when no notes trained in range")
@@ -38,7 +38,7 @@ struct ProfilePreviewViewTests {
         profile.update(note: 10, centOffset: 50, isCorrect: true) // Outside 36...84
 
         let label = ProfilePreviewView.accessibilityLabel(profile: profile, midiRange: 36...84)
-        #expect(label == "Your pitch profile. Tap to view details.")
+        #expect(label == String(localized: "Your pitch profile. Tap to view details."))
     }
 
     // MARK: - Data Pipeline

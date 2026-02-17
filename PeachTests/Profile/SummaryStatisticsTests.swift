@@ -65,15 +65,15 @@ struct SummaryStatisticsTests {
 
     // MARK: - Formatting
 
-    @Test("Mean formatted as integer cent value")
+    @Test("Mean formatted as rounded integer with localized cent unit")
     func meanFormatted() async throws {
-        #expect(SummaryStatisticsView.formatMean(32.7) == "33 cents")
-        #expect(SummaryStatisticsView.formatMean(1.2) == "1 cent")
+        #expect(SummaryStatisticsView.formatMean(32.7) == String(localized: "\(33) cents"))
+        #expect(SummaryStatisticsView.formatMean(1.2) == String(localized: "\(1) cents"))
     }
 
-    @Test("StdDev formatted with plus-minus prefix")
+    @Test("StdDev formatted with plus-minus prefix and localized cent unit")
     func stdDevFormatted() async throws {
-        #expect(SummaryStatisticsView.formatStdDev(14.3) == "±14 cents")
+        #expect(SummaryStatisticsView.formatStdDev(14.3) == String(localized: "±\(14) cents"))
     }
 
     @Test("Cold start displays dashes")
@@ -89,5 +89,27 @@ struct SummaryStatisticsTests {
         #expect(SummaryStatisticsView.trendSymbol(.improving) == "arrow.down.right")
         #expect(SummaryStatisticsView.trendSymbol(.stable) == "arrow.right")
         #expect(SummaryStatisticsView.trendSymbol(.declining) == "arrow.up.right")
+    }
+
+    // MARK: - Localization (Story 7.1)
+
+    @Test("formatMean returns localized string, not hardcoded English")
+    func formatMeanLocalized() async throws {
+        let result = SummaryStatisticsView.formatMean(25.0)
+        // Verify it matches the localized key (works in any locale)
+        #expect(result == String(localized: "\(25) cents"))
+    }
+
+    @Test("formatStdDev returns localized string, not hardcoded English")
+    func formatStdDevLocalized() async throws {
+        let result = SummaryStatisticsView.formatStdDev(10.0)
+        #expect(result == String(localized: "±\(10) cents"))
+    }
+
+    @Test("accessibilityTrend returns localized strings")
+    func accessibilityTrendLocalized() async throws {
+        #expect(SummaryStatisticsView.accessibilityTrend(.improving) == String(localized: "Trend: improving"))
+        #expect(SummaryStatisticsView.accessibilityTrend(.stable) == String(localized: "Trend: stable"))
+        #expect(SummaryStatisticsView.accessibilityTrend(.declining) == String(localized: "Trend: declining"))
     }
 }

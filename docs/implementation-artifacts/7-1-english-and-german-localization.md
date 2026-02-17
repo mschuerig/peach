@@ -1,6 +1,6 @@
 # Story 7.1: English and German Localization
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -19,34 +19,34 @@ so that the interface is in my preferred language.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Fix non-localizable string patterns in SummaryStatisticsView (AC: #1, #4)
-  - [ ] Change `statItem(label:value:)` to accept `LocalizedStringKey` for the `label` parameter so that "Mean", "Std Dev" labels are localized when passed through to `Text(label)`
-  - [ ] Replace manual "cent"/"cents" pluralization in `formatMean()` and `formatStdDev()` with `String(localized:)` using a single interpolated key that leverages String Catalog "Vary by Plural" (e.g., `String(localized: "\(rounded) cents")` with plural variants in catalog)
-  - [ ] Replace hardcoded accessibility strings in `accessibilityMean()`, `accessibilityStdDev()`, `accessibilityTrend()` with `String(localized:)` calls so they are picked up by the localization system
-  - [ ] Ensure the container `.accessibilityLabel("No training data yet")` and `.accessibilityLabel("Summary statistics")` remain auto-extracted (they already use string literals in SwiftUI modifiers — no change needed)
+- [x] Task 1: Fix non-localizable string patterns in SummaryStatisticsView (AC: #1, #4)
+  - [x] Change `statItem(label:value:)` to accept `LocalizedStringKey` for the `label` parameter so that "Mean", "Std Dev" labels are localized when passed through to `Text(label)`
+  - [x] Replace manual "cent"/"cents" pluralization in `formatMean()` and `formatStdDev()` with `String(localized:)` using a single interpolated key that leverages String Catalog "Vary by Plural" (e.g., `String(localized: "\(rounded) cents")` with plural variants in catalog)
+  - [x] Replace hardcoded accessibility strings in `accessibilityMean()`, `accessibilityStdDev()`, `accessibilityTrend()` with `String(localized:)` calls so they are picked up by the localization system
+  - [x] Ensure the container `.accessibilityLabel("No training data yet")` and `.accessibilityLabel("Summary statistics")` remain auto-extracted (they already use string literals in SwiftUI modifiers — no change needed)
 
-- [ ] Task 2: Fix non-localizable accessibility strings in ProfileScreen (AC: #1, #4)
-  - [ ] Replace the `String` return in `accessibilitySummary(profile:midiRange:)` with `String(localized:)` calls for both the empty state ("Perceptual profile. No training data available.") and the data state ("Perceptual profile showing detection thresholds from \(lowestName) to \(highestName)...")
+- [x] Task 2: Fix non-localizable accessibility strings in ProfileScreen (AC: #1, #4)
+  - [x] Replace the `String` return in `accessibilitySummary(profile:midiRange:)` with `String(localized:)` calls for both the empty state ("Perceptual profile. No training data available.") and the data state ("Perceptual profile showing detection thresholds from \(lowestName) to \(highestName)...")
 
-- [ ] Task 3: Fix non-localizable accessibility strings in ProfilePreviewView (AC: #1, #4)
-  - [ ] Replace the `String` return in `accessibilityLabel(profile:midiRange:)` with `String(localized:)` calls for both variants ("Your pitch profile. Tap to view details." and "Your pitch profile. Tap to view details. Average threshold: \(threshold) cents.")
+- [x] Task 3: Fix non-localizable accessibility strings in ProfilePreviewView (AC: #1, #4)
+  - [x] Replace the `String` return in `accessibilityLabel(profile:midiRange:)` with `String(localized:)` calls for both variants ("Your pitch profile. Tap to view details." and "Your pitch profile. Tap to view details. Average threshold: \(threshold) cents.")
 
-- [ ] Task 4: Fix InfoScreen "Developer:" label for localization (AC: #1)
-  - [ ] Change `Text("Developer: Michael")` to use a localized format string like `Text("Developer: \(developerName)")` where `developerName` is "Michael" (the "Developer:" prefix localizes, the name stays as-is per Story 7.4 AC)
+- [x] Task 4: Fix InfoScreen "Developer:" label for localization (AC: #1)
+  - [x] Change `Text("Developer: Michael")` to use a localized format string like `Text("Developer: \(developerName)")` where `developerName` is "Michael" (the "Developer:" prefix localizes, the name stays as-is per Story 7.4 AC)
 
-- [ ] Task 5: Add German translations to Localizable.xcstrings (AC: #1, #2, #3)
-  - [ ] Build the project once after code changes to ensure all new/changed string keys are extracted into the String Catalog
-  - [ ] Add German translations for all string keys (see Translation Table in Dev Notes)
-  - [ ] Configure pluralization for "cent"/"cents" keys using "Vary by Plural" (German uses "Cent" for both singular and plural)
-  - [ ] Verify no string keys are marked stale or missing
+- [x] Task 5: Add German translations to Localizable.xcstrings (AC: #1, #2, #3)
+  - [x] Build the project once after code changes to ensure all new/changed string keys are extracted into the String Catalog
+  - [x] Add German translations for all string keys (see Translation Table in Dev Notes)
+  - [x] Configure pluralization for "cent"/"cents" keys using "Vary by Plural" (German uses "Cent" for both singular and plural)
+  - [x] Verify no string keys are marked stale or missing
 
-- [ ] Task 6: Write tests (AC: #2, #3)
-  - [ ] Test that `SummaryStatisticsView.formatMean()` returns a localized string (verify the string uses localization APIs, not hardcoded English)
-  - [ ] Test that `SummaryStatisticsView.formatStdDev()` returns a localized string
-  - [ ] Test that `ProfileScreen.accessibilitySummary()` returns a localized string
-  - [ ] Test that `ProfilePreviewView.accessibilityLabel()` returns a localized string
-  - [ ] Test that `SummaryStatisticsView.accessibilityTrend()` returns a localized string
-  - [ ] Note: Testing actual German translations requires setting the test locale — verify at minimum that `String(localized:)` is used (the localization system itself is tested by Apple)
+- [x] Task 6: Write tests (AC: #2, #3)
+  - [x] Test that `SummaryStatisticsView.formatMean()` returns a localized string (verify the string uses localization APIs, not hardcoded English)
+  - [x] Test that `SummaryStatisticsView.formatStdDev()` returns a localized string
+  - [x] Test that `ProfileScreen.accessibilitySummary()` returns a localized string
+  - [x] Test that `ProfilePreviewView.accessibilityLabel()` returns a localized string
+  - [x] Test that `SummaryStatisticsView.accessibilityTrend()` returns a localized string
+  - [x] Note: Testing actual German translations requires setting the test locale — verify at minimum that `String(localized:)` is used (the localization system itself is tested by Apple)
 
 ## Dev Notes
 
@@ -278,10 +278,34 @@ Pattern: story creation commit → implementation commit → code review fixes c
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- German simulator locale caused initial test failures — resolved by making tests locale-independent using `String(localized:)` in expectations
+
 ### Completion Notes List
 
+- Task 1: Changed `statItem(label:)` from `String` to `LocalizedStringKey`; replaced hardcoded English pluralization in `formatMean`/`formatStdDev` with `String(localized:)` and plural-varied catalog entries; converted all accessibility methods (`accessibilityMean`, `accessibilityStdDev`, `accessibilityTrend`) to use `String(localized:)`
+- Task 2: Converted `ProfileScreen.accessibilitySummary()` to use `String(localized:)` for both empty and data states
+- Task 3: Converted `ProfilePreviewView.accessibilityLabel()` to use `String(localized:)` for both cold start and trained states
+- Task 4: Changed `Text("Developer: Michael")` to `Text("Developer: \("Michael")")` so the "Developer:" prefix is localized via format string
+- Task 5: Rewrote `Localizable.xcstrings` with German translations for all 50+ string keys; added "Vary by Plural" for `%lld cents`, `±%lld cents`, and all accessibility strings containing "cents"; removed stale `Developer: Michael` key, added new `Developer: %@` key
+- Task 6: Added 4 new localization tests (formatMean, formatStdDev, accessibilityTrend, accessibilitySummary empty state); updated 5 existing tests to be locale-independent using `String(localized:)` in expectations. Total: 238 tests pass, 0 failures.
+
+### Change Log
+
+- 2026-02-18: Implemented Story 7.1 — English and German localization with plural support, accessibility localization, and full String Catalog translations
+
 ### File List
+
+- Peach/Profile/SummaryStatisticsView.swift (modified — LocalizedStringKey for statItem label, String(localized:) for formatMean/formatStdDev/accessibility methods)
+- Peach/Profile/ProfileScreen.swift (modified — String(localized:) for accessibilitySummary)
+- Peach/Start/ProfilePreviewView.swift (modified — String(localized:) for accessibilityLabel)
+- Peach/Info/InfoScreen.swift (modified — format string interpolation for Developer label)
+- Peach/Resources/Localizable.xcstrings (modified — added German translations for all keys, plural variants for cent/cents)
+- PeachTests/Profile/SummaryStatisticsTests.swift (modified — locale-independent assertions, added localization tests)
+- PeachTests/Profile/ProfileScreenTests.swift (modified — locale-independent assertions, added localization test)
+- PeachTests/Start/ProfilePreviewViewTests.swift (modified — locale-independent assertions using String(localized:))
+- docs/implementation-artifacts/sprint-status.yaml (modified — story status updated)
+- tools/parse-xcresult.py (new — tool for parsing xcresult test failure details)

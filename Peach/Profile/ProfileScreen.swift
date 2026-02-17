@@ -84,14 +84,14 @@ struct ProfileScreen: View {
         guard let lowestTrained = trainedNotes.first,
               let highestTrained = trainedNotes.last,
               !trainedNotes.isEmpty else {
-            return "Perceptual profile. No training data available."
+            return String(localized: "Perceptual profile. No training data available.")
         }
 
         let lowestName = PianoKeyboardLayout.noteName(midiNote: lowestTrained)
         let highestName = PianoKeyboardLayout.noteName(midiNote: highestTrained)
         let roundedThreshold = profile.averageThreshold(midiRange: midiRange) ?? 0
 
-        return "Perceptual profile showing detection thresholds from \(lowestName) to \(highestName). Average threshold: \(roundedThreshold) cents."
+        return String(localized: "Perceptual profile showing detection thresholds from \(lowestName) to \(highestName). Average threshold: \(roundedThreshold) cents.")
     }
 }
 

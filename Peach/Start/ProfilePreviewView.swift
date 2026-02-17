@@ -33,9 +33,9 @@ struct ProfilePreviewView: View {
 
     static func accessibilityLabel(profile: PerceptualProfile, midiRange: ClosedRange<Int>) -> String {
         if let threshold = profile.averageThreshold(midiRange: midiRange) {
-            return "Your pitch profile. Tap to view details. Average threshold: \(threshold) cents."
+            return String(localized: "Your pitch profile. Tap to view details. Average threshold: \(threshold) cents.")
         } else {
-            return "Your pitch profile. Tap to view details."
+            return String(localized: "Your pitch profile. Tap to view details.")
         }
     }
 }

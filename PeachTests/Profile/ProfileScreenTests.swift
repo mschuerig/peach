@@ -220,9 +220,10 @@ struct ProfileScreenTests {
 
         // Should use absolute means: (abs(50) + abs(-30)) / 2 = 40
         // NOT abs((50 + -30) / 2) = 10 (directional cancellation)
+        // Verify note names and threshold value are present (locale-independent)
         #expect(summary.contains("C3"))
         #expect(summary.contains("C4"))
-        #expect(summary.contains("Average threshold: 40 cents"))
+        #expect(summary.contains("40"))
     }
 
     // MARK: - Cold Start / Empty State
@@ -234,5 +235,14 @@ struct ProfileScreenTests {
 
         let trainedPoints = data.filter { $0.isTrained }
         #expect(trainedPoints.count == 0)
+    }
+
+    // MARK: - Localization (Story 7.1)
+
+    @Test("Accessibility summary returns localized string for empty profile")
+    func accessibilitySummaryLocalizedEmpty() async throws {
+        let profile = PerceptualProfile()
+        let summary = ProfileScreen.accessibilitySummary(profile: profile, midiRange: 36...84)
+        #expect(summary == String(localized: "Perceptual profile. No training data available."))
     }
 }

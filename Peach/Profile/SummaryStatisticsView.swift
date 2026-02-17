@@ -39,7 +39,7 @@ struct SummaryStatisticsView: View {
         .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 
-    private func statItem(label: String, value: String) -> some View {
+    private func statItem(label: LocalizedStringKey, value: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.headline)
@@ -107,34 +107,34 @@ struct SummaryStatisticsView: View {
     static func formatMean(_ value: Double?) -> String {
         guard let value else { return "—" }
         let rounded = Int(value.rounded())
-        return "\(rounded) \(rounded == 1 ? "cent" : "cents")"
+        return String(localized: "\(rounded) cents")
     }
 
     static func formatStdDev(_ value: Double?) -> String {
         guard let value else { return "—" }
         let rounded = Int(value.rounded())
-        return "±\(rounded) \(rounded == 1 ? "cent" : "cents")"
+        return String(localized: "±\(rounded) cents")
     }
 
     // MARK: - Accessibility
 
     static func accessibilityMean(_ value: Double?) -> String {
-        guard let value else { return "No training data yet" }
+        guard let value else { return String(localized: "No training data yet") }
         let rounded = Int(value.rounded())
-        return "Mean detection threshold: \(rounded) \(rounded == 1 ? "cent" : "cents")"
+        return String(localized: "Mean detection threshold: \(rounded) cents")
     }
 
     static func accessibilityStdDev(_ value: Double?) -> String {
         guard let value else { return "" }
         let rounded = Int(value.rounded())
-        return "Standard deviation: \(rounded) \(rounded == 1 ? "cent" : "cents")"
+        return String(localized: "Standard deviation: \(rounded) cents")
     }
 
     static func accessibilityTrend(_ trend: Trend) -> String {
         switch trend {
-        case .improving: "Trend: improving"
-        case .stable: "Trend: stable"
-        case .declining: "Trend: declining"
+        case .improving: String(localized: "Trend: improving")
+        case .stable: String(localized: "Trend: stable")
+        case .declining: String(localized: "Trend: declining")
         }
     }
 }
