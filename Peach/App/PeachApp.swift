@@ -6,6 +6,7 @@ import os
 struct PeachApp: App {
     @State private var modelContainer: ModelContainer
     @State private var trainingSession: TrainingSession
+    @State private var profile: PerceptualProfile
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
@@ -19,8 +20,9 @@ struct PeachApp: App {
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
             let notePlayer = try SineWaveNotePlayer()
 
-            // Create and populate perceptual profile from existing data (Story 4.1)
+            // Create and populate perceptual profile from existing data (Story 4.1, 5.1)
             let profile = PerceptualProfile()
+            _profile = State(wrappedValue: profile)
             let startTime = CFAbsoluteTimeGetCurrent()
             let existingRecords = try dataStore.fetchAll()
             for record in existingRecords {
@@ -55,6 +57,7 @@ struct PeachApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.trainingSession, trainingSession)
+                .environment(\.perceptualProfile, profile)
                 .modelContainer(modelContainer)
         }
     }
