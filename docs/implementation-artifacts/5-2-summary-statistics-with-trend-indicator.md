@@ -1,6 +1,6 @@
 # Story 5.2: Summary Statistics with Trend Indicator
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,51 +20,51 @@ so that I have factual confirmation that training is working.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `SummaryStatisticsView` component (AC: 1, 2)
-  - [ ] 1.1 Create `Peach/Profile/SummaryStatisticsView.swift` — displays mean, stdDev, and trend
-  - [ ] 1.2 Compute mean from `PerceptualProfile` using `abs(stats.mean)` per trained note (avoids signed cancellation) — same logic as accessibility summary in `ProfileScreen.swift:88`
-  - [ ] 1.3 Compute stdDev from `abs(mean)` per trained note (spread of detection thresholds)
-  - [ ] 1.4 Display values as formatted cent values (e.g., "32 cents", "±14 cents")
-  - [ ] 1.5 Cold start: show "—" for mean and stdDev when `profile.overallMean == nil`
+- [x] Task 1: Create `SummaryStatisticsView` component (AC: 1, 2)
+  - [x] 1.1 Create `Peach/Profile/SummaryStatisticsView.swift` — displays mean, stdDev, and trend
+  - [x] 1.2 Compute mean from `PerceptualProfile` using `abs(stats.mean)` per trained note (avoids signed cancellation) — same logic as accessibility summary in `ProfileScreen.swift:88`
+  - [x] 1.3 Compute stdDev from `abs(mean)` per trained note (spread of detection thresholds)
+  - [x] 1.4 Display values as formatted cent values (e.g., "32 cents", "±14 cents")
+  - [x] 1.5 Cold start: show "—" for mean and stdDev when `profile.overallMean == nil`
 
-- [ ] Task 2: Implement trend computation (AC: 1, 3)
-  - [ ] 2.1 Create `Peach/Core/Profile/TrendAnalyzer.swift` — `@Observable @MainActor` class
-  - [ ] 2.2 Define `Trend` enum: `.improving`, `.stable`, `.declining`
-  - [ ] 2.3 Compute trend from `[ComparisonRecord]` by comparing mean `abs(note2CentOffset)` of the recent half of records vs. the earlier half (chronological split)
-  - [ ] 2.4 Define threshold for classification: >5% decrease → improving, >5% increase → declining, else stable
-  - [ ] 2.5 Require minimum record count (e.g., ≥20 records) before showing any trend; return nil otherwise
-  - [ ] 2.6 Conform to `ComparisonObserver` for incremental updates during training
-  - [ ] 2.7 Store baseline and recent statistics for efficient incremental computation
+- [x] Task 2: Implement trend computation (AC: 1, 3)
+  - [x] 2.1 Create `Peach/Core/Profile/TrendAnalyzer.swift` — `@Observable @MainActor` class
+  - [x] 2.2 Define `Trend` enum: `.improving`, `.stable`, `.declining`
+  - [x] 2.3 Compute trend from `[ComparisonRecord]` by comparing mean `abs(note2CentOffset)` of the recent half of records vs. the earlier half (chronological split)
+  - [x] 2.4 Define threshold for classification: >5% decrease → improving, >5% increase → declining, else stable
+  - [x] 2.5 Require minimum record count (e.g., ≥20 records) before showing any trend; return nil otherwise
+  - [x] 2.6 Conform to `ComparisonObserver` for incremental updates during training
+  - [x] 2.7 Store baseline and recent statistics for efficient incremental computation
 
-- [ ] Task 3: Display trend indicator (AC: 1, 2)
-  - [ ] 3.1 Show trend as an understated SF Symbol arrow: `arrow.down.right` (improving — threshold going down), `arrow.right` (stable), `arrow.up.right` (declining — threshold going up)
-  - [ ] 3.2 Use system semantic colors: `.secondary` for all trend states (understated per UX spec, NOT green/red)
-  - [ ] 3.3 Hide trend indicator when no data or insufficient data (cold start, < 20 records)
+- [x] Task 3: Display trend indicator (AC: 1, 2)
+  - [x] 3.1 Show trend as an understated SF Symbol arrow: `arrow.down.right` (improving — threshold going down), `arrow.right` (stable), `arrow.up.right` (declining — threshold going up)
+  - [x] 3.2 Use system semantic colors: `.secondary` for all trend states (understated per UX spec, NOT green/red)
+  - [x] 3.3 Hide trend indicator when no data or insufficient data (cold start, < 20 records)
 
-- [ ] Task 4: Integrate into ProfileScreen (AC: 1, 2)
-  - [ ] 4.1 Add `SummaryStatisticsView` below the visualization (between chart and keyboard, or below keyboard)
-  - [ ] 4.2 Inject `TrendAnalyzer` via SwiftUI environment
-  - [ ] 4.3 Ensure statistics are visible in both trained and cold start states
-  - [ ] 4.4 Update previews to include statistics with various data states
+- [x] Task 4: Integrate into ProfileScreen (AC: 1, 2)
+  - [x] 4.1 Add `SummaryStatisticsView` below the visualization (between chart and keyboard, or below keyboard)
+  - [x] 4.2 Inject `TrendAnalyzer` via SwiftUI environment
+  - [x] 4.3 Ensure statistics are visible in both trained and cold start states
+  - [x] 4.4 Update previews to include statistics with various data states
 
-- [ ] Task 5: Wire up in PeachApp.swift (AC: 3)
-  - [ ] 5.1 Create `TrendAnalyzer` in `PeachApp.init()`, compute from existing records
-  - [ ] 5.2 Add to SwiftUI environment via `.environment(\.trendAnalyzer, trendAnalyzer)`
-  - [ ] 5.3 Add `TrendAnalyzer` to the `observers` array in TrainingSession init for incremental updates
+- [x] Task 5: Wire up in PeachApp.swift (AC: 3)
+  - [x] 5.1 Create `TrendAnalyzer` in `PeachApp.init()`, compute from existing records
+  - [x] 5.2 Add to SwiftUI environment via `.environment(\.trendAnalyzer, trendAnalyzer)`
+  - [x] 5.3 Add `TrendAnalyzer` to the `observers` array in TrainingSession init for incremental updates
 
-- [ ] Task 6: Accessibility (AC: 1, 2)
-  - [ ] 6.1 Add VoiceOver labels: "Mean detection threshold: 32 cents" / "Standard deviation: 14 cents" / "Trend: improving"
-  - [ ] 6.2 Cold start: accessible label "No training data yet"
-  - [ ] 6.3 Ensure Dynamic Type scaling for all text
+- [x] Task 6: Accessibility (AC: 1, 2)
+  - [x] 6.1 Add VoiceOver labels: "Mean detection threshold: 32 cents" / "Standard deviation: 14 cents" / "Trend: improving"
+  - [x] 6.2 Cold start: accessible label "No training data yet"
+  - [x] 6.3 Ensure Dynamic Type scaling for all text
 
-- [ ] Task 7: Tests (AC: all)
-  - [ ] 7.1 Test `TrendAnalyzer` trend computation with known record sets (improving, stable, declining)
-  - [ ] 7.2 Test `TrendAnalyzer` cold start (empty records → nil trend)
-  - [ ] 7.3 Test `TrendAnalyzer` insufficient data (< 20 records → nil trend)
-  - [ ] 7.4 Test `TrendAnalyzer` incremental update via `ComparisonObserver`
-  - [ ] 7.5 Test summary statistics computation (mean abs threshold, stdDev)
-  - [ ] 7.6 Test cold start display (dashes, hidden trend)
-  - [ ] 7.7 Test environment key for `TrendAnalyzer`
+- [x] Task 7: Tests (AC: all)
+  - [x] 7.1 Test `TrendAnalyzer` trend computation with known record sets (improving, stable, declining)
+  - [x] 7.2 Test `TrendAnalyzer` cold start (empty records → nil trend)
+  - [x] 7.3 Test `TrendAnalyzer` insufficient data (< 20 records → nil trend)
+  - [x] 7.4 Test `TrendAnalyzer` incremental update via `ComparisonObserver`
+  - [x] 7.5 Test summary statistics computation (mean abs threshold, stdDev)
+  - [x] 7.6 Test cold start display (dashes, hidden trend)
+  - [x] 7.7 Test environment key for `TrendAnalyzer`
 
 ## Dev Notes
 
@@ -180,10 +180,36 @@ Recent commits show:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — implementation proceeded without blockers.
+
 ### Completion Notes List
 
+- **Task 1:** Created `SummaryStatisticsView` with `computeStats()` using `abs(stats.mean)` per trained note to avoid signed cancellation. Formats mean as "N cents" and stdDev as "±N cents". Cold start shows "—" dashes.
+- **Task 2:** Created `TrendAnalyzer` as `@Observable @MainActor` class with `Trend` enum (.improving/.stable/.declining). Splits records chronologically, compares mean abs(centOffset) of halves. >5% change threshold. Minimum 20 records required. Conforms to `ComparisonObserver` for incremental updates.
+- **Task 3:** Trend displayed as understated SF Symbol arrows (arrow.down.right/arrow.right/arrow.up.right) in `.secondary` color. Hidden when no data or <20 records.
+- **Task 4:** Integrated `SummaryStatisticsView` into `ProfileScreen` below the keyboard in both trained and cold start states. Existing previews automatically include it.
+- **Task 5:** Wired `TrendAnalyzer` in `PeachApp.init()` — created from existing records, injected into SwiftUI environment, added to observers array.
+- **Task 6:** VoiceOver labels added: "Mean detection threshold: N cents", "Standard deviation: N cents", "Trend: improving/stable/declining". Cold start: "No training data yet". Dynamic Type scaling enabled.
+- **Task 7:** 19 tests total — 7 in SummaryStatisticsTests (mean computation, stdDev, formatting, cold start) and 12 in TrendAnalyzerTests (improving/stable/declining/boundary, minimum records, incremental update, environment key).
+
 ### File List
+
+**New files:**
+- `Peach/Profile/SummaryStatisticsView.swift`
+- `Peach/Core/Profile/TrendAnalyzer.swift`
+- `PeachTests/Profile/TrendAnalyzerTests.swift`
+- `PeachTests/Profile/SummaryStatisticsTests.swift`
+
+**Modified files:**
+- `Peach/Profile/ProfileScreen.swift`
+- `Peach/App/PeachApp.swift`
+- `docs/implementation-artifacts/sprint-status.yaml`
+- `docs/implementation-artifacts/5-2-summary-statistics-with-trend-indicator.md`
+
+## Change Log
+
+- 2026-02-17: Implemented Story 5.2 — Summary Statistics with Trend Indicator. Added `SummaryStatisticsView` displaying mean, stdDev, and trend direction. Created `TrendAnalyzer` with `ComparisonObserver` conformance for incremental updates. 19 new tests covering all acceptance criteria.

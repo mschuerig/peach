@@ -7,6 +7,7 @@ struct PeachApp: App {
     @State private var modelContainer: ModelContainer
     @State private var trainingSession: TrainingSession
     @State private var profile: PerceptualProfile
+    @State private var trendAnalyzer: TrendAnalyzer
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
@@ -35,13 +36,17 @@ struct PeachApp: App {
             let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             Self.logger.info("Profile loaded from \(existingRecords.count) records in \(elapsed, format: .fixed(precision: 1))ms")
 
+            // Create trend analyzer from existing records (Story 5.2)
+            let trendAnalyzer = TrendAnalyzer(records: existingRecords)
+            _trendAnalyzer = State(wrappedValue: trendAnalyzer)
+
             // Adaptive strategy with Kazez convergence formulas (Story 4.3)
             let strategy = AdaptiveNoteStrategy()
 
             // Create training session with observer pattern (Story 4.1) and adaptive strategy (Story 4.3)
             // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback)
             let hapticManager = HapticFeedbackManager()
-            let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
+            let observers: [ComparisonObserver] = [dataStore, profile, hapticManager, trendAnalyzer]
             _trainingSession = State(wrappedValue: TrainingSession(
                 notePlayer: notePlayer,
                 strategy: strategy,
@@ -58,6 +63,7 @@ struct PeachApp: App {
             ContentView()
                 .environment(\.trainingSession, trainingSession)
                 .environment(\.perceptualProfile, profile)
+                .environment(\.trendAnalyzer, trendAnalyzer)
                 .modelContainer(modelContainer)
         }
     }

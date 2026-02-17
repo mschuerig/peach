@@ -35,6 +35,8 @@ struct ProfileScreen: View {
             PianoKeyboardView(midiRange: layout.midiRange)
                 .padding(.horizontal)
 
+            SummaryStatisticsView(midiRange: layout.midiRange)
+
             Spacer()
         }
         .accessibilityElement(children: .ignore)
@@ -55,6 +57,8 @@ struct ProfileScreen: View {
 
             PianoKeyboardView(midiRange: layout.midiRange)
                 .padding(.horizontal)
+
+            SummaryStatisticsView(midiRange: layout.midiRange)
 
             Spacer()
         }
