@@ -80,8 +80,8 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Make It Yours - Settings & Configuration
-  epic-6: backlog
-  6-1-settings-screen-with-all-configuration-options: backlog # Include "Reset all training data" action
+  epic-6: in-progress
+  6-1-settings-screen-with-all-configuration-options: ready-for-dev # Include "Reset all training data" action
   6-2-apply-settings-to-training-in-real-time: backlog
   epic-6-retrospective: optional
 
