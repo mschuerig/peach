@@ -89,8 +89,7 @@ struct ProfileScreen: View {
 
         let lowestName = PianoKeyboardLayout.noteName(midiNote: lowestTrained)
         let highestName = PianoKeyboardLayout.noteName(midiNote: highestTrained)
-        let avgThreshold = trainedNotes.map { abs(profile.statsForNote($0).mean) }.reduce(0.0, +) / Double(trainedNotes.count)
-        let roundedThreshold = Int(avgThreshold)
+        let roundedThreshold = profile.averageThreshold(midiRange: midiRange) ?? 0
 
         return "Perceptual profile showing detection thresholds from \(lowestName) to \(highestName). Average threshold: \(roundedThreshold) cents."
     }

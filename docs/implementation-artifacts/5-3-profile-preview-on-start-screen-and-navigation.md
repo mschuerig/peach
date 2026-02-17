@@ -1,6 +1,6 @@
 # Story 5.3: Profile Preview on Start Screen and Navigation
 
-Status: review
+Status: done
 
 ## Story
 
@@ -157,12 +157,16 @@ No issues encountered during implementation.
 ### Change Log
 
 - 2026-02-17: Implemented story 5.3 — Profile Preview on Start Screen and Navigation
+- 2026-02-17: Code review fixes — extracted shared averageThreshold, fixed tests, added NaN guard, updated File List
 
 ### File List
 
-- `Peach/Start/ProfilePreviewView.swift` (NEW)
+- `Peach/Start/ProfilePreviewView.swift` (NEW; review: extracted static accessibilityLabel method)
 - `Peach/Start/StartScreen.swift` (MODIFIED — replaced placeholder with ProfilePreviewView + NavigationLink)
 - `Peach/Profile/PianoKeyboardView.swift` (MODIFIED — added showLabels parameter)
-- `PeachTests/Start/ProfilePreviewViewTests.swift` (NEW)
+- `Peach/Profile/ProfileScreen.swift` (MODIFIED — review: use shared averageThreshold)
+- `Peach/Core/Profile/PerceptualProfile.swift` (MODIFIED — review: added averageThreshold method)
+- `Peach/Resources/Localizable.xcstrings` (MODIFIED — removed unused placeholder accessibility string)
+- `PeachTests/Start/ProfilePreviewViewTests.swift` (NEW; review: rewrote broken tests)
 - `docs/implementation-artifacts/5-3-profile-preview-on-start-screen-and-navigation.md` (MODIFIED — status, tasks, dev agent record)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED — status updated to review)

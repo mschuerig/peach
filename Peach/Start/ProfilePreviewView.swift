@@ -28,10 +28,12 @@ struct ProfilePreviewView: View {
     }
 
     var accessibilityLabel: String {
-        if hasTrainingData {
-            let trainedNotes = layout.midiRange.filter { profile.statsForNote($0).isTrained }
-            let avgThreshold = trainedNotes.map { abs(profile.statsForNote($0).mean) }.reduce(0.0, +) / Double(trainedNotes.count)
-            return "Your pitch profile. Tap to view details. Average threshold: \(Int(avgThreshold)) cents."
+        Self.accessibilityLabel(profile: profile, midiRange: layout.midiRange)
+    }
+
+    static func accessibilityLabel(profile: PerceptualProfile, midiRange: ClosedRange<Int>) -> String {
+        if let threshold = profile.averageThreshold(midiRange: midiRange) {
+            return "Your pitch profile. Tap to view details. Average threshold: \(threshold) cents."
         } else {
             return "Your pitch profile. Tap to view details."
         }
