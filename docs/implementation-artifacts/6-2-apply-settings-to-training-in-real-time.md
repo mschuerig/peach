@@ -1,6 +1,6 @@
 # Story 6.2: Apply Settings to Training in Real Time
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -21,30 +21,30 @@ so that I can feel the difference and find my preferred configuration.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Make TrainingSession read settings from @AppStorage at comparison time (AC: #1, #2, #3, #4, #5)
-  - [ ] Replace `private let settings: TrainingSettings` with a computed property or on-demand construction that reads current @AppStorage values each time `playNextComparison()` is called
-  - [ ] Replace `private let noteDuration: TimeInterval = 1.0` with a dynamic read from `@AppStorage("noteDuration")`
-  - [ ] Pass the live `referencePitch` from settings to `comparison.note1Frequency(referencePitch:)` and `comparison.note2Frequency(referencePitch:)` in `playNextComparison()`
-  - [ ] Ensure `amplitude` (0.5) and `feedbackDuration` (0.4s) remain hardcoded constants (not user-configurable)
-- [ ] Task 2: Wire @AppStorage reads into TrainingSession (AC: #1, #2, #3, #4)
-  - [ ] Add `@AppStorage` properties to TrainingSession for all 6 settings keys (using `SettingsKeys` constants and defaults)
-  - [ ] Build a fresh `TrainingSettings` from the @AppStorage values at the call site in `playNextComparison()` — this ensures every comparison picks up the latest user settings
-  - [ ] Read `noteDuration` from the @AppStorage property instead of the hardcoded constant
-  - [ ] Read `referencePitch` from the @AppStorage property and pass to frequency calculation calls
-- [ ] Task 3: Update PeachApp initialization (AC: #5)
-  - [ ] Remove the `settings:` parameter from the `TrainingSession` initializer call in `PeachApp.init()` (TrainingSession now reads @AppStorage directly — no external settings injection needed for production)
-  - [ ] Keep the `settings:` parameter in the `TrainingSession.init()` signature as an optional override for test injection (default `nil` means "read from @AppStorage")
-- [ ] Task 4: Update TrainingSession.init() to support both modes (AC: #6)
-  - [ ] Add an optional `settingsOverride: TrainingSettings?` parameter (default `nil`)
-  - [ ] When `settingsOverride` is non-nil, use it for all comparisons (test mode — deterministic settings)
-  - [ ] When `settingsOverride` is nil, read from @AppStorage on each comparison (production mode — live settings)
-  - [ ] Similarly, add an optional `noteDurationOverride: TimeInterval?` parameter for test determinism
-- [ ] Task 5: Write tests (AC: #6)
-  - [ ] Test that TrainingSession with `settingsOverride` uses the override values (existing test pattern preserved)
-  - [ ] Test that changing @AppStorage values changes the `TrainingSettings` built by TrainingSession (integration test using `UserDefaults.standard`)
-  - [ ] Test that `noteDuration` from @AppStorage is passed to NotePlayer (verify via mock)
-  - [ ] Test that `referencePitch` from @AppStorage is passed to frequency calculation (verify via mock or output frequency comparison)
-  - [ ] Test that settings persist across simulated app restart (write to UserDefaults, create new TrainingSession, verify values)
+- [x] Task 1: Make TrainingSession read settings from @AppStorage at comparison time (AC: #1, #2, #3, #4, #5)
+  - [x] Replace `private let settings: TrainingSettings` with a computed property or on-demand construction that reads current @AppStorage values each time `playNextComparison()` is called
+  - [x] Replace `private let noteDuration: TimeInterval = 1.0` with a dynamic read from `@AppStorage("noteDuration")`
+  - [x] Pass the live `referencePitch` from settings to `comparison.note1Frequency(referencePitch:)` and `comparison.note2Frequency(referencePitch:)` in `playNextComparison()`
+  - [x] Ensure `amplitude` (0.5) and `feedbackDuration` (0.4s) remain hardcoded constants (not user-configurable)
+- [x] Task 2: Wire @AppStorage reads into TrainingSession (AC: #1, #2, #3, #4)
+  - [x] Add `@AppStorage` properties to TrainingSession for all 6 settings keys (using `SettingsKeys` constants and defaults)
+  - [x] Build a fresh `TrainingSettings` from the @AppStorage values at the call site in `playNextComparison()` — this ensures every comparison picks up the latest user settings
+  - [x] Read `noteDuration` from the @AppStorage property instead of the hardcoded constant
+  - [x] Read `referencePitch` from the @AppStorage property and pass to frequency calculation calls
+- [x] Task 3: Update PeachApp initialization (AC: #5)
+  - [x] Remove the `settings:` parameter from the `TrainingSession` initializer call in `PeachApp.init()` (TrainingSession now reads @AppStorage directly — no external settings injection needed for production)
+  - [x] Keep the `settings:` parameter in the `TrainingSession.init()` signature as an optional override for test injection (default `nil` means "read from @AppStorage")
+- [x] Task 4: Update TrainingSession.init() to support both modes (AC: #6)
+  - [x] Add an optional `settingsOverride: TrainingSettings?` parameter (default `nil`)
+  - [x] When `settingsOverride` is non-nil, use it for all comparisons (test mode — deterministic settings)
+  - [x] When `settingsOverride` is nil, read from @AppStorage on each comparison (production mode — live settings)
+  - [x] Similarly, add an optional `noteDurationOverride: TimeInterval?` parameter for test determinism
+- [x] Task 5: Write tests (AC: #6)
+  - [x] Test that TrainingSession with `settingsOverride` uses the override values (existing test pattern preserved)
+  - [x] Test that changing @AppStorage values changes the `TrainingSettings` built by TrainingSession (integration test using `UserDefaults.standard`)
+  - [x] Test that `noteDuration` from @AppStorage is passed to NotePlayer (verify via mock)
+  - [x] Test that `referencePitch` from @AppStorage is passed to frequency calculation (verify via mock or output frequency comparison)
+  - [x] Test that settings persist across simulated app restart (write to UserDefaults, create new TrainingSession, verify values)
 
 ## Dev Notes
 
@@ -187,10 +187,29 @@ Pattern: story creation commit → implementation commit → code review fixes c
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- `@AppStorage` inside `@Observable` class causes `invalid redeclaration of synthesized property` errors — both `@Observable` macro and `@AppStorage` property wrapper synthesize `_propertyName` backing storage. Resolved by switching to direct `UserDefaults.standard` reads in computed properties instead of `@AppStorage` property declarations.
+- Swift Testing runs tests in parallel by default, causing UserDefaults-based tests to interfere with each other. Resolved by placing UserDefaults integration tests in a separate `@Suite(.serialized)` to ensure sequential execution.
+
 ### Completion Notes List
 
+- **Task 1-2:** Replaced hardcoded `private let settings: TrainingSettings` and `private let noteDuration: TimeInterval = 1.0` with `currentSettings` and `currentNoteDuration` computed properties that read live values from `UserDefaults.standard` on each comparison. Used `@ObservationIgnored`-free approach: direct `UserDefaults.standard.object(forKey:)` reads in computed properties to avoid `@Observable` macro conflicts.
+- **Task 3:** PeachApp.init() already did not pass `settings:` (used default), so no change needed. The old `settings:` parameter was replaced by `settingsOverride:` in Task 4.
+- **Task 4:** Added `settingsOverride: TrainingSettings? = nil` and `noteDurationOverride: TimeInterval? = nil` parameters to `TrainingSession.init()`. When non-nil, overrides are used (deterministic test mode). When nil, reads from UserDefaults (production mode).
+- **Task 5:** Added 6 new tests: `settingsOverrideUsesOverrideValues`, `noteDurationOverrideTakesPrecedence`, `userDefaultsChangesAffectSettings`, `noteDurationFromUserDefaultsPassedToPlayer`, `referencePitchFromUserDefaultsAffectsFrequency`, `settingsPersistAcrossRestart`. Updated existing `strategyReceivesCorrectSettings` test to use `settingsOverride:` parameter. UserDefaults tests placed in serialized suite for isolation.
+- **Refactoring:** Updated `makeTrainingSession()` test helper to use `settingsOverride: TrainingSettings()` and `noteDurationOverride: 1.0` for deterministic behavior in existing tests (prevents UserDefaults pollution from new tests).
+- **All 233 tests pass** (227 existing + 6 new, zero regressions).
+
+### Change Log
+
+- 2026-02-17: Implemented Story 6.2 — TrainingSession reads settings from UserDefaults on each comparison, enabling real-time settings application. Added settingsOverride/noteDurationOverride for test injection. 6 new tests. 233 total tests pass.
+
 ### File List
+
+- Peach/Training/TrainingSession.swift (modified)
+- PeachTests/Training/TrainingSessionTests.swift (modified)
+- docs/implementation-artifacts/6-2-apply-settings-to-training-in-real-time.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)

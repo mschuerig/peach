@@ -24,6 +24,8 @@ struct TrainingSessionTests {
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
+            settingsOverride: TrainingSettings(),
+            noteDurationOverride: 1.0,
             observers: observers
         )
         return (session, mockPlayer, mockDataStore, profile, mockStrategy)
@@ -511,7 +513,7 @@ struct TrainingSessionTests {
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
-            settings: customSettings,
+            settingsOverride: customSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -594,5 +596,226 @@ struct TrainingSessionTests {
         #expect(comparison.centDifference == 100.0)
         // Note should be within default range
         #expect(comparison.note1 >= 36 && comparison.note1 <= 84)
+    }
+
+    // MARK: - Story 6.2: Settings Override Tests (no UserDefaults interaction)
+
+    @MainActor
+    @Test("TrainingSession with settingsOverride uses override values")
+    func settingsOverrideUsesOverrideValues() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+        let overrideSettings = TrainingSettings(
+            noteRangeMin: 48,
+            noteRangeMax: 72,
+            naturalVsMechanical: 0.3,
+            referencePitch: 432.0
+        )
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            settingsOverride: overrideSettings,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Strategy should have received the override settings
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
+        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.3)
+        #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
+    }
+
+    @MainActor
+    @Test("noteDurationOverride takes precedence over UserDefaults")
+    func noteDurationOverrideTakesPrecedence() async {
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+
+        // Provide an override — UserDefaults value irrelevant
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            settingsOverride: TrainingSettings(),
+            noteDurationOverride: 0.5,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Override should win
+        #expect(mockPlayer.lastDuration == 0.5)
+    }
+}
+
+// MARK: - Story 6.2: Live Settings via UserDefaults (serialized to avoid shared state conflicts)
+
+@Suite("TrainingSession UserDefaults Settings Tests", .serialized)
+struct TrainingSessionUserDefaultsTests {
+
+    /// Removes all settings keys from UserDefaults to ensure test isolation
+    func cleanUpSettingsDefaults() {
+        let keys = [
+            SettingsKeys.naturalVsMechanical,
+            SettingsKeys.noteRangeMin,
+            SettingsKeys.noteRangeMax,
+            SettingsKeys.noteDuration,
+            SettingsKeys.referencePitch,
+        ]
+        for key in keys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    @MainActor
+    @Test("Changing UserDefaults values changes TrainingSettings built by TrainingSession")
+    func userDefaultsChangesAffectSettings() async {
+        cleanUpSettingsDefaults()
+
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+
+        // Set custom values in UserDefaults before creating session
+        UserDefaults.standard.set(0.8, forKey: SettingsKeys.naturalVsMechanical)
+        UserDefaults.standard.set(50, forKey: SettingsKeys.noteRangeMin)
+        UserDefaults.standard.set(70, forKey: SettingsKeys.noteRangeMax)
+        UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
+
+        // No settingsOverride — uses UserDefaults (production mode)
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Strategy should receive the UserDefaults values
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 50)
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 70)
+        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.8)
+        #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
+
+        session.stop()
+        cleanUpSettingsDefaults()
+    }
+
+    @MainActor
+    @Test("Note duration from UserDefaults is passed to NotePlayer")
+    func noteDurationFromUserDefaultsPassedToPlayer() async {
+        cleanUpSettingsDefaults()
+
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+
+        // Set custom note duration before creating session
+        UserDefaults.standard.set(2.5, forKey: SettingsKeys.noteDuration)
+
+        // No overrides — uses UserDefaults
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // NotePlayer should have received the custom duration
+        #expect(mockPlayer.lastDuration == 2.5)
+
+        session.stop()
+        cleanUpSettingsDefaults()
+    }
+
+    @MainActor
+    @Test("Reference pitch from UserDefaults is passed to frequency calculation")
+    func referencePitchFromUserDefaultsAffectsFrequency() async {
+        cleanUpSettingsDefaults()
+
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy(comparisons: [
+            Comparison(note1: 69, note2: 69, centDifference: 100.0, isSecondNoteHigher: true)
+        ])
+
+        // Set reference pitch to 432 Hz before creating session
+        UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
+
+        // No overrides — uses UserDefaults
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Note 69 (A4) at referencePitch 432 should produce ~432 Hz for note1
+        #expect(mockPlayer.playHistory.count >= 1)
+        let note1Freq = mockPlayer.playHistory[0].frequency
+        // A4 at 432Hz reference should be exactly 432.0
+        #expect(abs(note1Freq - 432.0) < 0.01)
+
+        session.stop()
+        cleanUpSettingsDefaults()
+    }
+
+    @MainActor
+    @Test("Settings persist across simulated app restart")
+    func settingsPersistAcrossRestart() async {
+        cleanUpSettingsDefaults()
+
+        // Simulate user changing settings
+        UserDefaults.standard.set(0.9, forKey: SettingsKeys.naturalVsMechanical)
+        UserDefaults.standard.set(55, forKey: SettingsKeys.noteRangeMin)
+        UserDefaults.standard.set(75, forKey: SettingsKeys.noteRangeMax)
+        UserDefaults.standard.set(1.5, forKey: SettingsKeys.noteDuration)
+        UserDefaults.standard.set(415.0, forKey: SettingsKeys.referencePitch)
+
+        let mockPlayer = MockNotePlayer()
+        let mockDataStore = MockTrainingDataStore()
+        let profile = PerceptualProfile()
+        let mockStrategy = MockNextNoteStrategy()
+
+        // "Restart": create a new TrainingSession (no settingsOverride)
+        let session = TrainingSession(
+            notePlayer: mockPlayer,
+            strategy: mockStrategy,
+            profile: profile,
+            observers: [mockDataStore, profile]
+        )
+
+        session.startTraining()
+        try? await Task.sleep(for: .milliseconds(100))
+
+        // Verify the new session picked up persisted settings
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 55)
+        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 75)
+        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.9)
+        #expect(mockStrategy.lastReceivedSettings?.referencePitch == 415.0)
+        #expect(mockPlayer.lastDuration == 1.5)
+
+        session.stop()
+        cleanUpSettingsDefaults()
     }
 }

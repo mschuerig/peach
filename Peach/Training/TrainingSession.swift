@@ -101,12 +101,28 @@ final class TrainingSession {
 
     // MARK: - Configuration
 
-    /// Training settings for adaptive algorithm (Story 4.3)
-    /// Injected via initializer for testability; Epic 6 will read from @AppStorage
-    private let settings: TrainingSettings
+    /// Optional settings override for deterministic testing (when non-nil, skips UserDefaults)
+    private let settingsOverride: TrainingSettings?
 
-    /// Note duration in seconds (configurable in Epic 6)
-    private let noteDuration: TimeInterval = 1.0
+    /// Optional note duration override for deterministic testing
+    private let noteDurationOverride: TimeInterval?
+
+    /// Build live settings from UserDefaults on each comparison (or use override for tests)
+    private var currentSettings: TrainingSettings {
+        if let override = settingsOverride { return override }
+        let defaults = UserDefaults.standard
+        return TrainingSettings(
+            noteRangeMin: defaults.object(forKey: SettingsKeys.noteRangeMin) as? Int ?? SettingsKeys.defaultNoteRangeMin,
+            noteRangeMax: defaults.object(forKey: SettingsKeys.noteRangeMax) as? Int ?? SettingsKeys.defaultNoteRangeMax,
+            naturalVsMechanical: defaults.object(forKey: SettingsKeys.naturalVsMechanical) as? Double ?? SettingsKeys.defaultNaturalVsMechanical,
+            referencePitch: defaults.object(forKey: SettingsKeys.referencePitch) as? Double ?? SettingsKeys.defaultReferencePitch
+        )
+    }
+
+    /// Current note duration from UserDefaults (or override for tests)
+    private var currentNoteDuration: TimeInterval {
+        noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
+    }
 
     /// Amplitude for note playback (0.0-1.0)
     private let amplitude: Double = 0.5
@@ -144,19 +160,22 @@ final class TrainingSession {
     ///   - notePlayer: Service for playing audio notes
     ///   - strategy: Comparison selection strategy (Story 4.3)
     ///   - profile: User's perceptual profile (Story 4.3)
-    ///   - settings: Training settings for algorithm tuning (defaults to TrainingSettings())
+    ///   - settingsOverride: Optional settings for test injection (nil = read from @AppStorage)
+    ///   - noteDurationOverride: Optional duration for test injection (nil = read from @AppStorage)
     ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
     init(
         notePlayer: NotePlayer,
         strategy: NextNoteStrategy,
         profile: PerceptualProfile,
-        settings: TrainingSettings = TrainingSettings(),
+        settingsOverride: TrainingSettings? = nil,
+        noteDurationOverride: TimeInterval? = nil,
         observers: [ComparisonObserver] = []
     ) {
         self.notePlayer = notePlayer
         self.strategy = strategy
         self.profile = profile
-        self.settings = settings
+        self.settingsOverride = settingsOverride
+        self.noteDurationOverride = noteDurationOverride
         self.observers = observers
 
         // Setup audio interruption observers (Story 3.4)
@@ -302,6 +321,9 @@ final class TrainingSession {
     private func playNextComparison() async {
         logger.info("playNextComparison() started")
 
+        // Build live settings from @AppStorage (or use override for tests)
+        let settings = currentSettings
+
         // Generate next comparison using adaptive strategy (Story 4.3)
         let comparison = strategy.nextComparison(
             profile: profile,
@@ -312,15 +334,15 @@ final class TrainingSession {
         logger.info("Generated comparison: note1=\(comparison.note1), centDiff=\(comparison.centDifference), higher=\(comparison.isSecondNoteHigher)")
 
         do {
-            // Calculate frequencies
-            let freq1 = try comparison.note1Frequency()
-            let freq2 = try comparison.note2Frequency()
+            // Calculate frequencies with live reference pitch
+            let freq1 = try comparison.note1Frequency(referencePitch: settings.referencePitch)
+            let freq2 = try comparison.note2Frequency(referencePitch: settings.referencePitch)
             logger.info("Frequencies: note1=\(freq1)Hz, note2=\(freq2)Hz")
 
             // Play note 1
             state = .playingNote1
             logger.info("Playing note 1...")
-            try await notePlayer.play(frequency: freq1, duration: noteDuration, amplitude: amplitude)
+            try await notePlayer.play(frequency: freq1, duration: currentNoteDuration, amplitude: amplitude)
 
             // Check if training was stopped during note 1
             guard state != .idle && !Task.isCancelled else {
@@ -331,7 +353,7 @@ final class TrainingSession {
             // Play note 2
             state = .playingNote2
             logger.info("Playing note 2...")
-            try await notePlayer.play(frequency: freq2, duration: noteDuration, amplitude: amplitude)
+            try await notePlayer.play(frequency: freq2, duration: currentNoteDuration, amplitude: amplitude)
 
             // Check if training was stopped during note 2
             guard state != .idle && !Task.isCancelled else {
