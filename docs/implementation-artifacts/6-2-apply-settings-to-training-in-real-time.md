@@ -1,6 +1,6 @@
 # Story 6.2: Apply Settings to Training in Real Time
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -50,11 +50,11 @@ so that I can feel the difference and find my preferred configuration.
 
 ### Architecture & Patterns
 
-- **@AppStorage in @Observable class:** `@AppStorage` property wrapper works inside `@Observable` classes on iOS 26. Each `@AppStorage` property reads directly from `UserDefaults.standard`, so changes from the Settings Screen are immediately visible to TrainingSession on its next read.
+- **Direct UserDefaults reads in @Observable class:** `@AppStorage` property wrapper conflicts with `@Observable` macro (both synthesize `_propertyName` backing storage), so TrainingSession uses direct `UserDefaults.standard.object(forKey:)` reads in computed properties instead. Changes from the Settings Screen are immediately visible to TrainingSession on its next read.
 - **No notification mechanism needed:** Since TrainingSession reads settings at the start of each comparison (in `playNextComparison()`), there is no need for `NotificationCenter`, Combine, or any observer pattern. The natural polling cadence of the training loop (one read per comparison) provides real-time application.
 - **Settings flow after this story:**
   ```
-  SettingsScreen (@AppStorage) → UserDefaults ← TrainingSession (@AppStorage)
+  SettingsScreen (@AppStorage) → UserDefaults ← TrainingSession (UserDefaults.standard)
                                                   ↓
                                          TrainingSettings (fresh each comparison)
                                                   ↓
@@ -88,40 +88,35 @@ let freq1 = try comparison.note1Frequency()     // line 316: default 440Hz
 try await notePlayer.play(frequency: freq1, duration: noteDuration, ...)  // hardcoded 1.0s
 ```
 
-**TrainingSession.swift — after (live @AppStorage):**
+**TrainingSession.swift — after (live UserDefaults reads):**
 ```swift
-// @AppStorage properties (read from UserDefaults)
-@AppStorage(SettingsKeys.naturalVsMechanical) private var naturalVsMechanical = SettingsKeys.defaultNaturalVsMechanical
-@AppStorage(SettingsKeys.noteRangeMin) private var noteRangeMin = SettingsKeys.defaultNoteRangeMin
-@AppStorage(SettingsKeys.noteRangeMax) private var noteRangeMax = SettingsKeys.defaultNoteRangeMax
-@AppStorage(SettingsKeys.noteDuration) private var noteDuration = SettingsKeys.defaultNoteDuration
-@AppStorage(SettingsKeys.referencePitch) private var referencePitch = SettingsKeys.defaultReferencePitch
-
 // Optional overrides for testing
 private let settingsOverride: TrainingSettings?
 private let noteDurationOverride: TimeInterval?
 
-// Build live settings on each comparison
+// Build live settings from UserDefaults on each comparison (or use override for tests)
 private var currentSettings: TrainingSettings {
     if let override = settingsOverride { return override }
+    let defaults = UserDefaults.standard
     return TrainingSettings(
-        noteRangeMin: noteRangeMin,
-        noteRangeMax: noteRangeMax,
-        naturalVsMechanical: naturalVsMechanical,
-        referencePitch: referencePitch
+        noteRangeMin: defaults.object(forKey: SettingsKeys.noteRangeMin) as? Int ?? SettingsKeys.defaultNoteRangeMin,
+        noteRangeMax: defaults.object(forKey: SettingsKeys.noteRangeMax) as? Int ?? SettingsKeys.defaultNoteRangeMax,
+        naturalVsMechanical: defaults.object(forKey: SettingsKeys.naturalVsMechanical) as? Double ?? SettingsKeys.defaultNaturalVsMechanical,
+        referencePitch: defaults.object(forKey: SettingsKeys.referencePitch) as? Double ?? SettingsKeys.defaultReferencePitch
     )
 }
 
 private var currentNoteDuration: TimeInterval {
-    noteDurationOverride ?? noteDuration
+    noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
 }
 
 // In playNextComparison():
 let settings = currentSettings
+let noteDuration = currentNoteDuration
 let comparison = strategy.nextComparison(profile: profile, settings: settings, ...)
 let freq1 = try comparison.note1Frequency(referencePitch: settings.referencePitch)
 let freq2 = try comparison.note2Frequency(referencePitch: settings.referencePitch)
-try await notePlayer.play(frequency: freq1, duration: currentNoteDuration, ...)
+try await notePlayer.play(frequency: freq1, duration: noteDuration, ...)
 ```
 
 ### What NOT To Change
@@ -203,13 +198,24 @@ Claude Opus 4.6
 - **Refactoring:** Updated `makeTrainingSession()` test helper to use `settingsOverride: TrainingSettings()` and `noteDurationOverride: 1.0` for deterministic behavior in existing tests (prevents UserDefaults pollution from new tests).
 - **All 233 tests pass** (227 existing + 6 new, zero regressions).
 
+### Code Review Fixes
+
+- Cached `currentNoteDuration` per comparison in `playNextComparison()` for consistency with `currentSettings` caching pattern — prevents theoretical mid-comparison duration mismatch
+- Added `settingsChangedMidTrainingTakeEffect` test verifying that UserDefaults changes between comparisons are picked up on the next comparison (the core "real-time" promise)
+- Fixed Dev Notes "Architecture & Patterns" section: corrected @AppStorage/@Observable claim to reflect actual approach (direct UserDefaults reads), updated code examples and flow diagram
+- Removed stale "Epic 6 will..." docstrings from `Comparison.swift` and `NextNoteStrategy.swift`
+- **All 234 tests pass** (227 existing + 7 new, zero regressions).
+
 ### Change Log
 
 - 2026-02-17: Implemented Story 6.2 — TrainingSession reads settings from UserDefaults on each comparison, enabling real-time settings application. Added settingsOverride/noteDurationOverride for test injection. 6 new tests. 233 total tests pass.
+- 2026-02-17: Code review fixes — cached noteDuration per comparison, added mid-training settings change test, fixed stale docs. 234 total tests pass.
 
 ### File List
 
 - Peach/Training/TrainingSession.swift (modified)
+- Peach/Training/Comparison.swift (modified)
+- Peach/Core/Algorithm/NextNoteStrategy.swift (modified)
 - PeachTests/Training/TrainingSessionTests.swift (modified)
 - docs/implementation-artifacts/6-2-apply-settings-to-training-in-real-time.md (modified)
 - docs/implementation-artifacts/sprint-status.yaml (modified)

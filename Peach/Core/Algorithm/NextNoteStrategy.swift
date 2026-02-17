@@ -43,7 +43,7 @@ protocol NextNoteStrategy {
 /// Training configuration for comparison selection
 ///
 /// Contains settings that control the adaptive algorithm's behavior.
-/// Epic 6 will create SettingsScreen to expose these via @AppStorage.
+/// Exposed to users via SettingsScreen (@AppStorage) and read live by TrainingSession.
 ///
 /// # Defaults
 ///

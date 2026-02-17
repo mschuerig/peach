@@ -21,10 +21,9 @@ struct Comparison {
     /// Whether the second note is higher than the first
     let isSecondNoteHigher: Bool
 
-    /// Calculates the frequency for note1 using standard reference pitch
+    /// Calculates the frequency for note1 using configurable reference pitch
     ///
-    /// Uses FrequencyCalculation utility with configurable reference pitch.
-    /// Epic 6 will expose reference pitch configuration from Settings.
+    /// Uses FrequencyCalculation utility with the reference pitch from Settings.
     ///
     /// - Parameter referencePitch: The reference pitch in Hz (default: 440.0 for A4)
     /// - Returns: Frequency in Hz for the first note

@@ -322,7 +322,9 @@ final class TrainingSession {
         logger.info("playNextComparison() started")
 
         // Build live settings from @AppStorage (or use override for tests)
+        // Cache both once per comparison to ensure note1 and note2 use identical values
         let settings = currentSettings
+        let noteDuration = currentNoteDuration
 
         // Generate next comparison using adaptive strategy (Story 4.3)
         let comparison = strategy.nextComparison(
@@ -342,7 +344,7 @@ final class TrainingSession {
             // Play note 1
             state = .playingNote1
             logger.info("Playing note 1...")
-            try await notePlayer.play(frequency: freq1, duration: currentNoteDuration, amplitude: amplitude)
+            try await notePlayer.play(frequency: freq1, duration: noteDuration, amplitude: amplitude)
 
             // Check if training was stopped during note 1
             guard state != .idle && !Task.isCancelled else {
@@ -353,7 +355,7 @@ final class TrainingSession {
             // Play note 2
             state = .playingNote2
             logger.info("Playing note 2...")
-            try await notePlayer.play(frequency: freq2, duration: currentNoteDuration, amplitude: amplitude)
+            try await notePlayer.play(frequency: freq2, duration: noteDuration, amplitude: amplitude)
 
             // Check if training was stopped during note 2
             guard state != .idle && !Task.isCancelled else {
