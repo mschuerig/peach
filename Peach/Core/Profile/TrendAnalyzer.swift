@@ -40,6 +40,13 @@ final class TrendAnalyzer {
         recompute()
     }
 
+    /// Resets all trend data to initial state
+    /// Used by Settings "Reset All Training Data" action
+    func reset() {
+        absOffsets = []
+        trend = nil
+    }
+
     /// Recomputes trend from stored offsets
     private func recompute() {
         guard absOffsets.count >= Self.minimumRecordCount else {

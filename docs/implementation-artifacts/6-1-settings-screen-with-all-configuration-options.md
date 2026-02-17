@@ -1,6 +1,6 @@
 # Story 6.1: Settings Screen with All Configuration Options
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -27,33 +27,33 @@ so that the training experience matches my preferences and musical context.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Define @AppStorage keys and defaults (AC: #2, #3)
-  - [ ] Create `Peach/Settings/SettingsKeys.swift` with static constants for all @AppStorage keys
-  - [ ] Define default values matching existing `TrainingSettings` defaults: naturalVsMechanical = 0.5, noteRangeMin = 36, noteRangeMax = 84, noteDuration = 1.0, referencePitch = 440.0, soundSource = "sine"
-  - [ ] Ensure defaults are consistent with `TrainingSettings` struct in `NextNoteStrategy.swift`
-- [ ] Task 2: Build Settings Screen UI (AC: #1, #3)
-  - [ ] Replace placeholder in `Peach/Settings/SettingsScreen.swift` with stock SwiftUI `Form`
-  - [ ] Section "Algorithm": `Slider` for Natural vs. Mechanical (0.0...1.0), labels "Natural" / "Mechanical"
-  - [ ] Section "Note Range": `Stepper` for lower bound (MIDI note, display as note name e.g. "C2"), `Stepper` for upper bound (MIDI note, display as note name)
-  - [ ] Constraint: lower bound < upper bound (enforce minimum gap of at least 12 semitones)
-  - [ ] Note: MVP uses Steppers with note names. Future enhancement: interactive piano keyboard range picker (see Future Work section)
-  - [ ] Section "Audio": `Stepper` for note duration (0.3s–3.0s, step 0.1s), `Stepper` for reference pitch (380–500 Hz, step 1 Hz), `Picker` for sound source (MVP: "Sine Wave" only)
-  - [ ] All controls bound to `@AppStorage` properties — changes persist immediately
-- [ ] Task 3: Add "Reset All Training Data" action (AC: #6)
-  - [ ] Section "Data" at the bottom of the Form
-  - [ ] Destructive button "Reset All Training Data" styled with `.role(.destructive)`
-  - [ ] Confirmation dialog (`.confirmationDialog`) before execution: "This will permanently delete all training data and reset your profile. This cannot be undone."
-  - [ ] On confirm: delete all `ComparisonRecord` from SwiftData, reset `PerceptualProfile`, reset `TrendAnalyzer`
-  - [ ] Access `TrainingDataStore` via environment or initialization
-- [ ] Task 4: Verify navigation behavior (AC: #4, #5)
-  - [ ] Verify back navigation from Settings returns to Start Screen (already works via NavigationStack)
-  - [ ] Verify that navigating to Settings from Training Screen stops training (already handled by Story 3.4)
-  - [ ] Verify dismissal from Training Screen context returns to Start Screen (already works via hub-and-spoke)
-- [ ] Task 5: Write tests (AC: #1-#6)
-  - [ ] Test that all @AppStorage defaults match TrainingSettings defaults
-  - [ ] Test note range validation (lower < upper, minimum gap enforced)
-  - [ ] Test reset functionality clears ComparisonRecords and resets profile
-  - [ ] Test that SettingsScreen renders without crashing with default values
+- [x] Task 1: Define @AppStorage keys and defaults (AC: #2, #3)
+  - [x] Create `Peach/Settings/SettingsKeys.swift` with static constants for all @AppStorage keys
+  - [x] Define default values matching existing `TrainingSettings` defaults: naturalVsMechanical = 0.5, noteRangeMin = 36, noteRangeMax = 84, noteDuration = 1.0, referencePitch = 440.0, soundSource = "sine"
+  - [x] Ensure defaults are consistent with `TrainingSettings` struct in `NextNoteStrategy.swift`
+- [x] Task 2: Build Settings Screen UI (AC: #1, #3)
+  - [x] Replace placeholder in `Peach/Settings/SettingsScreen.swift` with stock SwiftUI `Form`
+  - [x] Section "Algorithm": `Slider` for Natural vs. Mechanical (0.0...1.0), labels "Natural" / "Mechanical"
+  - [x] Section "Note Range": `Stepper` for lower bound (MIDI note, display as note name e.g. "C2"), `Stepper` for upper bound (MIDI note, display as note name)
+  - [x] Constraint: lower bound < upper bound (enforce minimum gap of at least 12 semitones)
+  - [x] Note: MVP uses Steppers with note names. Future enhancement: interactive piano keyboard range picker (see Future Work section)
+  - [x] Section "Audio": `Stepper` for note duration (0.3s–3.0s, step 0.1s), `Stepper` for reference pitch (380–500 Hz, step 1 Hz), `Picker` for sound source (MVP: "Sine Wave" only)
+  - [x] All controls bound to `@AppStorage` properties — changes persist immediately
+- [x] Task 3: Add "Reset All Training Data" action (AC: #6)
+  - [x] Section "Data" at the bottom of the Form
+  - [x] Destructive button "Reset All Training Data" styled with `.role(.destructive)`
+  - [x] Confirmation dialog (`.confirmationDialog`) before execution: "This will permanently delete all training data and reset your profile. This cannot be undone."
+  - [x] On confirm: delete all `ComparisonRecord` from SwiftData, reset `PerceptualProfile`, reset `TrendAnalyzer`
+  - [x] Access `TrainingDataStore` via environment or initialization
+- [x] Task 4: Verify navigation behavior (AC: #4, #5)
+  - [x] Verify back navigation from Settings returns to Start Screen (already works via NavigationStack)
+  - [x] Verify that navigating to Settings from Training Screen stops training (already handled by Story 3.4)
+  - [x] Verify dismissal from Training Screen context returns to Start Screen (already works via hub-and-spoke)
+- [x] Task 5: Write tests (AC: #1-#6)
+  - [x] Test that all @AppStorage defaults match TrainingSettings defaults
+  - [x] Test note range validation (lower < upper, minimum gap enforced)
+  - [x] Test reset functionality clears ComparisonRecords and resets profile
+  - [x] Test that SettingsScreen renders without crashing with default values
 
 ## Dev Notes
 
@@ -175,14 +175,34 @@ Replace the Stepper-based note range controls with an interactive piano keyboard
 
 This enhancement requires adding drag gesture handling to the Canvas-based keyboard, visual state management for in/out-of-range keys, and boundary note labels — meaningful complexity best deferred past the initial Settings Screen MVP.
 
+## Change Log
+
+- 2026-02-17: Implemented Settings Screen with all configuration options — @AppStorage keys, Form UI with 4 sections (Algorithm, Note Range, Audio, Data), reset training data action with confirmation, and 9 unit tests. Added reset() methods to PerceptualProfile and TrendAnalyzer. 225 total tests pass (was 217).
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6 (claude-opus-4-6)
 
 ### Debug Log References
 
+- No blocking issues encountered during implementation.
+
 ### Completion Notes List
 
+- Task 1: Created `SettingsKeys.swift` with static constants for all @AppStorage key names and default values. Defaults verified to match `TrainingSettings` struct.
+- Task 2: Replaced placeholder `SettingsScreen.swift` with full Form-based UI. Four sections: Algorithm (Slider), Note Range (Steppers with note name display via `PianoKeyboardLayout.noteName`), Audio (Steppers + Picker), Data (reset button). Note range enforces 12-semitone minimum gap via Stepper range constraints.
+- Task 3: Added "Reset All Training Data" destructive button with `.confirmationDialog`. Reset deletes all ComparisonRecords via `modelContext.delete(model:)`, calls `profile.reset()` and `trendAnalyzer.reset()`. Added `reset()` methods to both PerceptualProfile and TrendAnalyzer.
+- Task 4: Verified existing hub-and-spoke navigation handles all scenarios — back navigation returns to Start Screen, training stops on navigation away (Story 3.4), NavigationStack path clearing works correctly.
+- Task 5: 9 tests in `PeachTests/Settings/SettingsTests.swift` covering: default consistency with TrainingSettings, key name verification, note range gap clamping, note name display, profile reset, trend analyzer reset, SwiftData record deletion, and screen instantiation.
+
 ### File List
+
+- Peach/Settings/SettingsKeys.swift (new)
+- Peach/Settings/SettingsScreen.swift (modified)
+- Peach/Core/Profile/PerceptualProfile.swift (modified — added reset() method)
+- Peach/Core/Profile/TrendAnalyzer.swift (modified — added reset() method)
+- PeachTests/Settings/SettingsTests.swift (new)
+- docs/implementation-artifacts/6-1-settings-screen-with-all-configuration-options.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)

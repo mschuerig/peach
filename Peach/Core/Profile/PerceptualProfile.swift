@@ -141,6 +141,15 @@ final class PerceptualProfile {
         return noteStats[note]
     }
 
+    // MARK: - Reset
+
+    /// Resets all per-note statistics to cold start state
+    /// Used by Settings "Reset All Training Data" action
+    func reset() {
+        noteStats = Array(repeating: PerceptualNote(), count: 128)
+        logger.info("PerceptualProfile reset to cold start")
+    }
+
     // MARK: - Regional Difficulty Management
 
     /// Sets the current active difficulty for a note (for regional training)
