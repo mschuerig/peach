@@ -8,8 +8,14 @@ struct StartScreen: View {
         verticalSizeClass == .compact
     }
 
+    // MARK: - Layout Parameters (extracted for testability)
+
+    static func vstackSpacing(isCompact: Bool) -> CGFloat {
+        isCompact ? 16 : 40
+    }
+
     var body: some View {
-        VStack(spacing: isCompactHeight ? 16 : 40) {
+        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
             Spacer()
 
             // Profile Preview (navigates to full Profile Screen)

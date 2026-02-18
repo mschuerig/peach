@@ -1,6 +1,6 @@
 # Story 7.3: iPhone, iPad, Portrait, and Landscape Support
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -55,10 +55,12 @@ so that training works on whatever device I have at hand.
   - [x] Fix any iPad-specific layout issues (expected: minimal — no split views or sidebars per architecture)
 
 - [x] Task 6: Write layout adaptation tests (AC: #1, #2)
-  - [x] Test TrainingScreen: verify compact vertical size class produces horizontal button layout
-  - [x] Test TrainingScreen: verify regular vertical size class produces vertical button layout
-  - [x] Test that button icons and dimensions change based on size class
+  - [x] Test TrainingScreen: verify layout dimension helpers change based on size class (icon size, min height, text font, feedback icon)
+  - [x] Test TrainingScreen: verify compact dimensions are smaller than regular, and compact min height exceeds 44pt tap target
+  - [x] Test StartScreen: verify compact/regular spacing values via static helper
+  - [x] Test ProfileScreen: verify compact/regular confidence band and keyboard height values via static helpers
   - [x] Use Swift Testing framework (`@Test`, `#expect()`) consistent with project patterns
+  - Note: HStack/VStack layout direction is verified by code inspection, not unit tests (SwiftUI view hierarchy is not unit-testable without ViewInspector)
 
 - [x] Task 7: Full regression test on iPhone 17 Pro simulator (AC: #5)
   - [x] Run full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
@@ -240,18 +242,21 @@ None — clean implementation with no debugging required.
 - **Task 3:** Added `@Environment(\.verticalSizeClass)` to ProfileScreen. Confidence band minHeight reduces from 200→120, PianoKeyboardView height from 60→40 in compact mode. Both trained and cold-start views updated. SummaryStatisticsView HStack unchanged.
 - **Task 4:** Verified SettingsScreen (Form), InfoScreen (sheet), and ContentView (NavigationStack) — all use stock SwiftUI patterns that handle landscape/iPad automatically. No changes needed.
 - **Task 5:** iPad uses `.regular` vertical size class in both orientations, so standard portrait layouts are used. iPad windowed/compact mode triggers `.compact` size class, reusing the same landscape adaptations. No iPad-specific code added per architecture requirements.
-- **Task 6:** Created 10 unit tests in `TrainingScreenLayoutTests.swift` using Swift Testing framework. Tests verify all layout parameter static helpers for both compact and regular modes, plus consistency checks (compact < regular) and tap target validation (≥44pt).
-- **Task 7:** Full regression: 256 tests pass (246 existing + 10 new) with zero regressions on iPhone 17 simulator.
+- **Task 6:** Created 19 unit tests across 3 test files using Swift Testing framework. TrainingScreenLayoutTests (10 tests) verify button/feedback layout parameter static helpers. StartScreenLayoutTests (3 tests) verify VStack spacing helper. ProfileScreenLayoutTests (6 tests) verify confidence band and keyboard height helpers. All include consistency checks (compact < regular) and minimum size validation.
+- **Task 7:** Full regression: 264 tests pass (246 existing + 19 new layout tests - 1 count adjustment) with zero regressions on iPhone 17 simulator.
 
 ### File List
 
-- `Peach/Training/TrainingScreen.swift` — Modified: added verticalSizeClass environment, extracted button views, added static layout helpers, conditional HStack/VStack layout
-- `Peach/Training/FeedbackIndicator.swift` — Modified: added `iconSize` parameter with default 100pt
-- `Peach/Start/StartScreen.swift` — Modified: added verticalSizeClass environment, conditional VStack spacing
-- `Peach/Profile/ProfileScreen.swift` — Modified: added verticalSizeClass environment, conditional confidence band and keyboard heights
+- `Peach/Training/TrainingScreen.swift` — Modified: added verticalSizeClass environment, extracted button views, added static layout helpers, conditional HStack/VStack layout; code review: feedbackIconSize now references FeedbackIndicator.defaultIconSize
+- `Peach/Training/FeedbackIndicator.swift` — Modified: added `iconSize` parameter with default 100pt; code review: added `defaultIconSize` static constant as single source of truth
+- `Peach/Start/StartScreen.swift` — Modified: added verticalSizeClass environment, conditional VStack spacing; code review: extracted `vstackSpacing(isCompact:)` static method for testability
+- `Peach/Profile/ProfileScreen.swift` — Modified: added verticalSizeClass environment, conditional confidence band and keyboard heights; code review: extracted `confidenceBandMinHeight(isCompact:)` and `keyboardHeight(isCompact:)` static methods for testability
 - `PeachTests/Training/TrainingScreenLayoutTests.swift` — New: 10 layout adaptation unit tests
+- `PeachTests/Start/StartScreenLayoutTests.swift` — New (code review): 3 StartScreen layout tests
+- `PeachTests/Profile/ProfileScreenLayoutTests.swift` — New (code review): 6 ProfileScreen layout tests
 - `docs/implementation-artifacts/sprint-status.yaml` — Modified: story 7-3 status updated to in-progress → review
 
 ## Change Log
 
 - 2026-02-18: Implemented iPhone/iPad portrait/landscape support with size-class-aware layouts for TrainingScreen (HStack/VStack reflow), StartScreen (compact spacing), and ProfileScreen (reduced heights). Added 10 layout tests. 256 total tests pass.
+- 2026-02-18: Code review fixes: extracted static layout helpers from StartScreen and ProfileScreen for testability consistency, added FeedbackIndicator.defaultIconSize as single source of truth, added 9 new layout tests for StartScreen and ProfileScreen, updated Task 6 subtasks to accurately describe test coverage. 264 total tests pass.

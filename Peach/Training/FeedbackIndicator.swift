@@ -19,8 +19,11 @@ struct FeedbackIndicator: View {
     /// Whether the answer was correct (nil = no feedback to show)
     let isCorrect: Bool?
 
+    /// Default icon size for regular (non-compact) layouts
+    static let defaultIconSize: CGFloat = 100
+
     /// Icon size — defaults to 100pt, reduced in compact layouts
-    var iconSize: CGFloat = 100
+    var iconSize: CGFloat = defaultIconSize
 
     var body: some View {
         if let isCorrect {

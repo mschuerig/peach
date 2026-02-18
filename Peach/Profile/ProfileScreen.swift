@@ -11,6 +11,16 @@ struct ProfileScreen: View {
         verticalSizeClass == .compact
     }
 
+    // MARK: - Layout Parameters (extracted for testability)
+
+    static func confidenceBandMinHeight(isCompact: Bool) -> CGFloat {
+        isCompact ? 120 : 200
+    }
+
+    static func keyboardHeight(isCompact: Bool) -> CGFloat {
+        isCompact ? 40 : 60
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if hasTrainingData {
@@ -34,10 +44,10 @@ struct ProfileScreen: View {
             Spacer()
 
             ConfidenceBandView(dataPoints: dataPoints, layout: layout)
-                .frame(minHeight: isCompactHeight ? 120 : 200)
+                .frame(minHeight: Self.confidenceBandMinHeight(isCompact: isCompactHeight))
                 .padding(.horizontal)
 
-            PianoKeyboardView(midiRange: layout.midiRange, height: isCompactHeight ? 40 : 60)
+            PianoKeyboardView(midiRange: layout.midiRange, height: Self.keyboardHeight(isCompact: isCompactHeight))
                 .padding(.horizontal)
 
             SummaryStatisticsView(midiRange: layout.midiRange)
@@ -60,7 +70,7 @@ struct ProfileScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 24)
 
-            PianoKeyboardView(midiRange: layout.midiRange, height: isCompactHeight ? 40 : 60)
+            PianoKeyboardView(midiRange: layout.midiRange, height: Self.keyboardHeight(isCompact: isCompactHeight))
                 .padding(.horizontal)
 
             SummaryStatisticsView(midiRange: layout.midiRange)

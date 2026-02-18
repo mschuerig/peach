@@ -129,7 +129,7 @@ struct TrainingScreen: View {
     }
 
     static func feedbackIconSize(isCompact: Bool) -> CGFloat {
-        isCompact ? 70 : 100
+        isCompact ? 70 : FeedbackIndicator.defaultIconSize
     }
 
     // MARK: - Helpers
