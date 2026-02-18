@@ -5,6 +5,9 @@ struct TrainingScreen: View {
     /// Training session injected via environment
     @Environment(\.trainingSession) private var trainingSession
 
+    /// Whether the user has enabled Reduce Motion in system accessibility settings
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// Logger for debugging lifecycle events
     private let logger = Logger(subsystem: "com.peach.app", category: "TrainingScreen")
 
@@ -55,7 +58,7 @@ struct TrainingScreen: View {
             // Feedback indicator overlay (Story 3.3)
             FeedbackIndicator(isCorrect: trainingSession.isLastAnswerCorrect)
                 .opacity(trainingSession.showFeedback ? 1 : 0)
-                .animation(.easeInOut(duration: 0.2), value: trainingSession.showFeedback)
+                .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
         }
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
@@ -91,6 +94,12 @@ struct TrainingScreen: View {
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states
     private var buttonsEnabled: Bool {
         trainingSession.state == .playingNote2 || trainingSession.state == .awaitingAnswer
+    }
+
+    /// Returns the animation for feedback indicator transitions
+    /// Returns nil when Reduce Motion is enabled (instant show/hide)
+    static func feedbackAnimation(reduceMotion: Bool) -> Animation? {
+        reduceMotion ? nil : .easeInOut(duration: 0.2)
     }
 }
 

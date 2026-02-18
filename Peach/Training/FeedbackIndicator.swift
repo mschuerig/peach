@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// # Accessibility
 /// - Provides VoiceOver labels ("Correct" or "Incorrect")
-/// - Respects Reduce Motion (uses simple opacity transition)
+/// - Reduce Motion: The parent view (TrainingScreen) conditionally applies animation — when Reduce Motion is enabled, the opacity transition is instant (no animation)
 /// - Large icon size (100pt) for visibility
 ///
 /// # Usage
@@ -24,8 +24,13 @@ struct FeedbackIndicator: View {
             Image(systemName: isCorrect ? "hand.thumbsup.fill" : "hand.thumbsdown.fill")
                 .font(.system(size: 100))
                 .foregroundStyle(isCorrect ? .green : .red)
-                .accessibilityLabel(isCorrect ? String(localized: "Correct") : String(localized: "Incorrect"))
+                .accessibilityLabel(Self.accessibilityLabel(isCorrect: isCorrect))
         }
+    }
+
+    /// Returns the VoiceOver accessibility label for the feedback state
+    static func accessibilityLabel(isCorrect: Bool) -> String {
+        isCorrect ? String(localized: "Correct") : String(localized: "Incorrect")
     }
 }
 
