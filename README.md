@@ -6,6 +6,12 @@ Peach is a pitch discrimination ear training app for iOS. It helps musicians imp
 
 **Author:** Michael Schürig
 
+## Project Status
+
+Peach is in **active early development**. The core training loop, adaptive algorithm, and profile system are implemented and functional, but the app is not yet released on the App Store. It targets **iOS 26+** and requires Xcode 26.3+ to build.
+
+Known rough edges include a profile visualization that needs redesign, no onboarding for new users, and several UX improvements still in progress. See [future-work.md](docs/implementation-artifacts/future-work.md) for the full list of planned improvements.
+
 ## Philosophy
 
 **Training, not testing.** Unlike traditional ear training apps that use test-and-score paradigms with gamification, Peach builds a perceptual profile of the user's hearing across their pitch range and adaptively targets weak spots. No scoring, no sessions, no guilt mechanics — every comparison makes you better.
@@ -43,7 +49,7 @@ xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 1
 
 ## Tech Stack
 
-- Swift 6.0, SwiftUI
+- Swift 6 (strict concurrency), SwiftUI
 - SwiftData for persistence
 - AVAudioEngine for real-time sine wave synthesis
 - Swift Testing framework
