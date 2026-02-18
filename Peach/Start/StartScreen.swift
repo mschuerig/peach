@@ -2,9 +2,14 @@ import SwiftUI
 
 struct StartScreen: View {
     @State private var showInfoSheet = false
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    private var isCompactHeight: Bool {
+        verticalSizeClass == .compact
+    }
 
     var body: some View {
-        VStack(spacing: 40) {
+        VStack(spacing: isCompactHeight ? 16 : 40) {
             Spacer()
 
             // Profile Preview (navigates to full Profile Screen)

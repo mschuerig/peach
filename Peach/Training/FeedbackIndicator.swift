@@ -19,10 +19,13 @@ struct FeedbackIndicator: View {
     /// Whether the answer was correct (nil = no feedback to show)
     let isCorrect: Bool?
 
+    /// Icon size — defaults to 100pt, reduced in compact layouts
+    var iconSize: CGFloat = 100
+
     var body: some View {
         if let isCorrect {
             Image(systemName: isCorrect ? "hand.thumbsup.fill" : "hand.thumbsdown.fill")
-                .font(.system(size: 100))
+                .font(.system(size: iconSize))
                 .foregroundStyle(isCorrect ? .green : .red)
                 .accessibilityLabel(Self.accessibilityLabel(isCorrect: isCorrect))
                 .accessibilityRemoveTraits(.isImage)

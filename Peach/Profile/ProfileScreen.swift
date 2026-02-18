@@ -3,8 +3,13 @@ import Charts
 
 struct ProfileScreen: View {
     @Environment(\.perceptualProfile) private var profile
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private let layout = PianoKeyboardLayout(midiRange: 36...84)
+
+    private var isCompactHeight: Bool {
+        verticalSizeClass == .compact
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,10 +34,10 @@ struct ProfileScreen: View {
             Spacer()
 
             ConfidenceBandView(dataPoints: dataPoints, layout: layout)
-                .frame(minHeight: 200)
+                .frame(minHeight: isCompactHeight ? 120 : 200)
                 .padding(.horizontal)
 
-            PianoKeyboardView(midiRange: layout.midiRange)
+            PianoKeyboardView(midiRange: layout.midiRange, height: isCompactHeight ? 40 : 60)
                 .padding(.horizontal)
 
             SummaryStatisticsView(midiRange: layout.midiRange)
@@ -55,7 +60,7 @@ struct ProfileScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 24)
 
-            PianoKeyboardView(midiRange: layout.midiRange)
+            PianoKeyboardView(midiRange: layout.midiRange, height: isCompactHeight ? 40 : 60)
                 .padding(.horizontal)
 
             SummaryStatisticsView(midiRange: layout.midiRange)

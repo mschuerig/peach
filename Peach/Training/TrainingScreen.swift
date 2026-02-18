@@ -8,57 +8,38 @@ struct TrainingScreen: View {
     /// Whether the user has enabled Reduce Motion in system accessibility settings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Vertical size class: .compact in landscape iPhone, .regular in portrait and iPad
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     /// Logger for debugging lifecycle events
     private let logger = Logger(subsystem: "com.peach.app", category: "TrainingScreen")
 
-    var body: some View {
-        VStack(spacing: 8) {
-            // Higher button - fills top half of screen
-            Button {
-                trainingSession.handleAnswer(isHigher: true)
-            } label: {
-                VStack(spacing: 12) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 80))
-                    Text("Higher")
-                        .font(.title)
-                        .fontWeight(.semibold)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .frame(minHeight: 200) // Ensure button exceeds 44x44pt minimum (AC #1)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: 12))
-            .disabled(!buttonsEnabled)
-            .accessibilityLabel("Higher")
+    private var isCompactHeight: Bool {
+        verticalSizeClass == .compact
+    }
 
-            // Lower button - fills bottom half of screen
-            Button {
-                trainingSession.handleAnswer(isHigher: false)
-            } label: {
-                VStack(spacing: 12) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .font(.system(size: 80))
-                    Text("Lower")
-                        .font(.title)
-                        .fontWeight(.semibold)
+    var body: some View {
+        Group {
+            if isCompactHeight {
+                HStack(spacing: 8) {
+                    higherButton
+                    lowerButton
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .frame(minHeight: 200) // Ensure button exceeds 44x44pt minimum (AC #1)
-                .contentShape(Rectangle())
+            } else {
+                VStack(spacing: 8) {
+                    higherButton
+                    lowerButton
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: 12))
-            .disabled(!buttonsEnabled)
-            .accessibilityLabel("Lower")
         }
         .padding()
         .overlay {
-            // Feedback indicator overlay (Story 3.3)
-            FeedbackIndicator(isCorrect: trainingSession.isLastAnswerCorrect)
-                .opacity(trainingSession.showFeedback ? 1 : 0)
-                .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
+            FeedbackIndicator(
+                isCorrect: trainingSession.isLastAnswerCorrect,
+                iconSize: Self.feedbackIconSize(isCompact: isCompactHeight)
+            )
+            .opacity(trainingSession.showFeedback ? 1 : 0)
+            .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
         }
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
@@ -80,16 +61,78 @@ struct TrainingScreen: View {
             }
         }
         .onAppear {
-            // Start training immediately when screen appears
             logger.info("TrainingScreen appeared - starting training")
             trainingSession.startTraining()
         }
         .onDisappear {
-            // Stop training when leaving screen
             logger.info("TrainingScreen disappeared - stopping training")
             trainingSession.stop()
         }
     }
+
+    // MARK: - Button Views
+
+    private var higherButton: some View {
+        Button {
+            trainingSession.handleAnswer(isHigher: true)
+        } label: {
+            VStack(spacing: 12) {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: Self.buttonIconSize(isCompact: isCompactHeight)))
+                Text("Higher")
+                    .font(Self.buttonTextFont(isCompact: isCompactHeight))
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(minHeight: Self.buttonMinHeight(isCompact: isCompactHeight))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.roundedRectangle(radius: 12))
+        .disabled(!buttonsEnabled)
+        .accessibilityLabel("Higher")
+    }
+
+    private var lowerButton: some View {
+        Button {
+            trainingSession.handleAnswer(isHigher: false)
+        } label: {
+            VStack(spacing: 12) {
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.system(size: Self.buttonIconSize(isCompact: isCompactHeight)))
+                Text("Lower")
+                    .font(Self.buttonTextFont(isCompact: isCompactHeight))
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(minHeight: Self.buttonMinHeight(isCompact: isCompactHeight))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.roundedRectangle(radius: 12))
+        .disabled(!buttonsEnabled)
+        .accessibilityLabel("Lower")
+    }
+
+    // MARK: - Layout Parameters (extracted for testability)
+
+    static func buttonIconSize(isCompact: Bool) -> CGFloat {
+        isCompact ? 60 : 80
+    }
+
+    static func buttonMinHeight(isCompact: Bool) -> CGFloat {
+        isCompact ? 120 : 200
+    }
+
+    static func buttonTextFont(isCompact: Bool) -> Font {
+        isCompact ? .title2 : .title
+    }
+
+    static func feedbackIconSize(isCompact: Bool) -> CGFloat {
+        isCompact ? 70 : 100
+    }
+
+    // MARK: - Helpers
 
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states
     private var buttonsEnabled: Bool {

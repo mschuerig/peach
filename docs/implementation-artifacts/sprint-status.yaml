@@ -89,7 +89,7 @@ development_status:
   epic-7: in-progress
   7-1-english-and-german-localization: done
   7-2-accessibility-audit-and-custom-component-labels: done
-  7-3-iphone-ipad-portrait-and-landscape-support: ready-for-dev
+  7-3-iphone-ipad-portrait-and-landscape-support: review
   7-4-info-screen: backlog
   7-5-app-icon-design-and-implementation: backlog
   epic-7-retrospective: optional
