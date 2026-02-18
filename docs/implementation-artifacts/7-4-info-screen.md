@@ -1,6 +1,6 @@
 # Story 7.4: Info Screen
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -27,25 +27,25 @@ so that I know the version, who made it, and where to find the project.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update InfoScreen.swift with new content (AC: #2, #3, #6)
-  - [ ] Add developer email address below or alongside developer name
-  - [ ] Add GitHub project URL as a tappable `Link` component
-  - [ ] Add license line showing "MIT License"
-  - [ ] Ensure copyright year displays as "© 2026"
-  - [ ] Maintain stock SwiftUI layout with clear section grouping
-  - [ ] Verify layout works in both light and dark mode
+- [x] Task 1: Update InfoScreen.swift with new content (AC: #2, #3, #6)
+  - [x] Add developer email address below or alongside developer name
+  - [x] Add GitHub project URL as a tappable `Link` component
+  - [x] Add license line showing "MIT License"
+  - [x] Ensure copyright year displays as "© 2026"
+  - [x] Maintain stock SwiftUI layout with clear section grouping
+  - [x] Verify layout works in both light and dark mode
 
-- [ ] Task 2: Update localization strings (AC: #5)
-  - [ ] Add new localized strings for any new labels (e.g., "License", "Website", email-related labels)
-  - [ ] Add German translations for all new strings
-  - [ ] Verify existing Info screen strings remain correct
-  - [ ] App name, developer name, email address, and URL are NOT localized (proper nouns / identifiers)
+- [x] Task 2: Update localization strings (AC: #5)
+  - [x] Add new localized strings for any new labels (e.g., "License", "Website", email-related labels)
+  - [x] Add German translations for all new strings
+  - [x] Verify existing Info screen strings remain correct
+  - [x] App name, developer name, email address, and URL are NOT localized (proper nouns / identifiers)
 
-- [ ] Task 3: Update tests (AC: #1–#6)
-  - [ ] Verify InfoScreen still presents as sheet from StartScreen (existing behavior, spot-check)
-  - [ ] Add any relevant unit tests for new content if testable logic exists (e.g., bundle version extraction)
-  - [ ] Run full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] Verify zero regressions across all existing tests
+- [x] Task 3: Update tests (AC: #1–#6)
+  - [x] Verify InfoScreen still presents as sheet from StartScreen (existing behavior, spot-check)
+  - [x] Add any relevant unit tests for new content if testable logic exists (e.g., bundle version extraction)
+  - [x] Run full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] Verify zero regressions across all existing tests
 
 ## Dev Notes
 
@@ -151,10 +151,30 @@ The README and LICENSE files were added in the most recent commit, confirming: d
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — no errors or debugging required.
+
 ### Completion Notes List
 
+- Updated InfoScreen.swift with full developer info (name "Michael Schürig", email), GitHub `Link` component, "License: MIT" label, and visual grouping into two VStack sections (developer info + project/legal info)
+- Added `static let gitHubURL` property to InfoScreen for testability
+- Used `Text(verbatim:)` for email address to prevent localization lookup
+- Used `Text("License: \("MIT")")` pattern to localize the "License:" label while keeping "MIT" as a proper noun
+- Added "GitHub" and "License: %@" → "Lizenz: %@" to Localizable.xcstrings with German translations
+- Added unit test `infoScreenHasCorrectGitHubURL()` to verify the static URL property
+- All 265 tests pass (264 baseline + 1 new), zero regressions
+
+### Change Log
+
+- 2026-02-18: Implemented Story 7.4 — added developer email, GitHub link, MIT license, and copyright to Info Screen with localization
+
 ### File List
+
+- Peach/Info/InfoScreen.swift (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
+- PeachTests/Start/StartScreenTests.swift (modified)
+- docs/implementation-artifacts/7-4-info-screen.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)

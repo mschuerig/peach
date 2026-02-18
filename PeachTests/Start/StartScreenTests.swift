@@ -109,6 +109,11 @@ struct StartScreenTests {
 
     // MARK: - Info Screen Content Tests
 
+    @Test("Info Screen has correct GitHub URL")
+    func infoScreenHasCorrectGitHubURL() {
+        #expect(InfoScreen.gitHubURL == URL(string: "https://github.com/mschuerig/peach")!)
+    }
+
     @Test("Info Screen retrieves version from bundle")
     func infoScreenRetrievesVersion() {
         let view = InfoScreen()

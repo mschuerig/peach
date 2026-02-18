@@ -3,6 +3,7 @@ import SwiftUI
 struct InfoScreen: View {
     @Environment(\.dismiss) private var dismiss
     private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+    static let gitHubURL = URL(string: "https://github.com/mschuerig/peach")!
 
     var body: some View {
         NavigationStack {
@@ -13,15 +14,28 @@ struct InfoScreen: View {
                     .font(.largeTitle)
                     .bold()
 
-                Text("Developer: \("Michael")")
-                    .font(.body)
-
-                Text("© 2026")
-                    .font(.body)
-
                 Text("Version \(appVersion)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+
+                VStack(spacing: 6) {
+                    Text("Developer: \("Michael Schürig")")
+                        .font(.body)
+                    Text(verbatim: "michael@schuerig.de")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(spacing: 6) {
+                    Link("GitHub", destination: Self.gitHubURL)
+                        .font(.body)
+                    Text("License: \("MIT")")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("© 2026")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
 
                 Spacer()
             }
