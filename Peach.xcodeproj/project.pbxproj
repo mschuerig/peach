@@ -20,6 +20,9 @@
 		0A0000000000000000000001 /* Peach.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peach.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A0000000000000000000002 /* PeachTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeachTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C4ED39A2F41046000F7A392 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		4CBCEE5B2F45CC28006FEF97 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		4CBCEE5C2F45CC28006FEF97 /* NOTICE */ = {isa = PBXFileReference; lastKnownFileType = text; path = NOTICE; sourceTree = "<group>"; };
+		4CBCEE5D2F45CC28006FEF97 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -87,6 +90,9 @@
 				0B0000000000000000000001 /* Peach */,
 				0B0000000000000000000002 /* PeachTests */,
 				0C0000000000000000000002 /* Products */,
+				4CBCEE5B2F45CC28006FEF97 /* LICENSE */,
+				4CBCEE5C2F45CC28006FEF97 /* NOTICE */,
+				4CBCEE5D2F45CC28006FEF97 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};

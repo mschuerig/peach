@@ -3,6 +3,7 @@
 Peach is a pitch discrimination ear training app for iOS. It helps musicians improve their ability to detect fine pitch differences through rapid, reflexive two-note comparisons.
 
 **Repository:** https://github.com/mschuerig/peach
+
 **Author:** Michael Schürig
 
 ## Philosophy
@@ -47,6 +48,14 @@ xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 1
 - AVAudioEngine for real-time sine wave synthesis
 - Swift Testing framework
 - Zero third-party dependencies
+
+## Author's Note
+
+This project has three purposes
+
+- The obvious: Provide an app for ear training
+- The ambitious: For me to gain experience with agentic software development. I'm using [https://code.claude.com/docs](https://docs.bmad-method.org/) and the [BMad method](https://docs.bmad-method.org/) for development.
+- The failing: I set out to improve my understanding and skills regarding iOS development and Swift. Not much has come of it, so far.
 
 ## License
 
