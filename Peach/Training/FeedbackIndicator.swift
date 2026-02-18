@@ -25,6 +25,7 @@ struct FeedbackIndicator: View {
                 .font(.system(size: 100))
                 .foregroundStyle(isCorrect ? .green : .red)
                 .accessibilityLabel(Self.accessibilityLabel(isCorrect: isCorrect))
+                .accessibilityRemoveTraits(.isImage)
         }
     }
 

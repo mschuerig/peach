@@ -1,6 +1,6 @@
 # Story 7.2: Accessibility Audit and Custom Component Labels
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -177,7 +177,7 @@ The audio-haptic loop is already designed for eyes-closed operation:
 - **Ternary `.accessibilityLabel()` fix:** Story 7.1 code review found that ternary expressions in `.accessibilityLabel()` resolve to `String` type, calling the `StringProtocol` overload instead of `LocalizedStringKey`. Both FeedbackIndicator and SummaryStatisticsView were fixed to use `String(localized:)` wrappers. Any new accessibility labels must follow this pattern.
 - **Test pattern:** Accessibility label tests should verify behavior (e.g., different output for different states) rather than comparing `String(localized:)` == `String(localized:)` (which is tautological). Story 7.1 replaced tautological tests with plural-verification tests.
 - **Commit pattern:** story creation → implementation → code review fixes. Follow the same pattern.
-- **239 tests pass** — maintain zero regressions.
+- **240 tests pass** — maintain zero regressions.
 
 ### Git Intelligence
 
@@ -217,3 +217,4 @@ Claude Opus 4.6
 ## Change Log
 
 - 2026-02-18: Implemented Story 7.2 — Accessibility Audit and Custom Component Labels. Fixed Reduce Motion compliance by adding `@Environment(\.accessibilityReduceMotion)` to TrainingScreen with conditional animation. Conducted systematic audits of Dynamic Type, VoiceOver, eyes-closed training, and color contrast across all 5 screens — no additional issues found. Added 6 new accessibility tests (2 reduce motion, 4 VoiceOver labels). Total: 246 tests pass, zero regressions.
+- 2026-02-18: Code review fixes — Added `.accessibilityRemoveTraits(.isImage)` to FeedbackIndicator for consistent accessibility trait control. Strengthened reduce motion animation test to assert specific `.easeInOut(duration: 0.2)` value. Renamed indirect button label test to `higherLowerLocalizationKeysDistinct` with clarifying comment. Fixed test count baseline (240, not 239). 246 tests pass, zero regressions.

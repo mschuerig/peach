@@ -15,10 +15,10 @@ struct TrainingScreenAccessibilityTests {
         #expect(animation == nil)
     }
 
-    @Test("Feedback animation returns non-nil when reduce motion is disabled")
+    @Test("Feedback animation returns easeInOut when reduce motion is disabled")
     func feedbackAnimationPresentWhenNoReduceMotion() async throws {
         let animation = TrainingScreen.feedbackAnimation(reduceMotion: false)
-        #expect(animation != nil)
+        #expect(animation == .easeInOut(duration: 0.2))
     }
 
     // MARK: - FeedbackIndicator Accessibility Labels (AC: #2)
@@ -45,10 +45,11 @@ struct TrainingScreenAccessibilityTests {
 
     // MARK: - Training Screen Button Accessibility Labels (AC: #1)
 
-    @Test("Training Screen Higher button label is non-empty and distinct from Lower")
-    func higherLowerLabelsDistinct() async throws {
-        // These are the accessibility labels applied via .accessibilityLabel() in TrainingScreen
-        // Verifying the localized strings are distinct and non-empty
+    @Test("Higher and Lower localization keys produce non-empty distinct strings")
+    func higherLowerLocalizationKeysDistinct() async throws {
+        // Note: TrainingScreen applies these as .accessibilityLabel("Higher") / .accessibilityLabel("Lower")
+        // which use LocalizedStringKey — not directly testable in unit tests.
+        // This verifies the underlying localization keys are valid and distinct.
         let higher = String(localized: "Higher")
         let lower = String(localized: "Lower")
         #expect(!higher.isEmpty)
