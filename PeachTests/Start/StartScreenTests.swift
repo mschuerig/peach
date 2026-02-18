@@ -114,18 +114,34 @@ struct StartScreenTests {
         #expect(InfoScreen.gitHubURL == URL(string: "https://github.com/mschuerig/peach")!)
     }
 
-    @Test("Info Screen retrieves version from bundle")
-    func infoScreenRetrievesVersion() {
+    @Test("Info Screen has correct developer name")
+    func infoScreenHasCorrectDeveloperName() {
+        #expect(InfoScreen.developerName == "Michael Schürig")
+    }
+
+    @Test("Info Screen has correct developer email")
+    func infoScreenHasCorrectDeveloperEmail() {
+        #expect(InfoScreen.developerEmail == "michael@schuerig.de")
+    }
+
+    @Test("Info Screen has correct license name")
+    func infoScreenHasCorrectLicenseName() {
+        #expect(InfoScreen.licenseName == "MIT")
+    }
+
+    @Test("Info Screen has non-empty version string")
+    func infoScreenHasNonEmptyVersion() {
         let view = InfoScreen()
 
-        // Access the private property via reflection for testing
         let mirror = Mirror(reflecting: view)
         let appVersionProperty = mirror.children.first(where: { $0.label == "appVersion" })
 
         #expect(appVersionProperty != nil)
 
         if let version = appVersionProperty?.value as? String {
-            // Version should either be from bundle or "Unknown"
+            // In the test target, Bundle.main is the test runner bundle so
+            // CFBundleShortVersionString is absent and appVersion falls back
+            // to "Unknown". This verifies the fallback produces a non-empty string.
             #expect(!version.isEmpty)
         }
     }

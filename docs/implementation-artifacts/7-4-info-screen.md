@@ -1,6 +1,6 @@
 # Story 7.4: Info Screen
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -167,9 +167,18 @@ None — no errors or debugging required.
 - Added unit test `infoScreenHasCorrectGitHubURL()` to verify the static URL property
 - All 265 tests pass (264 baseline + 1 new), zero regressions
 
+#### Code Review Fixes (2026-02-18)
+- Extracted `developerName`, `developerEmail`, `licenseName` as `static let` constants for testability (consistent with `gitHubURL`)
+- Converted `gitHubURL` from force-unwrap to `guard`/`preconditionFailure` pattern
+- Bypassed localization for "GitHub" brand name in `Link` via `String("GitHub")`
+- Renamed misleading `infoScreenRetrievesVersion` test to `infoScreenHasNonEmptyVersion` with clarifying comment
+- Added 3 new tests: developer name, developer email, license name verification
+- All 268 tests pass (265 baseline + 3 new), zero regressions
+
 ### Change Log
 
 - 2026-02-18: Implemented Story 7.4 — added developer email, GitHub link, MIT license, and copyright to Info Screen with localization
+- 2026-02-18: Code review fixes — extract static constants, add tests, fix force-unwrap, fix misleading test name
 
 ### File List
 

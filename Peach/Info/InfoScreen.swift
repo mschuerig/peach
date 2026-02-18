@@ -3,7 +3,16 @@ import SwiftUI
 struct InfoScreen: View {
     @Environment(\.dismiss) private var dismiss
     private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-    static let gitHubURL = URL(string: "https://github.com/mschuerig/peach")!
+
+    static let developerName = "Michael Schürig"
+    static let developerEmail = "michael@schuerig.de"
+    static let licenseName = "MIT"
+    static let gitHubURL: URL = {
+        guard let url = URL(string: "https://github.com/mschuerig/peach") else {
+            preconditionFailure("Invalid GitHub URL constant")
+        }
+        return url
+    }()
 
     var body: some View {
         NavigationStack {
@@ -19,17 +28,17 @@ struct InfoScreen: View {
                     .foregroundStyle(.secondary)
 
                 VStack(spacing: 6) {
-                    Text("Developer: \("Michael Schürig")")
+                    Text("Developer: \(Self.developerName)")
                         .font(.body)
-                    Text(verbatim: "michael@schuerig.de")
+                    Text(verbatim: Self.developerEmail)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 VStack(spacing: 6) {
-                    Link("GitHub", destination: Self.gitHubURL)
+                    Link(String("GitHub"), destination: Self.gitHubURL)
                         .font(.body)
-                    Text("License: \("MIT")")
+                    Text("License: \(Self.licenseName)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text("© 2026")
