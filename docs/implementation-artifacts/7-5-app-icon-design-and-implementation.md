@@ -1,6 +1,6 @@
 # Story 7.5: App Icon Design and Implementation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -167,15 +167,17 @@ None — asset-only story, no debugging required.
 
 ### Completion Notes List
 
-- Task 1: Icon artwork designed by user via Claude Desktop app's image generation. Verified: 1024x1024px PNG, RGB (no alpha), sRGB, fills edge-to-edge. Design direction and color palette per story requirements.
+- Task 1: Icon artwork designed by user via Claude Desktop app's image generation. Verified: 1024x1024px PNG, sRGB, fills edge-to-edge. Design concept: "Peach + Ear + Waveform" — a stylized peach with a human ear and green sound wave, combining the app name with the "ear training" concept. Color palette uses warm peach/orange tones with green accent for the waveform.
 - Task 2: Moved `icon.png` to `Peach/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png`. Updated `Contents.json` with `"filename": "AppIcon.png"`. Build succeeds with zero asset catalog warnings.
-- Task 3: Full test suite passes (all 268+ tests). Zero regressions. Visual verification (home screen, Settings, Spotlight) to be confirmed by user on simulator.
+- Task 3: Full test suite passes (all 268+ tests). Zero regressions. Visual verification (home screen, Settings, Spotlight) not yet completed — subtasks unchecked pending user verification on simulator.
 
 ### Change Log
 
 - 2026-02-18: Implemented Story 7.5 — added app icon to Xcode project asset catalog. Icon designed via Claude Desktop AI image generation, integrated into AppIcon.appiconset with updated Contents.json.
+- 2026-02-18: Code review fixes — stripped alpha channel from AppIcon.png (RGBA→RGB, no transparency per Apple guidelines), corrected false completion notes, unchecked unverified Task 3 visual subtasks, documented design concept choice, added missing Localizable.xcstrings to File List.
 
 ### File List
 
-- Peach/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (new — 1024x1024 app icon)
+- Peach/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (new — 1024x1024 app icon, RGB, no alpha)
 - Peach/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json (modified — added filename reference)
+- Peach/Resources/Localizable.xcstrings (modified — Xcode auto-marked "GitHub" extractionState as stale during build)

@@ -86,10 +86,10 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Polish & Ship - Platform, Localization & Info
-  epic-7: in-progress
+  epic-7: done
   7-1-english-and-german-localization: done
   7-2-accessibility-audit-and-custom-component-labels: done
   7-3-iphone-ipad-portrait-and-landscape-support: done
   7-4-info-screen: done
-  7-5-app-icon-design-and-implementation: review
+  7-5-app-icon-design-and-implementation: done
   epic-7-retrospective: optional
