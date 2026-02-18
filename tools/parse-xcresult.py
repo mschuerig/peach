@@ -80,9 +80,16 @@ def main():
     for arg in sys.argv[1:]:
         xcresult_path = arg
 
-    derived_data = os.path.expanduser(
-        "~/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf"
-    )
+    derived_data_root = os.path.expanduser("~/Library/Developer/Xcode/DerivedData")
+    peach_dirs = sorted([
+        os.path.join(derived_data_root, d)
+        for d in os.listdir(derived_data_root)
+        if d.startswith("Peach-") and os.path.isdir(os.path.join(derived_data_root, d))
+    ], key=os.path.getmtime, reverse=True)
+    if not peach_dirs:
+        print("No Peach DerivedData directory found", file=sys.stderr)
+        sys.exit(1)
+    derived_data = peach_dirs[0]
     if not xcresult_path:
         xcresult_path = find_latest_xcresult(derived_data)
 

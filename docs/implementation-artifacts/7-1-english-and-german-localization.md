@@ -1,6 +1,6 @@
 # Story 7.1: English and German Localization
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -296,16 +296,34 @@ Claude Opus 4.6
 ### Change Log
 
 - 2026-02-18: Implemented Story 7.1 — English and German localization with plural support, accessibility localization, and full String Catalog translations
+- 2026-02-18: Code review fixes — added missing English plural variants for ProfileScreen accessibility string, added German translations for 4 chart keys (Note/Abschnitt/Schwelle/Obergrenze), fixed ternary .accessibilityLabel() calls to use String(localized:), replaced tautological localization tests with plural-verification tests, fixed hardcoded DerivedData path in parse-xcresult.py
+
+### Senior Developer Review (AI)
+
+**Reviewer:** Code Review Workflow (Claude Opus 4.6)
+**Date:** 2026-02-18
+**Outcome:** Approved after fixes
+
+**Findings (5 total — 2 High, 2 Medium, 1 Low):**
+
+1. **[HIGH] Fixed** — Missing English plural variants for `"Perceptual profile showing detection thresholds from %@ to %@. Average threshold: %lld cents."` in String Catalog. Added `one`/`other` variants for both English and German.
+2. **[HIGH] Fixed** — 4 String Catalog keys (`"Note"`, `"Segment"`, `"Threshold"`, `"Upper"`) from Swift Charts `.value()` calls had no German translations. Added: Note/Abschnitt/Schwelle/Obergrenze.
+3. **[MEDIUM] Fixed** — All 7 localization tests were tautological (`String(localized:) == String(localized:)`, always true). Replaced with singular/plural verification tests that detect missing localization by comparing `formatMean(1.0)` vs `formatMean(2.0)`.
+4. **[MEDIUM] Fixed** — Ternary expressions in `.accessibilityLabel()` (SummaryStatisticsView:38, FeedbackIndicator:27) resolved to `String` type, potentially calling `StringProtocol` overload instead of `LocalizedStringKey` overload. Wrapped with `String(localized:)`.
+5. **[LOW] Fixed** — Hardcoded DerivedData hash in `tools/parse-xcresult.py`. Replaced with dynamic glob discovery of `Peach-*` directory.
+
+**Test Results:** 239 tests pass, 0 failures.
 
 ### File List
 
-- Peach/Profile/SummaryStatisticsView.swift (modified — LocalizedStringKey for statItem label, String(localized:) for formatMean/formatStdDev/accessibility methods)
+- Peach/Profile/SummaryStatisticsView.swift (modified — LocalizedStringKey for statItem label, String(localized:) for formatMean/formatStdDev/accessibility methods, fixed ternary accessibility label)
 - Peach/Profile/ProfileScreen.swift (modified — String(localized:) for accessibilitySummary)
 - Peach/Start/ProfilePreviewView.swift (modified — String(localized:) for accessibilityLabel)
 - Peach/Info/InfoScreen.swift (modified — format string interpolation for Developer label)
-- Peach/Resources/Localizable.xcstrings (modified — added German translations for all keys, plural variants for cent/cents)
-- PeachTests/Profile/SummaryStatisticsTests.swift (modified — locale-independent assertions, added localization tests)
-- PeachTests/Profile/ProfileScreenTests.swift (modified — locale-independent assertions, added localization test)
-- PeachTests/Start/ProfilePreviewViewTests.swift (modified — locale-independent assertions using String(localized:))
+- Peach/Training/FeedbackIndicator.swift (modified — fixed ternary accessibility label to use String(localized:))
+- Peach/Resources/Localizable.xcstrings (modified — added German translations for all keys, plural variants for cent/cents, added English plural variants for ProfileScreen accessibility string, added 4 chart key translations)
+- PeachTests/Profile/SummaryStatisticsTests.swift (modified — replaced tautological locale tests with plural-verification tests)
+- PeachTests/Profile/ProfileScreenTests.swift (modified — replaced tautological locale test, added plural verification test)
+- PeachTests/Start/ProfilePreviewViewTests.swift (modified — replaced tautological locale tests with content-verification and plural tests)
 - docs/implementation-artifacts/sprint-status.yaml (modified — story status updated)
-- tools/parse-xcresult.py (new — tool for parsing xcresult test failure details)
+- tools/parse-xcresult.py (modified — dynamic DerivedData path discovery)

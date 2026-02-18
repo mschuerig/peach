@@ -35,7 +35,7 @@ struct SummaryStatisticsView: View {
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: stats == nil ? .ignore : .contain)
-        .accessibilityLabel(stats == nil ? "No training data yet" : "Summary statistics")
+        .accessibilityLabel(stats == nil ? String(localized: "No training data yet") : String(localized: "Summary statistics"))
         .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 

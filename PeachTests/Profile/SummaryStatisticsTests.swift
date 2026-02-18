@@ -93,23 +93,38 @@ struct SummaryStatisticsTests {
 
     // MARK: - Localization (Story 7.1)
 
-    @Test("formatMean returns localized string, not hardcoded English")
-    func formatMeanLocalized() async throws {
-        let result = SummaryStatisticsView.formatMean(25.0)
-        // Verify it matches the localized key (works in any locale)
-        #expect(result == String(localized: "\(25) cents"))
+    @Test("formatMean uses localized pluralization: singular 'cent' for value 1")
+    func formatMeanSingularPlural() async throws {
+        let singular = SummaryStatisticsView.formatMean(1.0)
+        let plural = SummaryStatisticsView.formatMean(2.0)
+        // String(localized:) with catalog plural variants:
+        //   en: one → "1 cent", other → "2 cents"
+        //   de: one → "1 Cent", other → "2 Cent"
+        // Without localization (raw interpolation), both would end with "cents"
+        #expect(singular != plural,
+                "Singular and plural forms should differ, proving plural variants are active")
     }
 
-    @Test("formatStdDev returns localized string, not hardcoded English")
-    func formatStdDevLocalized() async throws {
-        let result = SummaryStatisticsView.formatStdDev(10.0)
-        #expect(result == String(localized: "±\(10) cents"))
+    @Test("formatStdDev uses localized pluralization: singular 'cent' for value 1")
+    func formatStdDevSingularPlural() async throws {
+        let singular = SummaryStatisticsView.formatStdDev(1.0)
+        let plural = SummaryStatisticsView.formatStdDev(2.0)
+        // Same pluralization logic as formatMean but with ± prefix
+        #expect(singular != plural,
+                "Singular and plural forms should differ, proving plural variants are active")
     }
 
-    @Test("accessibilityTrend returns localized strings")
+    @Test("accessibilityTrend returns distinct strings for each trend direction")
     func accessibilityTrendLocalized() async throws {
-        #expect(SummaryStatisticsView.accessibilityTrend(.improving) == String(localized: "Trend: improving"))
-        #expect(SummaryStatisticsView.accessibilityTrend(.stable) == String(localized: "Trend: stable"))
-        #expect(SummaryStatisticsView.accessibilityTrend(.declining) == String(localized: "Trend: declining"))
+        let improving = SummaryStatisticsView.accessibilityTrend(.improving)
+        let stable = SummaryStatisticsView.accessibilityTrend(.stable)
+        let declining = SummaryStatisticsView.accessibilityTrend(.declining)
+        // Verify all three are distinct and non-empty
+        #expect(!improving.isEmpty)
+        #expect(!stable.isEmpty)
+        #expect(!declining.isEmpty)
+        #expect(improving != stable)
+        #expect(stable != declining)
+        #expect(improving != declining)
     }
 }

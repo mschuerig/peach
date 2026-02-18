@@ -302,7 +302,14 @@
       }
     },
     "Note" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        }
+      }
     },
     "Note Range" : {
       "localizations" : {
@@ -346,10 +353,40 @@
     },
     "Perceptual profile showing detection thresholds from %@ to %@. Average threshold: %lld cents." : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Perceptual profile showing detection thresholds from %@ to %@. Average threshold: %lld cent."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Perceptual profile showing detection thresholds from %@ to %@. Average threshold: %lld cents."
+                }
+              }
+            }
+          }
+        },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wahrnehmungsprofil mit Erkennungsschwellen von %@ bis %@. Durchschnittliche Schwelle: %lld Cent."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wahrnehmungsprofil mit Erkennungsschwellen von %@ bis %@. Durchschnittliche Schwelle: %lld Cent."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wahrnehmungsprofil mit Erkennungsschwellen von %@ bis %@. Durchschnittliche Schwelle: %lld Cent."
+                }
+              }
+            }
           }
         }
       }
@@ -415,7 +452,14 @@
       }
     },
     "Segment" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abschnitt"
+          }
+        }
+      }
     },
     "Settings" : {
       "localizations" : {
@@ -528,7 +572,14 @@
       }
     },
     "Threshold" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schwelle"
+          }
+        }
+      }
     },
     "Training" : {
       "localizations" : {
@@ -581,7 +632,14 @@
       }
     },
     "Upper" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obergrenze"
+          }
+        }
+      }
     },
     "Upper: %@" : {
       "localizations" : {

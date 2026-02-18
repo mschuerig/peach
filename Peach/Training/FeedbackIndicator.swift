@@ -24,7 +24,7 @@ struct FeedbackIndicator: View {
             Image(systemName: isCorrect ? "hand.thumbsup.fill" : "hand.thumbsdown.fill")
                 .font(.system(size: 100))
                 .foregroundStyle(isCorrect ? .green : .red)
-                .accessibilityLabel(isCorrect ? "Correct" : "Incorrect")
+                .accessibilityLabel(isCorrect ? String(localized: "Correct") : String(localized: "Incorrect"))
         }
     }
 }
