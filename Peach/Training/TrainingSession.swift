@@ -99,6 +99,9 @@ final class TrainingSession {
     /// Decouples TrainingSession from specific persistence and analytics implementations
     private let observers: [ComparisonObserver]
 
+    /// Notification center for audio interruption observers (injectable for test isolation)
+    private let notificationCenter: NotificationCenter
+
     // MARK: - Configuration
 
     /// Optional settings override for deterministic testing (when non-nil, skips UserDefaults)
@@ -163,13 +166,15 @@ final class TrainingSession {
     ///   - settingsOverride: Optional settings for test injection (nil = read from @AppStorage)
     ///   - noteDurationOverride: Optional duration for test injection (nil = read from @AppStorage)
     ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
+    ///   - notificationCenter: Notification center for audio interruption observers (defaults to .default)
     init(
         notePlayer: NotePlayer,
         strategy: NextNoteStrategy,
         profile: PerceptualProfile,
         settingsOverride: TrainingSettings? = nil,
         noteDurationOverride: TimeInterval? = nil,
-        observers: [ComparisonObserver] = []
+        observers: [ComparisonObserver] = [],
+        notificationCenter: NotificationCenter = .default
     ) {
         self.notePlayer = notePlayer
         self.strategy = strategy
@@ -177,6 +182,7 @@ final class TrainingSession {
         self.settingsOverride = settingsOverride
         self.noteDurationOverride = noteDurationOverride
         self.observers = observers
+        self.notificationCenter = notificationCenter
 
         // Setup audio interruption observers (Story 3.4)
         setupAudioInterruptionObservers()
@@ -186,10 +192,10 @@ final class TrainingSession {
         // Clean up notification observers
         // Using isolated deinit (Swift 6.1+ SE-0371) to properly handle MainActor cleanup
         if let observer = audioInterruptionObserver {
-            NotificationCenter.default.removeObserver(observer)
+            notificationCenter.removeObserver(observer)
         }
         if let observer = audioRouteChangeObserver {
-            NotificationCenter.default.removeObserver(observer)
+            notificationCenter.removeObserver(observer)
         }
     }
 
@@ -401,7 +407,7 @@ final class TrainingSession {
     /// Sets up observers for audio interruptions and route changes
     private func setupAudioInterruptionObservers() {
         // Observe audio session interruptions (phone calls, Siri, alarms, etc.)
-        audioInterruptionObserver = NotificationCenter.default.addObserver(
+        audioInterruptionObserver = notificationCenter.addObserver(
             forName: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance(),
             queue: .main
@@ -414,7 +420,7 @@ final class TrainingSession {
         }
 
         // Observe audio route changes (headphone disconnect, etc.)
-        audioRouteChangeObserver = NotificationCenter.default.addObserver(
+        audioRouteChangeObserver = notificationCenter.addObserver(
             forName: AVAudioSession.routeChangeNotification,
             object: AVAudioSession.sharedInstance(),
             queue: .main

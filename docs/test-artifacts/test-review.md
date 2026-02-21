@@ -14,12 +14,10 @@ Note: This review audits existing tests; it does not generate tests.
 | Date | Commit | Issues Addressed | Details |
 |---|---|---|---|
 | 2026-02-21 | `0bf633b` | P0 #1, P0 #3 (partial), P0 #5; P1 #2, P1 #3 | Replace `fatalError()` → `Issue.record()` (4 helpers) and `guard/fatalError` → `try #require()` (6 test bodies); add `defer` cleanup for UserDefaults tests (5 tests); delete placeholder `PeachTests.swift`; add `@MainActor` to `StartScreenTests` |
+| 2026-02-21 | pending | P0 #2, P0 #3, P0 #4 | **P0 #2**: Replace all 47 `try? await Task.sleep` instances with deterministic `waitForState()`/`waitForPlayCallCount()` helpers across 3 training test files. **P0 #3**: Split 4 oversized files into 11 files (TrainingSessionTests→4 files, AdaptiveNoteStrategyTests→2 files, TrainingDataStoreTests→2 files, SineWaveNotePlayerTests→2 files); all ≤306 lines. **P0 #4**: Add `TrainingSessionAudioInterruptionTests.swift` (13 tests) covering interruption began/ended from all states, route change oldDeviceUnavailable/non-stop reasons, nil userInfo handling, idle safety, restart after interruption. Inject `NotificationCenter` into `TrainingSession` for test isolation. Total: 279 tests passing across 20 test files. |
 
 ### Remaining Open Issues
 
-- **P0 #2**: Eliminate `try? await Task.sleep` synchronization (47 instances) -- requires event-driven `waitForState` rewrite
-- **P0 #3**: Split oversized test files (4 files >300 lines) -- structural refactor
-- **P0 #4**: Add audio interruption/route change test coverage -- new tests needed
 - **P1 #1**: Extract shared test helpers to `PeachTests/TestHelpers/` -- DRY refactor
 - **P2 #4**: Remove tautological assertions (`#expect(true)`, `count >= 0`)
 - **P2 #6**: Reduce real audio engine usage in tests
