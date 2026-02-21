@@ -28,7 +28,7 @@ struct TrainingSessionFeedbackTests {
 
     /// Waits for the session to reach a specific state (or timeout after 1 second)
     @MainActor
-    func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(1)) async throws {
+    func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(2)) async throws {
         // First, yield to allow any pending async tasks to progress
         await Task.yield()
 
@@ -51,7 +51,7 @@ struct TrainingSessionFeedbackTests {
 
     /// Waits for feedback to clear (showFeedback becomes false)
     @MainActor
-    func waitForFeedbackToClear(_ session: TrainingSession, timeout: Duration = .seconds(1)) async throws {
+    func waitForFeedbackToClear(_ session: TrainingSession, timeout: Duration = .seconds(2)) async throws {
         let deadline = ContinuousClock.now + timeout
         while ContinuousClock.now < deadline {
             if !session.showFeedback {

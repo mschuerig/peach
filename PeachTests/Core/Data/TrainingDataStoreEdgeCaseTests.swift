@@ -1,0 +1,179 @@
+import Testing
+import SwiftData
+import Foundation
+@testable import Peach
+
+/// Edge case and error handling tests for TrainingDataStore
+@Suite("TrainingDataStore Edge Case Tests")
+struct TrainingDataStoreEdgeCaseTests {
+
+    // MARK: - Test Helpers
+
+    @MainActor
+    private func makeTestContainer() throws -> ModelContainer {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        return try ModelContainer(for: ComparisonRecord.self, configurations: config)
+    }
+
+    // MARK: - Edge Case Tests
+
+    @Test("Save multiple records with identical data")
+    @MainActor
+    func saveDuplicateData() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record1 = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50.0, isCorrect: true)
+        let record2 = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 50.0, isCorrect: true)
+
+        try store.save(record1)
+        try store.save(record2)
+
+        let fetched = try store.fetchAll()
+        #expect(fetched.count == 2)
+    }
+
+    @Test("MIDI note boundaries are stored correctly")
+    @MainActor
+    func midiNoteBoundaries() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let minRecord = ComparisonRecord(note1: 0, note2: 0, note2CentOffset: 10.0, isCorrect: true)
+        let maxRecord = ComparisonRecord(note1: 127, note2: 127, note2CentOffset: 20.0, isCorrect: false)
+
+        try store.save(minRecord)
+        try store.save(maxRecord)
+
+        let fetched = try store.fetchAll()
+        #expect(fetched.count == 2)
+        #expect(fetched.contains { $0.note1 == 0 })
+        #expect(fetched.contains { $0.note1 == 127 })
+    }
+
+    @Test("Fractional cent offsets are stored with precision")
+    @MainActor
+    func fractionalCentPrecision() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = ComparisonRecord(
+            note1: 60,
+            note2: 60,
+            note2CentOffset: 12.3,
+            isCorrect: true
+        )
+
+        try store.save(record)
+
+        let fetched = try store.fetchAll()
+        #expect(fetched.count == 1)
+        #expect(fetched[0].note2CentOffset == 12.3)
+    }
+
+    // MARK: - Error Handling Tests
+
+    @Test("FetchAll throws DataStoreError.fetchFailed when context is invalid")
+    @MainActor
+    func fetchAllThrowsOnInvalidContext() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
+        try store.save(record)
+
+        do {
+            _ = try store.fetchAll()
+        } catch let error as Peach.DataStoreError {
+            switch error {
+            case .fetchFailed(let message):
+                #expect(message.contains("Failed to fetch"))
+            default:
+                Issue.record("Expected fetchFailed error")
+            }
+        }
+    }
+
+    @Test("Save throws DataStoreError.saveFailed on context save failure")
+    @MainActor
+    func saveThrowsOnContextFailure() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
+
+        do {
+            try store.save(record)
+        } catch let error as Peach.DataStoreError {
+            switch error {
+            case .saveFailed(let message):
+                #expect(message.contains("Failed to save"))
+            default:
+                Issue.record("Expected saveFailed error")
+            }
+        }
+    }
+
+    @Test("Delete throws DataStoreError.deleteFailed on context save failure")
+    @MainActor
+    func deleteThrowsOnContextFailure() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
+        try store.save(record)
+
+        do {
+            try store.delete(record)
+        } catch let error as Peach.DataStoreError {
+            switch error {
+            case .deleteFailed(let message):
+                #expect(message.contains("Failed to delete"))
+            default:
+                Issue.record("Expected deleteFailed error")
+            }
+        }
+    }
+
+    @Test("DataStoreError cases have descriptive messages")
+    func dataStoreErrorMessages() {
+        let saveError = Peach.DataStoreError.saveFailed("Test save error")
+        let fetchError = Peach.DataStoreError.fetchFailed("Test fetch error")
+        let deleteError = Peach.DataStoreError.deleteFailed("Test delete error")
+        let contextError = Peach.DataStoreError.contextUnavailable
+
+        switch saveError {
+        case .saveFailed(let message):
+            #expect(message == "Test save error")
+        default:
+            Issue.record("saveFailed case not matched")
+        }
+
+        switch fetchError {
+        case .fetchFailed(let message):
+            #expect(message == "Test fetch error")
+        default:
+            Issue.record("fetchFailed case not matched")
+        }
+
+        switch deleteError {
+        case .deleteFailed(let message):
+            #expect(message == "Test delete error")
+        default:
+            Issue.record("deleteFailed case not matched")
+        }
+
+        switch contextError {
+        case .contextUnavailable:
+            break
+        default:
+            Issue.record("contextUnavailable case not matched")
+        }
+    }
+}

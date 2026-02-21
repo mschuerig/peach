@@ -24,6 +24,32 @@ struct TrainingSessionLifecycleTests {
         return (session, mockPlayer, mockDataStore)
     }
 
+    // MARK: - Test Helpers
+
+    @MainActor
+    func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(2)) async throws {
+        await Task.yield()
+        if session.state == expectedState { return }
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if session.state == expectedState { return }
+            try await Task.sleep(for: .milliseconds(5))
+            await Task.yield()
+        }
+        Issue.record("Timeout waiting for state \(expectedState), current state: \(session.state)")
+    }
+
+    @MainActor
+    func waitForPlayCallCount(_ mockPlayer: MockNotePlayer, _ minCount: Int, timeout: Duration = .seconds(2)) async throws {
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if mockPlayer.playCallCount >= minCount { return }
+            try await Task.sleep(for: .milliseconds(5))
+            await Task.yield()
+        }
+        Issue.record("Timeout waiting for playCallCount >= \(minCount), current: \(mockPlayer.playCallCount)")
+    }
+
     // MARK: - Data Integrity Tests (AC#4)
 
     @MainActor
@@ -53,58 +79,58 @@ struct TrainingSessionLifecycleTests {
 
     @MainActor
     @Test("stop() during playingNote2 discards incomplete comparison")
-    func stopDuringNote2DiscardsComparison() async {
-        let (session, _, mockDataStore) = makeTrainingSession()
+    func stopDuringNote2DiscardsComparison() async throws {
+        let (session, mockPlayer, mockDataStore) = makeTrainingSession()
+
+        mockPlayer.instantPlayback = false
+        mockPlayer.simulatedPlaybackDuration = 0.5
+
+        var noteCount = 0
+        mockPlayer.onPlayCalled = {
+            noteCount += 1
+            if noteCount == 2 {
+                session.stop()
+            }
+        }
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(60))  // Wait for playingNote2
+        try await waitForState(session, .idle)
 
-        // Stop training before answer
-        session.stop()
-
-        // Verify no data was saved
         #expect(mockDataStore.saveCallCount == 0)
         #expect(session.state == .idle)
     }
 
     @MainActor
     @Test("stop() during awaitingAnswer discards incomplete comparison")
-    func stopDuringAwaitingAnswerDiscardsComparison() async {
+    func stopDuringAwaitingAnswerDiscardsComparison() async throws {
         let (session, _, mockDataStore) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))  // Wait for awaitingAnswer
+        try await waitForState(session, .awaitingAnswer)
 
-        // Verify we're awaiting answer
         #expect(session.state == .awaitingAnswer)
 
-        // Stop training before answer
         session.stop()
 
-        // Verify no data was saved
         #expect(mockDataStore.saveCallCount == 0)
         #expect(session.state == .idle)
     }
 
     @MainActor
     @Test("stop() during showingFeedback preserves already-saved data")
-    func stopDuringFeedbackPreservesData() async {
+    func stopDuringFeedbackPreservesData() async throws {
         let (session, _, mockDataStore) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))  // Wait for awaitingAnswer
+        try await waitForState(session, .awaitingAnswer)
 
-        // Answer the comparison
         session.handleAnswer(isHigher: true)
 
-        // Verify we're in feedback state and data was saved
         #expect(session.state == .showingFeedback)
         #expect(mockDataStore.saveCallCount == 1)
 
-        // Stop during feedback
         session.stop()
 
-        // Verify data was preserved (no additional save, no deletion)
         #expect(mockDataStore.saveCallCount == 1)
         #expect(mockDataStore.lastSavedRecord != nil)
         #expect(session.state == .idle)
@@ -114,11 +140,11 @@ struct TrainingSessionLifecycleTests {
 
     @MainActor
     @Test("stop() clears feedback state")
-    func stopClearsFeedbackState() async {
+    func stopClearsFeedbackState() async throws {
         let (session, _, _) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(100))
+        try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: false)
         #expect(session.showFeedback == true)
@@ -153,18 +179,16 @@ struct TrainingSessionLifecycleTests {
 
     @MainActor
     @Test("stop() calls notePlayer.stop()")
-    func stopCallsNotePlayerStop() async {
+    func stopCallsNotePlayerStop() async throws {
         let (session, mockPlayer, _) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(50))
+        try await waitForPlayCallCount(mockPlayer, 1)
 
-        mockPlayer.stopCallCount = 0  // Reset counter
+        mockPlayer.stopCallCount = 0
 
         session.stop()
-
-        // Give async Task time to call notePlayer.stop()
-        try? await Task.sleep(for: .milliseconds(50))
+        await Task.yield()
 
         #expect(mockPlayer.stopCallCount >= 1)
     }
@@ -173,15 +197,14 @@ struct TrainingSessionLifecycleTests {
 
     @MainActor
     @Test("Simulated onDisappear triggers stop")
-    func simulatedOnDisappearTriggersStop() async {
-        let (session, _, _) = makeTrainingSession()
+    func simulatedOnDisappearTriggersStop() async throws {
+        let (session, mockPlayer, _) = makeTrainingSession()
 
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(50))
+        try await waitForPlayCallCount(mockPlayer, 1)
 
         #expect(session.state != .idle)
 
-        // Simulate TrainingScreen.onDisappear calling stop()
         session.stop()
 
         #expect(session.state == .idle)
@@ -191,18 +214,18 @@ struct TrainingSessionLifecycleTests {
 
     @MainActor
     @Test("Rapid stop and start sequence")
-    func rapidStopAndStartSequence() async {
+    func rapidStopAndStartSequence() async throws {
         let (session, mockPlayer, _) = makeTrainingSession()
 
-        // Start, stop, start quickly
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(10))
+        await Task.yield()
 
         session.stop()
         #expect(session.state == .idle)
 
+        mockPlayer.reset()
         session.startTraining()
-        try? await Task.sleep(for: .milliseconds(50))
+        try await waitForPlayCallCount(mockPlayer, 1)
 
         #expect(session.state != .idle)
         #expect(mockPlayer.playCallCount >= 1)
@@ -214,12 +237,10 @@ struct TrainingSessionLifecycleTests {
         let (session, _, mockDataStore) = makeTrainingSession()
 
         session.startTraining()
+        await Task.yield()
 
-        // Rapidly call stop during early phases
-        try? await Task.sleep(for: .milliseconds(5))
         session.stop()
 
-        // Verify clean stop
         #expect(session.state == .idle)
         #expect(mockDataStore.saveCallCount == 0)
     }
