@@ -315,25 +315,10 @@ The training loop runs indefinitely with no session boundaries, progress milesto
 - Optional daily practice reminders (notifications)
 - Keep it minimal and informational — acknowledge effort without gamifying it
 
-### Display Current Difficulty on Training Screen
+### ~~Display Current Difficulty on Training Screen~~ (RESOLVED)
 
-**Priority:** Medium
-**Category:** User Experience
-**Date Added:** 2026-02-18
-
-**Issue:**
-During training, the user has no visibility into what difficulty level (cent difference) they are currently training at. There is no indication of whether they are being challenged at 50 cents, 10 cents, or 2 cents. Additionally, there is no way to see the highest difficulty (smallest cent difference) achieved within the current training session.
-
-**Desired Behavior:**
-- Show the current cent difference somewhere on the Training Screen (possibly optional/toggleable)
-- Optionally show a "session best" (smallest cent difference achieved correctly in this session)
-- Should not distract from the core Higher/Lower interaction
-- Consider showing this as a small, unobtrusive label or in a toolbar area
-
-**Related Code:**
-- `Peach/Training/TrainingScreen.swift` — training UI
-- `Peach/Training/TrainingSession.swift` — `currentComparison` has the cent difference
-- `Peach/Training/Comparison.swift` — `centDifference` property
+**Status:** Resolved — 2026-02-22
+**Resolution:** Implemented via `display-current-difficulty-on-training-screen.md`. Added `DifficultyDisplayView` showing current cent difference and session best at top of Training Screen body, with `.footnote`/`.caption2` secondary styling, full accessibility labels, and German translations.
 
 ### Feedback Icon Flicker on Correctness Change
 
