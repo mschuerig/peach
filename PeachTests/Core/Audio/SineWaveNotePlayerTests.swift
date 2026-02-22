@@ -213,4 +213,22 @@ struct SineWaveNotePlayerTests {
         try await player.stop()
         try await player.stop()
     }
+
+    @Test("Stop during active playback completes without error")
+    @MainActor func stop_duringPlayback_completesWithoutError() async throws {
+        let player = try SineWaveNotePlayer()
+
+        // Start a long note in a concurrent task so we can interrupt it
+        let playTask = Task { @MainActor in
+            try await player.play(frequency: 440.0, duration: 5.0)
+        }
+
+        // Allow the engine to start and begin buffer playback
+        try await Task.sleep(for: .milliseconds(100))
+
+        // Stop during active playback — exercises the click-free fade-out path
+        try await player.stop()
+
+        playTask.cancel()
+    }
 }
