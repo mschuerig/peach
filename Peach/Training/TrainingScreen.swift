@@ -44,13 +44,15 @@ struct TrainingScreen: View {
         }
         .padding()
         .overlay {
-            FeedbackIndicator(
-                isCorrect: trainingSession.isLastAnswerCorrect,
-                iconSize: Self.feedbackIconSize(isCompact: isCompactHeight)
-            )
-            .opacity(trainingSession.showFeedback ? 1 : 0)
-            .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
+            if trainingSession.showFeedback {
+                FeedbackIndicator(
+                    isCorrect: trainingSession.isLastAnswerCorrect,
+                    iconSize: Self.feedbackIconSize(isCompact: isCompactHeight)
+                )
+                .transition(.opacity)
+            }
         }
+        .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
