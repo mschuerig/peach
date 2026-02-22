@@ -19,16 +19,26 @@ struct TrainingScreen: View {
     }
 
     var body: some View {
-        Group {
-            if isCompactHeight {
-                HStack(spacing: 8) {
-                    higherButton
-                    lowerButton
-                }
-            } else {
-                VStack(spacing: 8) {
-                    higherButton
-                    lowerButton
+        VStack(spacing: 8) {
+            if let difficulty = trainingSession.currentDifficulty {
+                DifficultyDisplayView(
+                    currentDifficulty: difficulty,
+                    sessionBest: trainingSession.sessionBestCentDifference
+                )
+                .padding(.horizontal)
+            }
+
+            Group {
+                if isCompactHeight {
+                    HStack(spacing: 8) {
+                        answerButton(direction: .higher)
+                        answerButton(direction: .lower)
+                    }
+                } else {
+                    VStack(spacing: 8) {
+                        answerButton(direction: .higher)
+                        answerButton(direction: .lower)
+                    }
                 }
             }
         }
@@ -72,35 +82,34 @@ struct TrainingScreen: View {
 
     // MARK: - Button Views
 
-    private var higherButton: some View {
-        Button {
-            trainingSession.handleAnswer(isHigher: true)
-        } label: {
-            VStack(spacing: 12) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: Self.buttonIconSize(isCompact: isCompactHeight)))
-                Text("Higher")
-                    .font(Self.buttonTextFont(isCompact: isCompactHeight))
-                    .fontWeight(.semibold)
+    private enum AnswerDirection {
+        case higher, lower
+
+        var isHigher: Bool { self == .higher }
+
+        var iconName: String {
+            switch self {
+            case .higher: "arrow.up.circle.fill"
+            case .lower: "arrow.down.circle.fill"
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .frame(minHeight: Self.buttonMinHeight(isCompact: isCompactHeight))
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: 12))
-        .disabled(!buttonsEnabled)
-        .accessibilityLabel("Higher")
+
+        var label: LocalizedStringKey {
+            switch self {
+            case .higher: "Higher"
+            case .lower: "Lower"
+            }
+        }
     }
 
-    private var lowerButton: some View {
+    private func answerButton(direction: AnswerDirection) -> some View {
         Button {
-            trainingSession.handleAnswer(isHigher: false)
+            trainingSession.handleAnswer(isHigher: direction.isHigher)
         } label: {
             VStack(spacing: 12) {
-                Image(systemName: "arrow.down.circle.fill")
+                Image(systemName: direction.iconName)
                     .font(.system(size: Self.buttonIconSize(isCompact: isCompactHeight)))
-                Text("Lower")
+                Text(direction.label)
                     .font(Self.buttonTextFont(isCompact: isCompactHeight))
                     .fontWeight(.semibold)
             }
@@ -111,7 +120,7 @@ struct TrainingScreen: View {
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.roundedRectangle(radius: 12))
         .disabled(!buttonsEnabled)
-        .accessibilityLabel("Lower")
+        .accessibilityLabel(direction.label)
     }
 
     // MARK: - Layout Parameters (extracted for testability)
