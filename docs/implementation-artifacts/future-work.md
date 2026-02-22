@@ -416,3 +416,242 @@ The app currently uses only sine wave tones for pitch comparisons. While precise
 - `Peach/Settings/SettingsScreen.swift` — sound source setting (currently sine-only)
 
 *(Additional deferred features and nice-to-haves will be tracked here)*
+
+---
+
+## Adversarial Review Findings (2026-02-22)
+
+Whole-project adversarial review focusing on unsafe practices, unwanted dependencies, separation of concerns, and duplication.
+
+### Unsafe Practices
+
+#### U1: `fatalError()` in App Initialization
+
+**Priority:** High
+**Category:** Safety / Crash Risk
+
+**Issue:**
+`PeachApp.swift:57` calls `fatalError("Failed to initialize app: \(error)")` if `ModelContainer`, `SineWaveNotePlayer`, or `dataStore.fetchAll()` fails at launch. No recovery UI, no retry, no graceful degradation. A corrupted SwiftData store or audio entitlement issue on a fresh install results in an instant crash with no user-facing explanation.
+
+**Proposed Fix:**
+Replace with a fallback error state that shows an error screen or retries initialization.
+
+**Related Code:**
+- `Peach/App/PeachApp.swift:56-58`
+
+#### U2: `precondition()` for MIDI Note Validation
+
+**Priority:** High
+**Category:** Safety / Crash Risk
+
+**Issue:**
+`FrequencyCalculation.swift:60` uses `precondition(midiNote >= 0 && midiNote <= 127, ...)` for MIDI note validation. `precondition` is stripped under `-Ounchecked` optimization. More importantly, `AudioError.invalidFrequency` already exists as a typed error — the validation should `guard`/`throw` instead of trapping. A bad MIDI note from a corrupt `ComparisonRecord` would crash the app in debug.
+
+**Proposed Fix:**
+Replace `precondition` with `guard ... else { throw AudioError.invalidFrequency(...) }`.
+
+**Related Code:**
+- `Peach/Core/Audio/FrequencyCalculation.swift:60`
+- `Peach/Core/Audio/NotePlayer.swift` — `AudioError` enum
+
+#### U3: `nonisolated(unsafe)` Environment Key Pattern
+
+**Priority:** Medium
+**Category:** Safety / Concurrency
+
+**Issue:**
+Three environment keys use `nonisolated(unsafe)` with `MainActor.assumeIsolated()`: `TrainingSessionKey` (`TrainingScreen.swift:152`), `PerceptualProfileKey` (`ProfileScreen.swift:149`), and `TrendAnalyzerKey` (`TrendAnalyzer.swift:93`). This tells the compiler "trust me" about actor isolation. If an `EnvironmentKey.defaultValue` is ever accessed off the main thread (e.g., during SwiftUI internal diffing on a background queue), it's undefined behavior.
+
+**Proposed Fix:**
+Investigate whether Swift 6.0+ provides a safe pattern for `@MainActor` environment key defaults, or use a lazy optional pattern that avoids the unsafe annotation. See also the existing item "Extract Environment Keys to Shared Locations" for the duplication aspect.
+
+**Related Code:**
+- `Peach/Training/TrainingScreen.swift:151-171`
+- `Peach/Profile/ProfileScreen.swift:148-157`
+- `Peach/Core/Profile/TrendAnalyzer.swift:92-101`
+
+#### U4: Fire-and-Forget `Task`s Without Tracking
+
+**Priority:** Medium
+**Category:** Safety / Resource Leaks
+
+**Issue:**
+Three locations spawn untracked `Task`s that could outlive their owning context:
+- `TrainingSession.stop()` at line 286 — `notePlayer.stop()` in a fire-and-forget Task
+- `TrainingSession.handleAnswer()` at line 239 — stopping note2 early
+- `HapticFeedbackManager.playIncorrectFeedback()` at line 41 — second haptic impact after 50ms delay
+
+If the session or manager is stopped and deallocated quickly, these orphan tasks may execute after cleanup. Rapid incorrect answers could also accumulate untracked haptic tasks.
+
+**Proposed Fix:**
+Store task references for cancellation in `deinit`/`stop()`, or use structured concurrency.
+
+**Related Code:**
+- `Peach/Training/TrainingSession.swift:239, 286`
+- `Peach/Training/HapticFeedbackManager.swift:41-44`
+
+#### U5: Polling Loop in Training Session
+
+**Priority:** Low
+**Category:** Safety / Efficiency
+
+**Issue:**
+`TrainingSession.runTrainingLoop()` at lines 318-321 spin-waits with `Task.sleep(for: .milliseconds(100))` to detect state changes. The entire training flow is otherwise event-driven (play note -> await answer -> show feedback -> next comparison). This is architecturally inconsistent and wastes CPU.
+
+**Proposed Fix:**
+The `Task` could simply `await` on the event-driven chain and exit when cancelled, eliminating the polling loop.
+
+**Related Code:**
+- `Peach/Training/TrainingSession.swift:310-324`
+
+### Separation of Concerns
+
+#### S1: Mock Classes Ship in Production Binary
+
+**Priority:** High
+**Category:** Code Organization / Binary Size
+
+**Issue:**
+`MockHapticFeedbackManager` (`HapticFeedbackManager.swift:65-86`) lives in the main Peach target, not `PeachTests`. It's a full `@MainActor final class` with test tracking (`incorrectFeedbackCount`, `reset()`). Additionally, `MockNotePlayerForPreview` and `MockDataStoreForPreview` are defined in `TrainingScreen.swift:182-199`. All three compile into the shipping app.
+
+**Proposed Fix:**
+Move `MockHapticFeedbackManager` to `PeachTests`. Wrap preview mocks in `#if DEBUG` guards or move them to a dedicated preview target.
+
+**Related Code:**
+- `Peach/Training/HapticFeedbackManager.swift:61-86`
+- `Peach/Training/TrainingScreen.swift:180-199`
+
+#### S2: `SettingsScreen` Creates Services and Orchestrates Business Logic
+
+**Priority:** Medium
+**Category:** Architecture / View Responsibility
+
+**Issue:**
+`SettingsScreen.resetAllTrainingData()` at line 125 directly instantiates `TrainingDataStore(modelContext:)`, then calls `dataStore.deleteAll()`, `profile.reset()`, and `trendAnalyzer.reset()` in sequence. This violates two of the project's own hard rules: *"All service instantiation happens in PeachApp.swift"* and *"Views contain zero business logic."* This is an orchestration operation disguised as a button action.
+
+**Proposed Fix:**
+Create a reset method on `TrainingSession` or a dedicated reset coordinator injected via environment. The view should call a single method, not orchestrate a multi-service operation.
+
+**Related Code:**
+- `Peach/Settings/SettingsScreen.swift:123-135`
+- See also existing item "Reset All Data Should Also Reset Difficulty"
+
+#### S3: `ComparisonRecordStoring` Protocol Is Incomplete
+
+**Priority:** Medium
+**Category:** Architecture / Abstraction Leak
+
+**Issue:**
+The protocol defines only `save()` and `fetchAll()` (`ComparisonRecordStoring.swift:8-17`), but `TrainingDataStore` also exposes `delete(_:)` and `deleteAll()`. `SettingsScreen` calls `deleteAll()` directly on the concrete `TrainingDataStore` type, bypassing the protocol entirely. The protocol creates a false sense of decoupling when real callers need methods it doesn't declare.
+
+**Proposed Fix:**
+Add `delete(_:)` and `deleteAll()` to the protocol, or acknowledge the protocol is intentionally narrow and route deletion through a different mechanism.
+
+**Related Code:**
+- `Peach/Core/Data/ComparisonRecordStoring.swift`
+- `Peach/Core/Data/TrainingDataStore.swift`
+- `Peach/Settings/SettingsScreen.swift:125-127`
+
+### Duplication
+
+#### D1: `makeTrainingSession()` Fixture Duplicated Across 6 Test Files
+
+**Priority:** Medium
+**Category:** Test Maintenance
+
+**Issue:**
+Near-identical `makeTrainingSession()` factory methods appear in `TrainingSessionTests`, `TrainingSessionIntegrationTests`, `TrainingSessionLifecycleTests`, `TrainingSessionSettingsTests`, `TrainingSessionAudioInterruptionTests`, and `TrainingSessionUserDefaultsTests`. `TrainingTestHelpers.swift` exists but doesn't include this factory. Six copies means six places to update when `TrainingSession`'s initializer changes.
+
+**Proposed Fix:**
+Extract to `TrainingTestHelpers.swift` as a shared factory.
+
+**Related Code:**
+- `PeachTests/Training/TrainingTestHelpers.swift`
+- All six `TrainingSession*Tests.swift` files
+
+#### D2: `nonisolated(unsafe)` Environment Key Boilerplate Repeated 3 Times
+
+**Priority:** Low
+**Category:** Code Organization
+
+**Issue:**
+The identical 8-line pattern (`nonisolated(unsafe) static var defaultValue = { ... MainActor.assumeIsolated { ... } }()`) is copy-pasted in `TrainingScreen.swift`, `ProfileScreen.swift`, and `TrendAnalyzer.swift`. This is both duplication and an unsafe pattern (see U3).
+
+**Proposed Fix:**
+Extract to a generic helper or macro. See also existing item "Extract Environment Keys to Shared Locations."
+
+#### D3: Kazez Formula Coefficients Differ Without Documentation
+
+**Priority:** Medium
+**Category:** Algorithm Correctness
+
+**Issue:**
+`KazezNoteStrategy.swift:82` uses `0.05` for narrowing; `AdaptiveNoteStrategy.swift:216` uses `0.08`. Both cite Kazez et al. (2001). The resolved item "Weighted Effective Difficulty: Convergence Still Too Slow" explains the `0.08` change was intentional tuning, but `KazezNoteStrategy` was not updated and no comment documents the divergence. Someone reading both files will assume one is wrong.
+
+**Proposed Fix:**
+Add a comment in both files explaining the coefficient difference, or extract coefficients to named constants with rationale.
+
+**Related Code:**
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift:82` — `0.05`
+- `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift:216` — `0.08`
+
+#### D4: `hasTrainingData` Check Duplicated Across Views
+
+**Priority:** Low
+**Category:** Code Organization
+
+**Issue:**
+Both `ProfileScreen.swift:86` and `ProfilePreviewView.swift:27` independently check `profile.overallMean != nil` to determine if training data exists. This semantic question ("has the user trained?") should be a single computed property on `PerceptualProfile`.
+
+**Proposed Fix:**
+Add a `hasData` computed property to `PerceptualProfile` and use it from both views.
+
+**Related Code:**
+- `Peach/Profile/ProfileScreen.swift:86`
+- `Peach/Start/ProfilePreviewView.swift:27`
+- `Peach/Core/Profile/PerceptualProfile.swift`
+
+### Other
+
+#### O1: Dead Code — `ContentView.previousScenePhase`
+
+**Priority:** Low
+**Category:** Dead Code
+
+**Issue:**
+`ContentView.swift:15` declares `@State private var previousScenePhase: ScenePhase?`. It is written to on line 37 but never read anywhere.
+
+**Proposed Fix:**
+Remove the property and the assignment.
+
+**Related Code:**
+- `Peach/App/ContentView.swift:15, 37`
+
+#### O2: `KazezNoteStrategy` Ignores User-Configured Note Range
+
+**Priority:** Medium
+**Category:** Bug / Settings
+
+**Issue:**
+`KazezNoteStrategy` hardcodes C3-C5 (MIDI 48-72) at lines 35-36, ignoring the `settings.noteRangeMin/Max` values passed to `nextComparison()`. If a user changes their range in Settings, this strategy will still select notes outside it. Currently only `AdaptiveNoteStrategy` is wired in production, but this is a latent bug if `KazezNoteStrategy` is ever used with user-configured ranges.
+
+**Proposed Fix:**
+Use `settings.noteRangeMin/Max` instead of hardcoded constants, or document that this strategy is evaluation-only and intentionally ignores settings.
+
+**Related Code:**
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift:35-36, 66`
+
+#### O3: `ComparisonRecord` Stores Redundant `note1` and `note2`
+
+**Priority:** Low
+**Category:** Data Model / Waste
+
+**Issue:**
+Per the domain rules (`note2 = same MIDI note as note1`), both notes are always identical. The model stores two `Int` fields for one value. Every record written to SwiftData carries this redundancy, and nothing validates or catches a divergence.
+
+**Proposed Fix:**
+Consider reducing to a single `note` field if the domain rule holds permanently, or add a validation assertion. Assess SwiftData migration impact before changing.
+
+**Related Code:**
+- `Peach/Core/Data/ComparisonRecord.swift`
+- `Peach/Training/Comparison.swift` — always sets `note1 == note2`
