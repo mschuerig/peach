@@ -84,6 +84,9 @@ final class TrainingSession {
     /// - false: Incorrect answer
     private(set) var isLastAnswerCorrect: Bool? = nil
 
+    /// Smallest cent difference the user answered correctly this session (nil until first correct answer)
+    private(set) var sessionBestCentDifference: Double? = nil
+
     // MARK: - Dependencies
 
     /// Audio playback service (protocol-based for testing)
@@ -201,6 +204,11 @@ final class TrainingSession {
 
     // MARK: - Public API
 
+    /// Current cent difference being trained (nil when no active comparison)
+    var currentDifficulty: Double? {
+        currentComparison?.centDifference
+    }
+
     /// Starts the training loop from idle state
     ///
     /// Begins the first comparison immediately with no countdown or loading state.
@@ -247,6 +255,14 @@ final class TrainingSession {
 
         // Store last completed comparison for strategy (Story 4.3)
         lastCompletedComparison = completed
+
+        // Track session best on correct answers
+        if completed.isCorrect {
+            let diff = comparison.centDifference
+            if sessionBestCentDifference == nil || diff < sessionBestCentDifference! {
+                sessionBestCentDifference = diff
+            }
+        }
 
         // Notify observers (includes data store, profile, and haptic feedback)
         recordComparison(completed)
@@ -298,6 +314,7 @@ final class TrainingSession {
         state = .idle
         currentComparison = nil
         lastCompletedComparison = nil
+        sessionBestCentDifference = nil
 
         // Clear feedback state (Story 3.3)
         showFeedback = false
