@@ -35,7 +35,15 @@ Known rough edges include a profile visualization that needs redesign, no onboar
 
 ## Building
 
-Open `Peach.xcodeproj` in Xcode and run (Cmd+R), or build from the command line:
+Before the first build, download the SF2 SoundFont sample file:
+
+```bash
+./tools/download-sf2.sh
+```
+
+This downloads GeneralUser GS (~31 MB) to `.sf2-cache/` in the project root. The file is not tracked in git. You only need to run this once.
+
+Then open `Peach.xcodeproj` in Xcode and run (Cmd+R), or build from the command line:
 
 ```bash
 xcodebuild build -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'
