@@ -19,15 +19,21 @@ public final class SoundFontNotePlayer: NotePlayer {
 
     private var currentNote: UInt8?
     private var isSessionConfigured = false
+    private var loadedProgram: Int
+    private var loadedBank: Int
 
     // MARK: - Constants
 
     private static let channel: UInt8 = 0
-    private static let celloProgram: UInt8 = 42
-    private static let bankMSB: UInt8 = 0x79 // kAUSampler_DefaultMelodicBankMSB
-    private static let bankLSB: UInt8 = 0
+    private static let defaultProgram: UInt8 = 42
+    private static let defaultBankMSB: UInt8 = 0x79 // kAUSampler_DefaultMelodicBankMSB
+    private static let defaultBankLSB: UInt8 = 0
     private static let pitchBendCenter: UInt16 = 8192
     private static let validFrequencyRange = 20.0...20000.0
+
+    // MARK: - SF2 URL
+
+    private let sf2URL: URL
 
     // MARK: - Initialization
 
@@ -36,8 +42,11 @@ public final class SoundFontNotePlayer: NotePlayer {
             throw AudioError.contextUnavailable
         }
 
+        self.sf2URL = sf2URL
         self.engine = AVAudioEngine()
         self.sampler = AVAudioUnitSampler()
+        self.loadedProgram = Int(Self.defaultProgram)
+        self.loadedBank = 0
 
         engine.attach(sampler)
         engine.connect(sampler, to: engine.mainMixerNode, format: nil)
@@ -45,18 +54,43 @@ public final class SoundFontNotePlayer: NotePlayer {
         try engine.start()
         try sampler.loadSoundBankInstrument(
             at: sf2URL,
-            program: Self.celloProgram,
-            bankMSB: Self.bankMSB,
-            bankLSB: Self.bankLSB
+            program: Self.defaultProgram,
+            bankMSB: Self.defaultBankMSB,
+            bankLSB: Self.defaultBankLSB
         )
 
-        // Set pitch bend range to +/-2 semitones via RPN
-        sampler.sendController(101, withValue: 0, onChannel: Self.channel)
-        sampler.sendController(100, withValue: 0, onChannel: Self.channel)
-        sampler.sendController(6, withValue: 2, onChannel: Self.channel)
-        sampler.sendController(38, withValue: 0, onChannel: Self.channel)
+        sendPitchBendRange()
 
-        logger.info("SoundFontNotePlayer initialized with \(sf2Name).sf2, Cello preset")
+        logger.info("SoundFontNotePlayer initialized with \(sf2Name).sf2, program \(Self.defaultProgram)")
+    }
+
+    // MARK: - Preset Switching
+
+    func loadPreset(program: Int, bank: Int = 0) async throws {
+        guard program != loadedProgram || bank != loadedBank else { return }
+
+        if let note = currentNote {
+            sampler.stopNote(note, onChannel: Self.channel)
+            currentNote = nil
+        }
+
+        try sampler.loadSoundBankInstrument(
+            at: sf2URL,
+            program: UInt8(clamping: program),
+            bankMSB: Self.defaultBankMSB,
+            bankLSB: UInt8(clamping: bank)
+        )
+
+        loadedProgram = program
+        loadedBank = bank
+
+        sendPitchBendRange()
+
+        // Allow audio graph to settle after instrument load — without this delay
+        // the first MIDI note-on after a preset switch produces no sound.
+        try await Task.sleep(for: .milliseconds(20))
+
+        logger.info("Loaded preset bank \(bank) program \(program)")
     }
 
     // MARK: - NotePlayer Protocol
@@ -120,6 +154,15 @@ public final class SoundFontNotePlayer: NotePlayer {
             sampler.sendPitchBend(Self.pitchBendCenter, onChannel: Self.channel)
             currentNote = nil
         }
+    }
+
+    // MARK: - MIDI Helpers
+
+    private func sendPitchBendRange() {
+        sampler.sendController(101, withValue: 0, onChannel: Self.channel)
+        sampler.sendController(100, withValue: 0, onChannel: Self.channel)
+        sampler.sendController(6, withValue: 2, onChannel: Self.channel)
+        sampler.sendController(38, withValue: 0, onChannel: Self.channel)
     }
 
     // MARK: - Static Helpers

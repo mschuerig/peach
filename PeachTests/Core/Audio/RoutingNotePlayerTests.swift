@@ -10,29 +10,38 @@ struct RoutingNotePlayerTests {
     @Test("Routes to sine player when soundSource setting is 'sine'")
     @MainActor func routesToSine() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
         UserDefaults.standard.set("sine", forKey: SettingsKeys.soundSource)
 
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
 
         #expect(sine.playCallCount == 1)
-        #expect(cello.playCallCount == 0)
     }
 
-    // MARK: - Routing to Cello
+    // MARK: - Routing to SF2 Presets
 
-    @Test("Routes to cello player when soundSource setting is 'cello'")
-    @MainActor func routesToCello() async throws {
+    @Test("Routes to SoundFontNotePlayer when soundSource is 'sf2:0:0'")
+    @MainActor func routesToSF2Piano() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
-        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        let sfPlayer = try SoundFontNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: sfPlayer)
+        UserDefaults.standard.set("sf2:0:0", forKey: SettingsKeys.soundSource)
 
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
 
         #expect(sine.playCallCount == 0)
-        #expect(cello.playCallCount == 1)
+    }
+
+    @Test("Routes to SoundFontNotePlayer when soundSource is 'sf2:0:42'")
+    @MainActor func routesToSF2Cello() async throws {
+        let sine = MockNotePlayer()
+        let sfPlayer = try SoundFontNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: sfPlayer)
+        UserDefaults.standard.set("sf2:0:42", forKey: SettingsKeys.soundSource)
+
+        try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+
+        #expect(sine.playCallCount == 0)
     }
 
     // MARK: - Fallback to Sine
@@ -41,11 +50,47 @@ struct RoutingNotePlayerTests {
     @MainActor func fallsBackToSine() async throws {
         let sine = MockNotePlayer()
         let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
-        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        UserDefaults.standard.set("sf2:0:42", forKey: SettingsKeys.soundSource)
 
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
 
         #expect(sine.playCallCount == 1)
+    }
+
+    @Test("Falls back to sine for unknown source tag")
+    @MainActor func fallsBackForUnknownTag() async throws {
+        let sine = MockNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
+        UserDefaults.standard.set("unknown", forKey: SettingsKeys.soundSource)
+
+        try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+
+        #expect(sine.playCallCount == 1)
+    }
+
+    @Test("Falls back to sine for malformed sf2 tag")
+    @MainActor func fallsBackForMalformedTag() async throws {
+        let sine = MockNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
+        UserDefaults.standard.set("sf2:abc", forKey: SettingsKeys.soundSource)
+
+        try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+
+        #expect(sine.playCallCount == 1)
+    }
+
+    // MARK: - Legacy Migration
+
+    @Test("Legacy 'cello' tag routes to SoundFontNotePlayer as program 42")
+    @MainActor func legacyCelloTagRoutes() async throws {
+        let sine = MockNotePlayer()
+        let sfPlayer = try SoundFontNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: sfPlayer)
+        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+
+        try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+
+        #expect(sine.playCallCount == 0)
     }
 
     // MARK: - Setting Change Between Calls
@@ -53,34 +98,31 @@ struct RoutingNotePlayerTests {
     @Test("Setting change between calls routes to new player")
     @MainActor func settingChangeBetweenCalls() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
+        let sfPlayer = try SoundFontNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: sfPlayer)
 
         UserDefaults.standard.set("sine", forKey: SettingsKeys.soundSource)
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
         #expect(sine.playCallCount == 1)
-        #expect(cello.playCallCount == 0)
 
-        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        UserDefaults.standard.set("sf2:0:0", forKey: SettingsKeys.soundSource)
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
-        #expect(sine.playCallCount == 1)
-        #expect(cello.playCallCount == 1)
+        #expect(sine.playCallCount == 1) // still 1, second call went to SF2
     }
 
     @Test("Stops previous player when source changes between calls")
     @MainActor func stopsOldPlayerOnSourceChange() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
+        let sfPlayer = try SoundFontNotePlayer()
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: sfPlayer)
 
         UserDefaults.standard.set("sine", forKey: SettingsKeys.soundSource)
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
         #expect(sine.stopCallCount == 0)
 
-        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        UserDefaults.standard.set("sf2:0:42", forKey: SettingsKeys.soundSource)
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
         #expect(sine.stopCallCount == 1)
-        #expect(cello.stopCallCount == 0)
     }
 
     // MARK: - Stop
@@ -88,27 +130,23 @@ struct RoutingNotePlayerTests {
     @Test("Stop stops the currently active player")
     @MainActor func stopStopsActivePlayer() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
         UserDefaults.standard.set("sine", forKey: SettingsKeys.soundSource)
 
         try await router.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
         try await router.stop()
 
         #expect(sine.stopCallCount == 1)
-        #expect(cello.stopCallCount == 0)
     }
 
     @Test("Stop when no player has been activated does not crash")
     @MainActor func stopWhenNoActivePlayer() async throws {
         let sine = MockNotePlayer()
-        let cello = MockNotePlayer()
-        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: cello)
+        let router = RoutingNotePlayer(sinePlayer: sine, soundFontPlayer: nil)
 
         try await router.stop()
 
         #expect(sine.stopCallCount == 0)
-        #expect(cello.stopCallCount == 0)
     }
 
     // MARK: - Protocol Conformance

@@ -112,6 +112,7 @@
       }
     },
     "Cello" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -240,6 +241,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Info"
+          }
+        }
+      }
+    },
+    "Instrument" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instrument"
           }
         }
       }
