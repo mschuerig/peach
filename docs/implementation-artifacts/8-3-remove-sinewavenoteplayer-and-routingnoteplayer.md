@@ -1,6 +1,6 @@
 # Story 8.3: Remove SineWaveNotePlayer and RoutingNotePlayer
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -70,51 +70,51 @@ So that the audio subsystem has a single code path, fewer moving parts, and no d
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Absorb preset routing logic into SoundFontNotePlayer (AC: #3)
-  - [ ] 1.1 In `SoundFontNotePlayer.play()`, read `UserDefaults` key `SettingsKeys.soundSource` to determine the target preset before playing
-  - [ ] 1.2 Parse `"sf2:{bank}:{program}"` tag; if unparseable or load fails, fall back to default preset (bank 8, program 80 — Sine Wave)
-  - [ ] 1.3 Call `loadPreset(program:bank:)` only when the target differs from the currently loaded preset (existing skip-if-same logic)
-  - [ ] 1.4 Migrate legacy `"cello"` tag handling into `SoundFontNotePlayer` (map to bank 0, program 42)
-  - [ ] 1.5 Add/update tests for the new preset-selection-from-UserDefaults logic
+- [x] Task 1: Absorb preset routing logic into SoundFontNotePlayer (AC: #3)
+  - [x] 1.1 In `SoundFontNotePlayer.play()`, read `UserDefaults` key `SettingsKeys.soundSource` to determine the target preset before playing
+  - [x] 1.2 Parse `"sf2:{bank}:{program}"` tag; if unparseable or load fails, fall back to default preset (bank 8, program 80 — Sine Wave)
+  - [x] 1.3 Call `loadPreset(program:bank:)` only when the target differs from the currently loaded preset (existing skip-if-same logic)
+  - [x] 1.4 Migrate legacy `"cello"` tag handling into `SoundFontNotePlayer` (map to bank 0, program 42)
+  - [x] 1.5 Add/update tests for the new preset-selection-from-UserDefaults logic
 
-- [ ] Task 2: Delete SineWaveNotePlayer (AC: #1, #9)
-  - [ ] 2.1 Delete `Peach/Core/Audio/SineWaveNotePlayer.swift`
-  - [ ] 2.2 Delete `PeachTests/Core/Audio/SineWaveNotePlayerTests.swift`
-  - [ ] 2.3 Delete `PeachTests/Core/Audio/SineWaveNotePlayerPlaybackTests.swift`
-  - [ ] 2.4 Relocate any `FrequencyCalculation` tests from those files into `PeachTests/Core/Audio/FrequencyCalculationTests.swift` (create if needed, or add to existing `SoundFontNotePlayerTests`)
+- [x] Task 2: Delete SineWaveNotePlayer (AC: #1, #9)
+  - [x] 2.1 Delete `Peach/Core/Audio/SineWaveNotePlayer.swift`
+  - [x] 2.2 Delete `PeachTests/Core/Audio/SineWaveNotePlayerTests.swift`
+  - [x] 2.3 Delete `PeachTests/Core/Audio/SineWaveNotePlayerPlaybackTests.swift`
+  - [x] 2.4 Relocate any `FrequencyCalculation` tests from those files into `PeachTests/Core/Audio/FrequencyCalculationTests.swift` (create if needed, or add to existing `SoundFontNotePlayerTests`)
 
-- [ ] Task 3: Delete RoutingNotePlayer (AC: #2, #9)
-  - [ ] 3.1 Delete `Peach/Core/Audio/RoutingNotePlayer.swift`
-  - [ ] 3.2 Delete `PeachTests/Core/Audio/RoutingNotePlayerTests.swift`
+- [x] Task 3: Delete RoutingNotePlayer (AC: #2, #9)
+  - [x] 3.1 Delete `Peach/Core/Audio/RoutingNotePlayer.swift`
+  - [x] 3.2 Delete `PeachTests/Core/Audio/RoutingNotePlayerTests.swift`
 
-- [ ] Task 4: Simplify PeachApp composition root (AC: #7)
-  - [ ] 4.1 Remove `SineWaveNotePlayer` instantiation from `PeachApp.init()`
-  - [ ] 4.2 Remove `RoutingNotePlayer` construction
-  - [ ] 4.3 Pass `SoundFontNotePlayer` directly as `any NotePlayer` to `TrainingSession`
-  - [ ] 4.4 Remove the `SoundFontNotePlayer?` optional pattern — it is now required (if SF2 init fails, app cannot function)
+- [x] Task 4: Simplify PeachApp composition root (AC: #7)
+  - [x] 4.1 Remove `SineWaveNotePlayer` instantiation from `PeachApp.init()`
+  - [x] 4.2 Remove `RoutingNotePlayer` construction
+  - [x] 4.3 Pass `SoundFontNotePlayer` directly as `any NotePlayer` to `TrainingSession`
+  - [x] 4.4 Remove the `SoundFontNotePlayer?` optional pattern — it is now required (if SF2 init fails, app cannot function)
 
-- [ ] Task 5: Update Settings UI and defaults (AC: #4, #5, #6)
-  - [ ] 5.1 Change `SettingsKeys.defaultSoundSource` from `"sine"` to `"sf2:8:80"`
-  - [ ] 5.2 Remove the hardcoded `Text("Sine Wave").tag("sine")` from the instrument picker — the SF2 "Sine Wave" preset appears via `soundFontLibrary.availablePresets`
-  - [ ] 5.3 Update the `.onAppear` migration logic: migrate `"sine"` to `"sf2:8:80"` (in addition to existing `"cello"` → `"sf2:0:42"`)
-  - [ ] 5.4 Update `validatedSoundSource` binding: replace `"sine"` fallback with `SettingsKeys.defaultSoundSource`
-  - [ ] 5.5 Update any related Settings tests
+- [x] Task 5: Update Settings UI and defaults (AC: #4, #5, #6)
+  - [x] 5.1 Change `SettingsKeys.defaultSoundSource` from `"sine"` to `"sf2:8:80"`
+  - [x] 5.2 Remove the hardcoded `Text("Sine Wave").tag("sine")` from the instrument picker — the SF2 "Sine Wave" preset appears via `soundFontLibrary.availablePresets`
+  - [x] 5.3 Update the `.onAppear` migration logic: migrate `"sine"` to `"sf2:8:80"` (in addition to existing `"cello"` → `"sf2:0:42"`)
+  - [x] 5.4 Update `validatedSoundSource` binding: replace `"sine"` fallback with `SettingsKeys.defaultSoundSource`
+  - [x] 5.5 Update any related Settings tests
 
-- [ ] Task 6: Clean up NotePlayer protocol and AudioError (AC: #8)
-  - [ ] 6.1 Change `NotePlayer` protocol from `public` to `internal`
-  - [ ] 6.2 Change `AudioError` enum from `public` to `internal`
-  - [ ] 6.3 Remove doc comments referencing `SineWaveNotePlayer` from the protocol
-  - [ ] 6.4 Remove the `AudioError.renderFailed` and `AudioError.nodeAttachFailed` cases if they are no longer used by any code (they were only used by `SineWaveNotePlayer`)
+- [x] Task 6: Clean up NotePlayer protocol and AudioError (AC: #8)
+  - [x] 6.1 Change `NotePlayer` protocol from `public` to `internal`
+  - [x] 6.2 Change `AudioError` enum from `public` to `internal`
+  - [x] 6.3 Remove doc comments referencing `SineWaveNotePlayer` from the protocol
+  - [x] 6.4 Remove the `AudioError.renderFailed` and `AudioError.nodeAttachFailed` cases if they are no longer used by any code (they were only used by `SineWaveNotePlayer`)
 
-- [ ] Task 7: Update project-context.md (AC: #10)
-  - [ ] 7.1 Remove all references to `SineWaveNotePlayer` and `RoutingNotePlayer`
-  - [ ] 7.2 Describe `SoundFontNotePlayer` as the sole `NotePlayer` implementation
-  - [ ] 7.3 Update `soundSource` tag format: only `"sf2:{bank}:{program}"` (no `"sine"` tag)
-  - [ ] 7.4 Note that `SoundFontNotePlayer` reads the current sound source from UserDefaults on each `play()` call
+- [x] Task 7: Update project-context.md (AC: #10)
+  - [x] 7.1 Remove all references to `SineWaveNotePlayer` and `RoutingNotePlayer`
+  - [x] 7.2 Describe `SoundFontNotePlayer` as the sole `NotePlayer` implementation
+  - [x] 7.3 Update `soundSource` tag format: only `"sf2:{bank}:{program}"` (no `"sine"` tag)
+  - [x] 7.4 Note that `SoundFontNotePlayer` reads the current sound source from UserDefaults on each `play()` call
 
-- [ ] Task 8: Verify full test suite passes (AC: #9)
-  - [ ] 8.1 Run full test suite and confirm zero failures
-  - [ ] 8.2 Confirm no orphaned references to deleted types
+- [x] Task 8: Verify full test suite passes (AC: #9)
+  - [x] 8.1 Run full test suite and confirm zero failures
+  - [x] 8.2 Confirm no orphaned references to deleted types
 
 ## Dev Notes
 
@@ -208,3 +208,46 @@ This is a removal/simplification story. Net line count will decrease significant
 - [Source: docs/implementation-artifacts/8-1-implement-soundfont-noteplayer.md] — Original SoundFontNotePlayer and RoutingNotePlayer implementation
 - [Source: docs/implementation-artifacts/8-2-sf2-preset-discovery-and-instrument-selection.md] — SoundFontLibrary, dynamic preset picker, tag format
 - [Source: docs/project-context.md] — Architecture rules, access level policy, testing conventions
+
+## Dev Agent Record
+
+### Implementation Notes
+
+- Absorbed `RoutingNotePlayer.parseSF2Tag()` into `SoundFontNotePlayer` as a `static` method for testability
+- Changed default preset from Cello (bank 0, program 42) to Sine Wave (bank 8, program 80) in SoundFontNotePlayer init
+- Added UserDefaults soundSource reading at the start of `play()` — reads tag, parses it, and calls `loadPreset` if preset changed; falls back to default on parse failure or load error
+- Relocated all FrequencyCalculation, AudioError, and Reference Pitch tests from `SineWaveNotePlayerTests.swift` to `FrequencyCalculationTests.swift` — no tests lost
+- Removed `AudioError.renderFailed` and `AudioError.nodeAttachFailed` (only used by deleted SineWaveNotePlayer); updated MockNotePlayer default error to `.engineStartFailed`
+- Simplified `PeachApp.init()` from 3 players (SineWaveNotePlayer + SoundFontNotePlayer? + RoutingNotePlayer) to 1 (SoundFontNotePlayer)
+- Settings migration handles "sine" → "sf2:8:80" and "cello" → "sf2:0:42"
+
+### Completion Notes
+
+All 8 tasks completed. All 10 acceptance criteria satisfied. Full test suite passes with zero failures. Net reduction in code: deleted 5 files (~500 lines of production code, ~400 lines of tests). Audio subsystem now has a single code path through SoundFontNotePlayer.
+
+## File List
+
+**Deleted:**
+- Peach/Core/Audio/SineWaveNotePlayer.swift
+- Peach/Core/Audio/RoutingNotePlayer.swift
+- PeachTests/Core/Audio/SineWaveNotePlayerTests.swift
+- PeachTests/Core/Audio/SineWaveNotePlayerPlaybackTests.swift
+- PeachTests/Core/Audio/RoutingNotePlayerTests.swift
+
+**Modified:**
+- Peach/Core/Audio/SoundFontNotePlayer.swift
+- Peach/Core/Audio/NotePlayer.swift
+- Peach/Settings/SettingsScreen.swift
+- Peach/Settings/SettingsKeys.swift
+- Peach/App/PeachApp.swift
+- PeachTests/Core/Audio/SoundFontNotePlayerTests.swift
+- PeachTests/Core/Audio/FrequencyCalculationTests.swift
+- PeachTests/Settings/SettingsTests.swift
+- PeachTests/Training/MockNotePlayer.swift
+- PeachTests/Training/TrainingSessionTests.swift
+- docs/project-context.md
+- docs/implementation-artifacts/sprint-status.yaml
+
+## Change Log
+
+- 2026-02-23: Implemented story 8.3 — Removed SineWaveNotePlayer and RoutingNotePlayer; SoundFontNotePlayer is now the sole NotePlayer implementation with absorbed preset routing logic

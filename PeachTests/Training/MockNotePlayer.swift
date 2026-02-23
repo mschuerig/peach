@@ -13,7 +13,7 @@ final class MockNotePlayer: NotePlayer {
     var lastAmplitude: Double?
     var playHistory: [(frequency: Double, duration: TimeInterval, amplitude: Double)] = []
     var shouldThrowError = false
-    var errorToThrow: AudioError = .renderFailed("Mock error")
+    var errorToThrow: AudioError = .engineStartFailed("Mock error")
 
     // MARK: - Test Control (Fully Synchronous)
 

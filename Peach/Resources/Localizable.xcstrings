@@ -572,6 +572,7 @@
       }
     },
     "Sine Wave" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

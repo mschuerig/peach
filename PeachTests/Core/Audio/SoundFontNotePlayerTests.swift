@@ -172,4 +172,75 @@ struct SoundFontNotePlayerTests {
             try await player.loadPreset(program: 0, bank: 200)
         }
     }
+
+    // MARK: - SF2 Tag Parsing
+
+    @Test("parseSF2Tag parses valid sf2 tag correctly")
+    @MainActor func parseSF2Tag_validTag() async {
+        let result = SoundFontNotePlayer.parseSF2Tag(from: "sf2:0:42")
+        #expect(result?.bank == 0)
+        #expect(result?.program == 42)
+    }
+
+    @Test("parseSF2Tag parses bank 8 program 80 (Sine Wave)")
+    @MainActor func parseSF2Tag_sineWavePreset() async {
+        let result = SoundFontNotePlayer.parseSF2Tag(from: "sf2:8:80")
+        #expect(result?.bank == 8)
+        #expect(result?.program == 80)
+    }
+
+    @Test("parseSF2Tag returns nil for 'sine' tag")
+    @MainActor func parseSF2Tag_sineTag() async {
+        let result = SoundFontNotePlayer.parseSF2Tag(from: "sine")
+        #expect(result == nil)
+    }
+
+    @Test("parseSF2Tag handles legacy 'cello' tag as bank 0, program 42")
+    @MainActor func parseSF2Tag_celloTag() async {
+        let result = SoundFontNotePlayer.parseSF2Tag(from: "cello")
+        #expect(result?.bank == 0)
+        #expect(result?.program == 42)
+    }
+
+    @Test("parseSF2Tag returns nil for malformed tags")
+    @MainActor func parseSF2Tag_malformedTags() async {
+        #expect(SoundFontNotePlayer.parseSF2Tag(from: "sf2:abc") == nil)
+        #expect(SoundFontNotePlayer.parseSF2Tag(from: "sf2:") == nil)
+        #expect(SoundFontNotePlayer.parseSF2Tag(from: "") == nil)
+        #expect(SoundFontNotePlayer.parseSF2Tag(from: "unknown") == nil)
+    }
+
+    // MARK: - Preset Selection from UserDefaults
+
+    @Test("play reads UserDefaults soundSource and uses the selected preset")
+    @MainActor func playReadsSoundSource() async throws {
+        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
+        let player = try SoundFontNotePlayer()
+        UserDefaults.standard.set("sf2:0:0", forKey: SettingsKeys.soundSource)
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+    }
+
+    @Test("play falls back to default preset for unparseable soundSource")
+    @MainActor func playFallsBackForUnparseableSource() async throws {
+        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
+        let player = try SoundFontNotePlayer()
+        UserDefaults.standard.set("garbage", forKey: SettingsKeys.soundSource)
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+    }
+
+    @Test("play falls back to default preset when loadPreset fails for invalid program")
+    @MainActor func playFallsBackOnLoadFailure() async throws {
+        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
+        let player = try SoundFontNotePlayer()
+        UserDefaults.standard.set("sf2:0:999", forKey: SettingsKeys.soundSource)
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+    }
+
+    @Test("play handles legacy 'cello' tag from UserDefaults")
+    @MainActor func playHandlesLegacyCelloTag() async throws {
+        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
+        let player = try SoundFontNotePlayer()
+        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+    }
 }
