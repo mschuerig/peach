@@ -38,12 +38,14 @@ struct SettingsScreen: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // Persist migration/fallback so stale tags don't linger in @AppStorage
-            if soundSource == "cello" {
+            // Migrate legacy tags to SF2 format
+            if soundSource == "sine" {
+                soundSource = "sf2:8:80"
+            } else if soundSource == "cello" {
                 soundSource = "sf2:0:42"
             } else if soundSource.hasPrefix("sf2:"),
                       soundFontLibrary.preset(forTag: soundSource) == nil {
-                soundSource = "sine"
+                soundSource = SettingsKeys.defaultSoundSource
             }
         }
         .alert("Reset Failed", isPresented: $showResetError) {
@@ -109,7 +111,6 @@ struct SettingsScreen: View {
     private var instrumentSection: some View {
         Section("Instrument") {
             Picker("Sound Source", selection: validatedSoundSource) {
-                Text("Sine Wave").tag("sine")
                 ForEach(soundFontLibrary.availablePresets, id: \.tag) { preset in
                     Text(preset.name).tag(preset.tag)
                 }
@@ -121,13 +122,16 @@ struct SettingsScreen: View {
         Binding(
             get: {
                 let current = soundSource
-                // Migrate old "cello" tag from story 8-1
+                // Migrate legacy tags
+                if current == "sine" {
+                    return SettingsKeys.defaultSoundSource
+                }
                 if current == "cello" {
                     return "sf2:0:42"
                 }
                 // Validate sf2: tags exist in library
                 if current.hasPrefix("sf2:"), soundFontLibrary.preset(forTag: current) == nil {
-                    return "sine"
+                    return SettingsKeys.defaultSoundSource
                 }
                 return current
             },

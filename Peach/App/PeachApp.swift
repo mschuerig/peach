@@ -20,21 +20,13 @@ struct PeachApp: App {
 
             // Create dependencies
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
-            let sinePlayer = try SineWaveNotePlayer()
 
             // Create SoundFontLibrary — discovers SF2 presets for Settings UI (Story 8.2)
             let soundFontLibrary = SoundFontLibrary()
             _soundFontLibrary = State(wrappedValue: soundFontLibrary)
 
-            // Create SoundFontNotePlayer — graceful fallback to sine-only if SF2 loading fails (Story 8.1)
-            var soundFontPlayer: SoundFontNotePlayer?
-            do {
-                soundFontPlayer = try SoundFontNotePlayer()
-            } catch {
-                Self.logger.warning("SoundFontNotePlayer init failed, continuing with sine-only: \(error)")
-            }
-
-            let notePlayer = RoutingNotePlayer(sinePlayer: sinePlayer, soundFontPlayer: soundFontPlayer)
+            // Create SoundFontNotePlayer — sole NotePlayer implementation (Story 8.3)
+            let notePlayer = try SoundFontNotePlayer()
 
             // Create and populate perceptual profile from existing data (Story 4.1, 5.1)
             let profile = PerceptualProfile()

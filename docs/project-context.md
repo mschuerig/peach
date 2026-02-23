@@ -20,7 +20,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **iOS 26.0** deployment target — use latest APIs freely, no backward compatibility
 - **SwiftUI** — declarative UI with SwiftUI lifecycle; **no UIKit in views** (UIKit only through protocol abstractions like `HapticFeedback`)
 - **SwiftData** — `@Model` for persistence; **only `TrainingDataStore` accesses SwiftData** — no direct `ModelContext` usage elsewhere
-- **AVAudioEngine** — each `NotePlayer` implementation owns its own engine instance; `SineWaveNotePlayer` (sine waves), `SoundFontNotePlayer` (SF2 sampler). `RoutingNotePlayer` selects the active one
+- **AVAudioEngine** — `SoundFontNotePlayer` is the sole `NotePlayer` implementation; owns a single `AVAudioEngine` with `AVAudioUnitSampler` for SF2 playback
 - **Swift Testing** — `@Test`, `@Suite`, `#expect()` for all tests; **never use XCTest** (`XCTAssertEqual`, `XCTestCase`, `setUp/tearDown` are all wrong)
 - **@Observable** — modern observation macro; **never use `ObservableObject`/`@Published`**
 - **@AppStorage** — user preferences; keys centralized in `SettingsKeys.swift`
@@ -73,20 +73,18 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **`ModelContainer` initialized once in `PeachApp.swift`** — passed via SwiftUI environment; new models must be registered in the schema there
 
 **AVAudioEngine:**
-- **Each `NotePlayer` implementation owns its own `AVAudioEngine` instance** — `SineWaveNotePlayer` uses `AVAudioPlayerNode`, `SoundFontNotePlayer` uses `AVAudioUnitSampler`. `RoutingNotePlayer` ensures only one is active at a time
-- **`RoutingNotePlayer`** — wraps `SineWaveNotePlayer` and optional `SoundFontNotePlayer`; reads `SettingsKeys.soundSource` (`"sine"` or `"sf2:{bank}:{program}"`) on each `play()` call to select the active player and load the correct SF2 preset
+- **`SoundFontNotePlayer`** — sole `NotePlayer` implementation; owns one `AVAudioEngine` with `AVAudioUnitSampler`; reads `SettingsKeys.soundSource` from `UserDefaults` on each `play()` call to select the correct SF2 preset via `loadPreset(program:bank:)`
 - **`SF2PresetParser`** — lightweight `enum` with static `parsePresets(from:)` that reads PHDR metadata from an SF2 RIFF file; returns `[SF2Preset]` (name, program, bank); pure function, no state
 - **`SoundFontLibrary`** — `@MainActor` service created once at startup; discovers SF2 files in bundle, parses presets via `SF2PresetParser`, filters unpitched (bank >= 120, program >= 120), sorts alphabetically; injected via `@Environment(\.soundFontLibrary)`. Read-only at runtime
-- **`soundSource` tag format** — `@AppStorage` stores `"sine"` (SineWaveNotePlayer) or `"sf2:{bank}:{program}"` (SoundFontNotePlayer with SF2 bank and MIDI program number, e.g., `"sf2:0:0"` = Grand Piano, `"sf2:0:42"` = Cello, `"sf2:8:4"` = Chorused Tine EP)
+- **`soundSource` tag format** — `@AppStorage` stores `"sf2:{bank}:{program}"` (SF2 bank and MIDI program number, e.g., `"sf2:0:0"` = Grand Piano, `"sf2:0:42"` = Cello, `"sf2:8:80"` = Sine Wave). Default: `"sf2:8:80"`
 - **Protocol boundary: `NotePlayer`** — knows only frequencies (Hz), durations, envelopes; no concept of MIDI notes, comparisons, or training
 - **MIDI-to-Hz conversion** — use existing `FrequencyCalculation.swift`, never reimplement. Includes `midiNoteAndCents(frequency:referencePitch:)` for Hz→MIDI reverse conversion
-- **Audio interruption handling** — `SineWaveNotePlayer` reports interruptions; `TrainingSession` discards current comparison
 
 **State Management:**
 - **`TrainingSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
 - **State transitions are guarded** — preconditions enforced; never skip states
 - **Observer pattern** — `ComparisonObserver` protocol; observers injected as array into `TrainingSession`
-- **Settings read live** — `TrainingSession` reads `@AppStorage` on each comparison, not cached; `RoutingNotePlayer` reads `soundSource` on each `play()` call
+- **Settings read live** — `TrainingSession` reads `@AppStorage` on each comparison, not cached; `SoundFontNotePlayer` reads `soundSource` on each `play()` call
 
 **Composition Root (`PeachApp.swift`):**
 - **All service instantiation happens in `PeachApp.swift`** — this is the single dependency graph source of truth
@@ -114,7 +112,7 @@ Never run only specific test files — always the complete suite.
 
 **Test Organization:**
 - **Mirror source structure** — `PeachTests/Core/Audio/` mirrors `Peach/Core/Audio/`
-- **One test file per source file** — `SineWaveNotePlayer.swift` → `SineWaveNotePlayerTests.swift`
+- **One test file per source file** — `SoundFontNotePlayer.swift` → `SoundFontNotePlayerTests.swift`
 - **Mock files live in test target** — `MockNotePlayer.swift`, `MockTrainingDataStore.swift`, etc.
 - **Fresh mocks per test** — create via factory method in each test; never share mocks across tests (parallel execution)
 
@@ -142,7 +140,7 @@ Never run only specific test files — always the complete suite.
 
 **Project-Specific Naming (non-obvious conventions):**
 - **Protocols:** capability nouns — `NotePlayer`, `NextNoteStrategy` (not `-able`, not `-Protocol` suffix)
-- **Protocol implementations:** descriptive prefix — `SineWaveNotePlayer`, `AdaptiveNoteStrategy`
+- **Protocol implementations:** descriptive prefix — `SoundFontNotePlayer`, `AdaptiveNoteStrategy`
 - **Screens:** `{Name}Screen.swift` — not `{Name}View` or `{Name}ViewController`
 - **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `FeedbackIndicator.swift`
 - **Mocks:** `Mock{Name}.swift` — not `{Name}Mock`, `Fake{Name}`, or `Stub{Name}`
@@ -215,7 +213,7 @@ Never run only specific test files — always the complete suite.
 - `@EnvironmentObject` → use `@Environment` with custom `EnvironmentKey`
 - `import XCTest` → use `import Testing`
 - Combine (`PassthroughSubject`, `sink`) → use `async/await`
-- Third `AVAudioEngine` instance → each `NotePlayer` implementation owns one engine; `RoutingNotePlayer` ensures only one is active
+- Second `AVAudioEngine` instance → `SoundFontNotePlayer` is the sole `NotePlayer` and owns the only engine
 - Direct `ModelContext` queries → go through `TrainingDataStore`
 - Sleep/fixed delays in tests → use `instantPlayback` mocks and `waitForState`
 - `@testable import` to test private methods → test through protocol interfaces
@@ -243,4 +241,4 @@ Never run only specific test files — always the complete suite.
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-02-21
+Last Updated: 2026-02-23

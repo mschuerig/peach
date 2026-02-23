@@ -129,7 +129,7 @@ struct TrainingSessionTests {
     func audioErrorTransitionsToIdle() async throws {
         let (session, mockPlayer, _, _, _) = makeTrainingSession()
         mockPlayer.shouldThrowError = true
-        mockPlayer.errorToThrow = .renderFailed("Test error")
+        mockPlayer.errorToThrow = .engineStartFailed("Test error")
 
         session.startTraining()
         try await waitForState(session, .idle)

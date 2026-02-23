@@ -25,11 +25,13 @@ final class SoundFontNotePlayer: NotePlayer {
     // MARK: - Constants
 
     private static let channel: UInt8 = 0
-    private static let defaultProgram: UInt8 = 42
     private static let defaultBankMSB: UInt8 = 0x79 // kAUSampler_DefaultMelodicBankMSB
-    private static let defaultBankLSB: UInt8 = 0
     private static let pitchBendCenter: UInt16 = 8192
     private static let validFrequencyRange = 20.0...20000.0
+
+    // Default SF2 preset: Sine Wave (bank 8, program 80, tag "sf2:8:80")
+    private static let defaultPresetProgram: Int = 80
+    private static let defaultPresetBank: Int = 8
 
     // MARK: - SF2 URL
 
@@ -45,8 +47,8 @@ final class SoundFontNotePlayer: NotePlayer {
         self.sf2URL = sf2URL
         self.engine = AVAudioEngine()
         self.sampler = AVAudioUnitSampler()
-        self.loadedProgram = Int(Self.defaultProgram)
-        self.loadedBank = 0
+        self.loadedProgram = Self.defaultPresetProgram
+        self.loadedBank = Self.defaultPresetBank
 
         engine.attach(sampler)
         engine.connect(sampler, to: engine.mainMixerNode, format: nil)
@@ -54,14 +56,14 @@ final class SoundFontNotePlayer: NotePlayer {
         try engine.start()
         try sampler.loadSoundBankInstrument(
             at: sf2URL,
-            program: Self.defaultProgram,
+            program: UInt8(Self.defaultPresetProgram),
             bankMSB: Self.defaultBankMSB,
-            bankLSB: Self.defaultBankLSB
+            bankLSB: UInt8(Self.defaultPresetBank)
         )
 
         sendPitchBendRange()
 
-        logger.info("SoundFontNotePlayer initialized with \(sf2Name).sf2, program \(Self.defaultProgram)")
+        logger.info("SoundFontNotePlayer initialized with \(sf2Name).sf2, program \(Self.defaultPresetProgram)")
     }
 
     // MARK: - Preset Switching
@@ -102,6 +104,20 @@ final class SoundFontNotePlayer: NotePlayer {
     // MARK: - NotePlayer Protocol
 
     func play(frequency: Double, duration: TimeInterval, amplitude: Double) async throws {
+        // Select preset from UserDefaults sound source setting
+        let source = UserDefaults.standard.string(forKey: SettingsKeys.soundSource)
+            ?? SettingsKeys.defaultSoundSource
+
+        if let (bank, program) = Self.parseSF2Tag(from: source) {
+            do {
+                try await loadPreset(program: program, bank: bank)
+            } catch {
+                try await loadPreset(program: Self.defaultPresetProgram, bank: Self.defaultPresetBank)
+            }
+        } else {
+            try await loadPreset(program: Self.defaultPresetProgram, bank: Self.defaultPresetBank)
+        }
+
         // Validate inputs
         guard Self.validFrequencyRange.contains(frequency) else {
             throw AudioError.invalidFrequency(
@@ -172,6 +188,17 @@ final class SoundFontNotePlayer: NotePlayer {
     }
 
     // MARK: - Static Helpers
+
+    nonisolated static func parseSF2Tag(from source: String) -> (bank: Int, program: Int)? {
+        // Migrate legacy "cello" tag from story 8-1
+        if source == "cello" { return (bank: 0, program: 42) }
+        guard source.hasPrefix("sf2:") else { return nil }
+        let parts = source.dropFirst(4).split(separator: ":")
+        guard parts.count == 2,
+              let bank = Int(parts[0]),
+              let program = Int(parts[1]) else { return nil }
+        return (bank: bank, program: program)
+    }
 
     nonisolated static func pitchBendValue(forCents cents: Double) -> UInt16 {
         let raw = Int(8192.0 + cents * 8192.0 / 200.0)
