@@ -112,4 +112,40 @@ struct SoundFontNotePlayerTests {
         let velocity = SoundFontNotePlayer.midiVelocity(forAmplitude: 0.0)
         #expect(velocity == 1)
     }
+
+    // MARK: - Preset Switching
+
+    @Test("loadPreset to program 0 (piano) succeeds")
+    @MainActor func loadPresetPiano() async throws {
+        let player = try SoundFontNotePlayer()
+        try await player.loadPreset(program: 0)
+    }
+
+    @Test("loadPreset to program 42 (cello) succeeds")
+    @MainActor func loadPresetCello() async throws {
+        let player = try SoundFontNotePlayer()
+        // Player starts with program 42, so load something else first, then back
+        try await player.loadPreset(program: 0)
+        try await player.loadPreset(program: 42)
+    }
+
+    @Test("loadPreset with bank parameter loads bank variant")
+    @MainActor func loadPresetBankVariant() async throws {
+        let player = try SoundFontNotePlayer()
+        try await player.loadPreset(program: 4, bank: 8) // Chorused Tine EP
+    }
+
+    @Test("Loading same preset twice is a no-op (no error)")
+    @MainActor func loadSamePresetTwice() async throws {
+        let player = try SoundFontNotePlayer()
+        try await player.loadPreset(program: 0)
+        try await player.loadPreset(program: 0) // should be skipped, no error
+    }
+
+    @Test("Play works after preset switch")
+    @MainActor func playAfterPresetSwitch() async throws {
+        let player = try SoundFontNotePlayer()
+        try await player.loadPreset(program: 0) // switch to piano
+        try await player.play(frequency: 440.0, duration: 0.1, amplitude: 0.5)
+    }
 }

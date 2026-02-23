@@ -1,6 +1,6 @@
 # Story 8.2: SF2 Preset Discovery and Instrument Selection
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -65,52 +65,52 @@ So that I can train pitch discrimination with the timbre that matches my instrum
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement SF2 PHDR metadata parser (AC: #1, #2, #8)
-  - [ ] 1.1 Create `Peach/Core/Audio/SF2PresetParser.swift` — a lightweight struct that reads only the PHDR chunk from an SF2 file
-  - [ ] 1.2 Parse the RIFF/sfbk container: locate the `pdta` sub-chunk, then locate the `phdr` sub-chunk within it
-  - [ ] 1.3 Read 38-byte PHDR records: extract `achPresetName` (20 ASCII bytes, null-padded), `wPreset` (UInt16, program number), `wBank` (UInt16, bank number)
-  - [ ] 1.4 Exclude the terminal EOP (End Of Presets) sentinel record (always the last 38-byte record)
-  - [ ] 1.5 Return `[SF2Preset]` where `SF2Preset` is a value type with `name: String`, `program: Int`, `bank: Int`
-  - [ ] 1.6 Create `PeachTests/Core/Audio/SF2PresetParserTests.swift` — test with the bundled GeneralUser GS SF2
+- [x] Task 1: Implement SF2 PHDR metadata parser (AC: #1, #2, #8)
+  - [x] 1.1 Create `Peach/Core/Audio/SF2PresetParser.swift` — a lightweight struct that reads only the PHDR chunk from an SF2 file
+  - [x] 1.2 Parse the RIFF/sfbk container: locate the `pdta` sub-chunk, then locate the `phdr` sub-chunk within it
+  - [x] 1.3 Read 38-byte PHDR records: extract `achPresetName` (20 ASCII bytes, null-padded), `wPreset` (UInt16, program number), `wBank` (UInt16, bank number)
+  - [x] 1.4 Exclude the terminal EOP (End Of Presets) sentinel record (always the last 38-byte record)
+  - [x] 1.5 Return `[SF2Preset]` where `SF2Preset` is a value type with `name: String`, `program: Int`, `bank: Int`
+  - [x] 1.6 Create `PeachTests/Core/Audio/SF2PresetParserTests.swift` — test with the bundled GeneralUser GS SF2
 
-- [ ] Task 2: Implement SoundFontLibrary (AC: #1, #7, #8)
-  - [ ] 2.1 Create `Peach/Core/Audio/SoundFontLibrary.swift` — discovers SF2 files and enumerates their presets
-  - [ ] 2.2 Scan app bundle for `.sf2` files on init
-  - [ ] 2.3 Parse each SF2 via `SF2PresetParser`, cache the preset list
-  - [ ] 2.4 Filter out drum kits (bank MSB 128 / bank number >= 128)
-  - [ ] 2.5 Sort presets by program number for display
-  - [ ] 2.6 Expose `var availablePresets: [SF2Preset]` for the Settings UI
-  - [ ] 2.7 Expose `func preset(forTag tag: String) -> SF2Preset?` to resolve a setting tag like `"sf2:42"` back to a preset
-  - [ ] 2.8 Create `PeachTests/Core/Audio/SoundFontLibraryTests.swift`
+- [x] Task 2: Implement SoundFontLibrary (AC: #1, #7, #8)
+  - [x] 2.1 Create `Peach/Core/Audio/SoundFontLibrary.swift` — discovers SF2 files and enumerates their presets
+  - [x] 2.2 Scan app bundle for `.sf2` files on init
+  - [x] 2.3 Parse each SF2 via `SF2PresetParser`, cache the preset list
+  - [x] 2.4 Filter out drum kits (bank MSB 128 / bank number >= 128)
+  - [x] 2.5 Sort presets by program number for display
+  - [x] 2.6 Expose `var availablePresets: [SF2Preset]` for the Settings UI
+  - [x] 2.7 Expose `func preset(forTag tag: String) -> SF2Preset?` to resolve a setting tag like `"sf2:42"` back to a preset
+  - [x] 2.8 Create `PeachTests/Core/Audio/SoundFontLibraryTests.swift`
 
-- [ ] Task 3: Generalize SoundFontNotePlayer for configurable presets (AC: #5, #8)
-  - [ ] 3.1 Add `func loadPreset(program: Int, bankMSB: Int, bankLSB: Int) throws` to `SoundFontNotePlayer`
-  - [ ] 3.2 After loading a new preset, re-send RPN pitch bend range messages (preset change may reset sampler state)
-  - [ ] 3.3 Track the currently loaded preset to avoid redundant reloads on consecutive `play()` calls with the same preset
-  - [ ] 3.4 Update tests to cover preset switching
+- [x] Task 3: Generalize SoundFontNotePlayer for configurable presets (AC: #5, #8)
+  - [x] 3.1 Add `func loadPreset(program: Int, bankMSB: Int, bankLSB: Int) throws` to `SoundFontNotePlayer`
+  - [x] 3.2 After loading a new preset, re-send RPN pitch bend range messages (preset change may reset sampler state)
+  - [x] 3.3 Track the currently loaded preset to avoid redundant reloads on consecutive `play()` calls with the same preset
+  - [x] 3.4 Update tests to cover preset switching
 
-- [ ] Task 4: Update RoutingNotePlayer for dynamic preset tags (AC: #6, #8)
-  - [ ] 4.1 Replace hardcoded `"cello"` routing with `"sf2:{program}"` pattern parsing
-  - [ ] 4.2 On `play()`, if setting starts with `"sf2:"` — parse program number, call `soundFontPlayer.loadPreset()` if changed, then delegate `play()`
-  - [ ] 4.3 Update `RoutingNotePlayerTests` for new tag format
+- [x] Task 4: Update RoutingNotePlayer for dynamic preset tags (AC: #6, #8)
+  - [x] 4.1 Replace hardcoded `"cello"` routing with `"sf2:{program}"` pattern parsing
+  - [x] 4.2 On `play()`, if setting starts with `"sf2:"` — parse program number, call `soundFontPlayer.loadPreset()` if changed, then delegate `play()`
+  - [x] 4.3 Update `RoutingNotePlayerTests` for new tag format
 
-- [ ] Task 5: Update Settings UI with dynamic instrument list (AC: #3, #4, #7)
-  - [ ] 5.1 Inject `SoundFontLibrary` into `SettingsScreen` via SwiftUI `@Environment`
-  - [ ] 5.2 Replace the static "Sine Wave" / "Cello" picker with a dynamic list: "Sine Wave" first, then all presets from `SoundFontLibrary.availablePresets`
-  - [ ] 5.3 Each preset option tagged as `"sf2:{program}"` (e.g., `"sf2:0"`, `"sf2:42"`)
-  - [ ] 5.4 Handle fallback: if stored setting tag doesn't match any available preset, reset to `"sine"`
-  - [ ] 5.5 Add localized section header for the instrument list (English + German)
-  - [ ] 5.6 Migrate the old `"cello"` setting value to `"sf2:42"` for users who set it in story 8-1
+- [x] Task 5: Update Settings UI with dynamic instrument list (AC: #3, #4, #7)
+  - [x] 5.1 Inject `SoundFontLibrary` into `SettingsScreen` via SwiftUI `@Environment`
+  - [x] 5.2 Replace the static "Sine Wave" / "Cello" picker with a dynamic list: "Sine Wave" first, then all presets from `SoundFontLibrary.availablePresets`
+  - [x] 5.3 Each preset option tagged as `"sf2:{program}"` (e.g., `"sf2:0"`, `"sf2:42"`)
+  - [x] 5.4 Handle fallback: if stored setting tag doesn't match any available preset, reset to `"sine"`
+  - [x] 5.5 Add localized section header for the instrument list (English + German)
+  - [x] 5.6 Migrate the old `"cello"` setting value to `"sf2:42"` for users who set it in story 8-1
 
-- [ ] Task 6: Wire SoundFontLibrary in PeachApp.swift (AC: #1)
-  - [ ] 6.1 Create `SoundFontLibrary` in `PeachApp.swift` init
-  - [ ] 6.2 Create `EnvironmentKey` for `SoundFontLibrary` and inject via `.environment()`
-  - [ ] 6.3 Pass `SoundFontLibrary` reference to `RoutingNotePlayer` if needed for preset resolution
+- [x] Task 6: Wire SoundFontLibrary in PeachApp.swift (AC: #1)
+  - [x] 6.1 Create `SoundFontLibrary` in `PeachApp.swift` init
+  - [x] 6.2 Create `EnvironmentKey` for `SoundFontLibrary` and inject via `.environment()`
+  - [x] 6.3 Pass `SoundFontLibrary` reference to `RoutingNotePlayer` if needed for preset resolution
 
-- [ ] Task 7: Update project-context.md (housekeeping)
-  - [ ] 7.1 Add `SF2PresetParser`, `SoundFontLibrary` to project structure
-  - [ ] 7.2 Document `soundSource` tag format: `"sine"` or `"sf2:{program}"`
-  - [ ] 7.3 Note that `SoundFontLibrary` is read-only at runtime — preset list computed once at startup
+- [x] Task 7: Update project-context.md (housekeeping)
+  - [x] 7.1 Add `SF2PresetParser`, `SoundFontLibrary` to project structure
+  - [x] 7.2 Document `soundSource` tag format: `"sine"` or `"sf2:{program}"`
+  - [x] 7.3 Note that `SoundFontLibrary` is read-only at runtime — preset list computed once at startup
 
 ## Dev Notes
 
@@ -256,14 +256,49 @@ This story builds directly on story 8-1. The SF2 file is already bundled; the PH
 - [Source: docs/project-context.md] — Environment injection pattern, @MainActor requirements, testing rules
 - [Source: docs/implementation-artifacts/8-1-implement-soundfont-noteplayer.md] — Prerequisite story: SoundFontNotePlayer, RoutingNotePlayer, FrequencyCalculation extensions
 
+## Change Log
+
+- 2026-02-23: Implemented story 8.2 — SF2 preset discovery and dynamic instrument selection
+- 2026-02-23: Code review fixes — (1) fixed first-note-silent bug after preset switch by adding 20ms settle delay in async `loadPreset`; (2) changed tag format to `"sf2:{bank}:{program}"` for unique preset identification across banks; (3) filtered unpitched presets (bank >= 120, program >= 120); (4) sorted presets alphabetically by name
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+No debug issues encountered. All tasks implemented cleanly with TDD.
+
 ### Completion Notes List
 
+- **Task 1**: Created `SF2PresetParser` — lightweight RIFF/sfbk binary parser that reads PHDR chunk, extracts 38-byte preset records, excludes EOP sentinel, cleans null-padded names. 9 tests.
+- **Task 2**: Created `SoundFontLibrary` — discovers SF2 in bundle, parses via `SF2PresetParser`, filters unpitched (bank >= 120 and program >= 120), sorts alphabetically, exposes `preset(forTag:)` for tag resolution. EnvironmentKey defined alongside. 13 tests.
+- **Task 3**: Added `loadPreset(program:bank:)` (async) to `SoundFontNotePlayer` — reuses same engine/sampler, re-sends RPN pitch bend range after load, tracks loaded preset to skip redundant reloads. 20ms settle delay after `loadSoundBankInstrument()` fixes first-note-silent bug. 5 new tests.
+- **Task 4**: Updated `RoutingNotePlayer` to parse `"sf2:{bank}:{program}"` tags, call `loadPreset()` before delegating play. Legacy `"cello"` tag migrated to bank 0 program 42. Updated from `(any NotePlayer)?` to `SoundFontNotePlayer?` for `loadPreset()` access. 12 tests.
+- **Task 5**: Settings UI now shows dynamic instrument list from `SoundFontLibrary.availablePresets`. "Instrument" section added with "Sine Wave" first, then all pitched presets alphabetically. Validated binding handles fallback (stale sf2: tag → sine) and migration (old "cello" → "sf2:0:42"). Localization added for "Instrument" (EN + DE).
+- **Task 6**: `SoundFontLibrary` created in `PeachApp.swift` init and injected via `.environment(\.soundFontLibrary)`.
+- **Task 7**: `project-context.md` updated with `SF2PresetParser`, `SoundFontLibrary`, `soundSource` tag format documentation.
+
 ### File List
+
+New files:
+- Peach/Core/Audio/SF2PresetParser.swift
+- Peach/Core/Audio/SoundFontLibrary.swift
+- PeachTests/Core/Audio/SF2PresetParserTests.swift
+- PeachTests/Core/Audio/SoundFontLibraryTests.swift
+
+Modified files:
+- Peach/Core/Audio/SoundFontNotePlayer.swift
+- Peach/Core/Audio/RoutingNotePlayer.swift
+- Peach/Settings/SettingsScreen.swift
+- Peach/App/PeachApp.swift
+- Peach/Resources/Localizable.xcstrings
+- docs/project-context.md
+- docs/implementation-artifacts/sprint-status.yaml
+- docs/implementation-artifacts/8-2-sf2-preset-discovery-and-instrument-selection.md
+
+Modified test files:
+- PeachTests/Core/Audio/SoundFontNotePlayerTests.swift
+- PeachTests/Core/Audio/RoutingNotePlayerTests.swift

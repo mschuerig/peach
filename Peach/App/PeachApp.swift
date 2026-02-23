@@ -8,6 +8,7 @@ struct PeachApp: App {
     @State private var trainingSession: TrainingSession
     @State private var profile: PerceptualProfile
     @State private var trendAnalyzer: TrendAnalyzer
+    @State private var soundFontLibrary: SoundFontLibrary
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
@@ -20,6 +21,10 @@ struct PeachApp: App {
             // Create dependencies
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
             let sinePlayer = try SineWaveNotePlayer()
+
+            // Create SoundFontLibrary — discovers SF2 presets for Settings UI (Story 8.2)
+            let soundFontLibrary = SoundFontLibrary()
+            _soundFontLibrary = State(wrappedValue: soundFontLibrary)
 
             // Create SoundFontNotePlayer — graceful fallback to sine-only if SF2 loading fails (Story 8.1)
             var soundFontPlayer: SoundFontNotePlayer?
@@ -75,6 +80,7 @@ struct PeachApp: App {
                 .environment(\.trainingSession, trainingSession)
                 .environment(\.perceptualProfile, profile)
                 .environment(\.trendAnalyzer, trendAnalyzer)
+                .environment(\.soundFontLibrary, soundFontLibrary)
                 .modelContainer(modelContainer)
         }
     }

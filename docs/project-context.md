@@ -74,7 +74,10 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **AVAudioEngine:**
 - **Each `NotePlayer` implementation owns its own `AVAudioEngine` instance** — `SineWaveNotePlayer` uses `AVAudioPlayerNode`, `SoundFontNotePlayer` uses `AVAudioUnitSampler`. `RoutingNotePlayer` ensures only one is active at a time
-- **`RoutingNotePlayer`** — wraps `SineWaveNotePlayer` and optional `SoundFontNotePlayer`; reads `SettingsKeys.soundSource` (`"sine"` or `"cello"`) on each `play()` call to select the active player
+- **`RoutingNotePlayer`** — wraps `SineWaveNotePlayer` and optional `SoundFontNotePlayer`; reads `SettingsKeys.soundSource` (`"sine"` or `"sf2:{bank}:{program}"`) on each `play()` call to select the active player and load the correct SF2 preset
+- **`SF2PresetParser`** — lightweight `enum` with static `parsePresets(from:)` that reads PHDR metadata from an SF2 RIFF file; returns `[SF2Preset]` (name, program, bank); pure function, no state
+- **`SoundFontLibrary`** — `@MainActor` service created once at startup; discovers SF2 files in bundle, parses presets via `SF2PresetParser`, filters unpitched (bank >= 120, program >= 120), sorts alphabetically; injected via `@Environment(\.soundFontLibrary)`. Read-only at runtime
+- **`soundSource` tag format** — `@AppStorage` stores `"sine"` (SineWaveNotePlayer) or `"sf2:{bank}:{program}"` (SoundFontNotePlayer with SF2 bank and MIDI program number, e.g., `"sf2:0:0"` = Grand Piano, `"sf2:0:42"` = Cello, `"sf2:8:4"` = Chorused Tine EP)
 - **Protocol boundary: `NotePlayer`** — knows only frequencies (Hz), durations, envelopes; no concept of MIDI notes, comparisons, or training
 - **MIDI-to-Hz conversion** — use existing `FrequencyCalculation.swift`, never reimplement. Includes `midiNoteAndCents(frequency:referencePitch:)` for Hz→MIDI reverse conversion
 - **Audio interruption handling** — `SineWaveNotePlayer` reports interruptions; `TrainingSession` discards current comparison

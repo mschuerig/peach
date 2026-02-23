@@ -22,6 +22,7 @@ struct SettingsScreen: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.trainingSession) private var trainingSession
+    @Environment(\.soundFontLibrary) private var soundFontLibrary
 
     @State private var showResetConfirmation = false
     @State private var showResetError = false
@@ -31,6 +32,7 @@ struct SettingsScreen: View {
             algorithmSection
             noteRangeSection
             audioSection
+            instrumentSection
             dataSection
         }
         .navigationTitle("Settings")
@@ -92,11 +94,38 @@ struct SettingsScreen: View {
                 in: 380...500,
                 step: 1
             )
-            Picker("Sound Source", selection: $soundSource) {
+        }
+    }
+
+    private var instrumentSection: some View {
+        Section("Instrument") {
+            Picker("Sound Source", selection: validatedSoundSource) {
                 Text("Sine Wave").tag("sine")
-                Text("Cello").tag("cello")
+                ForEach(soundFontLibrary.availablePresets, id: \.tag) { preset in
+                    Text(preset.name).tag(preset.tag)
+                }
             }
         }
+    }
+
+    private var validatedSoundSource: Binding<String> {
+        Binding(
+            get: {
+                let current = soundSource
+                // Migrate old "cello" tag from story 8-1
+                if current == "cello" {
+                    return "sf2:0:42"
+                }
+                // Validate sf2: tags exist in library
+                if current.hasPrefix("sf2:"), soundFontLibrary.preset(forTag: current) == nil {
+                    return "sine"
+                }
+                return current
+            },
+            set: { newValue in
+                soundSource = newValue
+            }
+        )
     }
 
     private var dataSection: some View {
