@@ -1,38 +1,51 @@
 #!/bin/bash
 #
-# download-sf2.sh — Download and cache the GeneralUser GS SF2 SoundFont for the Peach build.
+# download-sf2.sh — Download the GeneralUser GS SF2 SoundFont for Peach.
 #
-# This script is invoked as an Xcode Run Script Build Phase. It:
-#   1. Reads download configuration from tools/sf2-sources.json
-#   2. Checks for a cached SF2 file at ~/.cache/peach/
-#   3. Downloads the SF2 archive from the configured URL if needed
-#   4. Extracts and verifies the SF2 against the expected SHA-256 checksum
-#   5. Copies the verified SF2 into the app bundle's Resources directory
+# Run this script once before your first build:
+#   ./tools/download-sf2.sh
 #
-# Exit codes: non-zero fails the Xcode build.
-# Dependencies: curl, shasum, unzip, python3 (all stock macOS)
+# The SF2 file is placed at .sf2-cache/GeneralUser-GS.sf2 in the project root.
+# Xcode includes this file in the app bundle via Copy Bundle Resources.
+# If the file is missing, the Xcode build will fail with a "file not found" error.
+#
+# Dependencies: curl, shasum (stock macOS)
 
 set -euo pipefail
 
 # --- Configuration -----------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_FILE="${SCRIPT_DIR}/sf2-sources.json"
-CACHE_DIR="${HOME}/.cache/peach"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CONFIG_FILE="${SCRIPT_DIR}/sf2-sources.conf"
+CACHE_DIR="${PROJECT_ROOT}/.sf2-cache"
 
 if [ ! -f "${CONFIG_FILE}" ]; then
     echo "error: SF2 config file not found: ${CONFIG_FILE}" >&2
-    echo "note: Ensure tools/sf2-sources.json exists in the project root." >&2
+    echo "note: Ensure tools/sf2-sources.conf exists in the project." >&2
     exit 1
 fi
 
-# Parse JSON config using python3 (stock macOS)
-DOWNLOAD_URL=$(/usr/bin/python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c['url'])" "${CONFIG_FILE}")
-ARCHIVE_PATH=$(/usr/bin/python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c['archive_path'])" "${CONFIG_FILE}")
-SF2_FILENAME=$(/usr/bin/python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c['filename'])" "${CONFIG_FILE}")
-EXPECTED_SHA256=$(/usr/bin/python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print(c['sha256'])" "${CONFIG_FILE}")
+# Parse key=value config (ignoring comments and blank lines)
+DOWNLOAD_URL=$(grep '^url=' "${CONFIG_FILE}" | cut -d'=' -f2-)
+SF2_FILENAME=$(grep '^filename=' "${CONFIG_FILE}" | cut -d'=' -f2-)
+EXPECTED_SHA256=$(grep '^sha256=' "${CONFIG_FILE}" | cut -d'=' -f2-)
+
+if [ -z "${DOWNLOAD_URL}" ] || [ -z "${SF2_FILENAME}" ] || [ -z "${EXPECTED_SHA256}" ]; then
+    echo "error: Missing required fields in ${CONFIG_FILE}" >&2
+    echo "note: Required fields: url, filename, sha256" >&2
+    exit 1
+fi
 
 CACHED_SF2="${CACHE_DIR}/${SF2_FILENAME}"
+TEMP_FILE="${CACHE_DIR}/${SF2_FILENAME}.download"
+
+# --- Cleanup trap ------------------------------------------------------------
+
+cleanup() {
+    rm -f "${TEMP_FILE}"
+}
+trap cleanup EXIT
 
 # --- Helper functions --------------------------------------------------------
 
@@ -50,49 +63,25 @@ verify_checksum() {
     fi
 }
 
-download_and_extract() {
-    local temp_zip="${CACHE_DIR}/${SF2_FILENAME}.download.zip"
-    local temp_extract="${CACHE_DIR}/extract_tmp"
-
-    # Clean up any previous partial downloads
-    rm -f "${temp_zip}"
-    rm -rf "${temp_extract}"
-
-    echo "Downloading SF2 archive..."
-    if ! curl -L -f --retry 3 --silent --show-error -o "${temp_zip}" "${DOWNLOAD_URL}"; then
-        rm -f "${temp_zip}"
-        echo "error: Download failed. Check your network connection or manually place the file at ${CACHED_SF2}" >&2
-        echo "note: Download URL: ${DOWNLOAD_URL}" >&2
+download_sf2() {
+    echo "Downloading ${SF2_FILENAME}..."
+    if ! curl -L -f --retry 3 --silent --show-error -o "${TEMP_FILE}" "${DOWNLOAD_URL}"; then
+        echo "error: Download failed. Check your network connection." >&2
+        echo "note: URL: ${DOWNLOAD_URL}" >&2
+        echo "note: You can manually place the file at ${CACHED_SF2}" >&2
         exit 1
     fi
 
-    # Verify we got an actual zip, not an HTML error page
-    if file "${temp_zip}" | grep -q "HTML"; then
-        rm -f "${temp_zip}"
-        echo "error: Download returned an HTML page instead of a ZIP archive." >&2
-        echo "note: The download URL may have changed. Check tools/sf2-sources.json." >&2
-        echo "note: You can manually download and place the file at ${CACHED_SF2}" >&2
+    # Verify download is not an HTML error page
+    if file "${TEMP_FILE}" | grep -qi "HTML"; then
+        rm -f "${TEMP_FILE}"
+        echo "error: Download returned an HTML page instead of an SF2 file." >&2
+        echo "note: The download URL may have changed. Check tools/sf2-sources.conf." >&2
         exit 1
     fi
 
-    # Extract the SF2 from the archive
-    echo "Extracting ${ARCHIVE_PATH}..."
-    mkdir -p "${temp_extract}"
-    if ! unzip -o -q "${temp_zip}" "${ARCHIVE_PATH}" -d "${temp_extract}"; then
-        rm -f "${temp_zip}"
-        rm -rf "${temp_extract}"
-        echo "error: Failed to extract ${ARCHIVE_PATH} from downloaded archive." >&2
-        exit 1
-    fi
-
-    # Move extracted SF2 to cache location
-    mv "${temp_extract}/${ARCHIVE_PATH}" "${CACHED_SF2}"
-
-    # Clean up temp files
-    rm -f "${temp_zip}"
-    rm -rf "${temp_extract}"
-
-    echo "Download and extraction complete."
+    mv "${TEMP_FILE}" "${CACHED_SF2}"
+    echo "Download complete."
 }
 
 # --- Main --------------------------------------------------------------------
@@ -102,42 +91,23 @@ mkdir -p "${CACHE_DIR}"
 # Check if cached file exists and has correct checksum
 if [ -f "${CACHED_SF2}" ]; then
     if verify_checksum "${CACHED_SF2}"; then
-        echo "Using cached SF2: ${CACHED_SF2}"
+        echo "SF2 file is up to date: ${CACHED_SF2}"
+        exit 0
     else
         echo "Cached file has incorrect checksum. Re-downloading..."
         rm -f "${CACHED_SF2}"
-        download_and_extract
-
-        if ! verify_checksum "${CACHED_SF2}"; then
-            rm -f "${CACHED_SF2}"
-            echo "error: Downloaded file still has incorrect checksum after re-download." >&2
-            echo "note: The expected checksum in tools/sf2-sources.json may need updating." >&2
-            echo "note: You can manually place the correct file at ${CACHED_SF2}" >&2
-            exit 1
-        fi
     fi
 else
     echo "No cached SF2 found. Downloading..."
-    download_and_extract
-
-    if ! verify_checksum "${CACHED_SF2}"; then
-        rm -f "${CACHED_SF2}"
-        echo "error: Downloaded file has incorrect checksum." >&2
-        echo "note: The expected checksum in tools/sf2-sources.json may need updating." >&2
-        echo "note: You can manually place the correct file at ${CACHED_SF2}" >&2
-        exit 1
-    fi
 fi
 
-# Copy to build output (Xcode environment variables)
-if [ -n "${BUILT_PRODUCTS_DIR:-}" ] && [ -n "${UNLOCALIZED_RESOURCES_FOLDER_PATH:-}" ]; then
-    DEST_DIR="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
-    mkdir -p "${DEST_DIR}"
-    cp "${CACHED_SF2}" "${DEST_DIR}/${SF2_FILENAME}"
-    echo "Copied SF2 to app bundle: ${DEST_DIR}/${SF2_FILENAME}"
-else
-    # Running outside Xcode (e.g., manual invocation)
-    echo "note: BUILT_PRODUCTS_DIR not set — skipping copy to app bundle (not running in Xcode build)."
+download_sf2
+
+if ! verify_checksum "${CACHED_SF2}"; then
+    rm -f "${CACHED_SF2}"
+    echo "error: Downloaded file has incorrect checksum." >&2
+    echo "note: The expected checksum in tools/sf2-sources.conf may need updating." >&2
+    exit 1
 fi
 
-echo "SF2 setup complete."
+echo "SF2 setup complete: ${CACHED_SF2}"
