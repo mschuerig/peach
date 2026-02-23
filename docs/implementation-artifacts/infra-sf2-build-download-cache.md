@@ -1,6 +1,6 @@
 # Story: SF2 Sample Download Caching in Build Process
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -181,9 +181,14 @@ Recent commits show the project is in a post-MVP polish phase — bug fixes, hot
 - [Source: docs/project-context.md#technology-stack] — Zero third-party dependencies constraint
 - [Source: .gitignore] — Current gitignore is minimal, needs SF2 exclusion entries
 
+## Follow-ups
+
+- [ ] Add attribution for GeneralUser GS (S. Christian Collins) to the app's Info screen or NOTICE file — required by the SoundFont's license. Should be addressed when the SoundFontNotePlayer story ships and the SF2 is actually bundled with the app.
+
 ## Change Log
 
 - 2026-02-23: Implemented SF2 build download cache — all 5 tasks completed, all ACs satisfied
+- 2026-02-23: Code review fixes — restored ENABLE_USER_SCRIPT_SANDBOXING (removed Run Script phase, SF2 added as Xcode resource reference at .sf2-cache/); switched from Google Drive ZIP to commit-pinned GitHub raw URL (v2.0.3); replaced JSON+python3 config with key=value+grep; added trap cleanup handler; added README build instructions; tracked GeneralUser GS attribution as follow-up
 
 ## Dev Agent Record
 

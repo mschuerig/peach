@@ -5,8 +5,9 @@ xcuserdata/
 build/
 DerivedData/
 
-# SF2 SoundFont files (downloaded at build time by tools/download-sf2.sh)
+# SF2 SoundFont cache (downloaded manually via tools/download-sf2.sh)
 *.sf2
+.sf2-cache/
 
 # macOS
 .DS_Store
