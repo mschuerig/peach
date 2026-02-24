@@ -120,4 +120,4 @@ development_status:
   10-2-rename-amplitude-to-velocity: done # Rename amplitude→velocity, retype Double→UInt8 throughout codebase
   10-3-add-amplitude-parameter-to-noteplayer: done # Add true amplitude (volume) parameter to NotePlayer protocol
   10-4-add-vary-loudness-slider-to-settings: done # "Vary Loudness" slider in Settings with @AppStorage
-  10-5-apply-loudness-variation-in-training: backlog # TrainingSession applies random loudness offset to note2
+  10-5-apply-loudness-variation-in-training: ready-for-dev # TrainingSession applies random loudness offset to note2
