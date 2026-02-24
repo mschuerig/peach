@@ -1,6 +1,6 @@
 # Story 9.1: Promote KazezNoteStrategy to Default Training Strategy
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -179,6 +179,7 @@ PeachTests/Settings/SettingsTests.swift                    # Remove slider-relat
 ## Change Log
 
 - 2026-02-24: Implemented story 9.1 — Promoted KazezNoteStrategy to default, added cold-start-from-profile, removed NvM slider, updated docs
+- 2026-02-24: Code review — Fixed 4 MEDIUM issues: stale "evaluation" language in test doc comment, force unwrap in cold-start test (now uses `try #require`), stale "Algorithm" localization string removed, misleading `setDifficulty()` reference removed from NextNoteStrategy protocol doc. 1 LOW fix: verbose ternary simplified. All tests pass.
 
 ## Dev Agent Record
 

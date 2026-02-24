@@ -111,5 +111,5 @@ development_status:
 
   # Epic 9: Evidence-Based Training — Note Selection Strategy
   epic-9: in-progress
-  9-1-promote-kazeznotestrategy-to-default: review # Respect settings range, smarter cold start, swap default in PeachApp, remove NvM slider
+  9-1-promote-kazeznotestrategy-to-default: done # Respect settings range, smarter cold start, swap default in PeachApp, remove NvM slider
   9-2-rethink-profile-display-and-progress-tracking: backlog # Adapt visualization to single-skill model
