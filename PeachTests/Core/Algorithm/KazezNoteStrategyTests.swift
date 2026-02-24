@@ -2,7 +2,7 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Tests for KazezNoteStrategy — Kazez et al. (2001) evaluation strategy
+/// Tests for KazezNoteStrategy — Kazez et al. (2001) default training strategy
 @Suite("KazezNoteStrategy Tests")
 @MainActor
 struct KazezNoteStrategyTests {
@@ -191,7 +191,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Cold start with trained profile uses overallMean")
-    func coldStartWithProfile() {
+    func coldStartWithProfile() throws {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train some notes so overallMean returns a value
@@ -208,7 +208,7 @@ struct KazezNoteStrategyTests {
         )
 
         // overallMean should be used, not maxCentDifference
-        let expectedMean = profile.overallMean!
+        let expectedMean = try #require(profile.overallMean)
         #expect(comparison.centDifference == expectedMean)
         #expect(comparison.centDifference != 100.0)
     }
@@ -335,7 +335,7 @@ struct KazezNoteStrategyTests {
         )
         return CompletedComparison(
             comparison: comp,
-            userAnsweredHigher: correct ? true : false // isSecondNoteHigher is true, so correct = true
+            userAnsweredHigher: correct // isSecondNoteHigher is true, so correct = higher
         )
     }
 }
