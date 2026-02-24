@@ -8,7 +8,6 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - NotePlayer Integration Tests
 
-    @MainActor
     @Test("TrainingSession calls play twice per comparison")
     func callsPlayTwicePerComparison() async throws {
         let f = makeTrainingSession()
@@ -19,7 +18,6 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.playCallCount == 2)
     }
 
-    @MainActor
     @Test("TrainingSession uses correct frequency calculation")
     func usesCorrectFrequencyCalculation() async throws {
         let f = makeTrainingSession()
@@ -32,7 +30,6 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.lastFrequency! >= 100 && f.mockPlayer.lastFrequency! <= 1200)
     }
 
-    @MainActor
     @Test("TrainingSession passes correct duration to NotePlayer")
     func passesCorrectDuration() async throws {
         let f = makeTrainingSession()
@@ -43,7 +40,6 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.lastDuration == 1.0)
     }
 
-    @MainActor
     @Test("TrainingSession passes correct amplitude to NotePlayer")
     func passesCorrectAmplitude() async throws {
         let f = makeTrainingSession()
@@ -56,7 +52,6 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - TrainingDataStore Integration Tests
 
-    @MainActor
     @Test("TrainingSession records comparison on answer")
     func recordsComparisonOnAnswer() async throws {
         let f = makeTrainingSession()
@@ -70,7 +65,6 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockDataStore.lastSavedRecord != nil)
     }
 
-    @MainActor
     @Test("ComparisonRecord contains correct note data")
     func comparisonRecordContainsCorrectData() async throws {
         let f = makeTrainingSession()
@@ -86,7 +80,6 @@ struct TrainingSessionIntegrationTests {
         #expect(record.note2CentOffset == 100.0)
     }
 
-    @MainActor
     @Test("Data error does not stop training")
     func dataErrorDoesNotStopTraining() async throws {
         let f = makeTrainingSession()
@@ -106,7 +99,6 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - PerceptualProfile Integration Tests (Story 4.1)
 
-    @MainActor
     @Test("Profile is updated incrementally when comparison is recorded")
     func profileUpdatesIncrementallyAfterComparison() async throws {
         let f = makeTrainingSession()
@@ -124,7 +116,6 @@ struct TrainingSessionIntegrationTests {
         #expect(stats.mean == 100.0)
     }
 
-    @MainActor
     @Test("Profile updates use unsigned centOffset for threshold measurement")
     func profileUsesUnsignedCentOffset() async {
         let f = makeTrainingSession()
@@ -137,7 +128,6 @@ struct TrainingSessionIntegrationTests {
         #expect(stats.mean == 40.0)
     }
 
-    @MainActor
     @Test("Profile statistics accumulate correctly over multiple comparisons")
     func profileAccumulatesMultipleComparisons() async throws {
         let f = makeTrainingSession()
@@ -163,7 +153,6 @@ struct TrainingSessionIntegrationTests {
         #expect(stats62.mean == 95.0)
     }
 
-    @MainActor
     @Test("Profile updates for all answers (both correct and incorrect)")
     func profileUpdatesForAllAnswers() async throws {
         let f = makeTrainingSession()
@@ -183,7 +172,6 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - Profile Loading from DataStore (Story 4.3 AC#2)
 
-    @MainActor
     @Test("Profile loaded from pre-populated data store reflects stored records")
     func profileLoadedFromDataStore() async {
         let profile = PerceptualProfile()
@@ -209,7 +197,6 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - Cold Start (Story 4.3)
 
-    @MainActor
     @Test("Cold start with empty profile uses default difficulty")
     func coldStartWithEmptyProfile() async {
         let profile = PerceptualProfile()

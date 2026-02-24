@@ -3,7 +3,6 @@ import Foundation
 
 /// Pure persistence layer for ComparisonRecord storage and retrieval
 /// Responsibilities: CREATE, READ, DELETE operations only - no business logic
-@MainActor
 final class TrainingDataStore {
     private let modelContext: ModelContext
 

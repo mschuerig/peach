@@ -4,7 +4,6 @@ import Foundation
 ///
 /// This protocol enables testable dependency injection for TrainingSession.
 /// TrainingDataStore conforms to this protocol, allowing mock implementations in tests.
-@MainActor
 protocol ComparisonRecordStoring {
     /// Saves a comparison record to persistent storage
     /// - Parameter record: The ComparisonRecord to save

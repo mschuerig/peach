@@ -7,7 +7,6 @@ struct TrainingSessionLifecycleTests {
 
     // MARK: - Data Integrity Tests (AC#4)
 
-    @MainActor
     @Test("stop() during playingNote1 discards incomplete comparison")
     func stopDuringNote1DiscardsComparison() async {
         let f = makeTrainingSession()
@@ -32,7 +31,6 @@ struct TrainingSessionLifecycleTests {
         #expect(f.session.state == .idle)
     }
 
-    @MainActor
     @Test("stop() during playingNote2 discards incomplete comparison")
     func stopDuringNote2DiscardsComparison() async throws {
         let f = makeTrainingSession()
@@ -55,7 +53,6 @@ struct TrainingSessionLifecycleTests {
         #expect(f.session.state == .idle)
     }
 
-    @MainActor
     @Test("stop() during awaitingAnswer discards incomplete comparison")
     func stopDuringAwaitingAnswerDiscardsComparison() async throws {
         let f = makeTrainingSession()
@@ -71,7 +68,6 @@ struct TrainingSessionLifecycleTests {
         #expect(f.session.state == .idle)
     }
 
-    @MainActor
     @Test("stop() during showingFeedback preserves already-saved data")
     func stopDuringFeedbackPreservesData() async throws {
         let f = makeTrainingSession()
@@ -93,7 +89,6 @@ struct TrainingSessionLifecycleTests {
 
     // MARK: - stop() Behavior Tests
 
-    @MainActor
     @Test("stop() clears feedback state")
     func stopClearsFeedbackState() async throws {
         let f = makeTrainingSession()
@@ -110,7 +105,6 @@ struct TrainingSessionLifecycleTests {
         #expect(f.session.isLastAnswerCorrect == nil)
     }
 
-    @MainActor
     @Test("stop() is safe to call multiple times")
     func stopIsSafeToCallMultipleTimes() {
         let f = makeTrainingSession()
@@ -132,7 +126,6 @@ struct TrainingSessionLifecycleTests {
         // Should not crash or cause issues
     }
 
-    @MainActor
     @Test("stop() calls notePlayer.stop()")
     func stopCallsNotePlayerStop() async throws {
         let f = makeTrainingSession()
@@ -150,7 +143,6 @@ struct TrainingSessionLifecycleTests {
 
     // MARK: - Navigation-Based Stop Tests
 
-    @MainActor
     @Test("Simulated onDisappear triggers stop")
     func simulatedOnDisappearTriggersStop() async throws {
         let f = makeTrainingSession()
@@ -167,7 +159,6 @@ struct TrainingSessionLifecycleTests {
 
     // MARK: - Edge Case Tests
 
-    @MainActor
     @Test("Rapid stop and start sequence")
     func rapidStopAndStartSequence() async throws {
         let f = makeTrainingSession()
@@ -186,7 +177,6 @@ struct TrainingSessionLifecycleTests {
         #expect(f.mockPlayer.playCallCount >= 1)
     }
 
-    @MainActor
     @Test("stop() during transition between states")
     func stopDuringStateTransition() async {
         let f = makeTrainingSession()

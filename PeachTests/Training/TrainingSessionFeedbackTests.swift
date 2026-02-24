@@ -7,7 +7,6 @@ struct TrainingSessionFeedbackTests {
 
     // MARK: - Feedback State Tests
 
-    @MainActor
     @Test("Initial feedback state is hidden")
     func initialFeedbackState() async {
         let f = makeTrainingSession(includeHaptic: true)
@@ -16,7 +15,6 @@ struct TrainingSessionFeedbackTests {
         #expect(f.session.isLastAnswerCorrect == nil)
     }
 
-    @MainActor
     @Test("Feedback shows after correct answer")
     func feedbackShowsAfterCorrectAnswer() async throws {
         let f = makeTrainingSession(includeHaptic: true)
@@ -38,7 +36,6 @@ struct TrainingSessionFeedbackTests {
         #expect(f.session.isLastAnswerCorrect == true)
     }
 
-    @MainActor
     @Test("Feedback shows after incorrect answer")
     func feedbackShowsAfterIncorrectAnswer() async throws {
         let f = makeTrainingSession(includeHaptic: true)
@@ -61,7 +58,6 @@ struct TrainingSessionFeedbackTests {
         #expect(f.session.isLastAnswerCorrect == false)
     }
 
-    @MainActor
     @Test("Feedback clears before next comparison")
     func feedbackClearsBeforeNextComparison() async throws {
         let f = makeTrainingSession(includeHaptic: true)
@@ -90,7 +86,6 @@ struct TrainingSessionFeedbackTests {
 
     // MARK: - Haptic Feedback Tests
 
-    @MainActor
     @Test("Haptic fires on incorrect answer")
     func hapticFiresOnIncorrectAnswer() async throws {
         let f = makeTrainingSession(includeHaptic: true)
@@ -111,7 +106,6 @@ struct TrainingSessionFeedbackTests {
         #expect(f.mockHaptic!.incorrectFeedbackCount == 1)
     }
 
-    @MainActor
     @Test("Haptic does NOT fire on correct answer")
     func hapticDoesNotFireOnCorrectAnswer() async throws {
         let f = makeTrainingSession(includeHaptic: true)
@@ -132,7 +126,6 @@ struct TrainingSessionFeedbackTests {
         #expect(f.mockHaptic!.incorrectFeedbackCount == 0)
     }
 
-    @MainActor
     @Test("Feedback state clears when training stops")
     func feedbackClearsWhenTrainingStops() async throws {
         let f = makeTrainingSession(includeHaptic: true)

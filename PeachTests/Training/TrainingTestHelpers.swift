@@ -16,7 +16,6 @@ struct TrainingSessionFixture {
 }
 
 /// Shared factory for creating a TrainingSession with all mock dependencies.
-@MainActor
 func makeTrainingSession(
     comparisons: [Comparison] = [
         Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true),
@@ -66,7 +65,6 @@ func makeTrainingSession(
 // MARK: - Shared Async Test Helpers
 
 /// Polls until the session reaches the expected state, or records a test failure on timeout.
-@MainActor
 func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(2)) async throws {
     await Task.yield()
     if session.state == expectedState { return }
@@ -80,7 +78,6 @@ func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, ti
 }
 
 /// Polls until the mock player's play call count reaches the minimum, or records a test failure on timeout.
-@MainActor
 func waitForPlayCallCount(_ mockPlayer: MockNotePlayer, _ minCount: Int, timeout: Duration = .seconds(2)) async throws {
     let deadline = ContinuousClock.now + timeout
     while ContinuousClock.now < deadline {
@@ -92,7 +89,6 @@ func waitForPlayCallCount(_ mockPlayer: MockNotePlayer, _ minCount: Int, timeout
 }
 
 /// Polls until the session's showFeedback becomes false, or records a test failure on timeout.
-@MainActor
 func waitForFeedbackToClear(_ session: TrainingSession, timeout: Duration = .seconds(2)) async throws {
     let deadline = ContinuousClock.now + timeout
     while ContinuousClock.now < deadline {

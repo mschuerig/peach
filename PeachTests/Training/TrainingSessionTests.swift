@@ -7,14 +7,12 @@ struct TrainingSessionTests {
 
     // MARK: - State Transition Tests
 
-    @MainActor
     @Test("TrainingSession starts in idle state")
     func startsInIdleState() {
         let f = makeTrainingSession()
         #expect(f.session.state == .idle)
     }
 
-    @MainActor
     @Test("startTraining transitions from idle to playingNote1")
     func startTrainingTransitionsToPlayingNote1() async {
         let f = makeTrainingSession()
@@ -33,7 +31,6 @@ struct TrainingSessionTests {
         #expect(f.mockPlayer.playCallCount >= 1)
     }
 
-    @MainActor
     @Test("TrainingSession transitions from playingNote1 to playingNote2")
     func transitionsFromNote1ToNote2() async throws {
         let f = makeTrainingSession()
@@ -45,7 +42,6 @@ struct TrainingSessionTests {
         #expect(f.session.state == .playingNote2 || f.session.state == .awaitingAnswer)
     }
 
-    @MainActor
     @Test("TrainingSession transitions from playingNote2 to awaitingAnswer")
     func transitionsFromNote2ToAwaitingAnswer() async throws {
         let f = makeTrainingSession()
@@ -56,7 +52,6 @@ struct TrainingSessionTests {
         #expect(f.session.state == .awaitingAnswer)
     }
 
-    @MainActor
     @Test("handleAnswer transitions to showingFeedback")
     func handleAnswerTransitionsToShowingFeedback() async throws {
         let f = makeTrainingSession()
@@ -69,7 +64,6 @@ struct TrainingSessionTests {
         #expect(f.session.state == .showingFeedback)
     }
 
-    @MainActor
     @Test("TrainingSession loops back to playingNote1 after feedback")
     func loopsBackAfterFeedback() async throws {
         let f = makeTrainingSession()
@@ -85,7 +79,6 @@ struct TrainingSessionTests {
         #expect(f.mockPlayer.playCallCount >= 3)
     }
 
-    @MainActor
     @Test("stop() transitions to idle from any state")
     func stopTransitionsToIdle() async throws {
         let f = makeTrainingSession()
@@ -98,7 +91,6 @@ struct TrainingSessionTests {
         #expect(f.session.state == .idle)
     }
 
-    @MainActor
     @Test("Audio error transitions to idle")
     func audioErrorTransitionsToIdle() async throws {
         let f = makeTrainingSession()
@@ -113,7 +105,6 @@ struct TrainingSessionTests {
 
     // MARK: - Timing and Coordination Tests
 
-    @MainActor
     @Test("Buttons disabled during playingNote1")
     func buttonsDisabledDuringNote1() async {
         let f = makeTrainingSession()
@@ -131,7 +122,6 @@ struct TrainingSessionTests {
         #expect(capturedState == .playingNote1)
     }
 
-    @MainActor
     @Test("Buttons enabled during awaitingAnswer")
     func buttonsEnabledDuringAwaitingAnswer() async throws {
         let f = makeTrainingSession()
@@ -142,7 +132,6 @@ struct TrainingSessionTests {
         #expect(f.session.state == .awaitingAnswer)
     }
 
-    @MainActor
     @Test("TrainingSession completes full comparison loop")
     func completesFullLoop() async throws {
         let f = makeTrainingSession()

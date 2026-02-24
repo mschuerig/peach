@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for TrainingScreen layout adaptation based on vertical size class (Story 7.3)
 @Suite("TrainingScreen Layout Tests")
-@MainActor
 struct TrainingScreenLayoutTests {
 
     // MARK: - Button Icon Size

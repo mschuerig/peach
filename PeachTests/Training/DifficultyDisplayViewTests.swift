@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for DifficultyDisplayView formatting and accessibility logic
 @Suite("DifficultyDisplayView Tests")
-@MainActor
 struct DifficultyDisplayViewTests {
 
     // MARK: - Formatting Tests

@@ -62,8 +62,8 @@ Peach plays comparison tones back-to-back without a gap. This may make pitch dif
 
 | Item | Description | Location |
 |---|---|---|
-| **`nonisolated(unsafe)` env keys** | Three environment key defaults use `nonisolated(unsafe)` + `MainActor.assumeIsolated()`. Undefined behavior if accessed off main thread. | `TrainingScreen.swift:152`, `ProfileScreen.swift:149`, `TrendAnalyzer.swift:93` |
-| **Environment key boilerplate** | Identical 8-line pattern repeated in 3 files. Should be extracted or addressed with the env key relocation. | Same files as above |
+| ~~**`nonisolated(unsafe)` env keys**~~ | ~~Resolved — replaced with `@Entry` macro under Swift 6.2 + default MainActor isolation.~~ | — |
+| ~~**Environment key boilerplate**~~ | ~~Resolved — `@Entry` macro eliminates boilerplate.~~ | — |
 | **`hasTrainingData` duplicated** | `ProfileScreen` and `ProfilePreviewView` independently check `profile.overallMean != nil`. Should be a computed property on `PerceptualProfile`. | `ProfileScreen.swift:86`, `ProfilePreviewView.swift:27` |
 | **Dead code** | `ContentView.previousScenePhase` is written but never read. | `ContentView.swift:15,37` |
 | **Redundant `note2` field** | `ComparisonRecord` stores `note1` and `note2` separately, but they are always equal (per domain rules). | `ComparisonRecord.swift` |

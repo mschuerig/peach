@@ -2,7 +2,6 @@ import AVFoundation
 import Foundation
 import os
 
-@MainActor
 final class SoundFontNotePlayer: NotePlayer {
 
     // MARK: - Logger

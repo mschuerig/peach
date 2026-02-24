@@ -4,7 +4,6 @@ import Foundation
 
 /// Tests for AdaptiveNoteStrategy regional difficulty adjustment and weighted difficulty
 @Suite("AdaptiveNoteStrategy Regional Tests")
-@MainActor
 struct AdaptiveNoteStrategyRegionalTests {
 
     // MARK: - Regional Difficulty Adjustment Tests (AC#2, AC#3)

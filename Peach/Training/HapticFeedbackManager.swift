@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol for haptic feedback service (enables testing with mocks)
-@MainActor
 protocol HapticFeedback {
     /// Plays haptic feedback for incorrect answer
     func playIncorrectFeedback()
@@ -18,7 +17,6 @@ protocol HapticFeedback {
 ///
 /// # Testing Note
 /// Haptics don't work in iOS Simulator - must test on real device.
-@MainActor
 final class HapticFeedbackManager: HapticFeedback, ComparisonObserver {
     /// UIKit haptic generator
     private let generator: UIImpactFeedbackGenerator
@@ -61,7 +59,6 @@ final class HapticFeedbackManager: HapticFeedback, ComparisonObserver {
 // MARK: - Mock for Testing
 
 /// Mock haptic feedback manager for unit tests
-@MainActor
 final class MockHapticFeedbackManager: HapticFeedback, ComparisonObserver {
     /// Number of times playIncorrectFeedback() was called
     private(set) var incorrectFeedbackCount = 0

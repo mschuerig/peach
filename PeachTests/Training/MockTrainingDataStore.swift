@@ -2,7 +2,6 @@ import Foundation
 @testable import Peach
 
 /// Mock ComparisonRecordStoring and ComparisonObserver for testing TrainingSession
-@MainActor
 final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver {
     // MARK: - Test State Tracking
 

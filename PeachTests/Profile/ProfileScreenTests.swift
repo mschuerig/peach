@@ -3,7 +3,6 @@ import SwiftUI
 @testable import Peach
 
 @Suite("ProfileScreen Tests")
-@MainActor
 struct ProfileScreenTests {
 
     // MARK: - PerceptualProfile Environment Key

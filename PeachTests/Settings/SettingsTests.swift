@@ -74,7 +74,6 @@ struct SettingsTests {
     // MARK: - Task 3: Reset Functionality
 
     @Test("PerceptualProfile reset clears all note data")
-    @MainActor
     func profileResetClearsData() {
         let profile = PerceptualProfile()
 
@@ -97,7 +96,6 @@ struct SettingsTests {
     }
 
     @Test("TrendAnalyzer reset clears all trend data")
-    @MainActor
     func trendAnalyzerResetClearsData() {
         // Create with enough records to have a trend
         var records: [ComparisonRecord] = []
@@ -121,7 +119,6 @@ struct SettingsTests {
     }
 
     @Test("Reset deletes all ComparisonRecords from SwiftData")
-    @MainActor
     func resetDeletesComparisonRecords() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: ComparisonRecord.self, configurations: config)

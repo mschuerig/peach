@@ -27,7 +27,6 @@ import OSLog
 /// Must be fast (< 1ms) to meet NFR2 (no perceptible delay).
 /// - In-memory only, no database queries
 /// - Simple math: random selection, weighted probability, mean calculation
-@MainActor
 final class AdaptiveNoteStrategy: NextNoteStrategy {
 
     // MARK: - Difficulty Parameters
