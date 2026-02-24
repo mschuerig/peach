@@ -1,6 +1,6 @@
 # Story 10.3: Add Amplitude Parameter to NotePlayer
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -56,7 +56,7 @@ So that the audio engine can play notes at different loudness levels for the Var
 - [x] Task 6: Implement `SoundFontNotePlayer.play()` amplitude support (AC: #1, #2, #3, #4)
   - [x] Add `amplitudeDB: Float` parameter to `play()` signature
   - [x] Add validation: `guard (-90.0...12.0).contains(amplitudeDB)` → throw `AudioError.invalidAmplitude`
-  - [x] Add `sampler.masterGain = amplitudeDB` before the `sampler.startNote(...)` call (after pitch bend, before startNote)
+  - [x] Add `sampler.masterGain = amplitudeDB` before `sendPitchBend` and `startNote` calls
   - [x] No changes needed in `stop()` or `loadPreset()` or `defer` block — `masterGain` is set before every `startNote` so no reset is required
 
 - [x] Task 7: Update `TrainingSession` to pass amplitude (AC: #2)
@@ -191,6 +191,7 @@ Recent commits show the 10.2 work was clean and followed the established pattern
 ## Change Log
 
 - 2026-02-24: Implemented story 10.3 — added `amplitudeDB: Float` parameter to `NotePlayer` protocol and all implementations/call sites; added `AudioError.invalidAmplitude`; added 7 amplitude validation tests + 1 integration test; all tests pass (Date: 2026-02-24)
+- 2026-02-24: Code review fixes — corrected Task 6 description (masterGain ordering), strengthened `passesDefaultAmplitude` test to verify both notes' amplitudeDB via playHistory
 
 ## Dev Agent Record
 
