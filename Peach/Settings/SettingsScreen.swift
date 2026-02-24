@@ -17,6 +17,9 @@ struct SettingsScreen: View {
     @AppStorage(SettingsKeys.soundSource)
     private var soundSource: String = SettingsKeys.defaultSoundSource
 
+    @AppStorage(SettingsKeys.varyLoudness)
+    private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.trainingSession) private var trainingSession
     @Environment(\.soundFontLibrary) private var soundFontLibrary
@@ -84,6 +87,13 @@ struct SettingsScreen: View {
                 in: 380...500,
                 step: 1
             )
+            Slider(value: $varyLoudness, in: 0...1) {
+                Text("Vary Loudness")
+            } minimumValueLabel: {
+                Text("Off")
+            } maximumValueLabel: {
+                Text("Max")
+            }
         }
     }
 

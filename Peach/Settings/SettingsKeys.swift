@@ -9,6 +9,7 @@ enum SettingsKeys {
     static let noteDuration = "noteDuration"
     static let referencePitch = "referencePitch"
     static let soundSource = "soundSource"
+    static let varyLoudness = "varyLoudness"
 
     // MARK: - Default Values (matching TrainingSettings defaults)
 
@@ -18,6 +19,7 @@ enum SettingsKeys {
     static let defaultNoteDuration: Double = 1.0
     static let defaultReferencePitch: Double = 440.0
     static let defaultSoundSource: String = "sf2:8:80"
+    static let defaultVaryLoudness: Double = 0.0
 
     // MARK: - Note Range Constants
 

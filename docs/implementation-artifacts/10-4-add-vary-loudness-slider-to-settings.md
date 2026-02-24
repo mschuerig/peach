@@ -1,6 +1,6 @@
 # Story 10.4: Add "Vary Loudness" Slider to Settings
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -26,29 +26,29 @@ So that I can control how much the volume varies between notes during training.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `varyLoudness` key to `SettingsKeys.swift` (AC: #4, #6)
-  - [ ] Add `static let varyLoudness = "varyLoudness"` key constant
-  - [ ] Add `static let defaultVaryLoudness: Double = 0.0` default value
-  - [ ] Place in the existing `@AppStorage Key Names` and `Default Values` MARK sections
+- [x] Task 1: Add `varyLoudness` key to `SettingsKeys.swift` (AC: #4, #6)
+  - [x] Add `static let varyLoudness = "varyLoudness"` key constant
+  - [x] Add `static let defaultVaryLoudness: Double = 0.0` default value
+  - [x] Place in the existing `@AppStorage Key Names` and `Default Values` MARK sections
 
-- [ ] Task 2: Add "Vary Loudness" Slider to `SettingsScreen.swift` (AC: #1, #2, #3, #4, #5, #6)
-  - [ ] Add `@AppStorage(SettingsKeys.varyLoudness) private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness` property alongside existing `@AppStorage` properties
-  - [ ] Add a `Slider` to the `audioSection` computed property, below the existing Reference Pitch stepper
-  - [ ] Use SwiftUI `Slider(value:in:)` with `minimumValueLabel` ("Off") and `maximumValueLabel` ("Max")
-  - [ ] The slider label `Text("Vary Loudness")` serves as accessibility label
-  - [ ] Range: `0...1`, continuous (no `step` parameter)
-  - [ ] No additional logic needed — `@AppStorage` handles persistence automatically
+- [x] Task 2: Add "Vary Loudness" Slider to `SettingsScreen.swift` (AC: #1, #2, #3, #4, #5, #6)
+  - [x] Add `@AppStorage(SettingsKeys.varyLoudness) private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness` property alongside existing `@AppStorage` properties
+  - [x] Add a `Slider` to the `audioSection` computed property, below the existing Reference Pitch stepper
+  - [x] Use SwiftUI `Slider(value:in:)` with `minimumValueLabel` ("Off") and `maximumValueLabel` ("Max")
+  - [x] The slider label `Text("Vary Loudness")` serves as accessibility label
+  - [x] Range: `0...1`, continuous (no `step` parameter)
+  - [x] No additional logic needed — `@AppStorage` handles persistence automatically
 
-- [ ] Task 3: Add localization strings to `Localizable.xcstrings` (AC: #1)
-  - [ ] Ensure "Vary Loudness" has German translation (e.g., "Lautstärke variieren")
-  - [ ] Ensure "Off" has German translation ("Aus")
-  - [ ] Ensure "Max" has German translation ("Max")
-  - [ ] Xcode extracts string literals from SwiftUI `Text()` automatically — build the project, then fill in German translations in the string catalog
+- [x] Task 3: Add localization strings to `Localizable.xcstrings` (AC: #1)
+  - [x] Ensure "Vary Loudness" has German translation (e.g., "Lautstärke variieren")
+  - [x] Ensure "Off" has German translation ("Aus")
+  - [x] Ensure "Max" has German translation ("Max")
+  - [x] Xcode extracts string literals from SwiftUI `Text()` automatically — build the project, then fill in German translations in the string catalog
 
-- [ ] Task 4: Run full test suite and verify (AC: all)
-  - [ ] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests must pass with zero failures
-  - [ ] No new tests needed — this story adds only thin UI (SwiftUI `Slider` + `@AppStorage`) with no business logic; the setting's consumption and testable behavior arrive in Story 10.5
+- [x] Task 4: Run full test suite and verify (AC: all)
+  - [x] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests must pass with zero failures
+  - [x] No new tests needed — this story adds only thin UI (SwiftUI `Slider` + `@AppStorage`) with no business logic; the setting's consumption and testable behavior arrive in Story 10.5
 
 ## Dev Notes
 
@@ -165,10 +165,26 @@ Pattern: story file committed first ("Add story X.Y"), then implementation ("Imp
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6 (claude-opus-4-6)
 
 ### Debug Log References
 
+None — clean implementation with no issues.
+
 ### Completion Notes List
 
+- Added `varyLoudness` key and `defaultVaryLoudness: 0.0` default to `SettingsKeys.swift`, following the established pattern
+- Added `@AppStorage` property and `Slider(value:in:0...1)` with "Off"/"Max" labels to `audioSection` in `SettingsScreen.swift`, below Reference Pitch stepper
+- Added German translations to `Localizable.xcstrings`: "Vary Loudness" → "Lautstärke variieren", "Off" → "Aus", "Max" → "Max"
+- Default 0.0 preserves existing behavior for fresh installs and upgrading users
+- Full test suite passes with zero failures — no regressions
+
+### Change Log
+
+- 2026-02-25: Implemented story 10.4 — Added "Vary Loudness" slider to Settings screen with @AppStorage persistence, "Off"/"Max" range labels, and German localization
+
 ### File List
+
+- Peach/Settings/SettingsKeys.swift (modified — added varyLoudness key + defaultVaryLoudness)
+- Peach/Settings/SettingsScreen.swift (modified — added @AppStorage property + Slider in audioSection)
+- Peach/Resources/Localizable.xcstrings (modified — added "Vary Loudness", "Off", "Max" with German translations)
