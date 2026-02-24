@@ -1,6 +1,6 @@
 # Story 10.2: Rename Amplitude to Velocity
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,7 +16,7 @@ So that the audio API correctly reflects what it actually controls and makes roo
 
 2. **Given** `SoundFontNotePlayer` contains a `midiVelocity(forAmplitude:)` conversion helper, **When** the refactoring is applied, **Then** the helper is removed and velocity is passed directly to `sampler.startNote(_:withVelocity:onChannel:)`.
 
-3. **Given** `SoundFontNotePlayer` validates amplitude in the range 0.0-1.0 and throws `AudioError.invalidAmplitude`, **When** the refactoring is applied, **Then** validation checks velocity in the range 0-127 and the error case is renamed to `AudioError.invalidVelocity`.
+3. **Given** `SoundFontNotePlayer` validates amplitude in the range 0.0-1.0 and throws `AudioError.invalidAmplitude`, **When** the refactoring is applied, **Then** validation checks velocity in the range 1-127 (velocity 0 rejected — MIDI note-off, preserving existing safety floor) and the error case is renamed to `AudioError.invalidVelocity`.
 
 4. **Given** `TrainingSession` holds a private constant `amplitude: Double = 0.5`, **When** the refactoring is applied, **Then** it holds a velocity constant of type `UInt8` with the equivalent MIDI value (63).
 
@@ -158,7 +158,7 @@ None — clean implementation with no errors or retries.
 - Updated `MockNotePlayerForPreview` in `TrainingScreen.swift`
 - Updated `MockNotePlayer`: `lastAmplitude` → `lastVelocity`, `playHistory` tuple retyped, `reset()` updated
 - Removed 3 obsolete `midiVelocity(forAmplitude:)` tests from `SoundFontNotePlayerTests`
-- Added 3 new velocity validation tests: velocity 0 rejected, velocity 127 accepted, velocity in range plays
+- Added 4 new velocity validation tests: velocity 0 rejected, velocity 128 rejected, velocity 127 accepted, velocity in range plays
 - Replaced all `amplitude: 0.5` test arguments with `velocity: 63`
 - Renamed `passesCorrectAmplitude` test → `passesCorrectVelocity` in integration tests
 - Updated `AudioError.invalidAmplitude` → `.invalidVelocity` in `FrequencyCalculationTests`
@@ -167,6 +167,7 @@ None — clean implementation with no errors or retries.
 ### Change Log
 
 - 2026-02-24: Renamed amplitude→velocity throughout codebase (8 files), retyped Double→UInt8, removed midiVelocity helper, added velocity validation tests
+- 2026-02-24: Code review fixes — added velocity 128 boundary test, strengthened velocity 0 test assertion to verify specific error case, corrected AC#3 range wording (0-127→1-127), fixed TrainingSession comment (0-127→1-127)
 
 ### File List
 
