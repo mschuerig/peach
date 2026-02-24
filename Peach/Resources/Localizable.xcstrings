@@ -102,6 +102,7 @@
       }
     },
     "Algorithm" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -335,36 +336,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "Mechanical" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mechanisch"
-          }
-        }
-      }
-    },
-    "Natural" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Natürlich"
-          }
-        }
-      }
-    },
-    "Natural vs. Mechanical" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Natürlich vs. Mechanisch"
           }
         }
       }

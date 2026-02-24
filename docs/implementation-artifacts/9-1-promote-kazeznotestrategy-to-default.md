@@ -1,6 +1,6 @@
 # Story 9.1: Promote KazezNoteStrategy to Default Training Strategy
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -47,38 +47,38 @@ So that I experience steady convergence to my threshold without jarring difficul
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update KazezNoteStrategy to respect settings range (AC: #1)
-  - [ ] 1.1 Replace hardcoded `noteRangeMin = 48` / `noteRangeMax = 72` with `settings.noteRangeMin` / `settings.noteRangeMax`
-  - [ ] 1.2 Update existing tests to verify range from settings is used
+- [x] Task 1: Update KazezNoteStrategy to respect settings range (AC: #1)
+  - [x] 1.1 Replace hardcoded `noteRangeMin = 48` / `noteRangeMax = 72` with `settings.noteRangeMin` / `settings.noteRangeMax`
+  - [x] 1.2 Update existing tests to verify range from settings is used
 
-- [ ] Task 2: Add cold-start-from-profile behavior (AC: #3)
-  - [ ] 2.1 When `lastComparison` is nil, check `profile.overallMean` — if profile has any trained notes (sampleCount > 0), use `overallMean` as starting difficulty instead of `settings.maxCentDifference`
-  - [ ] 2.2 If no profile data exists, keep current behavior (start at `settings.maxCentDifference`)
-  - [ ] 2.3 Write tests: cold start with empty profile → maxCentDifference; cold start with existing profile → overallMean
+- [x] Task 2: Add cold-start-from-profile behavior (AC: #3)
+  - [x] 2.1 When `lastComparison` is nil, check `profile.overallMean` — if profile has any trained notes (sampleCount > 0), use `overallMean` as starting difficulty instead of `settings.maxCentDifference`
+  - [x] 2.2 If no profile data exists, keep current behavior (start at `settings.maxCentDifference`)
+  - [x] 2.3 Write tests: cold start with empty profile → maxCentDifference; cold start with existing profile → overallMean
 
-- [ ] Task 3: Switch default strategy in PeachApp (AC: #4)
-  - [ ] 3.1 In `PeachApp.init()`, change `AdaptiveNoteStrategy()` to `KazezNoteStrategy()`
-  - [ ] 3.2 Update the comment to reference this story (9.1)
+- [x] Task 3: Switch default strategy in PeachApp (AC: #4)
+  - [x] 3.1 In `PeachApp.init()`, change `AdaptiveNoteStrategy()` to `KazezNoteStrategy()`
+  - [x] 3.2 Update the comment to reference this story (9.1)
 
-- [ ] Task 4: Remove Natural vs. Mechanical slider from Settings UI (AC: #5, #6)
-  - [ ] 4.1 Remove the "Natural vs. Mechanical" slider from `SettingsScreen.swift`
-  - [ ] 4.2 Keep `SettingsKeys.naturalVsMechanical` and `SettingsKeys.defaultNaturalVsMechanical` in `SettingsKeys.swift` (AdaptiveNoteStrategy still references them)
-  - [ ] 4.3 Remove related localized strings from `Localizable.xcstrings` if they exist
-  - [ ] 4.4 Update any Settings tests that reference the slider
+- [x] Task 4: Remove Natural vs. Mechanical slider from Settings UI (AC: #5, #6)
+  - [x] 4.1 Remove the "Natural vs. Mechanical" slider from `SettingsScreen.swift`
+  - [x] 4.2 Keep `SettingsKeys.naturalVsMechanical` and `SettingsKeys.defaultNaturalVsMechanical` in `SettingsKeys.swift` (AdaptiveNoteStrategy still references them)
+  - [x] 4.3 Remove related localized strings from `Localizable.xcstrings` if they exist
+  - [x] 4.4 Update any Settings tests that reference the slider
 
-- [ ] Task 5: Update KazezNoteStrategy doc comments (AC: #2)
-  - [ ] 5.1 Remove "evaluation only" language from the class doc comment — it is now the primary training strategy
-  - [ ] 5.2 Update the log message from "evaluation mode" to reflect production use
-  - [ ] 5.3 Add a brief reference to the research rationale (brainstorming session document)
+- [x] Task 5: Update KazezNoteStrategy doc comments (AC: #2)
+  - [x] 5.1 Remove "evaluation only" language from the class doc comment — it is now the primary training strategy
+  - [x] 5.2 Update the log message from "evaluation mode" to reflect production use
+  - [x] 5.3 Add a brief reference to the research rationale (brainstorming session document)
 
-- [ ] Task 6: Update project-context.md (AC: #4)
-  - [ ] 6.1 Update the "State Management" section: `KazezNoteStrategy` is the default, `AdaptiveNoteStrategy` is retained
-  - [ ] 6.2 Remove or update references to `naturalVsMechanical` as a user-facing setting
-  - [ ] 6.3 Update the `NextNoteStrategy` doc comment in `NextNoteStrategy.swift` to reflect `KazezNoteStrategy` as primary
+- [x] Task 6: Update project-context.md (AC: #4)
+  - [x] 6.1 Update the "State Management" section: `KazezNoteStrategy` is the default, `AdaptiveNoteStrategy` is retained
+  - [x] 6.2 Remove or update references to `naturalVsMechanical` as a user-facing setting
+  - [x] 6.3 Update the `NextNoteStrategy` doc comment in `NextNoteStrategy.swift` to reflect `KazezNoteStrategy` as primary
 
-- [ ] Task 7: Verify full test suite passes (AC: #7)
-  - [ ] 7.1 Run full test suite and confirm zero failures
-  - [ ] 7.2 Confirm AdaptiveNoteStrategy tests still pass unchanged
+- [x] Task 7: Verify full test suite passes (AC: #7)
+  - [x] 7.1 Run full test suite and confirm zero failures
+  - [x] 7.2 Confirm AdaptiveNoteStrategy tests still pass unchanged
 
 ## Dev Notes
 
@@ -176,14 +176,38 @@ PeachTests/Settings/SettingsTests.swift                    # Remove slider-relat
 - [Source: Peach/App/PeachApp.swift:51] — Current strategy instantiation
 - [Source: Peach/Settings/SettingsScreen.swift] — Natural vs. Mechanical slider location
 
+## Change Log
+
+- 2026-02-24: Implemented story 9.1 — Promoted KazezNoteStrategy to default, added cold-start-from-profile, removed NvM slider, updated docs
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+No debug issues encountered.
+
 ### Completion Notes List
 
+- Task 1: Removed hardcoded MIDI 48-72 range constants from KazezNoteStrategy; now reads `settings.noteRangeMin`/`settings.noteRangeMax`. Updated `protocolCompliance` and `noteRange` tests to verify settings-based range. Added `customNoteRange` test.
+- Task 2: Added cold-start-from-profile behavior — when `lastComparison` is nil, uses `profile.overallMean` (clamped to min/max bounds) if profile has trained data, otherwise falls back to `settings.maxCentDifference`. Added 4 new tests: `coldStartEmptyProfile`, `coldStartWithProfile`, `coldStartProfileClampedToMin`, `coldStartProfileClampedToMax`.
+- Task 3: Swapped `AdaptiveNoteStrategy()` to `KazezNoteStrategy()` in `PeachApp.init()`. Updated comment to reference Story 9.1.
+- Task 4: Removed `@AppStorage` binding, `algorithmSection` view, and the NvM slider from `SettingsScreen.swift`. Removed "Mechanical", "Natural", and "Natural vs. Mechanical" entries from `Localizable.xcstrings`. Kept `SettingsKeys.naturalVsMechanical` and default (still used by AdaptiveNoteStrategy). Settings tests unchanged (they validate keys/defaults, not UI).
+- Task 5: Rewrote KazezNoteStrategy class doc comment — removed all "evaluation only" language, described it as default training strategy with design rationale and brainstorming reference. Removed "(evaluation mode)" from init log message.
+- Task 6: Updated `project-context.md` naming example (AdaptiveNoteStrategy → KazezNoteStrategy), cold-start error resilience section. Updated `NextNoteStrategy.swift` doc comment to show KazezNoteStrategy as primary. Updated date.
+- Task 7: Full test suite passes — 0 failures. All AdaptiveNoteStrategy tests unchanged and passing.
+
 ### File List
+
+- Peach/Core/Algorithm/KazezNoteStrategy.swift (modified)
+- Peach/Core/Algorithm/NextNoteStrategy.swift (modified)
+- Peach/App/PeachApp.swift (modified)
+- Peach/Settings/SettingsScreen.swift (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
+- PeachTests/Core/Algorithm/KazezNoteStrategyTests.swift (modified)
+- docs/project-context.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)
+- docs/implementation-artifacts/9-1-promote-kazeznotestrategy-to-default.md (modified)

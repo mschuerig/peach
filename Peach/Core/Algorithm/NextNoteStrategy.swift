@@ -16,10 +16,11 @@ import Foundation
 ///
 /// # Usage
 ///
-/// Implementations are injected into TrainingSession (Story 4.3):
+/// The default implementation (`KazezNoteStrategy`) is injected into TrainingSession
+/// in `PeachApp.swift` (Story 9.1). `AdaptiveNoteStrategy` is retained for future use.
 /// ```swift
-/// let strategy: NextNoteStrategy = AdaptiveNoteStrategy()
-/// let comparison = strategy.nextComparison(profile: profile, settings: settings)
+/// let strategy: NextNoteStrategy = KazezNoteStrategy()
+/// let comparison = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
 /// ```
 @MainActor
 protocol NextNoteStrategy {
@@ -30,7 +31,7 @@ protocol NextNoteStrategy {
     ///
     /// - Parameters:
     ///   - profile: User's perceptual profile with training statistics
-    ///   - settings: Training configuration (note range, Natural/Mechanical balance, difficulty bounds)
+    ///   - settings: Training configuration (note range, difficulty bounds, reference pitch)
     ///   - lastComparison: The most recently completed comparison (nil on first comparison)
     /// - Returns: A Comparison ready to be played by NotePlayer
     func nextComparison(

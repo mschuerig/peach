@@ -47,8 +47,8 @@ struct PeachApp: App {
             let trendAnalyzer = TrendAnalyzer(records: existingRecords)
             _trendAnalyzer = State(wrappedValue: trendAnalyzer)
 
-            // Adaptive strategy with Kazez convergence formulas (Story 4.3)
-            let strategy = AdaptiveNoteStrategy()
+            // KazezNoteStrategy: continuous difficulty chain with random note selection (Story 9.1)
+            let strategy = KazezNoteStrategy()
 
             // Create training session with observer pattern (Story 4.1) and adaptive strategy (Story 4.3)
             // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback)
