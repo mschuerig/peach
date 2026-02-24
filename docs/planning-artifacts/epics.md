@@ -185,6 +185,11 @@ Users can customize the training experience: algorithm behavior, note range, dur
 Users can use the app in English or German, on iPhone and iPad, in both orientations, with accessibility support and an Info Screen.
 **FRs covered:** FR37, FR38, FR39, FR40, FR41, FR43
 
+### Epic 10: Vary Loudness Training Complication
+Users can enable loudness variation in Settings so that note2 is played at a slightly different volume than note1, adding a perceptual challenge that trains the ear to distinguish pitch from loudness.
+**FRs covered:** FR1 (E10), FR2 (E10), FR3 (E10), FR4 (E10), FR5 (E10)
+**NFRs covered:** NFR1 (E10), NFR2 (E10)
+
 ## Epic 1: Remember Every Note — Data Foundation
 
 Every comparison the user answers is reliably stored and persists across sessions, crashes, and restarts — so that no training is ever lost. This includes establishing the Xcode project and folder structure as the implementation foundation.
@@ -917,3 +922,160 @@ So that my progress display is meaningful and accurate.
 - Session-level threshold convergence may be more meaningful than per-note maps
 - Consider showing session history, trend over time, best/average thresholds
 - The PerceptualProfile data model still collects per-note data (for future analysis), but display should focus on overall ability
+
+## Epic 10: Vary Loudness Training Complication
+
+Users can enable loudness variation in Settings so that note2 is played at a slightly different volume than note1, adding a perceptual challenge that trains the ear to distinguish pitch from loudness. This requires first correcting the existing audio parameter semantics (renaming amplitude to velocity) and researching independent volume control.
+
+**FRs covered:** FR1, FR2, FR3, FR4, FR5
+**NFRs covered:** NFR1, NFR2
+
+- **FR1:** Developer can understand how to control sound volume (dB) independently of MIDI velocity in SoundFontNotePlayer using AVAudioUnitSampler / AVAudioEngine
+- **FR2:** System uses "velocity" (MIDI 0-127) instead of "amplitude" (0.0-1.0) throughout NotePlayer protocol, SoundFontNotePlayer, TrainingSession, and all tests — the current "amplitude" parameter is renamed and retyped to reflect what it actually controls
+- **FR3:** NotePlayer.play accepts an amplitude parameter that controls sound volume independently of velocity
+- **FR4:** User can adjust a "Vary Loudness" slider in Settings
+- **FR5:** TrainingSession applies a random loudness offset to note2 relative to note1, drawn from a range of ±(sliderValue × maxOffset) dB, where sliderValue is the "Vary Loudness" setting normalized to 0.0–1.0 and maxOffset is a tunable constant (initially 2 dB)
+- **NFR1:** The velocity-to-amplitude refactoring must not change any audible behavior — pure rename/retype, verified by existing tests passing
+- **NFR2:** The "Vary Loudness" setting must be localized in English and German
+
+### Story 10.1: Research Volume Control in AVAudioUnitSampler
+
+As a **developer**,
+I want to understand how to control sound volume (dB) independently of MIDI velocity in AVAudioUnitSampler / AVAudioEngine,
+So that I can make informed implementation decisions for the amplitude parameter in subsequent stories.
+
+**Acceptance Criteria:**
+
+**Given** the current SoundFontNotePlayer uses AVAudioUnitSampler with MIDI velocity to control note intensity
+**When** the developer researches AVAudioEngine's audio graph capabilities
+**Then** a short findings document is produced that answers:
+- Can sound volume be controlled independently of MIDI velocity? If so, through what mechanism (e.g., node volume, mixer gain, AVAudioUnitSampler properties)?
+- What unit does the mechanism use (linear 0.0–1.0, dB, other)?
+- How to convert between dB offsets and the native unit?
+- Are there any gotchas (e.g., clipping, latency, per-note vs. global volume)?
+
+**And** the findings document is saved to `docs/implementation-artifacts/` for reference during implementation of stories 10.3–10.5
+
+### Story 10.2: Rename Amplitude to Velocity
+
+As a **developer**,
+I want the existing "amplitude" parameter renamed to "velocity" with proper MIDI velocity typing (UInt8, 0–127) throughout the codebase,
+So that the audio API correctly reflects what it actually controls and makes room for a true amplitude (loudness) parameter.
+
+**Acceptance Criteria:**
+
+**Given** the `NotePlayer` protocol declares `play(frequency:duration:amplitude:)` with amplitude as `Double` (0.0–1.0)
+**When** the refactoring is applied
+**Then** the protocol signature becomes `play(frequency:duration:velocity:)` with velocity as `UInt8` (0–127)
+
+**Given** `SoundFontNotePlayer` contains a `midiVelocity(forAmplitude:)` conversion helper
+**When** the refactoring is applied
+**Then** the helper is removed and velocity is passed directly to `sampler.startNote(_:withVelocity:onChannel:)`
+
+**Given** `SoundFontNotePlayer` validates amplitude in the range 0.0–1.0 and throws `AudioError.invalidAmplitude`
+**When** the refactoring is applied
+**Then** validation checks velocity in the range 0–127 and the error case is renamed to `AudioError.invalidVelocity`
+
+**Given** `TrainingSession` holds a private constant `amplitude: Double = 0.5`
+**When** the refactoring is applied
+**Then** it holds a velocity constant of type `UInt8` with the equivalent MIDI value (63)
+
+**Given** `MockNotePlayer` tracks `lastAmplitude` and `playHistory` with amplitude fields
+**When** the refactoring is applied
+**Then** these are renamed to `lastVelocity` and the history tuple uses `velocity: UInt8`
+
+**Given** all existing tests pass before the refactoring
+**When** the refactoring is complete
+**Then** all existing tests pass with updated parameter names and types, and no audible behavior changes (NFR1)
+
+### Story 10.3: Add Amplitude Parameter to NotePlayer
+
+As a **developer**,
+I want `NotePlayer.play` to accept an amplitude parameter that controls sound volume independently of velocity,
+So that the audio engine can play notes at different loudness levels for the Vary Loudness feature.
+
+**Acceptance Criteria:**
+
+**Given** the `NotePlayer` protocol declares `play(frequency:duration:velocity:)`
+**When** the amplitude parameter is added
+**Then** the signature becomes `play(frequency:duration:velocity:amplitude:)` where amplitude controls sound volume using the mechanism identified in Story 10.1
+
+**Given** amplitude is not explicitly provided
+**When** a note is played
+**Then** the note plays at a default amplitude (no volume change), so existing callers are unaffected
+
+**Given** `SoundFontNotePlayer` receives an amplitude value
+**When** a note is played
+**Then** the sound volume is adjusted according to the amplitude value, independently of the MIDI velocity
+
+**Given** an amplitude value outside the valid range is provided
+**When** `play` is called
+**Then** an `AudioError.invalidAmplitude` error is thrown
+
+**Given** `MockNotePlayer` is used in tests
+**When** a note is played with an amplitude value
+**Then** the mock captures the amplitude in `lastAmplitude` and `playHistory` for test verification
+
+### Story 10.4: Add "Vary Loudness" Slider to Settings
+
+As a **musician**,
+I want a "Vary Loudness" slider in the Settings screen,
+So that I can control how much the volume varies between notes during training.
+
+**Acceptance Criteria:**
+
+**Given** the user navigates to the Settings screen
+**When** the screen is displayed
+**Then** a "Vary Loudness" slider is visible, labeled in the current locale (English: "Vary Loudness", German: localized equivalent)
+
+**Given** the slider range is 0.0 (left) to 1.0 (right)
+**When** the slider is all the way to the left
+**Then** the label or context communicates that there will be no loudness variation
+
+**Given** the slider is all the way to the right
+**When** the user reads the label or context
+**Then** it communicates maximum loudness variation
+
+**Given** the user adjusts the slider to any position
+**When** the user leaves Settings
+**Then** the value is persisted via `@AppStorage` using a new key in `SettingsKeys.swift`
+
+**Given** the app is restarted
+**When** the user opens Settings
+**Then** the slider reflects the previously saved value
+
+**Given** no value has been set (fresh install or existing user)
+**When** the slider is first displayed
+**Then** it defaults to 0.0 (no loudness variation — existing behavior preserved)
+
+### Story 10.5: Apply Loudness Variation in Training
+
+As a **musician**,
+I want note2 to sometimes play at a slightly different volume than note1 during training,
+So that I learn to distinguish pitch from loudness and sharpen my pitch perception.
+
+**Acceptance Criteria:**
+
+**Given** the "Vary Loudness" slider is set to 0.0
+**When** a comparison is played
+**Then** both notes are played at the same amplitude (no loudness offset applied to note2)
+
+**Given** the "Vary Loudness" slider is set to 1.0
+**When** a comparison is played
+**Then** note2's amplitude is offset by a random value in the range ±maxOffset dB (initially 2 dB) relative to note1
+
+**Given** the "Vary Loudness" slider is set to a value between 0.0 and 1.0 (e.g., 0.5)
+**When** a comparison is played
+**Then** note2's amplitude offset is drawn from ±(sliderValue × maxOffset) dB (e.g., ±1 dB at 0.5)
+
+**Given** `TrainingSession` is about to play a comparison
+**When** it reads the "Vary Loudness" setting
+**Then** it reads the current value from `@AppStorage` live (not cached), consistent with how other settings are read
+
+**Given** the random offset would push the amplitude outside the valid range
+**When** the offset is calculated
+**Then** the resulting amplitude is clamped to the valid range so no error is thrown
+
+**Given** the maxOffset constant is defined
+**When** a developer needs to adjust it after testing
+**Then** it is a single tunable constant, easy to find and change
