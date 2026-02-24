@@ -140,7 +140,7 @@ Never run only specific test files — always the complete suite.
 
 **Project-Specific Naming (non-obvious conventions):**
 - **Protocols:** capability nouns — `NotePlayer`, `NextNoteStrategy` (not `-able`, not `-Protocol` suffix)
-- **Protocol implementations:** descriptive prefix — `SoundFontNotePlayer`, `AdaptiveNoteStrategy`
+- **Protocol implementations:** descriptive prefix — `SoundFontNotePlayer`, `KazezNoteStrategy`
 - **Screens:** `{Name}Screen.swift` — not `{Name}View` or `{Name}ViewController`
 - **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `FeedbackIndicator.swift`
 - **Mocks:** `Mock{Name}.swift` — not `{Name}Mock`, `Fake{Name}`, or `Stub{Name}`
@@ -223,7 +223,7 @@ Never run only specific test files — always the complete suite.
 - **`TrainingSession` is the error boundary** — catches all service errors; training loop continues gracefully
 - **Audio interruption mid-comparison** → discard incomplete comparison, stop training
 - **App backgrounding** → stop training; return to Start Screen on foreground
-- **Empty profile (cold start)** → `NextNoteStrategy` uses exploration mode; handle gracefully
+- **Empty profile (cold start)** → `KazezNoteStrategy` starts at `maxCentDifference` (or `profile.overallMean` if some training exists); handle gracefully
 
 ---
 
@@ -241,4 +241,4 @@ Never run only specific test files — always the complete suite.
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-02-23
+Last Updated: 2026-02-24

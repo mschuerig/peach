@@ -12,13 +12,14 @@ struct KazezNoteStrategyTests {
     @Test("Conforms to NextNoteStrategy and returns valid Comparison")
     func protocolCompliance() {
         let strategy = KazezNoteStrategy()
+        let settings = TrainingSettings()
         let comparison = strategy.nextComparison(
             profile: PerceptualProfile(),
-            settings: TrainingSettings(),
+            settings: settings,
             lastComparison: nil
         )
 
-        #expect(comparison.note1 >= 48 && comparison.note1 <= 72)
+        #expect(comparison.note1 >= settings.noteRangeMin && comparison.note1 <= settings.noteRangeMax)
         #expect(comparison.note2 == comparison.note1)
         #expect(comparison.centDifference > 0)
     }
@@ -142,10 +143,10 @@ struct KazezNoteStrategyTests {
 
     // MARK: - Note Range
 
-    @Test("Notes always within C3-C5 (MIDI 48-72)")
+    @Test("Notes always within settings noteRangeMin...noteRangeMax")
     func noteRange() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings()
+        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 72)
 
         for _ in 0..<100 {
             let comparison = strategy.nextComparison(
@@ -155,6 +156,99 @@ struct KazezNoteStrategyTests {
             )
             #expect(comparison.note1 >= 48 && comparison.note1 <= 72)
         }
+    }
+
+    @Test("Notes respect custom note range from settings")
+    func customNoteRange() {
+        let strategy = KazezNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 72)
+
+        for _ in 0..<100 {
+            let comparison = strategy.nextComparison(
+                profile: PerceptualProfile(),
+                settings: settings,
+                lastComparison: nil
+            )
+            #expect(comparison.note1 >= 60 && comparison.note1 <= 72)
+        }
+    }
+
+    // MARK: - Cold Start from Profile
+
+    @Test("Cold start with empty profile uses maxCentDifference")
+    func coldStartEmptyProfile() {
+        let strategy = KazezNoteStrategy()
+        let profile = PerceptualProfile()
+        let settings = TrainingSettings(maxCentDifference: 100.0)
+
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
+
+        #expect(comparison.centDifference == 100.0)
+    }
+
+    @Test("Cold start with trained profile uses overallMean")
+    func coldStartWithProfile() {
+        let strategy = KazezNoteStrategy()
+        let profile = PerceptualProfile()
+        // Train some notes so overallMean returns a value
+        profile.update(note: 60, centOffset: 10.0, isCorrect: true)
+        profile.update(note: 60, centOffset: 8.0, isCorrect: true)
+        profile.update(note: 72, centOffset: 12.0, isCorrect: false)
+
+        let settings = TrainingSettings(maxCentDifference: 100.0)
+
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
+
+        // overallMean should be used, not maxCentDifference
+        let expectedMean = profile.overallMean!
+        #expect(comparison.centDifference == expectedMean)
+        #expect(comparison.centDifference != 100.0)
+    }
+
+    @Test("Cold start with profile clamps to minCentDifference")
+    func coldStartProfileClampedToMin() {
+        let strategy = KazezNoteStrategy()
+        let profile = PerceptualProfile()
+        // Train a note with very small offset
+        profile.update(note: 60, centOffset: 0.05, isCorrect: true)
+
+        let settings = TrainingSettings(minCentDifference: 1.0, maxCentDifference: 100.0)
+
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
+
+        // overallMean (0.05) should be clamped to minCentDifference (1.0)
+        #expect(comparison.centDifference >= settings.minCentDifference)
+    }
+
+    @Test("Cold start with profile clamps to maxCentDifference")
+    func coldStartProfileClampedToMax() {
+        let strategy = KazezNoteStrategy()
+        let profile = PerceptualProfile()
+        // Train with large offsets
+        profile.update(note: 60, centOffset: 200.0, isCorrect: false)
+
+        let settings = TrainingSettings(maxCentDifference: 100.0)
+
+        let comparison = strategy.nextComparison(
+            profile: profile,
+            settings: settings,
+            lastComparison: nil
+        )
+
+        // overallMean (200.0) should be clamped to maxCentDifference (100.0)
+        #expect(comparison.centDifference <= settings.maxCentDifference)
     }
 
     // MARK: - Convergence

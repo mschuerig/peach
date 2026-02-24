@@ -2,9 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct SettingsScreen: View {
-    @AppStorage(SettingsKeys.naturalVsMechanical)
-    private var naturalVsMechanical: Double = SettingsKeys.defaultNaturalVsMechanical
-
     @AppStorage(SettingsKeys.noteRangeMin)
     private var noteRangeMin: Int = SettingsKeys.defaultNoteRangeMin
 
@@ -29,7 +26,6 @@ struct SettingsScreen: View {
 
     var body: some View {
         Form {
-            algorithmSection
             noteRangeSection
             audioSection
             instrumentSection
@@ -56,23 +52,6 @@ struct SettingsScreen: View {
     }
 
     // MARK: - Sections
-
-    private var algorithmSection: some View {
-        Section("Algorithm") {
-            VStack(alignment: .leading) {
-                Text("Natural vs. Mechanical")
-                Slider(value: $naturalVsMechanical, in: 0.0...1.0, step: 0.05) {
-                    Text("Natural vs. Mechanical")
-                } minimumValueLabel: {
-                    Text("Natural")
-                        .font(.caption2)
-                } maximumValueLabel: {
-                    Text("Mechanical")
-                        .font(.caption2)
-                }
-            }
-        }
-    }
 
     private var noteRangeSection: some View {
         Section("Note Range") {

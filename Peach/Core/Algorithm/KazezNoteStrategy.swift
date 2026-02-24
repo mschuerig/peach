@@ -1,11 +1,11 @@
 import Foundation
 import OSLog
 
-/// Evaluation strategy using Kazez et al. (2001) difficulty formulas
+/// Default training strategy using Kazez et al. (2001) difficulty formulas
 ///
-/// A simplified, stateless NextNoteStrategy for validating difficulty
-/// convergence behavior. Uses sqrt(P)-scaled formulas that converge
-/// to the user's threshold in ~10 correct answers (vs. ~60 with fixed factors).
+/// The primary NextNoteStrategy for production training. Maintains a single
+/// continuous difficulty chain with random note selection, converging to the
+/// user's threshold in ~10 correct answers via sqrt(P)-scaled formulas.
 ///
 /// # Kazez Formulas
 ///
@@ -14,12 +14,16 @@ import OSLog
 ///
 /// Where P = previous interval in cents, N = new interval in cents.
 ///
-/// # Simplifications (evaluation only)
+/// # Design
 ///
-/// - **Global difficulty**: Single difficulty derived from lastComparison, not per-note
-/// - **Random note selection**: Uniform random within C3–C5 (MIDI 48–72)
+/// - **Global difficulty**: Single difficulty chain — no jumps when note changes
+/// - **Random note selection**: Uniform random within settings noteRange (frequency roving)
+/// - **Cold start**: Uses `profile.overallMean` if available, else `settings.maxCentDifference`
 /// - **Stateless**: P comes from lastComparison.centDifference; no internal state
-/// - **PerceptualProfile ignored**: Passed by protocol but unused for difficulty
+///
+/// Rationale: pitch discrimination is one unified skill with roughly uniform thresholds
+/// across the frequency range. Per-note difficulty tracking solves a problem that doesn't
+/// exist. See `docs/brainstorming/brainstorming-session-2026-02-24.md`.
 ///
 /// # Reference
 ///
@@ -29,12 +33,6 @@ import OSLog
 @MainActor
 final class KazezNoteStrategy: NextNoteStrategy {
 
-    // MARK: - Constants
-
-    /// Note range: C3 to C5
-    private static let noteRangeMin = 48
-    private static let noteRangeMax = 72
-
     // MARK: - Properties
 
     private let logger = Logger(subsystem: "com.peach.app", category: "KazezNoteStrategy")
@@ -42,7 +40,7 @@ final class KazezNoteStrategy: NextNoteStrategy {
     // MARK: - Initialization
 
     init() {
-        logger.info("KazezNoteStrategy initialized (evaluation mode)")
+        logger.info("KazezNoteStrategy initialized")
     }
 
     // MARK: - NextNoteStrategy Protocol
@@ -59,11 +57,13 @@ final class KazezNoteStrategy: NextNoteStrategy {
             centDifference = last.isCorrect
                 ? kazezNarrow(p: p, min: settings.minCentDifference)
                 : kazezWiden(p: p, max: settings.maxCentDifference)
+        } else if let profileMean = profile.overallMean {
+            centDifference = max(settings.minCentDifference, min(profileMean, settings.maxCentDifference))
         } else {
             centDifference = settings.maxCentDifference
         }
 
-        let note = Int.random(in: Self.noteRangeMin...Self.noteRangeMax)
+        let note = Int.random(in: settings.noteRangeMin...settings.noteRangeMax)
 
         logger.info("note=\(note), centDiff=\(centDifference, format: .fixed(precision: 1))")
 
