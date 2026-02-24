@@ -34,7 +34,7 @@ struct ProfilePreviewView: View {
         .accessibilityAddTraits(.isButton)
     }
 
-    var accessibilityLabel: String {
+    private var accessibilityLabel: String {
         Self.accessibilityLabel(timeline: timeline)
     }
 
