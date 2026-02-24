@@ -5,7 +5,6 @@ import Foundation
 /// Comprehensive test suite for PerceptualProfile
 /// Tests aggregation, incremental updates, and weak spot identification
 @Suite("PerceptualProfile Tests")
-@MainActor
 struct PerceptualProfileTests {
 
     // MARK: - Task 1 Tests: Data Structure and Cold Start

@@ -3,7 +3,6 @@ import SwiftUI
 @testable import Peach
 
 @Suite("ProfileScreen Layout Tests")
-@MainActor
 struct ProfileScreenLayoutTests {
 
     // MARK: - Accessibility Summary

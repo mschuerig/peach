@@ -315,21 +315,10 @@ Replace `precondition` with `guard ... else { throw AudioError.invalidFrequency(
 - `Peach/Core/Audio/FrequencyCalculation.swift:60`
 - `Peach/Core/Audio/NotePlayer.swift` — `AudioError` enum
 
-#### U3: `nonisolated(unsafe)` Environment Key Pattern
+#### ~~U3: `nonisolated(unsafe)` Environment Key Pattern~~ (RESOLVED)
 
-**Priority:** Medium
-**Category:** Safety / Concurrency
-
-**Issue:**
-Three environment keys use `nonisolated(unsafe)` with `MainActor.assumeIsolated()`: `TrainingSessionKey` (`TrainingScreen.swift:152`), `PerceptualProfileKey` (`ProfileScreen.swift:149`), and `TrendAnalyzerKey` (`TrendAnalyzer.swift:93`). This tells the compiler "trust me" about actor isolation. If an `EnvironmentKey.defaultValue` is ever accessed off the main thread (e.g., during SwiftUI internal diffing on a background queue), it's undefined behavior.
-
-**Proposed Fix:**
-Investigate whether Swift 6.0+ provides a safe pattern for `@MainActor` environment key defaults, or use a lazy optional pattern that avoids the unsafe annotation. See also the existing item "Extract Environment Keys to Shared Locations" for the duplication aspect.
-
-**Related Code:**
-- `Peach/Training/TrainingScreen.swift:151-171`
-- `Peach/Profile/ProfileScreen.swift:148-157`
-- `Peach/Core/Profile/TrendAnalyzer.swift:92-101`
+**Status:** Resolved — 2026-02-24
+**Resolution:** Upgraded project from Swift 6.0 to Swift 6.2 with default MainActor isolation (`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`) on both app and test targets. Replaced all 5 manual `nonisolated(unsafe)` + `MainActor.assumeIsolated()` EnvironmentKey blocks with SwiftUI's `@Entry` macro. The `@Entry` macro generates correct actor-isolated code under Swift 6.2, eliminating undefined behavior. Also resolves D2 (boilerplate duplication) as a side effect.
 
 #### U4: Fire-and-Forget `Task`s Without Tracking
 
@@ -402,16 +391,10 @@ Add `delete(_:)` and `deleteAll()` to the protocol, or acknowledge the protocol 
 **Status:** Resolved — 2026-02-24
 **Resolution:** Extracted shared `TrainingSessionFixture` struct and `makeTrainingSession()` factory into `TrainingTestHelpers.swift`. All 8 test files (TrainingSessionTests, IntegrationTests, LifecycleTests, DifficultyTests, SettingsTests, AudioInterruptionTests, FeedbackTests, TrainingScreenFeedbackTests) now use the shared factory. The factory supports optional `comparisons`, `settingsOverride`, `noteDurationOverride`, `includeHaptic`, and `notificationCenter` parameters to cover all test scenarios.
 
-#### D2: `nonisolated(unsafe)` Environment Key Boilerplate Repeated 3 Times
+#### ~~D2: `nonisolated(unsafe)` Environment Key Boilerplate Repeated 3 Times~~ (RESOLVED)
 
-**Priority:** Low
-**Category:** Code Organization
-
-**Issue:**
-The identical 8-line pattern (`nonisolated(unsafe) static var defaultValue = { ... MainActor.assumeIsolated { ... } }()`) is copy-pasted in `TrainingScreen.swift`, `ProfileScreen.swift`, and `TrendAnalyzer.swift`. This is both duplication and an unsafe pattern (see U3).
-
-**Proposed Fix:**
-Extract to a generic helper or macro. See also existing item "Extract Environment Keys to Shared Locations."
+**Status:** Resolved — 2026-02-24
+**Resolution:** Replaced all 5 manual EnvironmentKey structs (TrainingSessionKey, PerceptualProfileKey, TrendAnalyzerKey, ThresholdTimelineKey, SoundFontLibraryKey) with `@Entry` macro declarations. Each environment key is now a single line instead of an 8-line boilerplate block. Resolved as part of U3 fix (Swift 6.2 upgrade).
 
 #### ~~D3: Kazez Formula Coefficients Differ Without Documentation~~ (RESOLVED)
 

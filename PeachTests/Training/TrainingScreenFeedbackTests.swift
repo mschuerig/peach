@@ -10,7 +10,6 @@ struct TrainingScreenFeedbackTests {
 
     // MARK: - Subtask 1.1: Correct icon shown immediately on correctness change
 
-    @MainActor
     @Test("feedback reflects current correctness after incorrect-to-correct change")
     func feedbackReflectsCorrectnessAfterIncorrectToCorrect() async throws {
         let f = makeTrainingSession()
@@ -34,7 +33,6 @@ struct TrainingScreenFeedbackTests {
         #expect(f.session.isLastAnswerCorrect == true)
     }
 
-    @MainActor
     @Test("feedback reflects current correctness after correct-to-incorrect change")
     func feedbackReflectsCorrectnessAfterCorrectToIncorrect() async throws {
         let f = makeTrainingSession()
@@ -60,7 +58,6 @@ struct TrainingScreenFeedbackTests {
 
     // MARK: - Subtask 1.2: No stale icon state between feedback cycles
 
-    @MainActor
     @Test("showFeedback is false between feedback cycles")
     func showFeedbackIsFalseBetweenCycles() async throws {
         let f = makeTrainingSession()
@@ -81,7 +78,6 @@ struct TrainingScreenFeedbackTests {
         #expect(f.session.showFeedback == false)
     }
 
-    @MainActor
     @Test("first answer of session shows feedback without stale state")
     func firstAnswerShowsFeedbackCleanly() async throws {
         let f = makeTrainingSession()
@@ -101,7 +97,6 @@ struct TrainingScreenFeedbackTests {
 
     // MARK: - Subtask 1.3: Same correctness between consecutive answers (AC #3)
 
-    @MainActor
     @Test("feedback displays correctly on consecutive same-correctness answers")
     func feedbackDisplaysCorrectlyOnConsecutiveSameCorrectness() async throws {
         let f = makeTrainingSession()
@@ -128,13 +123,11 @@ struct TrainingScreenFeedbackTests {
 
     // MARK: - Reduce Motion
 
-    @MainActor
     @Test("feedbackAnimation returns nil when Reduce Motion is enabled")
     func feedbackAnimationReturnsNilForReduceMotion() async {
         #expect(TrainingScreen.feedbackAnimation(reduceMotion: true) == nil)
     }
 
-    @MainActor
     @Test("feedbackAnimation returns animation when Reduce Motion is disabled")
     func feedbackAnimationReturnsAnimationNormally() async {
         #expect(TrainingScreen.feedbackAnimation(reduceMotion: false) != nil)

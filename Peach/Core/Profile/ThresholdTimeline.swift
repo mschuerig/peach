@@ -16,7 +16,6 @@ struct AggregatedDataPoint {
 }
 
 @Observable
-@MainActor
 final class ThresholdTimeline {
 
     private(set) var dataPoints: [TimelineDataPoint] = []
@@ -124,20 +123,6 @@ extension ThresholdTimeline: ComparisonObserver {
 
 // MARK: - Environment Key
 
-private struct ThresholdTimelineKey: EnvironmentKey {
-    nonisolated(unsafe) static var defaultValue: ThresholdTimeline = {
-        @MainActor func makeDefault() -> ThresholdTimeline {
-            ThresholdTimeline()
-        }
-        return MainActor.assumeIsolated {
-            makeDefault()
-        }
-    }()
-}
-
 extension EnvironmentValues {
-    var thresholdTimeline: ThresholdTimeline {
-        get { self[ThresholdTimelineKey.self] }
-        set { self[ThresholdTimelineKey.self] = newValue }
-    }
+    @Entry var thresholdTimeline = ThresholdTimeline()
 }

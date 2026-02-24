@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for SummaryStatisticsView display logic
 @Suite("SummaryStatistics Tests")
-@MainActor
 struct SummaryStatisticsTests {
 
     // MARK: - Task 1: Mean and StdDev computation

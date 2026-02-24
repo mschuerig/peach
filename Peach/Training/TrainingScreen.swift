@@ -159,38 +159,24 @@ struct TrainingScreen: View {
 
 // MARK: - Environment Key for TrainingSession
 
-private struct TrainingSessionKey: EnvironmentKey {
-    nonisolated(unsafe) static var defaultValue: TrainingSession = {
-        // Default value for previews - uses mock dependencies
-        @MainActor func makeDefault() -> TrainingSession {
-            let dataStore = MockDataStoreForPreview()
-            let profile = PerceptualProfile()
-            let strategy = AdaptiveNoteStrategy()
-            let hapticManager = MockHapticFeedbackManager()
-            let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
-            return TrainingSession(
-                notePlayer: MockNotePlayerForPreview(),
-                strategy: strategy,
-                profile: profile,
-                observers: observers
-            )
-        }
-        return MainActor.assumeIsolated {
-            makeDefault()
-        }
-    }()
-}
-
 extension EnvironmentValues {
-    var trainingSession: TrainingSession {
-        get { self[TrainingSessionKey.self] }
-        set { self[TrainingSessionKey.self] = newValue }
-    }
+    @Entry var trainingSession: TrainingSession = {
+        let dataStore = MockDataStoreForPreview()
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+        let hapticManager = MockHapticFeedbackManager()
+        let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
+        return TrainingSession(
+            notePlayer: MockNotePlayerForPreview(),
+            strategy: strategy,
+            profile: profile,
+            observers: observers
+        )
+    }()
 }
 
 // MARK: - Preview Mocks
 
-@MainActor
 private final class MockNotePlayerForPreview: NotePlayer {
     func play(frequency: Double, duration: TimeInterval, amplitude: Double) async throws {
         try await Task.sleep(for: .milliseconds(100))
@@ -199,7 +185,6 @@ private final class MockNotePlayerForPreview: NotePlayer {
     func stop() async throws {}
 }
 
-@MainActor
 private final class MockDataStoreForPreview: ComparisonRecordStoring, ComparisonObserver {
     func save(_ record: ComparisonRecord) throws {}
     func fetchAll() throws -> [ComparisonRecord] { [] }

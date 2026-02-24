@@ -8,14 +8,14 @@ struct SF2PresetParserTests {
     // MARK: - Parsing Bundled SF2
 
     @Test("Parses GeneralUser GS SF2 and returns non-empty preset list")
-    @MainActor func parsesGeneralUserSF2() async throws {
+    func parsesGeneralUserSF2() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         #expect(!presets.isEmpty)
     }
 
     @Test("Preset count matches expected GeneralUser GS total (287 presets)")
-    @MainActor func presetCountMatchesExpected() async throws {
+    func presetCountMatchesExpected() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         // GeneralUser GS: 261 melodic + 13 drum kits (bank 120) + 13 drums (bank 128) = 287
@@ -23,7 +23,7 @@ struct SF2PresetParserTests {
     }
 
     @Test("Grand Piano found at bank 0, program 0")
-    @MainActor func findsGrandPiano() async throws {
+    func findsGrandPiano() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         let piano = presets.first { $0.program == 0 && $0.bank == 0 }
@@ -32,7 +32,7 @@ struct SF2PresetParserTests {
     }
 
     @Test("Cello found at bank 0, program 42")
-    @MainActor func findsCello() async throws {
+    func findsCello() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         let cello = presets.first { $0.program == 42 && $0.bank == 0 }
@@ -41,7 +41,7 @@ struct SF2PresetParserTests {
     }
 
     @Test("Bank variants found (e.g., bank 8 program 4 Chorused Tine EP)")
-    @MainActor func findsBankVariants() async throws {
+    func findsBankVariants() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         let variant = presets.first { $0.bank == 8 && $0.program == 4 }
@@ -52,7 +52,7 @@ struct SF2PresetParserTests {
     // MARK: - EOP Sentinel Exclusion
 
     @Test("EOP sentinel record is not in the result")
-    @MainActor func excludesEOPSentinel() async throws {
+    func excludesEOPSentinel() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         let eop = presets.filter { $0.name == "EOP" || $0.name.hasPrefix("EOP") }
@@ -62,7 +62,7 @@ struct SF2PresetParserTests {
     // MARK: - Name Cleaning
 
     @Test("Preset names have no trailing null bytes")
-    @MainActor func namesHaveNoNullBytes() async throws {
+    func namesHaveNoNullBytes() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         for preset in presets {
@@ -71,7 +71,7 @@ struct SF2PresetParserTests {
     }
 
     @Test("Preset names have no leading or trailing whitespace")
-    @MainActor func namesAreTrimmed() async throws {
+    func namesAreTrimmed() async throws {
         let url = try sf2URL()
         let presets = try SF2PresetParser.parsePresets(from: url)
         for preset in presets {
@@ -83,7 +83,7 @@ struct SF2PresetParserTests {
     // MARK: - Error Handling
 
     @Test("Throws for missing file")
-    @MainActor func throwsForMissingFile() async {
+    func throwsForMissingFile() async {
         let bogusURL = URL(fileURLWithPath: "/nonexistent/file.sf2")
         #expect(throws: SF2ParseError.self) {
             _ = try SF2PresetParser.parsePresets(from: bogusURL)
@@ -93,7 +93,7 @@ struct SF2PresetParserTests {
     // MARK: - Tag Property
 
     @Test("SF2Preset tag encodes bank and program")
-    @MainActor func tagEncodesBankAndProgram() async {
+    func tagEncodesBankAndProgram() async {
         let preset = SF2Preset(name: "Cello", program: 42, bank: 0)
         #expect(preset.tag == "sf2:0:42")
 

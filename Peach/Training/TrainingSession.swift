@@ -63,7 +63,6 @@ enum TrainingState {
 ///
 /// The round-trip between comparisons must be effectively instantaneous (< 100ms target).
 /// Implementation strategy: pre-generate next comparison during feedback phase.
-@MainActor
 @Observable
 final class TrainingSession {
     // MARK: - Logger

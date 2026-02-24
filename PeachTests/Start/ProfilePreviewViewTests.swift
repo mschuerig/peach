@@ -3,7 +3,6 @@ import SwiftUI
 @testable import Peach
 
 @Suite("ProfilePreviewView Tests")
-@MainActor
 struct ProfilePreviewViewTests {
 
     // MARK: - Helpers

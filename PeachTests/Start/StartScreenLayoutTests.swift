@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for StartScreen layout adaptation based on vertical size class (Story 7.3)
 @Suite("StartScreen Layout Tests")
-@MainActor
 struct StartScreenLayoutTests {
 
     // MARK: - VStack Spacing

@@ -9,7 +9,6 @@ struct TrainingSessionAudioInterruptionTests {
     // MARK: - Audio Interruption Tests
 
     @Test("Audio interruption began stops training from awaitingAnswer state")
-    @MainActor
     func audioInterruption_Began_StopsFromAwaitingAnswer() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -28,7 +27,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Audio interruption began stops training from playingNote1 state")
-    @MainActor
     func audioInterruption_Began_StopsFromPlayingNote1() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -51,7 +49,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Audio interruption began stops training from playingNote2 state")
-    @MainActor
     func audioInterruption_Began_StopsFromPlayingNote2() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -77,7 +74,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Audio interruption ended does NOT auto-restart training")
-    @MainActor
     func audioInterruption_Ended_DoesNotAutoRestart() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -104,7 +100,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Audio interruption with nil type is handled gracefully")
-    @MainActor
     func audioInterruption_NilType_HandledGracefully() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -124,7 +119,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Audio interruption on idle session is safe (no crash)")
-    @MainActor
     func audioInterruption_Began_WhileIdle_IsSafe() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -145,7 +139,6 @@ struct TrainingSessionAudioInterruptionTests {
     // MARK: - Route Change Tests
 
     @Test("Route change oldDeviceUnavailable stops training")
-    @MainActor
     func routeChange_OldDeviceUnavailable_StopsTraining() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -164,7 +157,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Route change non-stop reasons continue training (newDevice, categoryChange, nil)")
-    @MainActor
     func routeChange_NonStopReasons_ContinueTraining() async throws {
         let nonStopReasons: [UInt?] = [
             AVAudioSession.RouteChangeReason.newDeviceAvailable.rawValue,
@@ -194,7 +186,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Route change oldDeviceUnavailable on idle session is safe")
-    @MainActor
     func routeChange_OldDeviceUnavailable_WhileIdle_IsSafe() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -215,7 +206,6 @@ struct TrainingSessionAudioInterruptionTests {
     // MARK: - Combined Scenario Tests
 
     @Test("Training can restart after audio interruption stops it")
-    @MainActor
     func canRestartAfterInterruption() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)
@@ -236,7 +226,6 @@ struct TrainingSessionAudioInterruptionTests {
     }
 
     @Test("Training can restart after route change stops it")
-    @MainActor
     func canRestartAfterRouteChange() async throws {
         let nc = NotificationCenter()
         let f = makeTrainingSession(noteDurationOverride: 0.01, notificationCenter: nc)

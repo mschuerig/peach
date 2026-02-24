@@ -22,7 +22,6 @@ import Foundation
 /// let strategy: NextNoteStrategy = KazezNoteStrategy()
 /// let comparison = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
 /// ```
-@MainActor
 protocol NextNoteStrategy {
     /// Selects the next comparison based on user's perceptual profile and settings
     ///

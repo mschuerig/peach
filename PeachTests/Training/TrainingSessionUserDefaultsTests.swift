@@ -21,7 +21,6 @@ struct TrainingSessionUserDefaultsTests {
 
     // MARK: - UserDefaults Settings Tests
 
-    @MainActor
     @Test("Changing UserDefaults values changes TrainingSettings built by TrainingSession")
     func userDefaultsChangesAffectSettings() async throws {
         cleanUpSettingsDefaults()
@@ -55,7 +54,6 @@ struct TrainingSessionUserDefaultsTests {
         session.stop()
     }
 
-    @MainActor
     @Test("Note duration from UserDefaults is passed to NotePlayer")
     func noteDurationFromUserDefaultsPassedToPlayer() async throws {
         cleanUpSettingsDefaults()
@@ -83,7 +81,6 @@ struct TrainingSessionUserDefaultsTests {
         session.stop()
     }
 
-    @MainActor
     @Test("Reference pitch from UserDefaults is passed to frequency calculation")
     func referencePitchFromUserDefaultsAffectsFrequency() async throws {
         cleanUpSettingsDefaults()
@@ -115,7 +112,6 @@ struct TrainingSessionUserDefaultsTests {
         session.stop()
     }
 
-    @MainActor
     @Test("Settings persist across simulated app restart")
     func settingsPersistAcrossRestart() async throws {
         cleanUpSettingsDefaults()
@@ -151,7 +147,6 @@ struct TrainingSessionUserDefaultsTests {
         session.stop()
     }
 
-    @MainActor
     @Test("Settings changed mid-training take effect on next comparison")
     func settingsChangedMidTrainingTakeEffect() async throws {
         cleanUpSettingsDefaults()

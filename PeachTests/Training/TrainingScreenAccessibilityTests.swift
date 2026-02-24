@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for TrainingScreen accessibility features (Story 7.2)
 @Suite("TrainingScreen Accessibility Tests")
-@MainActor
 struct TrainingScreenAccessibilityTests {
 
     // MARK: - Reduce Motion (AC: #6)

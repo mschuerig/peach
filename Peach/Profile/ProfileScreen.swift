@@ -29,7 +29,6 @@ struct ProfileScreen: View {
         Self.accessibilitySummary(timeline: timeline)
     }
 
-    @MainActor
     static func accessibilitySummary(timeline: ThresholdTimeline) -> String {
         let aggregated = timeline.aggregatedPoints
         guard !aggregated.isEmpty else {
@@ -100,20 +99,6 @@ struct ProfileScreen: View {
 
 // MARK: - Environment Key for PerceptualProfile
 
-private struct PerceptualProfileKey: EnvironmentKey {
-    nonisolated(unsafe) static var defaultValue: PerceptualProfile = {
-        @MainActor func makeDefault() -> PerceptualProfile {
-            PerceptualProfile()
-        }
-        return MainActor.assumeIsolated {
-            makeDefault()
-        }
-    }()
-}
-
 extension EnvironmentValues {
-    var perceptualProfile: PerceptualProfile {
-        get { self[PerceptualProfileKey.self] }
-        set { self[PerceptualProfileKey.self] = newValue }
-    }
+    @Entry var perceptualProfile = PerceptualProfile()
 }

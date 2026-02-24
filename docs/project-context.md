@@ -16,7 +16,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 ## Technology Stack & Versions
 
-- **Swift 6.0** — strict concurrency enforced; all UI-facing types require `@MainActor`; `Sendable` checked at compile time
+- **Swift 6.2** — strict concurrency enforced; default MainActor isolation enabled (`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`) — all code is implicitly `@MainActor` unless marked `nonisolated`; `Sendable` checked at compile time
 - **iOS 26.0** deployment target — use latest APIs freely, no backward compatibility
 - **SwiftUI** — declarative UI with SwiftUI lifecycle; **no UIKit in views** (UIKit only through protocol abstractions like `HapticFeedback`)
 - **SwiftData** — `@Model` for persistence; **only `TrainingDataStore` accesses SwiftData** — no direct `ModelContext` usage elsewhere
@@ -30,12 +30,12 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 ## Critical Implementation Rules
 
-### Language-Specific Rules (Swift 6)
+### Language-Specific Rules (Swift 6.2)
 
 **Concurrency (compiler-enforced):**
-- **`@MainActor` on all service classes and mocks** — the compiler enforces isolation boundaries; UI-facing types must be explicitly isolated
+- **Default MainActor isolation** — all code is implicitly `@MainActor`; **do not add explicit `@MainActor`** annotations (they are redundant noise); use `nonisolated` to opt out where background execution is needed; use `@MainActor` only in `@Sendable` closures (e.g., `Task { @MainActor in ... }` inside notification callbacks) to hop back to the main actor
 - **`Sendable` conformance enforced** — types crossing isolation boundaries must be `Sendable`; use value types to satisfy this naturally
-- **`nonisolated` only when compiler requires it** — needed for protocol conformance (`Hashable`, `Codable`) on `@MainActor` types; do not use it to bypass isolation
+- **`nonisolated` only when compiler requires it** — needed for protocol conformance (`Hashable`, `Codable`) or for functions that must run off the main actor; do not use it to bypass isolation
 - **Closures crossing isolation boundaries** — closures from `@MainActor` contexts passed to non-isolated APIs need explicit `@Sendable` annotation; Swift 6 rejects implicit captures
 
 **Async/Await:**
@@ -62,7 +62,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 **SwiftUI Views:**
 - **Views are thin** — observe state, render, send actions; no business logic in views
 - **Views only interact with `TrainingSession` and `PerceptualProfile`** — never import or reference `NotePlayer`, `NextNoteStrategy`, or `TrainingDataStore` from views
-- **`@Environment` for dependency injection** — custom `EnvironmentKey` types (e.g., `TrainingSessionKey`); **never use `@EnvironmentObject`** (incompatible with `@Observable`)
+- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var trainingSession = TrainingSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
 - **Extract subviews at ~40 lines** — when a view body exceeds ~40 lines, extract child views
 - **Responsive layout** — detect `@Environment(\.verticalSizeClass)` for compact/regular; extract layout parameters to `static` methods for unit testability
 - **`NavigationDestination` enum** for type-safe routing — no string-based navigation
@@ -91,7 +91,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Never create service instances elsewhere** — new services get wired here and injected via environment
 
 **When Adding New Components:**
-- New injectable service → create `EnvironmentKey`, extend `EnvironmentValues`, wire in `PeachApp.swift`
+- New injectable service → add `@Entry var myService = MyService()` in an `extension EnvironmentValues`, wire in `PeachApp.swift`
 - New `ComparisonObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
 - New SwiftData `@Model` → register in `ModelContainer` schema in `PeachApp.swift`
 - New layout logic → extract to `static` methods for unit testability
@@ -106,7 +106,7 @@ Never run only specific test files — always the complete suite.
 **Framework & Structure:**
 - **Swift Testing only** — `@Test("behavioral description")`, `@Suite("name")`, `#expect()`
 - **Struct-based suites** — no classes, no `setUp`/`tearDown`; use factory methods for fixtures
-- **Every `@Test` function must be `@MainActor async`** — Swift Testing runs tests in parallel; without `@MainActor`, data races against isolated services
+- **Every `@Test` function must be `async`** — default MainActor isolation handles actor safety; do not add explicit `@MainActor` on test functions
 - **No `test` prefix on function names** — `@Test` attribute marks the test; name describes behavior: `func startsInIdleState()`, not `func testStartsInIdleState()`
 - **Behavioral test descriptions** — `@Test("plays note 1 after starting")`, not `@Test("test playNote1 method")`
 
@@ -210,7 +210,10 @@ Never run only specific test files — always the complete suite.
 
 **Never Do This:**
 - `ObservableObject` / `@Published` → use `@Observable`
-- `@EnvironmentObject` → use `@Environment` with custom `EnvironmentKey`
+- `@EnvironmentObject` → use `@Environment` with `@Entry`
+- Explicit `@MainActor` on types/functions → redundant with default isolation; only use in `@Sendable` closures to hop back
+- Manual `EnvironmentKey` structs → use `@Entry` macro
+- `nonisolated(unsafe)` → should never be needed with default MainActor isolation
 - `import XCTest` → use `import Testing`
 - Combine (`PassthroughSubject`, `sink`) → use `async/await`
 - Second `AVAudioEngine` instance → `SoundFontNotePlayer` is the sole `NotePlayer` and owns the only engine
@@ -241,4 +244,4 @@ Never run only specific test files — always the complete suite.
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-02-24
+Last Updated: 2026-02-24 (Swift 6.2 upgrade)

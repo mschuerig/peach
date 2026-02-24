@@ -9,7 +9,6 @@ struct TrainingSessionResetTests {
     // MARK: - Cold-Start Behavior After Reset
 
     @Test("after reset, PerceptualProfile statsForNote returns currentDifficulty 100.0 for all notes")
-    @MainActor
     func resetTrainingDataResetsAllCurrentDifficultyToDefault() {
         let profile = PerceptualProfile()
         let session = TrainingSession(
@@ -40,7 +39,6 @@ struct TrainingSessionResetTests {
     }
 
     @Test("after reset, first comparison from AdaptiveNoteStrategy uses 100 cents")
-    @MainActor
     func afterResetFirstComparisonUses100Cents() {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
@@ -69,7 +67,6 @@ struct TrainingSessionResetTests {
     }
 
     @Test("after reset, weightedEffectiveDifficulty returns default with no trained neighbors")
-    @MainActor
     func afterResetWeightedEffectiveDifficultyReturnsDefault() {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
@@ -102,7 +99,6 @@ struct TrainingSessionResetTests {
     // MARK: - TrendAnalyzer Reset
 
     @Test("resetTrainingData clears TrendAnalyzer trend data")
-    @MainActor
     func resetTrainingDataClearsTrendAnalyzer() {
         // Create TrendAnalyzer with enough records to produce a trend
         var records: [ComparisonRecord] = []
@@ -137,7 +133,6 @@ struct TrainingSessionResetTests {
     // MARK: - Stop Before Reset
 
     @Test("resetTrainingData stops active training before resetting")
-    @MainActor
     func resetTrainingDataStopsActiveTraining() async throws {
         let mockPlayer = MockNotePlayer()
         let profile = PerceptualProfile()

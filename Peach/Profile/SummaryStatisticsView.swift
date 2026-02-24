@@ -83,7 +83,6 @@ struct SummaryStatisticsView: View {
 
     /// Computes display statistics from the profile using per-note means
     /// Returns nil if no trained notes exist (cold start)
-    @MainActor
     static func computeStats(from profile: PerceptualProfile, midiRange: ClosedRange<Int>) -> Stats? {
         let trainedNotes = midiRange.filter { profile.statsForNote($0).isTrained }
         guard !trainedNotes.isEmpty else { return nil }

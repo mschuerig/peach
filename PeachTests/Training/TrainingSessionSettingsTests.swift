@@ -7,7 +7,6 @@ struct TrainingSessionSettingsTests {
 
     // MARK: - Settings Propagation Tests (Story 4.3)
 
-    @MainActor
     @Test("Strategy receives correct settings")
     func strategyReceivesCorrectSettings() async throws {
         let mockPlayer = MockNotePlayer()
@@ -35,7 +34,6 @@ struct TrainingSessionSettingsTests {
         #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.8)
     }
 
-    @MainActor
     @Test("Strategy receives updated profile after answer")
     func strategyReceivesUpdatedProfileAfterAnswer() async throws {
         let f = makeTrainingSession()
@@ -57,7 +55,6 @@ struct TrainingSessionSettingsTests {
 
     // MARK: - Settings Override Tests (Story 6.2)
 
-    @MainActor
     @Test("TrainingSession with settingsOverride uses override values")
     func settingsOverrideUsesOverrideValues() async throws {
         let mockPlayer = MockNotePlayer()
@@ -87,7 +84,6 @@ struct TrainingSessionSettingsTests {
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
     }
 
-    @MainActor
     @Test("noteDurationOverride takes precedence over UserDefaults")
     func noteDurationOverrideTakesPrecedence() async throws {
         let mockPlayer = MockNotePlayer()

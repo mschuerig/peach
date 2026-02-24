@@ -9,7 +9,6 @@ struct TrainingDataStoreEdgeCaseTests {
 
     // MARK: - Test Helpers
 
-    @MainActor
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(for: ComparisonRecord.self, configurations: config)
@@ -18,7 +17,6 @@ struct TrainingDataStoreEdgeCaseTests {
     // MARK: - Edge Case Tests
 
     @Test("Save multiple records with identical data")
-    @MainActor
     func saveDuplicateData() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -35,7 +33,6 @@ struct TrainingDataStoreEdgeCaseTests {
     }
 
     @Test("MIDI note boundaries are stored correctly")
-    @MainActor
     func midiNoteBoundaries() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -54,7 +51,6 @@ struct TrainingDataStoreEdgeCaseTests {
     }
 
     @Test("Fractional cent offsets are stored with precision")
-    @MainActor
     func fractionalCentPrecision() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -77,7 +73,6 @@ struct TrainingDataStoreEdgeCaseTests {
     // MARK: - Error Handling Tests
 
     @Test("FetchAll throws DataStoreError.fetchFailed when context is invalid")
-    @MainActor
     func fetchAllThrowsOnInvalidContext() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -99,7 +94,6 @@ struct TrainingDataStoreEdgeCaseTests {
     }
 
     @Test("Save throws DataStoreError.saveFailed on context save failure")
-    @MainActor
     func saveThrowsOnContextFailure() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -120,7 +114,6 @@ struct TrainingDataStoreEdgeCaseTests {
     }
 
     @Test("Delete throws DataStoreError.deleteFailed on context save failure")
-    @MainActor
     func deleteThrowsOnContextFailure() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)

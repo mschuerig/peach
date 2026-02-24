@@ -2,7 +2,6 @@ import Foundation
 import SwiftUI
 import os
 
-@MainActor
 final class SoundFontLibrary {
 
     private let logger = Logger(subsystem: "com.peach.app", category: "SoundFontLibrary")
@@ -43,20 +42,6 @@ final class SoundFontLibrary {
 
 // MARK: - Environment Key
 
-private struct SoundFontLibraryKey: EnvironmentKey {
-    nonisolated(unsafe) static var defaultValue: SoundFontLibrary = {
-        @MainActor func makeDefault() -> SoundFontLibrary {
-            SoundFontLibrary()
-        }
-        return MainActor.assumeIsolated {
-            makeDefault()
-        }
-    }()
-}
-
 extension EnvironmentValues {
-    var soundFontLibrary: SoundFontLibrary {
-        get { self[SoundFontLibraryKey.self] }
-        set { self[SoundFontLibraryKey.self] = newValue }
-    }
+    @Entry var soundFontLibrary = SoundFontLibrary()
 }

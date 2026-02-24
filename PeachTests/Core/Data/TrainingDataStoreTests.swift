@@ -9,13 +9,11 @@ struct TrainingDataStoreTests {
 
     // MARK: - Test Helpers
 
-    @MainActor
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(for: ComparisonRecord.self, configurations: config)
     }
 
-    @MainActor
     private func makeFileBasedContainer() throws -> ModelContainer {
         let tempDir = FileManager.default.temporaryDirectory
         let config = ModelConfiguration(url: tempDir.appendingPathComponent("test-\(UUID().uuidString).store"))
@@ -25,7 +23,6 @@ struct TrainingDataStoreTests {
     // MARK: - Save and Fetch Tests
 
     @Test("Save and retrieve a single record")
-    @MainActor
     func saveAndRetrieveSingleRecord() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -51,7 +48,6 @@ struct TrainingDataStoreTests {
     }
 
     @Test("FetchAll returns multiple records in timestamp order")
-    @MainActor
     func fetchMultipleRecordsInOrder() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -75,7 +71,6 @@ struct TrainingDataStoreTests {
     }
 
     @Test("All fields remain intact after save and retrieval")
-    @MainActor
     func allFieldsIntact() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -106,7 +101,6 @@ struct TrainingDataStoreTests {
     // MARK: - Delete Tests
 
     @Test("Delete removes record")
-    @MainActor
     func deleteRecord() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -125,7 +119,6 @@ struct TrainingDataStoreTests {
     }
 
     @Test("Delete only removes specified record")
-    @MainActor
     func deleteSpecificRecord() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -146,7 +139,6 @@ struct TrainingDataStoreTests {
     // MARK: - Persistence Tests
 
     @Test("Records persist across context recreation (simulated restart)")
-    @MainActor
     func persistenceAcrossRestart() async throws {
         let container = try makeFileBasedContainer()
 
@@ -176,7 +168,6 @@ struct TrainingDataStoreTests {
     // MARK: - Atomic Write Tests
 
     @Test("Atomic write behavior - successful save is complete")
-    @MainActor
     func atomicWriteSuccess() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
@@ -196,7 +187,6 @@ struct TrainingDataStoreTests {
     // MARK: - Empty Store Tests
 
     @Test("FetchAll returns empty array when no records exist")
-    @MainActor
     func fetchFromEmptyStore() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)

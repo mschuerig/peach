@@ -17,7 +17,6 @@ enum Trend: Equatable {
 /// comparing mean `abs(note2CentOffset)` between them.
 /// Conforms to `ComparisonObserver` for incremental updates during training.
 @Observable
-@MainActor
 final class TrendAnalyzer {
 
     /// Minimum number of records required before showing any trend
@@ -89,20 +88,6 @@ extension TrendAnalyzer: ComparisonObserver {
 
 // MARK: - Environment Key
 
-private struct TrendAnalyzerKey: EnvironmentKey {
-    nonisolated(unsafe) static var defaultValue: TrendAnalyzer = {
-        @MainActor func makeDefault() -> TrendAnalyzer {
-            TrendAnalyzer()
-        }
-        return MainActor.assumeIsolated {
-            makeDefault()
-        }
-    }()
-}
-
 extension EnvironmentValues {
-    var trendAnalyzer: TrendAnalyzer {
-        get { self[TrendAnalyzerKey.self] }
-        set { self[TrendAnalyzerKey.self] = newValue }
-    }
+    @Entry var trendAnalyzer = TrendAnalyzer()
 }

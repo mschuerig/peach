@@ -3,7 +3,6 @@ import Testing
 
 /// Tests for difficulty display support in TrainingSession (session best tracking, current difficulty)
 @Suite("TrainingSession Difficulty Tests")
-@MainActor
 struct TrainingSessionDifficultyTests {
 
     // MARK: - currentDifficulty Tests

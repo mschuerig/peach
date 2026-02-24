@@ -27,7 +27,6 @@ enum AudioError: Error {
 /// The protocol is frequency-agnostic and has no concept of MIDI notes, cents, or musical context.
 ///
 /// - Note: Implementations should ensure sub-10ms latency and frequency accuracy within 0.1 cent.
-@MainActor
 protocol NotePlayer {
     /// Plays a note at the specified frequency for the given duration.
     ///

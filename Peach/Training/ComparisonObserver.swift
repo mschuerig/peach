@@ -20,7 +20,6 @@ import Foundation
 ///     }
 /// }
 /// ```
-@MainActor
 protocol ComparisonObserver {
     /// Called when a comparison is completed during training
     ///

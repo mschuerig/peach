@@ -8,27 +8,27 @@ struct SoundFontLibraryTests {
     // MARK: - Preset Discovery
 
     @Test("Discovers SF2 from bundle and enumerates presets")
-    @MainActor func discoversPresetsFromBundle() async {
+    func discoversPresetsFromBundle() async {
         let library = SoundFontLibrary()
         #expect(!library.availablePresets.isEmpty)
     }
 
     @Test("Excludes drum kits (bank >= 120)")
-    @MainActor func noDrumKitsInAvailablePresets() async {
+    func noDrumKitsInAvailablePresets() async {
         let library = SoundFontLibrary()
         let drumPresets = library.availablePresets.filter { $0.bank >= 120 }
         #expect(drumPresets.isEmpty)
     }
 
     @Test("Excludes sound effects (program >= 120)")
-    @MainActor func noSoundEffectsInAvailablePresets() async {
+    func noSoundEffectsInAvailablePresets() async {
         let library = SoundFontLibrary()
         let sfxPresets = library.availablePresets.filter { $0.program >= 120 }
         #expect(sfxPresets.isEmpty)
     }
 
     @Test("Presets sorted alphabetically by name")
-    @MainActor func presetsSortedAlphabetically() async {
+    func presetsSortedAlphabetically() async {
         let library = SoundFontLibrary()
         let names = library.availablePresets.map(\.name)
         let sorted = names.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
@@ -36,7 +36,7 @@ struct SoundFontLibraryTests {
     }
 
     @Test("Contains Grand Piano at bank 0 program 0")
-    @MainActor func containsPiano() async {
+    func containsPiano() async {
         let library = SoundFontLibrary()
         let piano = library.availablePresets.first { $0.program == 0 && $0.bank == 0 }
         #expect(piano != nil)
@@ -44,7 +44,7 @@ struct SoundFontLibraryTests {
     }
 
     @Test("Contains Cello at bank 0 program 42")
-    @MainActor func containsCello() async {
+    func containsCello() async {
         let library = SoundFontLibrary()
         let cello = library.availablePresets.first { $0.program == 42 && $0.bank == 0 }
         #expect(cello != nil)
@@ -52,7 +52,7 @@ struct SoundFontLibraryTests {
     }
 
     @Test("Contains bank variants (e.g., bank 8 program 4)")
-    @MainActor func containsBankVariants() async {
+    func containsBankVariants() async {
         let library = SoundFontLibrary()
         let variant = library.availablePresets.first { $0.bank == 8 && $0.program == 4 }
         #expect(variant != nil)
@@ -62,7 +62,7 @@ struct SoundFontLibraryTests {
     // MARK: - Tag Resolution
 
     @Test("preset(forTag: 'sf2:0:42') returns Cello preset")
-    @MainActor func resolvesCelloTag() async {
+    func resolvesCelloTag() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sf2:0:42")
         #expect(preset != nil)
@@ -71,7 +71,7 @@ struct SoundFontLibraryTests {
     }
 
     @Test("preset(forTag: 'sf2:0:0') returns Grand Piano preset")
-    @MainActor func resolvesPianoTag() async {
+    func resolvesPianoTag() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sf2:0:0")
         #expect(preset != nil)
@@ -79,7 +79,7 @@ struct SoundFontLibraryTests {
     }
 
     @Test("preset(forTag: 'sf2:8:4') resolves bank variant")
-    @MainActor func resolvesBankVariantTag() async {
+    func resolvesBankVariantTag() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sf2:8:4")
         #expect(preset != nil)
@@ -87,21 +87,21 @@ struct SoundFontLibraryTests {
     }
 
     @Test("preset(forTag: 'sf2:0:999') returns nil for nonexistent program")
-    @MainActor func returnsNilForBadProgram() async {
+    func returnsNilForBadProgram() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sf2:0:999")
         #expect(preset == nil)
     }
 
     @Test("preset(forTag: 'sine') returns nil (not an SF2 tag)")
-    @MainActor func returnsNilForSineTag() async {
+    func returnsNilForSineTag() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sine")
         #expect(preset == nil)
     }
 
     @Test("preset(forTag: 'sf2:abc') returns nil for invalid format")
-    @MainActor func returnsNilForInvalidTag() async {
+    func returnsNilForInvalidTag() async {
         let library = SoundFontLibrary()
         let preset = library.preset(forTag: "sf2:abc")
         #expect(preset == nil)
@@ -110,7 +110,7 @@ struct SoundFontLibraryTests {
     // MARK: - No Duplicate Tags
 
     @Test("All preset tags are unique")
-    @MainActor func allTagsUnique() async {
+    func allTagsUnique() async {
         let library = SoundFontLibrary()
         let tags = library.availablePresets.map(\.tag)
         let uniqueTags = Set(tags)

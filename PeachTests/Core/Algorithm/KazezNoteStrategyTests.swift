@@ -4,7 +4,6 @@ import Foundation
 
 /// Tests for KazezNoteStrategy — Kazez et al. (2001) default training strategy
 @Suite("KazezNoteStrategy Tests")
-@MainActor
 struct KazezNoteStrategyTests {
 
     // MARK: - Protocol Compliance

@@ -5,7 +5,6 @@ import Foundation
 ///
 /// Returns predetermined comparisons in sequence, and captures received
 /// profile and settings for assertion in tests.
-@MainActor
 final class MockNextNoteStrategy: NextNoteStrategy {
     // MARK: - Test State Tracking
 

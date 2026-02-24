@@ -4,7 +4,6 @@ import Foundation
 
 /// Tests for AdaptiveNoteStrategy core selection, difficulty, and weak spot targeting
 @Suite("AdaptiveNoteStrategy Tests")
-@MainActor
 struct AdaptiveNoteStrategyTests {
 
     // MARK: - Task 1 Tests: NextNoteStrategy Protocol

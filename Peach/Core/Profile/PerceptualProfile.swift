@@ -5,7 +5,6 @@ import OSLog
 /// Aggregates comparison data into per-note statistics (mean, stdDev, sample count)
 /// Supports cold start, incremental updates, and weak spot identification
 @Observable
-@MainActor
 final class PerceptualProfile {
 
     // MARK: - Properties

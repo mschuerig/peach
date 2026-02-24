@@ -4,7 +4,6 @@ import SwiftUI
 
 /// Tests for TrendAnalyzer trend computation
 @Suite("TrendAnalyzer Tests")
-@MainActor
 struct TrendAnalyzerTests {
 
     // MARK: - Helpers

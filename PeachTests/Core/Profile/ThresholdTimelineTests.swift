@@ -4,7 +4,6 @@ import SwiftUI
 @testable import Peach
 
 @Suite("ThresholdTimeline Tests")
-@MainActor
 struct ThresholdTimelineTests {
 
     // MARK: - Helpers

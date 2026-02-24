@@ -2,7 +2,6 @@ import Foundation
 @testable import Peach
 
 /// Mock NotePlayer for testing TrainingSession
-@MainActor
 final class MockNotePlayer: NotePlayer {
     // MARK: - Test State Tracking
 

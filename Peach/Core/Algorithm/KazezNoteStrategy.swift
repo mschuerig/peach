@@ -30,7 +30,6 @@ import OSLog
 /// Kazez, D., Kazez, B., Zembar, M.J., & Andrews, D. (2001).
 /// *A Computer Program for Testing (and Improving?) Pitch Perception.*
 /// College Music Society, 2001 National Conference.
-@MainActor
 final class KazezNoteStrategy: NextNoteStrategy {
 
     // MARK: - Properties
