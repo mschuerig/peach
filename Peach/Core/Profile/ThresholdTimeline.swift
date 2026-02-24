@@ -34,10 +34,16 @@ final class ThresholdTimeline {
                 note1: record.note1
             ))
         }
+        recomputeAggregatedPoints()
     }
 
-    var aggregatedPoints: [AggregatedDataPoint] {
-        guard !dataPoints.isEmpty else { return [] }
+    private(set) var aggregatedPoints: [AggregatedDataPoint] = []
+
+    private func recomputeAggregatedPoints() {
+        guard !dataPoints.isEmpty else {
+            aggregatedPoints = []
+            return
+        }
 
         let calendar = Calendar.current
         var groups: [Date: [TimelineDataPoint]] = [:]
@@ -47,7 +53,7 @@ final class ThresholdTimeline {
             groups[interval.start, default: []].append(point)
         }
 
-        return groups.sorted(by: { $0.key < $1.key }).map { periodStart, points in
+        aggregatedPoints = groups.sorted(by: { $0.key < $1.key }).map { periodStart, points in
             let mean = points.map(\.centDifference).reduce(0.0, +) / Double(points.count)
             let correctCount = points.filter(\.isCorrect).count
             return AggregatedDataPoint(
@@ -98,6 +104,7 @@ final class ThresholdTimeline {
 
     func reset() {
         dataPoints = []
+        aggregatedPoints = []
     }
 }
 
@@ -111,6 +118,7 @@ extension ThresholdTimeline: ComparisonObserver {
             isCorrect: completed.isCorrect,
             note1: completed.comparison.note1
         ))
+        recomputeAggregatedPoints()
     }
 }
 

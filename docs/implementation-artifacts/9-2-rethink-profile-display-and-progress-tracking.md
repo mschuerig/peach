@@ -1,6 +1,6 @@
 # Story 9.2: Rethink Profile Display and Progress Tracking
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -299,7 +299,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 - `TrainingSession.swift` modified to accept optional `ThresholdTimeline` and call `reset()` in `resetTrainingData()` — not explicitly in story tasks but needed for data reset flow
 - Old localization strings marked `"extractionState": "stale"` rather than deleted — Xcode manages cleanup
 - 20 new unit tests in `ThresholdTimelineTests.swift`; 2 updated tests in `ProfileScreenLayoutTests.swift`; updated tests in `ProfilePreviewViewTests.swift`
-- **Rework notes:** Added `AggregatedDataPoint` and `aggregationComponent: Calendar.Component` (default `.day`) to `ThresholdTimeline`. Rolling mean/stddev now operate on aggregated period points, not individual comparisons. Chart PointMark shows one dot per aggregated period. Tap popup shows day summary. Detail popup no longer shows `PianoKeyboardLayout.noteName()` (aggregated across many notes). Tests rewritten to use day-spaced data with new aggregation-specific tests (27 total). Preview data updated to use day-spaced records.
+- **Rework notes:** Added `AggregatedDataPoint` and `aggregationComponent: Calendar.Component` (default `.day`) to `ThresholdTimeline`. Rolling mean/stddev now operate on aggregated period points, not individual comparisons. Chart PointMark shows one dot per aggregated period. Tap popup shows day summary. Detail popup no longer shows `PianoKeyboardLayout.noteName()` (aggregated across many notes). Tests rewritten to use day-spaced data with new aggregation-specific tests (28 total). Preview data updated to use day-spaced records.
 
 ### Change Log
 
@@ -321,7 +321,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 **New files:**
 - `Peach/Core/Profile/ThresholdTimeline.swift` — ThresholdTimeline service with TimelineDataPoint, rolling stats, ComparisonObserver, EnvironmentKey
 - `Peach/Profile/ThresholdTimelineView.swift` — Time-series chart with scroll, zoom, tap-for-details
-- `PeachTests/Core/Profile/ThresholdTimelineTests.swift` — 20 unit tests for ThresholdTimeline
+- `PeachTests/Core/Profile/ThresholdTimelineTests.swift` — 28 unit tests for ThresholdTimeline
 
 **Modified files:**
 - `Peach/Profile/ProfileScreen.swift` — Replaced ConfidenceBandView/PianoKeyboardView with ThresholdTimelineView, updated accessibility

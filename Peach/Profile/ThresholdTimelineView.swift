@@ -5,6 +5,7 @@ struct ThresholdTimelineView: View {
     @Environment(\.thresholdTimeline) private var timeline
 
     @State private var visibleDomainLength: TimeInterval = 7 * 24 * 3600
+    @State private var baseVisibleDomainLength: TimeInterval = 7 * 24 * 3600
     @State private var selectedPoint: AggregatedDataPoint?
     @State private var selectedPosition: CGPoint = .zero
 
@@ -88,6 +89,9 @@ struct ThresholdTimelineView: View {
                             .onChanged { value in
                                 handleZoom(scale: value.magnification)
                             }
+                            .onEnded { _ in
+                                baseVisibleDomainLength = visibleDomainLength
+                            }
                     )
             }
         }
@@ -102,7 +106,12 @@ struct ThresholdTimelineView: View {
     // MARK: - Tap Handling
 
     private func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
-        let plotOrigin = geometry[proxy.plotFrame!].origin
+        guard let plotFrame = proxy.plotFrame else {
+            selectedPoint = nil
+            return
+        }
+        let plotOrigin = geometry[plotFrame].origin
+        let plotSize = geometry[plotFrame].size
         let adjustedLocation = CGPoint(x: location.x - plotOrigin.x, y: location.y - plotOrigin.y)
 
         guard let tappedDate: Date = proxy.value(atX: adjustedLocation.x) else {
@@ -119,8 +128,9 @@ struct ThresholdTimelineView: View {
             if let pointX: CGFloat = proxy.position(forX: nearest.periodStart),
                abs(pointX - adjustedLocation.x) < 30 {
                 selectedPoint = nearest
+                let popupPadding: CGFloat = 80
                 selectedPosition = CGPoint(
-                    x: pointX + plotOrigin.x,
+                    x: max(popupPadding, min(plotSize.width + plotOrigin.x - popupPadding, pointX + plotOrigin.x)),
                     y: max(80, adjustedLocation.y + plotOrigin.y - 60)
                 )
             } else {
@@ -137,7 +147,7 @@ struct ThresholdTimelineView: View {
         let totalSpan = totalDataSpan
         guard totalSpan > 0 else { return }
 
-        let newDomain = defaultVisibleDomainLength / scale
+        let newDomain = baseVisibleDomainLength / scale
         let minDomain = estimatedDomainForPeriods(minVisiblePeriods)
         visibleDomainLength = max(minDomain, min(totalSpan, newDomain))
     }
@@ -172,13 +182,9 @@ struct ThresholdTimelineView: View {
                     .foregroundStyle(.secondary)
             }
 
-            HStack(spacing: 4) {
-                Text(String(localized: "\(point.comparisonCount) comparisons"))
-                    .font(.caption)
-                Text(String(localized: "\(point.correctCount) of \(point.comparisonCount) correct"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Text(String(localized: "\(point.correctCount) of \(point.comparisonCount) correct"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(8)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
