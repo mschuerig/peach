@@ -135,7 +135,7 @@ final class TrainingSession {
         noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
     }
 
-    /// MIDI velocity for note playback (0-127)
+    /// MIDI velocity for note playback (1-127)
     private let velocity: UInt8 = 63
 
     /// Feedback display duration in seconds (before looping to next comparison)

@@ -98,8 +98,24 @@ struct SoundFontNotePlayerTests {
     @Test("Velocity 0 is rejected with invalidVelocity error")
     func velocity0_rejected() async throws {
         let player = try SoundFontNotePlayer()
-        await #expect(throws: AudioError.self) {
+        let error = await #expect(throws: AudioError.self) {
             try await player.play(frequency: 440.0, duration: 0.1, velocity: 0)
+        }
+        guard case .invalidVelocity = error else {
+            Issue.record("Expected invalidVelocity but got \(String(describing: error))")
+            return
+        }
+    }
+
+    @Test("Velocity 128 is rejected with invalidVelocity error")
+    func velocity128_rejected() async throws {
+        let player = try SoundFontNotePlayer()
+        let error = await #expect(throws: AudioError.self) {
+            try await player.play(frequency: 440.0, duration: 0.1, velocity: 128)
+        }
+        guard case .invalidVelocity = error else {
+            Issue.record("Expected invalidVelocity but got \(String(describing: error))")
+            return
         }
     }
 
