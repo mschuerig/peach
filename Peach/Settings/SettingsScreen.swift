@@ -23,6 +23,7 @@ struct SettingsScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.comparisonSession) private var comparisonSession
     @Environment(\.soundFontLibrary) private var soundFontLibrary
+    @Environment(\.perceptualProfile) private var profile
 
     @State private var showResetConfirmation = false
     @State private var showResetError = false
@@ -165,6 +166,7 @@ struct SettingsScreen: View {
         }
 
         comparisonSession.resetTrainingData()
+        profile.resetMatching()
     }
 }
 
