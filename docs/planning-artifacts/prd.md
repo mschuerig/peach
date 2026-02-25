@@ -1,5 +1,5 @@
 ---
-stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-12-complete']
+stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-12-complete', 'step-e-01-discovery', 'step-e-02-review', 'step-e-03-edit']
 inputDocuments: ['docs/brainstorming/brainstorming-session-2026-02-11.md']
 documentCounts:
   briefs: 0
@@ -12,6 +12,10 @@ classification:
   complexity: low
   projectContext: greenfield
 workflowType: 'prd'
+lastEdited: '2026-02-25'
+editHistory:
+  - date: '2026-02-25'
+    changes: 'Added pitch matching training paradigm (v0.2 scope); restructured phases; removed completed/obsolete roadmap items'
 ---
 
 # Product Requirements Document - Peach
@@ -21,11 +25,11 @@ workflowType: 'prd'
 
 ## Executive Summary
 
-Peach is a pitch discrimination ear training app for iOS. It trains musicians to hear increasingly fine pitch differences through rapid, reflexive comparisons — two notes played in sequence, user answers higher or lower.
+Peach is a pitch ear training app for iOS. It trains musicians' pitch perception through two complementary modes: **Pitch Comparison** (two notes in sequence — user answers higher or lower) and **Pitch Matching** (user tunes a note to match a reference pitch). Both modes build a perceptual profile across the user's range and relentlessly target weak spots.
 
 **Target users:** Musicians (singers, string, woodwind, brass players) for whom intonation is a practical challenge.
 
-**Design philosophy: "Training, not testing."** Existing pitch training apps like InTune follow a test-and-score paradigm — escalating difficulty until failure. Peach inverts this: it builds a perceptual profile of the user's hearing across their range and relentlessly targets weak spots. No scores, no gamification, no sessions. Every comparison makes the user better; no single answer matters.
+**Design philosophy: "Training, not testing."** Existing pitch training apps like InTune follow a test-and-score paradigm — escalating difficulty until failure. Peach inverts this: it builds a perceptual profile of the user's hearing and relentlessly targets weak spots. No scores, no gamification, no sessions. Every exercise makes the user better; no single answer matters.
 
 **Technology:** Native iOS (Swift/SwiftUI), entirely on-device, no backend. This is a personal/learning project with three goals: improve pitch perception, learn iOS development, and explore AI-assisted development.
 
@@ -34,7 +38,8 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 ### User Success
 
 - The perceptual profile shows measurable narrowing of detectable cent differences over time through continued training
-- The training loop feels instinctive and low-friction — users can do 30 seconds of comparisons without thinking about the app, just about the sounds
+- The comparison training loop feels instinctive and low-friction — users can do 30 seconds of comparisons without thinking about the app, just about the sounds
+- Pitch matching accuracy improves over time — users achieve smaller cent errors with continued training
 - Summary statistics (mean and standard deviation of detection thresholds) show a visible improving trend over time
 - Users return to the app regularly because it fits into incidental moments (practice breaks, commuting, waiting)
 
@@ -86,21 +91,31 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - Consistent Settings/Profile navigation from both Start Screen and Training Screen
 - App backgrounding during training returns to Start Screen on foreground
 
-### Post-MVP Features (Phase 2 — Growth)
+### Version 0.2 Scope (Phase 2 — Pitch Matching)
+
+**Core addition:** A second training paradigm — Pitch Matching — where the user tunes a note to match a reference pitch, training active pitch production rather than passive discrimination.
+
+**Must-Have Capabilities:**
+- Pitch Matching Screen with large vertical slider for pitch adjustment
+- Reference note plays for configured duration, then tunable note plays indefinitely
+- User adjusts tunable note pitch via slider; releasing the slider stops the note and records the result
+- Visual feedback showing proximity to reference pitch
+- Pitch matching results recorded: reference note, user's final pitch, error in cents, timestamp
+- Start Screen integration: dedicated "Pitch Matching" button below "Start Training"
+- Audio engine support for indefinite playback and real-time frequency adjustment
+- Same interruption handling as comparison training (discard on navigation away, backgrounding, etc.)
+
+**User Journey Supported:** Journey 6 (Pitch Matching)
+
+### Future Ideas
 
 - Full temporal progress visualization (profile snapshots over time)
 - Per-note detail view with trend data
 - iCloud sync across devices
 - CSV export of training history
-- Swappable sound sources (sampled sounds)
-- Manual algorithm focus override (choose note range to train)
+- Custom SoundFont import (user-provided .sf2 files)
 - Configurable pause between notes
-
-### Future Features (Phase 3 — Vision)
-
-- MIDI output to external instruments/apps
 - Deeper accessibility improvements
-- Additional sound sources and timbres
 
 ### Risk Mitigation Strategy
 
@@ -150,7 +165,7 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 **Climax:** The numbers confirm what she suspected — her mean threshold has dropped from 45 cents to 28 cents over six weeks. The improvement is real and undeniable — not as a score, but as a factual measurement of her perception sharpening.
 
-*Post-MVP: The Profile Screen will expand to include tappable per-note detail views and temporal progress visualization showing profile snapshots over time.*
+*Future: The Profile Screen may expand to include tappable per-note detail views and temporal progress visualization showing profile snapshots over time.*
 
 **Resolution:** She feels motivated. Not because she "leveled up" but because the data shows her perception is genuinely changing. She starts another quick training session.
 
@@ -184,13 +199,27 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 **Requirements revealed:** Settings Screen with algorithm slider, note range configuration, note duration configuration, reference pitch setting, sound source selection, immediate effect on training behavior, settings persistence.
 
+### Journey 6: Pitch Matching — "Tune Your Ear"
+
+**Persona:** Sarah, two months into comparison training. She wants to challenge herself differently — not just hearing pitch differences, but actively producing a target pitch.
+
+**Opening Scene:** She opens Peach and sees the familiar Start Screen. Below "Start Training" there's a "Pitch Matching" button. She taps it.
+
+**Rising Action:** A reference note plays — she listens closely. It stops, and a second note begins playing continuously. A large vertical slider fills the screen where the Higher/Lower buttons usually are. The second note is off-pitch. She drags the slider, and the pitch shifts in real time — she can hear it moving closer. A visual indicator shows she's getting warmer. She fine-tunes, nudging the slider in tiny increments, listening intently to the beating between her memory of the reference and the live tone.
+
+**Climax:** She releases the slider. The note stops. The result is recorded — she was 4 cents off. No score, no judgment. The next reference note plays. She goes again. The rhythm is different from comparisons — slower, more deliberate, more like tuning an actual instrument. After a minute she's answered six matches. It feels like a different kind of exercise — active rather than reactive.
+
+**Resolution:** She switches back to comparison training for a quick burst, then closes the app. Both modes feed her perceptual profile. Tomorrow she'll do a few minutes of each.
+
+**Requirements revealed:** Pitch Matching Screen, indefinite note playback, real-time pitch adjustment via slider, visual proximity feedback, result recording, Start Screen integration, same interruption handling as comparison training.
+
 ### Journey Requirements Summary
 
 | Capability Area | Journeys | Priority |
 |---|---|---|
 | Zero-friction start (no onboarding) | 1 | MVP |
 | Core training loop (comparisons, feedback, haptic) | 1, 2 | MVP |
-| One-handed / large tap targets | 2 | MVP |
+| One-handed / large tap targets | 2, 6 | MVP |
 | Instant start/stop, no session boundaries | 2, 4 | MVP |
 | Interrupted comparison handling | 2 | MVP |
 | Cold start algorithm | 1 | MVP |
@@ -202,8 +231,13 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 | No gamification / no guilt mechanics | 1, 4 | MVP (design constraint) |
 | Consistent Settings/Profile nav from Start + Training | 2, 3, 5 | MVP |
 | App backgrounding returns to Start Screen | 2 | MVP |
-| Temporal progress visualization | 3 | Post-MVP |
-| Per-note detail view | 3 | Post-MVP |
+| Pitch Matching Screen with slider control | 6 | v0.2 |
+| Indefinite note playback with real-time pitch adjustment | 6 | v0.2 |
+| Visual proximity feedback for pitch matching | 6 | v0.2 |
+| Pitch matching result recording | 6 | v0.2 |
+| Interrupted pitch matching handling | 6 | v0.2 |
+| Temporal progress visualization | 3 | Future |
+| Per-note detail view | 3 | Future |
 
 ## Mobile App Specific Requirements
 
@@ -237,9 +271,10 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 ### Architecture
 
-- Swappable audio engine architecture (protocol/interface-based) to support future sound sources
+- Protocol-based audio engine supporting both finite note playback (comparisons) and indefinite playback with real-time frequency adjustment (pitch matching)
 - Test-first development with comprehensive coverage
 - Per-comparison data model: two notes, correct/wrong, timestamp
+- Per-pitch-matching data model: reference note, user's final pitch, error in cents, timestamp
 
 ## Functional Requirements
 
@@ -255,6 +290,17 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - **FR7a:** System returns to the Start Screen when the app is foregrounded after being backgrounded during training
 - **FR8:** System disables answer controls during the first note and enables them when the second note begins playing
 
+### Pitch Matching
+
+- **FR44:** User can start pitch matching training from the Start Screen via a dedicated button
+- **FR45:** System plays a reference note for the configured note duration, then plays a tunable note indefinitely
+- **FR46:** User can adjust the pitch of the tunable note in real time via a large vertical slider control
+- **FR47:** System stops the tunable note and records the result when the user releases the slider
+- **FR48:** System records pitch matching results: reference note, user's final pitch, error in cents, timestamp
+- **FR49:** System provides visual feedback indicating proximity of the tunable note to the reference pitch
+- **FR50:** System discards incomplete pitch matching attempts on interruption (navigation away, app backgrounding, phone call, headphone disconnect)
+- **FR50a:** System returns to the Start Screen when the app is foregrounded after being backgrounded during pitch matching
+
 ### Adaptive Algorithm
 
 - **FR9:** System selects the next comparison based on the user's perceptual profile
@@ -267,11 +313,13 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 
 ### Audio Engine
 
-- **FR16:** System generates sine wave tones at precise frequencies derived from musical notes and cent offsets
+- **FR16:** System generates tones at precise frequencies derived from musical notes and cent offsets
 - **FR17:** System plays notes with smooth attack/release envelopes (no audible clicks or artifacts)
-- **FR18:** System uses the same timbre for both notes in a comparison
+- **FR18:** System uses the same timbre for both notes in a comparison or pitch matching exercise
 - **FR19:** System supports configurable note duration
 - **FR20:** System supports a configurable reference pitch (default A4 = 440Hz)
+- **FR51:** System supports indefinite note playback (no fixed duration) with explicit stop trigger
+- **FR52:** System supports real-time frequency adjustment of an actively playing note without audible artifacts
 
 ### Perceptual Profile & Statistics
 
@@ -294,7 +342,7 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - **FR31:** User can configure the note range (manual bounds or adaptive mode)
 - **FR32:** User can configure note duration
 - **FR33:** User can configure the reference pitch
-- **FR34:** User can select the sound source (MVP: sine wave only)
+- **FR34:** User can select from available SoundFont presets as the sound source
 - **FR35:** System persists all settings across sessions
 - **FR36:** System applies setting changes immediately to subsequent comparisons
 
@@ -322,6 +370,7 @@ Peach is a pitch discrimination ear training app for iOS. It trains musicians to
 - Transition between comparisons: next comparison must begin immediately after the user answers — no perceptible loading or delay
 - Frequency precision: generated tones must be accurate to within 0.1 cent of the target frequency
 - App launch to training-ready: Start Screen must be interactive within 2 seconds of app launch
+- Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
 - Profile Screen rendering: perceptual profile visualization must render within 1 second, including summary statistics computation
 
 ### Accessibility
