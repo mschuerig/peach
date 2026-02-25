@@ -5,7 +5,7 @@ import Foundation
 /// # Settings Integration (Epic 6)
 ///
 /// The reference pitch parameter enables configurable tuning standards. In Epic 6, the Settings
-/// screen will expose a reference pitch preference (stored in @AppStorage). TrainingSession will
+/// screen will expose a reference pitch preference (stored in @AppStorage). ComparisonSession will
 /// read this value and pass it to FrequencyCalculation.frequency(referencePitch:) when calculating
 /// note frequencies.
 ///

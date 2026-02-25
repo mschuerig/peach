@@ -3,7 +3,7 @@ import OSLog
 
 /// Default training strategy using Kazez et al. (2001) difficulty formulas
 ///
-/// The primary NextNoteStrategy for production training. Maintains a single
+/// The primary NextComparisonStrategy for production training. Maintains a single
 /// continuous difficulty chain with random note selection, converging to the
 /// user's threshold in ~10 correct answers via sqrt(P)-scaled formulas.
 ///
@@ -30,7 +30,7 @@ import OSLog
 /// Kazez, D., Kazez, B., Zembar, M.J., & Andrews, D. (2001).
 /// *A Computer Program for Testing (and Improving?) Pitch Perception.*
 /// College Music Society, 2001 National Conference.
-final class KazezNoteStrategy: NextNoteStrategy {
+final class KazezNoteStrategy: NextComparisonStrategy {
 
     // MARK: - Properties
 
@@ -42,7 +42,7 @@ final class KazezNoteStrategy: NextNoteStrategy {
         logger.info("KazezNoteStrategy initialized")
     }
 
-    // MARK: - NextNoteStrategy Protocol
+    // MARK: - NextComparisonStrategy Protocol
 
     func nextComparison(
         profile: PerceptualProfile,

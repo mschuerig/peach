@@ -2,7 +2,7 @@ import Foundation
 
 /// Protocol for comparison record persistence operations
 ///
-/// This protocol enables testable dependency injection for TrainingSession.
+/// This protocol enables testable dependency injection for ComparisonSession.
 /// TrainingDataStore conforms to this protocol, allowing mock implementations in tests.
 protocol ComparisonRecordStoring {
     /// Saves a comparison record to persistent storage

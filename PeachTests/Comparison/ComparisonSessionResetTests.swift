@@ -2,18 +2,18 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Tests for TrainingSession.resetTrainingData() — convergence chain reset behavior
-@Suite("TrainingSession Reset Tests")
-struct TrainingSessionResetTests {
+/// Tests for ComparisonSession.resetTrainingData() — convergence chain reset behavior
+@Suite("ComparisonSession Reset Tests")
+struct ComparisonSessionResetTests {
 
     // MARK: - Cold-Start Behavior After Reset
 
     @Test("after reset, PerceptualProfile statsForNote returns currentDifficulty 100.0 for all notes")
     func resetTrainingDataResetsAllCurrentDifficultyToDefault() {
         let profile = PerceptualProfile()
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
-            strategy: MockNextNoteStrategy(),
+            strategy: MockNextComparisonStrategy(),
             profile: profile,
             settingsOverride: TrainingSettings(),
             noteDurationOverride: 1.0
@@ -27,7 +27,7 @@ struct TrainingSessionResetTests {
         #expect(profile.statsForNote(60).currentDifficulty == 30.0)
         #expect(profile.statsForNote(62).currentDifficulty == 50.0)
 
-        // Reset via TrainingSession's centralized method
+        // Reset via ComparisonSession's centralized method
         session.resetTrainingData()
 
         // Verify cold start for all notes
@@ -42,7 +42,7 @@ struct TrainingSessionResetTests {
     func afterResetFirstComparisonUses100Cents() {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile,
@@ -54,7 +54,7 @@ struct TrainingSessionResetTests {
         profile.setDifficulty(note: 60, difficulty: 30.0)
         profile.update(note: 60, centOffset: 30.0, isCorrect: true)
 
-        // Reset via TrainingSession
+        // Reset via ComparisonSession
         session.resetTrainingData()
 
         // Cold start: nil lastComparison with reset profile → should return 100.0
@@ -70,7 +70,7 @@ struct TrainingSessionResetTests {
     func afterResetWeightedEffectiveDifficultyReturnsDefault() {
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile,
@@ -84,7 +84,7 @@ struct TrainingSessionResetTests {
             profile.update(note: note, centOffset: 30.0, isCorrect: true)
         }
 
-        // Reset via TrainingSession
+        // Reset via ComparisonSession
         session.resetTrainingData()
 
         // With all stats cleared, bootstrap should find no trained neighbors → 100.0
@@ -114,16 +114,16 @@ struct TrainingSessionResetTests {
         #expect(trendAnalyzer.trend != nil)
 
         let profile = PerceptualProfile()
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
-            strategy: MockNextNoteStrategy(),
+            strategy: MockNextComparisonStrategy(),
             profile: profile,
             settingsOverride: TrainingSettings(),
             noteDurationOverride: 1.0,
             trendAnalyzer: trendAnalyzer
         )
 
-        // Reset via TrainingSession
+        // Reset via ComparisonSession
         session.resetTrainingData()
 
         // Verify TrendAnalyzer is cleared
@@ -136,9 +136,9 @@ struct TrainingSessionResetTests {
     func resetTrainingDataStopsActiveTraining() async throws {
         let mockPlayer = MockNotePlayer()
         let profile = PerceptualProfile()
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
-            strategy: MockNextNoteStrategy(),
+            strategy: MockNextComparisonStrategy(),
             profile: profile,
             settingsOverride: TrainingSettings(),
             noteDurationOverride: 1.0

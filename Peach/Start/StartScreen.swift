@@ -64,7 +64,7 @@ struct StartScreen: View {
         .navigationDestination(for: NavigationDestination.self) { destination in
             switch destination {
             case .training:
-                TrainingScreen()
+                ComparisonScreen()
             case .settings:
                 SettingsScreen()
             case .profile:

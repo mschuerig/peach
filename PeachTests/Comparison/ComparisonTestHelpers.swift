@@ -5,18 +5,18 @@ import Foundation
 // MARK: - Shared Test Fixture
 
 /// Holds all components of a training session test fixture.
-struct TrainingSessionFixture {
-    let session: TrainingSession
+struct ComparisonSessionFixture {
+    let session: ComparisonSession
     let mockPlayer: MockNotePlayer
     let mockDataStore: MockTrainingDataStore
     let profile: PerceptualProfile
-    let mockStrategy: MockNextNoteStrategy
+    let mockStrategy: MockNextComparisonStrategy
     let mockHaptic: MockHapticFeedbackManager?
     let notificationCenter: NotificationCenter?
 }
 
-/// Shared factory for creating a TrainingSession with all mock dependencies.
-func makeTrainingSession(
+/// Shared factory for creating a ComparisonSession with all mock dependencies.
+func makeComparisonSession(
     comparisons: [Comparison] = [
         Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true),
         Comparison(note1: 62, note2: 62, centDifference: 95.0, isSecondNoteHigher: false)
@@ -26,11 +26,11 @@ func makeTrainingSession(
     varyLoudnessOverride: Double? = 0.0,
     includeHaptic: Bool = false,
     notificationCenter: NotificationCenter? = nil
-) -> TrainingSessionFixture {
+) -> ComparisonSessionFixture {
     let mockPlayer = MockNotePlayer()
     let mockDataStore = MockTrainingDataStore()
     let profile = PerceptualProfile()
-    let mockStrategy = MockNextNoteStrategy(comparisons: comparisons)
+    let mockStrategy = MockNextComparisonStrategy(comparisons: comparisons)
 
     var observers: [ComparisonObserver] = [mockDataStore, profile]
     let mockHaptic: MockHapticFeedbackManager?
@@ -42,7 +42,7 @@ func makeTrainingSession(
         mockHaptic = nil
     }
 
-    let session = TrainingSession(
+    let session = ComparisonSession(
         notePlayer: mockPlayer,
         strategy: mockStrategy,
         profile: profile,
@@ -53,7 +53,7 @@ func makeTrainingSession(
         notificationCenter: notificationCenter ?? .default
     )
 
-    return TrainingSessionFixture(
+    return ComparisonSessionFixture(
         session: session,
         mockPlayer: mockPlayer,
         mockDataStore: mockDataStore,
@@ -67,7 +67,7 @@ func makeTrainingSession(
 // MARK: - Shared Async Test Helpers
 
 /// Polls until the session reaches the expected state, or records a test failure on timeout.
-func waitForState(_ session: TrainingSession, _ expectedState: TrainingState, timeout: Duration = .seconds(2)) async throws {
+func waitForState(_ session: ComparisonSession, _ expectedState: ComparisonSessionState, timeout: Duration = .seconds(2)) async throws {
     await Task.yield()
     if session.state == expectedState { return }
     let deadline = ContinuousClock.now + timeout
@@ -91,7 +91,7 @@ func waitForPlayCallCount(_ mockPlayer: MockNotePlayer, _ minCount: Int, timeout
 }
 
 /// Polls until the session's showFeedback becomes false, or records a test failure on timeout.
-func waitForFeedbackToClear(_ session: TrainingSession, timeout: Duration = .seconds(2)) async throws {
+func waitForFeedbackToClear(_ session: ComparisonSession, timeout: Duration = .seconds(2)) async throws {
     let deadline = ContinuousClock.now + timeout
     while ContinuousClock.now < deadline {
         if !session.showFeedback { return }

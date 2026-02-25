@@ -2,14 +2,14 @@ import Testing
 @testable import Peach
 
 /// Tests for loudness variation in training comparisons (Story 10.5)
-@Suite("TrainingSession Loudness Variation Tests")
-struct TrainingSessionLoudnessTests {
+@Suite("ComparisonSession Loudness Variation Tests")
+struct ComparisonSessionLoudnessTests {
 
     // MARK: - Zero Variation (AC #1)
 
     @Test("Both notes play at amplitudeDB 0.0 when varyLoudness is 0.0")
     func zeroVariationBothNotesAtZero() async throws {
-        let f = makeTrainingSession(varyLoudnessOverride: 0.0)
+        let f = makeComparisonSession(varyLoudnessOverride: 0.0)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -23,7 +23,7 @@ struct TrainingSessionLoudnessTests {
 
     @Test("Note1 always at 0.0 and note2 within ±5.0 dB at full slider")
     func fullVariationNote2HasOffset() async throws {
-        let f = makeTrainingSession(varyLoudnessOverride: 1.0)
+        let f = makeComparisonSession(varyLoudnessOverride: 1.0)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -41,7 +41,7 @@ struct TrainingSessionLoudnessTests {
         let comparisons = (0..<10).map { i in
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: i % 2 == 0)
         }
-        let f = makeTrainingSession(comparisons: comparisons, varyLoudnessOverride: 1.0)
+        let f = makeComparisonSession(comparisons: comparisons, varyLoudnessOverride: 1.0)
 
         // Run multiple comparisons
         f.session.startTraining()
@@ -71,7 +71,7 @@ struct TrainingSessionLoudnessTests {
 
     @Test("Note2 amplitude within ±2.5 dB at slider 0.5")
     func midSliderHalvesRange() async throws {
-        let f = makeTrainingSession(varyLoudnessOverride: 0.5)
+        let f = makeComparisonSession(varyLoudnessOverride: 0.5)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -90,7 +90,7 @@ struct TrainingSessionLoudnessTests {
     func offsetClampedToValidRange() async throws {
         // Even with maxLoudnessOffsetDB = 5.0, the offset can't exceed -90.0...12.0
         // This test verifies the safety net is in place
-        let f = makeTrainingSession(varyLoudnessOverride: 1.0)
+        let f = makeComparisonSession(varyLoudnessOverride: 1.0)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -102,9 +102,9 @@ struct TrainingSessionLoudnessTests {
 
     // MARK: - Default Factory (AC #4 — existing tests unaffected)
 
-    @Test("Default makeTrainingSession passes varyLoudnessOverride 0.0")
+    @Test("Default makeComparisonSession passes varyLoudnessOverride 0.0")
     func defaultFactoryPassesZeroLoudness() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)

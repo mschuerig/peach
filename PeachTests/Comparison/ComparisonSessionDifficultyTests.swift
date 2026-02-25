@@ -1,21 +1,21 @@
 import Testing
 @testable import Peach
 
-/// Tests for difficulty display support in TrainingSession (session best tracking, current difficulty)
-@Suite("TrainingSession Difficulty Tests")
-struct TrainingSessionDifficultyTests {
+/// Tests for difficulty display support in ComparisonSession (session best tracking, current difficulty)
+@Suite("ComparisonSession Difficulty Tests")
+struct ComparisonSessionDifficultyTests {
 
     // MARK: - currentDifficulty Tests
 
     @Test("currentDifficulty is nil before training starts")
     func currentDifficultyNilBeforeTraining() {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
         #expect(f.session.currentDifficulty == nil)
     }
 
     @Test("currentDifficulty returns cent difference of current comparison during training")
     func currentDifficultyReturnsCentDifference() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -25,7 +25,7 @@ struct TrainingSessionDifficultyTests {
 
     @Test("currentDifficulty is nil after stopping training")
     func currentDifficultyNilAfterStop() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -38,7 +38,7 @@ struct TrainingSessionDifficultyTests {
 
     @Test("sessionBestCentDifference is nil before any correct answer")
     func sessionBestNilBeforeCorrectAnswer() {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
         #expect(f.session.sessionBestCentDifference == nil)
     }
 
@@ -47,7 +47,7 @@ struct TrainingSessionDifficultyTests {
         let comparisons = [
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true)
         ]
-        let f = makeTrainingSession(comparisons: comparisons)
+        let f = makeComparisonSession(comparisons: comparisons)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -63,7 +63,7 @@ struct TrainingSessionDifficultyTests {
         let comparisons = [
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true)
         ]
-        let f = makeTrainingSession(comparisons: comparisons)
+        let f = makeComparisonSession(comparisons: comparisons)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -80,7 +80,7 @@ struct TrainingSessionDifficultyTests {
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true),
             Comparison(note1: 62, note2: 62, centDifference: 50.0, isSecondNoteHigher: true)
         ]
-        let f = makeTrainingSession(comparisons: comparisons)
+        let f = makeComparisonSession(comparisons: comparisons)
 
         // First comparison: 100 cents, answer correctly
         f.session.startTraining()
@@ -103,7 +103,7 @@ struct TrainingSessionDifficultyTests {
             Comparison(note1: 60, note2: 60, centDifference: 50.0, isSecondNoteHigher: true),
             Comparison(note1: 62, note2: 62, centDifference: 100.0, isSecondNoteHigher: true)
         ]
-        let f = makeTrainingSession(comparisons: comparisons)
+        let f = makeComparisonSession(comparisons: comparisons)
 
         // First comparison: 50 cents, answer correctly
         f.session.startTraining()
@@ -125,7 +125,7 @@ struct TrainingSessionDifficultyTests {
         let comparisons = [
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true)
         ]
-        let f = makeTrainingSession(comparisons: comparisons)
+        let f = makeComparisonSession(comparisons: comparisons)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)

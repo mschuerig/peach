@@ -3,7 +3,7 @@ import os
 
 struct ContentView: View {
     /// Training session injected from app
-    @Environment(\.trainingSession) private var trainingSession
+    @Environment(\.comparisonSession) private var comparisonSession
 
     /// Scene phase for app lifecycle monitoring (Story 3.4)
     @Environment(\.scenePhase) private var scenePhase
@@ -44,9 +44,9 @@ struct ContentView: View {
 
         // Stop training if it's active (AC#2)
         // This will stop audio and discard any incomplete comparison
-        if trainingSession.state != .idle {
-            logger.info("Training was active (state: \(String(describing: trainingSession.state))) - stopping")
-            trainingSession.stop()
+        if comparisonSession.state != .idle {
+            logger.info("Training was active (state: \(String(describing: comparisonSession.state))) - stopping")
+            comparisonSession.stop()
         } else {
             logger.info("Training was already idle - no action needed")
         }

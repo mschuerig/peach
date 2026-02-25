@@ -8,7 +8,7 @@ struct KazezNoteStrategyTests {
 
     // MARK: - Protocol Compliance
 
-    @Test("Conforms to NextNoteStrategy and returns valid Comparison")
+    @Test("Conforms to NextComparisonStrategy and returns valid Comparison")
     func protocolCompliance() {
         let strategy = KazezNoteStrategy()
         let settings = TrainingSettings()

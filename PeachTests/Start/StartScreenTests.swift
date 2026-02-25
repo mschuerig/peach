@@ -27,7 +27,7 @@ struct StartScreenTests {
 
     @Test("Training Screen can be instantiated")
     func trainingScreenCanBeInstantiated() {
-        _ = TrainingScreen()
+        _ = ComparisonScreen()
     }
 
     @Test("Settings Screen can be instantiated")
@@ -142,7 +142,7 @@ struct StartScreenTests {
         // Verify that all destination screens can be instantiated
         // This ensures the hub-and-spoke pattern has all spokes available
 
-        let training = TrainingScreen()
+        let training = ComparisonScreen()
         let settings = SettingsScreen()
         let profile = ProfileScreen()
         let info = InfoScreen()

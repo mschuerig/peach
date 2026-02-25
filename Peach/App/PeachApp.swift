@@ -5,7 +5,7 @@ import os
 @main
 struct PeachApp: App {
     @State private var modelContainer: ModelContainer
-    @State private var trainingSession: TrainingSession
+    @State private var comparisonSession: ComparisonSession
     @State private var profile: PerceptualProfile
     @State private var trendAnalyzer: TrendAnalyzer
     @State private var thresholdTimeline: ThresholdTimeline
@@ -59,7 +59,7 @@ struct PeachApp: App {
             // Observers: dataStore (persistence), profile (analytics), hapticManager (feedback), thresholdTimeline (visualization)
             let hapticManager = HapticFeedbackManager()
             let observers: [ComparisonObserver] = [dataStore, profile, hapticManager, trendAnalyzer, thresholdTimeline]
-            _trainingSession = State(wrappedValue: TrainingSession(
+            _comparisonSession = State(wrappedValue: ComparisonSession(
                 notePlayer: notePlayer,
                 strategy: strategy,
                 profile: profile,
@@ -75,7 +75,7 @@ struct PeachApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.trainingSession, trainingSession)
+                .environment(\.comparisonSession, comparisonSession)
                 .environment(\.perceptualProfile, profile)
                 .environment(\.trendAnalyzer, trendAnalyzer)
                 .environment(\.thresholdTimeline, thresholdTimeline)

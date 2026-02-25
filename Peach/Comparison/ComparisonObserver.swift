@@ -3,7 +3,7 @@ import Foundation
 /// Observer protocol for comparison completion events
 ///
 /// Observers are notified when a comparison is completed during training.
-/// This allows decoupling TrainingSession from specific implementations
+/// This allows decoupling ComparisonSession from specific implementations
 /// of data storage, analytics, and feedback mechanisms.
 ///
 /// ## Conforming Types

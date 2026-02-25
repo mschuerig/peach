@@ -1,6 +1,6 @@
 # Story 11.1: Rename Training Types and Files to Comparison
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -22,34 +22,34 @@ so that the codebase clearly distinguishes comparison training from future train
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Rename directories (AC: #4)
-  - [ ] `git mv Peach/Training Peach/Comparison`
-  - [ ] `git mv PeachTests/Training PeachTests/Comparison`
-- [ ] Task 2: Rename source files (AC: #1, #3, #5, #6)
-  - [ ] `git mv Peach/Comparison/TrainingSession.swift Peach/Comparison/ComparisonSession.swift`
-  - [ ] `git mv Peach/Comparison/TrainingScreen.swift Peach/Comparison/ComparisonScreen.swift`
-  - [ ] `git mv Peach/Comparison/FeedbackIndicator.swift Peach/Comparison/ComparisonFeedbackIndicator.swift`
-  - [ ] `git mv Peach/Core/Algorithm/NextNoteStrategy.swift Peach/Core/Algorithm/NextComparisonStrategy.swift`
-- [ ] Task 3: Rename test files (AC: #1, #3)
-  - [ ] `git mv` all `TrainingSession*.swift` test files to `ComparisonSession*.swift`
-  - [ ] `git mv` all `TrainingScreen*.swift` test files to `ComparisonScreen*.swift`
-- [ ] Task 4: Find-and-replace type names in all .swift files (AC: #1, #2, #3, #5, #6)
-  - [ ] `TrainingSession` -> `ComparisonSession` (exclude `TrainingDataStore` references)
-  - [ ] `TrainingState` -> `ComparisonSessionState`
-  - [ ] `TrainingScreen` -> `ComparisonScreen`
-  - [ ] `FeedbackIndicator` -> `ComparisonFeedbackIndicator`
-  - [ ] `NextNoteStrategy` -> `NextComparisonStrategy`
-- [ ] Task 5: Update environment key (AC: #1)
-  - [ ] Rename `@Entry var trainingSession` -> `@Entry var comparisonSession` in environment extension
-  - [ ] Update all `@Environment(\.trainingSession)` -> `@Environment(\.comparisonSession)` usages
-  - [ ] Update `@State private var trainingSession` -> `@State private var comparisonSession` in PeachApp.swift
-- [ ] Task 6: Update Xcode project file (AC: #4)
-  - [ ] Change `Training/.gitkeep` -> `Comparison/.gitkeep` in `project.pbxproj` exception list
-- [ ] Task 7: Update documentation (AC: #8)
-  - [ ] Update all old name references in `docs/project-context.md`
-- [ ] Task 8: Verify (AC: #9)
-  - [ ] Run full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass with zero functional changes
+- [x] Task 1: Rename directories (AC: #4)
+  - [x] `git mv Peach/Training Peach/Comparison`
+  - [x] `git mv PeachTests/Training PeachTests/Comparison`
+- [x] Task 2: Rename source files (AC: #1, #3, #5, #6)
+  - [x] `git mv Peach/Comparison/TrainingSession.swift Peach/Comparison/ComparisonSession.swift`
+  - [x] `git mv Peach/Comparison/TrainingScreen.swift Peach/Comparison/ComparisonScreen.swift`
+  - [x] `git mv Peach/Comparison/FeedbackIndicator.swift Peach/Comparison/ComparisonFeedbackIndicator.swift`
+  - [x] `git mv Peach/Core/Algorithm/NextNoteStrategy.swift Peach/Core/Algorithm/NextComparisonStrategy.swift`
+- [x] Task 3: Rename test files (AC: #1, #3)
+  - [x] `git mv` all `TrainingSession*.swift` test files to `ComparisonSession*.swift`
+  - [x] `git mv` all `TrainingScreen*.swift` test files to `ComparisonScreen*.swift`
+- [x] Task 4: Find-and-replace type names in all .swift files (AC: #1, #2, #3, #5, #6)
+  - [x] `TrainingSession` -> `ComparisonSession` (exclude `TrainingDataStore` references)
+  - [x] `TrainingState` -> `ComparisonSessionState`
+  - [x] `TrainingScreen` -> `ComparisonScreen`
+  - [x] `FeedbackIndicator` -> `ComparisonFeedbackIndicator`
+  - [x] `NextNoteStrategy` -> `NextComparisonStrategy`
+- [x] Task 5: Update environment key (AC: #1)
+  - [x] Rename `@Entry var trainingSession` -> `@Entry var comparisonSession` in environment extension
+  - [x] Update all `@Environment(\.trainingSession)` -> `@Environment(\.comparisonSession)` usages
+  - [x] Update `@State private var trainingSession` -> `@State private var comparisonSession` in PeachApp.swift
+- [x] Task 6: Update Xcode project file (AC: #4)
+  - [x] No-op: `Training/.gitkeep` was not in `project.pbxproj` exception list; Xcode auto-discovers files
+- [x] Task 7: Update documentation (AC: #8)
+  - [x] Update all old name references in `docs/project-context.md`
+- [x] Task 8: Verify (AC: #9)
+  - [x] Run full test suite: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass with zero functional changes
 
 ## Dev Notes
 
@@ -179,8 +179,75 @@ File renames via `git mv` will be automatically detected by Xcode.
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+- Task 6 (Xcode project): `Training/.gitkeep` was not in `project.pbxproj` exception list contrary to story dev notes; no-op required. Xcode auto-discovers via `PBXFileSystemSynchronizedRootGroup`.
+- Task 8 (Verify): First test run had one flaky failure (`audioInterruption_Began_StopsFromPlayingNote2`) — pre-existing timing sensitivity, not related to rename. Subsequent runs pass cleanly.
 
 ### Completion Notes List
 
+- Pure mechanical rename, zero functional changes
+- Renamed 2 directories, 4 source files, 15 test files (13 session/screen + TrainingTestHelpers + MockNextNoteStrategy)
+- Replaced 6 type/variable patterns across all .swift files: `TrainingSession`→`ComparisonSession`, `trainingSession`→`comparisonSession`, `TrainingState`→`ComparisonSessionState`, `TrainingScreen`→`ComparisonScreen`, `FeedbackIndicator`→`ComparisonFeedbackIndicator`, `NextNoteStrategy`→`NextComparisonStrategy`
+- Verified `TrainingDataStore`, `TrainingSettings`, and all AC #7 names remain unchanged
+- Updated 12 references in `docs/project-context.md`
+- Full test suite passes: ** TEST SUCCEEDED **
+
+### Change Log
+
+- 2026-02-25: Renamed all ambiguous Training types/files to Comparison-specific names for v0.2 namespace clarity
+
 ### File List
+
+**Renamed (directories):**
+- `Peach/Training/` → `Peach/Comparison/`
+- `PeachTests/Training/` → `PeachTests/Comparison/`
+
+**Renamed (source files):**
+- `Peach/Comparison/ComparisonSession.swift` (was TrainingSession.swift)
+- `Peach/Comparison/ComparisonScreen.swift` (was TrainingScreen.swift)
+- `Peach/Comparison/ComparisonFeedbackIndicator.swift` (was FeedbackIndicator.swift)
+- `Peach/Core/Algorithm/NextComparisonStrategy.swift` (was NextNoteStrategy.swift)
+
+**Renamed (test files):**
+- `PeachTests/Comparison/ComparisonSessionTests.swift` (was TrainingSessionTests.swift)
+- `PeachTests/Comparison/ComparisonSessionLifecycleTests.swift` (was TrainingSessionLifecycleTests.swift)
+- `PeachTests/Comparison/ComparisonSessionIntegrationTests.swift` (was TrainingSessionIntegrationTests.swift)
+- `PeachTests/Comparison/ComparisonSessionResetTests.swift` (was TrainingSessionResetTests.swift)
+- `PeachTests/Comparison/ComparisonSessionFeedbackTests.swift` (was TrainingSessionFeedbackTests.swift)
+- `PeachTests/Comparison/ComparisonSessionUserDefaultsTests.swift` (was TrainingSessionUserDefaultsTests.swift)
+- `PeachTests/Comparison/ComparisonSessionSettingsTests.swift` (was TrainingSessionSettingsTests.swift)
+- `PeachTests/Comparison/ComparisonSessionDifficultyTests.swift` (was TrainingSessionDifficultyTests.swift)
+- `PeachTests/Comparison/ComparisonSessionLoudnessTests.swift` (was TrainingSessionLoudnessTests.swift)
+- `PeachTests/Comparison/ComparisonSessionAudioInterruptionTests.swift` (was TrainingSessionAudioInterruptionTests.swift)
+- `PeachTests/Comparison/ComparisonScreenLayoutTests.swift` (was TrainingScreenLayoutTests.swift)
+- `PeachTests/Comparison/ComparisonScreenFeedbackTests.swift` (was TrainingScreenFeedbackTests.swift)
+- `PeachTests/Comparison/ComparisonScreenAccessibilityTests.swift` (was TrainingScreenAccessibilityTests.swift)
+- `PeachTests/Comparison/ComparisonTestHelpers.swift` (was TrainingTestHelpers.swift)
+- `PeachTests/Comparison/MockNextComparisonStrategy.swift` (was MockNextNoteStrategy.swift)
+
+**Modified (contents only — source):**
+- `Peach/App/PeachApp.swift`
+- `Peach/App/ContentView.swift`
+- `Peach/Start/StartScreen.swift`
+- `Peach/Settings/SettingsScreen.swift`
+- `Peach/Comparison/ComparisonObserver.swift`
+- `Peach/Comparison/Comparison.swift`
+- `Peach/Core/Data/ComparisonRecordStoring.swift`
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift`
+- `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift`
+
+**Modified (contents only — test):**
+- `PeachTests/Comparison/MockTrainingDataStore.swift`
+- `PeachTests/Comparison/MockNotePlayer.swift`
+- `PeachTests/Start/StartScreenTests.swift`
+- `PeachTests/Core/Algorithm/KazezNoteStrategyTests.swift`
+- `PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift`
+- `PeachTests/Core/Algorithm/AdaptiveNoteStrategyRegionalTests.swift`
+
+**Modified (documentation):**
+- `docs/project-context.md`
+- `docs/implementation-artifacts/sprint-status.yaml`
+- `docs/implementation-artifacts/11-1-rename-training-types-and-files-to-comparison.md`

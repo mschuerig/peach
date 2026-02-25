@@ -2,16 +2,16 @@ import Testing
 @testable import Peach
 
 /// Tests for Story 3.4: Training Interruption and App Lifecycle Handling
-@Suite("TrainingSession Lifecycle Tests")
-struct TrainingSessionLifecycleTests {
+@Suite("ComparisonSession Lifecycle Tests")
+struct ComparisonSessionLifecycleTests {
 
     // MARK: - Data Integrity Tests (AC#4)
 
     @Test("stop() during playingNote1 discards incomplete comparison")
     func stopDuringNote1DiscardsComparison() async {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
-        var stateWhenPlayCalled: TrainingState?
+        var stateWhenPlayCalled: ComparisonSessionState?
         f.mockPlayer.onPlayCalled = {
             // Capture state and stop immediately when first note starts
             if stateWhenPlayCalled == nil {
@@ -33,7 +33,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() during playingNote2 discards incomplete comparison")
     func stopDuringNote2DiscardsComparison() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.mockPlayer.instantPlayback = false
         f.mockPlayer.simulatedPlaybackDuration = 0.5
@@ -55,7 +55,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() during awaitingAnswer discards incomplete comparison")
     func stopDuringAwaitingAnswerDiscardsComparison() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -70,7 +70,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() during showingFeedback preserves already-saved data")
     func stopDuringFeedbackPreservesData() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -91,7 +91,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() clears feedback state")
     func stopClearsFeedbackState() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -107,7 +107,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() is safe to call multiple times")
     func stopIsSafeToCallMultipleTimes() {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         // Call stop when already idle
         f.session.stop()
@@ -128,7 +128,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() calls notePlayer.stop()")
     func stopCallsNotePlayerStop() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForPlayCallCount(f.mockPlayer, 1)
@@ -145,7 +145,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("Simulated onDisappear triggers stop")
     func simulatedOnDisappearTriggersStop() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForPlayCallCount(f.mockPlayer, 1)
@@ -161,7 +161,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("Rapid stop and start sequence")
     func rapidStopAndStartSequence() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         await Task.yield()
@@ -179,7 +179,7 @@ struct TrainingSessionLifecycleTests {
 
     @Test("stop() during transition between states")
     func stopDuringStateTransition() async {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         await Task.yield()
