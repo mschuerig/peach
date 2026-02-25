@@ -1265,29 +1265,11 @@ So that the audio engine supports both fixed-duration and indefinite playback wi
 **Then** all existing tests pass
 **And** new tests verify: PlaybackHandle stop idempotency, adjustFrequency updates, MockPlaybackHandle tracking, fixed-duration convenience method behavior
 
-### Story 12.2: ComparisonSession PlaybackHandle Integration
+### Story 12.2: ~~ComparisonSession PlaybackHandle Integration~~ — Won't Do
 
-As a **developer**,
-I want ComparisonSession to use PlaybackHandle for note lifecycle management,
-So that interruption cleanup is explicit and consistent with the new audio ownership pattern.
+**Status:** Won't Do — Superseded by Story 12.1
 
-**Acceptance Criteria:**
-
-**Given** `ComparisonSession` currently calls `notePlayer.stop()` for interruption cleanup
-**When** PlaybackHandle integration is applied
-**Then** `ComparisonSession` holds a `currentHandle: PlaybackHandle?` property
-**And** when the fixed-duration convenience method is used for normal playback, no handle tracking is needed (the convenience method manages its own handle)
-
-**Given** `ComparisonSession.stop()` is called during active playback
-**When** an interruption occurs (navigate away, backgrounding, audio interruption)
-**Then** `stop()` calls `currentHandle?.stop()` to explicitly stop whatever note is playing
-**And** incomplete comparisons are discarded as before
-**And** the session transitions to `idle`
-
-**Given** the full test suite
-**When** all tests are run
-**Then** all existing ComparisonSession tests pass
-**And** interruption tests verify that `currentHandle.stop()` is called
+**Rationale:** Story 12.1 introduced `NotePlayer.stopAll()` and a fixed-duration convenience method with internal handle management. ComparisonSession already uses these simpler interfaces effectively: `play(frequency:duration:velocity:amplitudeDB:)` for normal playback and `stopAll()` for interruption cleanup. Adding explicit `PlaybackHandle` tracking to ComparisonSession would introduce unnecessary complexity — the convenience method deliberately hides handle lifecycle, and `stopAll()` provides a more robust interruption mechanism than per-handle stopping. ComparisonSession's responsibility is orchestrating comparisons, not managing audio note lifecycles.
 
 ## Epic 13: Remember Every Match — Pitch Matching Data Layer
 
