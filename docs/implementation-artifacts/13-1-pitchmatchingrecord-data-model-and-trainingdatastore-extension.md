@@ -1,6 +1,6 @@
 # Story 13.1: PitchMatchingRecord Data Model and TrainingDataStore Extension
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -28,36 +28,36 @@ So that all training data is reliably stored and available for profile computati
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create PitchMatchingRecord SwiftData model (AC: #1)
-  - [ ] 1.1 Create `Peach/Core/Data/PitchMatchingRecord.swift` with `@Model` class containing `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp` fields
-  - [ ] 1.2 Write tests: `PeachTests/Core/Data/PitchMatchingRecordTests.swift` — verify field storage, default timestamp, all fields intact after save/fetch
+- [x] Task 1: Create PitchMatchingRecord SwiftData model (AC: #1)
+  - [x] 1.1 Create `Peach/Core/Data/PitchMatchingRecord.swift` with `@Model` class containing `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp` fields
+  - [x] 1.2 Write tests: `PeachTests/Core/Data/PitchMatchingRecordTests.swift` — verify field storage, default timestamp, all fields intact after save/fetch
 
-- [ ] Task 2: Create PitchMatching value types and observer protocol (AC: #2, #3, #4)
-  - [ ] 2.1 Create `Peach/PitchMatching/` directory
-  - [ ] 2.2 Create `Peach/PitchMatching/CompletedPitchMatching.swift` — struct with `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp` fields (mirroring `CompletedComparison` pattern)
-  - [ ] 2.3 Create `Peach/PitchMatching/PitchMatchingChallenge.swift` — struct with `referenceNote`, `initialCentOffset` fields
-  - [ ] 2.4 Create `Peach/PitchMatching/PitchMatchingObserver.swift` — protocol with `pitchMatchingCompleted(_:)` method (mirroring `ComparisonObserver` pattern)
+- [x] Task 2: Create PitchMatching value types and observer protocol (AC: #2, #3, #4)
+  - [x] 2.1 Create `Peach/PitchMatching/` directory
+  - [x] 2.2 Create `Peach/PitchMatching/CompletedPitchMatching.swift` — struct with `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp` fields (mirroring `CompletedComparison` pattern)
+  - [x] 2.3 Create `Peach/PitchMatching/PitchMatchingChallenge.swift` — struct with `referenceNote`, `initialCentOffset` fields
+  - [x] 2.4 Create `Peach/PitchMatching/PitchMatchingObserver.swift` — protocol with `pitchMatchingCompleted(_:)` method (mirroring `ComparisonObserver` pattern)
 
-- [ ] Task 3: Extend TrainingDataStore with pitch matching CRUD (AC: #5)
-  - [ ] 3.1 Add `save(_ record: PitchMatchingRecord) throws` to TrainingDataStore
-  - [ ] 3.2 Add `fetchAllPitchMatching() throws -> [PitchMatchingRecord]` to TrainingDataStore (sorted by timestamp ascending, matching `fetchAll()` pattern)
-  - [ ] 3.3 Add `deleteAllPitchMatching() throws` to TrainingDataStore (for Settings "Reset All Training Data")
-  - [ ] 3.4 Add `PitchMatchingObserver` conformance via extension (mirroring `ComparisonObserver` conformance pattern — catch and log errors, don't propagate)
-  - [ ] 3.5 Write tests: extend `TrainingDataStoreTests.swift` — verify pitch matching save, fetchAll, deleteAll, observer conformance, error handling
+- [x] Task 3: Extend TrainingDataStore with pitch matching CRUD (AC: #5)
+  - [x] 3.1 Add `save(_ record: PitchMatchingRecord) throws` to TrainingDataStore
+  - [x] 3.2 Add `fetchAllPitchMatching() throws -> [PitchMatchingRecord]` to TrainingDataStore (sorted by timestamp ascending, matching `fetchAll()` pattern)
+  - [x] 3.3 Add `deleteAllPitchMatching() throws` to TrainingDataStore (for Settings "Reset All Training Data")
+  - [x] 3.4 Add `PitchMatchingObserver` conformance via extension (mirroring `ComparisonObserver` conformance pattern — catch and log errors, don't propagate)
+  - [x] 3.5 Write tests: extend `TrainingDataStoreTests.swift` — verify pitch matching save, fetchAll, deleteAll, observer conformance, error handling
 
-- [ ] Task 4: Update ModelContainer schema (AC: #6)
-  - [ ] 4.1 Update `PeachApp.swift`: change `ModelContainer(for: ComparisonRecord.self)` to `ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)`
-  - [ ] 4.2 Update test helper `makeTestContainer()` in TrainingDataStore tests to register both models
+- [x] Task 4: Update ModelContainer schema (AC: #6)
+  - [x] 4.1 Update `PeachApp.swift`: change `ModelContainer(for: ComparisonRecord.self)` to `ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)`
+  - [x] 4.2 Update test helper `makeTestContainer()` in TrainingDataStore tests to register both models
 
-- [ ] Task 5: Update MockTrainingDataStore for pitch matching (AC: #7)
-  - [ ] 5.1 Add `PitchMatchingObserver` conformance to `MockTrainingDataStore` — track `savePitchMatchingCallCount`, `lastSavedPitchMatchingRecord`, `savedPitchMatchingRecords`
-  - [ ] 5.2 Add `fetchAllPitchMatching()` and pitch matching reset support
-  - [ ] 5.3 Update existing `deleteAll()` in Settings to also call `deleteAllPitchMatching()` (ensure Reset All Training Data clears both record types)
+- [x] Task 5: Update MockTrainingDataStore for pitch matching (AC: #7)
+  - [x] 5.1 Add `PitchMatchingObserver` conformance to `MockTrainingDataStore` — track `savePitchMatchingCallCount`, `lastSavedPitchMatchingRecord`, `savedPitchMatchingRecords`
+  - [x] 5.2 Add `fetchAllPitchMatching()` and pitch matching reset support
+  - [x] 5.3 Update existing `deleteAll()` in Settings to also call `deleteAllPitchMatching()` (ensure Reset All Training Data clears both record types)
 
-- [ ] Task 6: Run full test suite and verify (AC: #7)
-  - [ ] 6.1 Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] 6.2 Verify all existing tests pass with zero regressions
-  - [ ] 6.3 Verify all new pitch matching data layer tests pass
+- [x] Task 6: Run full test suite and verify (AC: #7)
+  - [x] 6.1 Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] 6.2 Verify all existing tests pass with zero regressions
+  - [x] 6.3 Verify all new pitch matching data layer tests pass
 
 ## Dev Notes
 
@@ -219,14 +219,46 @@ cd3f1d6 Add story 12.1: PlaybackHandle Protocol and NotePlayer Redesign
 - [Source: PeachTests/Comparison/MockTrainingDataStore.swift — mock pattern to extend]
 - [Source: docs/implementation-artifacts/12-1-playbackhandle-protocol-and-noteplayer-redesign.md — previous story learnings]
 
+## Change Log
+
+- 2026-02-25: Implemented story 13.1 — PitchMatchingRecord data model, PitchMatching value types/observer protocol, TrainingDataStore CRUD extension, ModelContainer schema update, MockTrainingDataStore update, Settings reset integration. 422 tests passing (13 new).
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Settings preview `.modelContainer(for:inMemory:)` requires array syntax for multiple models: `[ComparisonRecord.self, PitchMatchingRecord.self]` (not variadic).
+
 ### Completion Notes List
 
+- Created `PitchMatchingRecord` SwiftData `@Model` with `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp` fields following `ComparisonRecord` pattern exactly.
+- Created `Peach/PitchMatching/` feature directory with `CompletedPitchMatching`, `PitchMatchingChallenge`, and `PitchMatchingObserver`.
+- Extended `TrainingDataStore` with `save(_: PitchMatchingRecord)`, `fetchAllPitchMatching()`, `deleteAllPitchMatching()` CRUD methods.
+- Added `PitchMatchingObserver` conformance to `TrainingDataStore` via extension — catches and logs errors, never propagates.
+- Updated `PeachApp.swift` ModelContainer to register both `ComparisonRecord` and `PitchMatchingRecord`.
+- Updated `SettingsScreen.resetAllTrainingData()` to also call `deleteAllPitchMatching()`.
+- Updated `MockTrainingDataStore` with full `PitchMatchingObserver` conformance and tracking properties.
+- Updated `makeTestContainer()` in both `TrainingDataStoreTests` and `TrainingDataStoreEdgeCaseTests` to register both models.
+- Updated Settings preview `modelContainer` to include both model types.
+- 13 new tests added (4 PitchMatchingRecord + 9 TrainingDataStore pitch matching CRUD/observer). Total: 422 tests passing.
+
 ### File List
+
+New files:
+- Peach/Core/Data/PitchMatchingRecord.swift
+- Peach/PitchMatching/CompletedPitchMatching.swift
+- Peach/PitchMatching/PitchMatchingChallenge.swift
+- Peach/PitchMatching/PitchMatchingObserver.swift
+- PeachTests/Core/Data/PitchMatchingRecordTests.swift
+
+Modified files:
+- Peach/Core/Data/TrainingDataStore.swift
+- Peach/App/PeachApp.swift
+- Peach/Settings/SettingsScreen.swift
+- PeachTests/Core/Data/TrainingDataStoreTests.swift
+- PeachTests/Core/Data/TrainingDataStoreEdgeCaseTests.swift
+- PeachTests/Comparison/MockTrainingDataStore.swift

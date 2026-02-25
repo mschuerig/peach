@@ -1,15 +1,21 @@
 import Foundation
 @testable import Peach
 
-/// Mock ComparisonRecordStoring and ComparisonObserver for testing ComparisonSession
-final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver {
-    // MARK: - Test State Tracking
+/// Mock ComparisonRecordStoring, ComparisonObserver, and PitchMatchingObserver for testing
+final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, PitchMatchingObserver {
+    // MARK: - Comparison Test State Tracking
 
     var saveCallCount = 0
     var lastSavedRecord: ComparisonRecord?
     var savedRecords: [ComparisonRecord] = []
     var shouldThrowError = false
     var errorToThrow: DataStoreError = .saveFailed("Mock error")
+
+    // MARK: - Pitch Matching Test State Tracking
+
+    var savePitchMatchingCallCount = 0
+    var lastSavedPitchMatchingRecord: PitchMatchingRecord?
+    var savedPitchMatchingRecords: [PitchMatchingRecord] = []
 
     // MARK: - ComparisonRecordStoring Protocol
 
@@ -31,12 +37,42 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver {
         return savedRecords
     }
 
+    // MARK: - Pitch Matching Methods
+
+    func save(_ record: PitchMatchingRecord) throws {
+        savePitchMatchingCallCount += 1
+        lastSavedPitchMatchingRecord = record
+
+        if shouldThrowError {
+            throw errorToThrow
+        }
+
+        savedPitchMatchingRecords.append(record)
+    }
+
+    func fetchAllPitchMatching() throws -> [PitchMatchingRecord] {
+        if shouldThrowError {
+            throw DataStoreError.fetchFailed("Mock error")
+        }
+        return savedPitchMatchingRecords
+    }
+
+    func deleteAllPitchMatching() throws {
+        if shouldThrowError {
+            throw DataStoreError.deleteFailed("Mock error")
+        }
+        savedPitchMatchingRecords = []
+    }
+
     // MARK: - Test Helpers
 
     func reset() {
         saveCallCount = 0
         lastSavedRecord = nil
         savedRecords = []
+        savePitchMatchingCallCount = 0
+        lastSavedPitchMatchingRecord = nil
+        savedPitchMatchingRecords = []
         shouldThrowError = false
     }
 
@@ -50,6 +86,18 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver {
             note2CentOffset: comparison.isSecondNoteHigher ? comparison.centDifference : -comparison.centDifference,
             isCorrect: completed.isCorrect,
             timestamp: completed.timestamp
+        )
+        try? save(record)
+    }
+
+    // MARK: - PitchMatchingObserver Protocol
+
+    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+        let record = PitchMatchingRecord(
+            referenceNote: result.referenceNote,
+            initialCentOffset: result.initialCentOffset,
+            userCentError: result.userCentError,
+            timestamp: result.timestamp
         )
         try? save(record)
     }
