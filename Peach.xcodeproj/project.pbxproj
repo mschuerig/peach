@@ -42,7 +42,6 @@
 				Profile/.gitkeep,
 				Settings/.gitkeep,
 				Start/.gitkeep,
-				Training/.gitkeep,
 			);
 			target = 0E0000000000000000000001 /* Peach */;
 		};

@@ -5,14 +5,14 @@ import Testing
 ///
 /// These tests verify the state contract that prevents feedback icon flicker:
 /// when showFeedback becomes true, isLastAnswerCorrect must reflect the CURRENT answer.
-@Suite("TrainingScreen Feedback Tests")
-struct TrainingScreenFeedbackTests {
+@Suite("ComparisonScreen Feedback Tests")
+struct ComparisonScreenFeedbackTests {
 
     // MARK: - Subtask 1.1: Correct icon shown immediately on correctness change
 
     @Test("feedback reflects current correctness after incorrect-to-correct change")
     func feedbackReflectsCorrectnessAfterIncorrectToCorrect() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -35,7 +35,7 @@ struct TrainingScreenFeedbackTests {
 
     @Test("feedback reflects current correctness after correct-to-incorrect change")
     func feedbackReflectsCorrectnessAfterCorrectToIncorrect() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -60,7 +60,7 @@ struct TrainingScreenFeedbackTests {
 
     @Test("showFeedback is false between feedback cycles")
     func showFeedbackIsFalseBetweenCycles() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -80,7 +80,7 @@ struct TrainingScreenFeedbackTests {
 
     @Test("first answer of session shows feedback without stale state")
     func firstAnswerShowsFeedbackCleanly() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         // Before training, no feedback state
         #expect(f.session.showFeedback == false)
@@ -99,7 +99,7 @@ struct TrainingScreenFeedbackTests {
 
     @Test("feedback displays correctly on consecutive same-correctness answers")
     func feedbackDisplaysCorrectlyOnConsecutiveSameCorrectness() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -125,11 +125,11 @@ struct TrainingScreenFeedbackTests {
 
     @Test("feedbackAnimation returns nil when Reduce Motion is enabled")
     func feedbackAnimationReturnsNilForReduceMotion() async {
-        #expect(TrainingScreen.feedbackAnimation(reduceMotion: true) == nil)
+        #expect(ComparisonScreen.feedbackAnimation(reduceMotion: true) == nil)
     }
 
     @Test("feedbackAnimation returns animation when Reduce Motion is disabled")
     func feedbackAnimationReturnsAnimationNormally() async {
-        #expect(TrainingScreen.feedbackAnimation(reduceMotion: false) != nil)
+        #expect(ComparisonScreen.feedbackAnimation(reduceMotion: false) != nil)
     }
 }

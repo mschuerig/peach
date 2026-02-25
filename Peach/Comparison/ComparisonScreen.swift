@@ -1,9 +1,9 @@
 import SwiftUI
 import os
 
-struct TrainingScreen: View {
+struct ComparisonScreen: View {
     /// Training session injected via environment
-    @Environment(\.trainingSession) private var trainingSession
+    @Environment(\.comparisonSession) private var comparisonSession
 
     /// Whether the user has enabled Reduce Motion in system accessibility settings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -12,7 +12,7 @@ struct TrainingScreen: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     /// Logger for debugging lifecycle events
-    private let logger = Logger(subsystem: "com.peach.app", category: "TrainingScreen")
+    private let logger = Logger(subsystem: "com.peach.app", category: "ComparisonScreen")
 
     private var isCompactHeight: Bool {
         verticalSizeClass == .compact
@@ -20,10 +20,10 @@ struct TrainingScreen: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            if let difficulty = trainingSession.currentDifficulty {
+            if let difficulty = comparisonSession.currentDifficulty {
                 DifficultyDisplayView(
                     currentDifficulty: difficulty,
-                    sessionBest: trainingSession.sessionBestCentDifference
+                    sessionBest: comparisonSession.sessionBestCentDifference
                 )
                 .padding(.horizontal)
             }
@@ -44,15 +44,15 @@ struct TrainingScreen: View {
         }
         .padding()
         .overlay {
-            if trainingSession.showFeedback {
-                FeedbackIndicator(
-                    isCorrect: trainingSession.isLastAnswerCorrect,
+            if comparisonSession.showFeedback {
+                ComparisonFeedbackIndicator(
+                    isCorrect: comparisonSession.isLastAnswerCorrect,
                     iconSize: Self.feedbackIconSize(isCompact: isCompactHeight)
                 )
                 .transition(.opacity)
             }
         }
-        .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: trainingSession.showFeedback)
+        .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: comparisonSession.showFeedback)
         .navigationTitle("Training")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -73,12 +73,12 @@ struct TrainingScreen: View {
             }
         }
         .onAppear {
-            logger.info("TrainingScreen appeared - starting training")
-            trainingSession.startTraining()
+            logger.info("ComparisonScreen appeared - starting training")
+            comparisonSession.startTraining()
         }
         .onDisappear {
-            logger.info("TrainingScreen disappeared - stopping training")
-            trainingSession.stop()
+            logger.info("ComparisonScreen disappeared - stopping training")
+            comparisonSession.stop()
         }
     }
 
@@ -106,7 +106,7 @@ struct TrainingScreen: View {
 
     private func answerButton(direction: AnswerDirection) -> some View {
         Button {
-            trainingSession.handleAnswer(isHigher: direction.isHigher)
+            comparisonSession.handleAnswer(isHigher: direction.isHigher)
         } label: {
             VStack(spacing: 12) {
                 Image(systemName: direction.iconName)
@@ -140,14 +140,14 @@ struct TrainingScreen: View {
     }
 
     static func feedbackIconSize(isCompact: Bool) -> CGFloat {
-        isCompact ? 70 : FeedbackIndicator.defaultIconSize
+        isCompact ? 70 : ComparisonFeedbackIndicator.defaultIconSize
     }
 
     // MARK: - Helpers
 
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states
     private var buttonsEnabled: Bool {
-        trainingSession.state == .playingNote2 || trainingSession.state == .awaitingAnswer
+        comparisonSession.state == .playingNote2 || comparisonSession.state == .awaitingAnswer
     }
 
     /// Returns the animation for feedback indicator transitions
@@ -157,16 +157,16 @@ struct TrainingScreen: View {
     }
 }
 
-// MARK: - Environment Key for TrainingSession
+// MARK: - Environment Key for ComparisonSession
 
 extension EnvironmentValues {
-    @Entry var trainingSession: TrainingSession = {
+    @Entry var comparisonSession: ComparisonSession = {
         let dataStore = MockDataStoreForPreview()
         let profile = PerceptualProfile()
         let strategy = AdaptiveNoteStrategy()
         let hapticManager = MockHapticFeedbackManager()
         let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
-        return TrainingSession(
+        return ComparisonSession(
             notePlayer: MockNotePlayerForPreview(),
             strategy: strategy,
             profile: profile,
@@ -198,6 +198,6 @@ private final class MockDataStoreForPreview: ComparisonRecordStoring, Comparison
 
 #Preview {
     NavigationStack {
-        TrainingScreen()
+        ComparisonScreen()
     }
 }

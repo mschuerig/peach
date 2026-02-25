@@ -2,15 +2,15 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Integration tests for TrainingSession with NotePlayer, DataStore, and Profile
-@Suite("TrainingSession Integration Tests")
-struct TrainingSessionIntegrationTests {
+/// Integration tests for ComparisonSession with NotePlayer, DataStore, and Profile
+@Suite("ComparisonSession Integration Tests")
+struct ComparisonSessionIntegrationTests {
 
     // MARK: - NotePlayer Integration Tests
 
-    @Test("TrainingSession calls play twice per comparison")
+    @Test("ComparisonSession calls play twice per comparison")
     func callsPlayTwicePerComparison() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -18,9 +18,9 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.playCallCount == 2)
     }
 
-    @Test("TrainingSession uses correct frequency calculation")
+    @Test("ComparisonSession uses correct frequency calculation")
     func usesCorrectFrequencyCalculation() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -30,9 +30,9 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.lastFrequency! >= 100 && f.mockPlayer.lastFrequency! <= 1200)
     }
 
-    @Test("TrainingSession passes correct duration to NotePlayer")
+    @Test("ComparisonSession passes correct duration to NotePlayer")
     func passesCorrectDuration() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -40,9 +40,9 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.lastDuration == 1.0)
     }
 
-    @Test("TrainingSession passes correct velocity to NotePlayer")
+    @Test("ComparisonSession passes correct velocity to NotePlayer")
     func passesCorrectVelocity() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -50,9 +50,9 @@ struct TrainingSessionIntegrationTests {
         #expect(f.mockPlayer.lastVelocity == 63)
     }
 
-    @Test("TrainingSession passes default amplitudeDB 0.0 to NotePlayer for both notes")
+    @Test("ComparisonSession passes default amplitudeDB 0.0 to NotePlayer for both notes")
     func passesDefaultAmplitude() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -64,9 +64,9 @@ struct TrainingSessionIntegrationTests {
 
     // MARK: - TrainingDataStore Integration Tests
 
-    @Test("TrainingSession records comparison on answer")
+    @Test("ComparisonSession records comparison on answer")
     func recordsComparisonOnAnswer() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -79,7 +79,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("ComparisonRecord contains correct note data")
     func comparisonRecordContainsCorrectData() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -94,7 +94,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("Data error does not stop training")
     func dataErrorDoesNotStopTraining() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
         f.mockDataStore.shouldThrowError = true
 
         f.session.startTraining()
@@ -113,7 +113,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("Profile is updated incrementally when comparison is recorded")
     func profileUpdatesIncrementallyAfterComparison() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -130,7 +130,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("Profile updates use unsigned centOffset for threshold measurement")
     func profileUsesUnsignedCentOffset() async {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.profile.update(note: 60, centOffset: 50.0, isCorrect: true)
         f.profile.update(note: 60, centOffset: 30.0, isCorrect: true)
@@ -142,7 +142,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("Profile statistics accumulate correctly over multiple comparisons")
     func profileAccumulatesMultipleComparisons() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -167,7 +167,7 @@ struct TrainingSessionIntegrationTests {
 
     @Test("Profile updates for all answers (both correct and incorrect)")
     func profileUpdatesForAllAnswers() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)

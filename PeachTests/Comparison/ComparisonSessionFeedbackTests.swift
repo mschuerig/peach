@@ -1,15 +1,15 @@
 import Testing
 @testable import Peach
 
-/// Tests for TrainingSession feedback state management (Story 3.3)
-@Suite("TrainingSession Feedback Tests")
-struct TrainingSessionFeedbackTests {
+/// Tests for ComparisonSession feedback state management (Story 3.3)
+@Suite("ComparisonSession Feedback Tests")
+struct ComparisonSessionFeedbackTests {
 
     // MARK: - Feedback State Tests
 
     @Test("Initial feedback state is hidden")
     func initialFeedbackState() async {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         #expect(f.session.showFeedback == false)
         #expect(f.session.isLastAnswerCorrect == nil)
@@ -17,7 +17,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Feedback shows after correct answer")
     func feedbackShowsAfterCorrectAnswer() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()
@@ -38,7 +38,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Feedback shows after incorrect answer")
     func feedbackShowsAfterIncorrectAnswer() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()
@@ -60,7 +60,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Feedback clears before next comparison")
     func feedbackClearsBeforeNextComparison() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()
@@ -88,7 +88,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Haptic fires on incorrect answer")
     func hapticFiresOnIncorrectAnswer() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()
@@ -108,7 +108,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Haptic does NOT fire on correct answer")
     func hapticDoesNotFireOnCorrectAnswer() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()
@@ -128,7 +128,7 @@ struct TrainingSessionFeedbackTests {
 
     @Test("Feedback state clears when training stops")
     func feedbackClearsWhenTrainingStops() async throws {
-        let f = makeTrainingSession(includeHaptic: true)
+        let f = makeComparisonSession(includeHaptic: true)
 
         // Start training
         f.session.startTraining()

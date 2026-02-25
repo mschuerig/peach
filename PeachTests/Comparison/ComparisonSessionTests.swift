@@ -1,23 +1,23 @@
 import Testing
 @testable import Peach
 
-/// Tests for TrainingSession state machine transitions and core training loop
-@Suite("TrainingSession Tests")
-struct TrainingSessionTests {
+/// Tests for ComparisonSession state machine transitions and core training loop
+@Suite("ComparisonSession Tests")
+struct ComparisonSessionTests {
 
     // MARK: - State Transition Tests
 
-    @Test("TrainingSession starts in idle state")
+    @Test("ComparisonSession starts in idle state")
     func startsInIdleState() {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
         #expect(f.session.state == .idle)
     }
 
     @Test("startTraining transitions from idle to playingNote1")
     func startTrainingTransitionsToPlayingNote1() async {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
-        var capturedState: TrainingState?
+        var capturedState: ComparisonSessionState?
         f.mockPlayer.onPlayCalled = {
             if capturedState == nil {
                 capturedState = f.session.state
@@ -31,9 +31,9 @@ struct TrainingSessionTests {
         #expect(f.mockPlayer.playCallCount >= 1)
     }
 
-    @Test("TrainingSession transitions from playingNote1 to playingNote2")
+    @Test("ComparisonSession transitions from playingNote1 to playingNote2")
     func transitionsFromNote1ToNote2() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForPlayCallCount(f.mockPlayer, 2)
@@ -42,9 +42,9 @@ struct TrainingSessionTests {
         #expect(f.session.state == .playingNote2 || f.session.state == .awaitingAnswer)
     }
 
-    @Test("TrainingSession transitions from playingNote2 to awaitingAnswer")
+    @Test("ComparisonSession transitions from playingNote2 to awaitingAnswer")
     func transitionsFromNote2ToAwaitingAnswer() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -54,7 +54,7 @@ struct TrainingSessionTests {
 
     @Test("handleAnswer transitions to showingFeedback")
     func handleAnswerTransitionsToShowingFeedback() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -64,9 +64,9 @@ struct TrainingSessionTests {
         #expect(f.session.state == .showingFeedback)
     }
 
-    @Test("TrainingSession loops back to playingNote1 after feedback")
+    @Test("ComparisonSession loops back to playingNote1 after feedback")
     func loopsBackAfterFeedback() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -81,7 +81,7 @@ struct TrainingSessionTests {
 
     @Test("stop() transitions to idle from any state")
     func stopTransitionsToIdle() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForPlayCallCount(f.mockPlayer, 1)
@@ -93,7 +93,7 @@ struct TrainingSessionTests {
 
     @Test("Audio error transitions to idle")
     func audioErrorTransitionsToIdle() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
         f.mockPlayer.shouldThrowError = true
         f.mockPlayer.errorToThrow = .engineStartFailed("Test error")
 
@@ -107,9 +107,9 @@ struct TrainingSessionTests {
 
     @Test("Buttons disabled during playingNote1")
     func buttonsDisabledDuringNote1() async {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
-        var capturedState: TrainingState?
+        var capturedState: ComparisonSessionState?
         f.mockPlayer.onPlayCalled = {
             if capturedState == nil {
                 capturedState = f.session.state
@@ -124,7 +124,7 @@ struct TrainingSessionTests {
 
     @Test("Buttons enabled during awaitingAnswer")
     func buttonsEnabledDuringAwaitingAnswer() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -132,9 +132,9 @@ struct TrainingSessionTests {
         #expect(f.session.state == .awaitingAnswer)
     }
 
-    @Test("TrainingSession completes full comparison loop")
+    @Test("ComparisonSession completes full comparison loop")
     func completesFullLoop() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)

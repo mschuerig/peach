@@ -7,19 +7,19 @@ import SwiftUI
 ///
 /// # Accessibility
 /// - Provides VoiceOver labels ("Correct" or "Incorrect")
-/// - Reduce Motion: The parent view (TrainingScreen) conditionally applies animation — when Reduce Motion is enabled, the opacity transition is instant (no animation)
+/// - Reduce Motion: The parent view (ComparisonScreen) conditionally applies animation — when Reduce Motion is enabled, the opacity transition is instant (no animation)
 /// - Large icon size (100pt) for visibility
 ///
 /// # Usage
 /// ```swift
 /// .overlay {
-///     if trainingSession.showFeedback {
-///         FeedbackIndicator(isCorrect: trainingSession.isLastAnswerCorrect)
+///     if comparisonSession.showFeedback {
+///         ComparisonFeedbackIndicator(isCorrect: comparisonSession.isLastAnswerCorrect)
 ///             .transition(.opacity)
 ///     }
 /// }
 /// ```
-struct FeedbackIndicator: View {
+struct ComparisonFeedbackIndicator: View {
     /// Whether the answer was correct (nil = no feedback to show)
     let isCorrect: Bool?
 
@@ -48,16 +48,16 @@ struct FeedbackIndicator: View {
 // MARK: - Previews
 
 #Preview("Correct") {
-    FeedbackIndicator(isCorrect: true)
+    ComparisonFeedbackIndicator(isCorrect: true)
         .padding()
 }
 
 #Preview("Incorrect") {
-    FeedbackIndicator(isCorrect: false)
+    ComparisonFeedbackIndicator(isCorrect: false)
         .padding()
 }
 
 #Preview("No Feedback") {
-    FeedbackIndicator(isCorrect: nil)
+    ComparisonFeedbackIndicator(isCorrect: nil)
         .padding()
 }

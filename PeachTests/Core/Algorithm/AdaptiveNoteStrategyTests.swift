@@ -6,9 +6,9 @@ import Foundation
 @Suite("AdaptiveNoteStrategy Tests")
 struct AdaptiveNoteStrategyTests {
 
-    // MARK: - Task 1 Tests: NextNoteStrategy Protocol
+    // MARK: - Task 1 Tests: NextComparisonStrategy Protocol
 
-    @Test("NextNoteStrategy protocol returns Comparison")
+    @Test("NextComparisonStrategy protocol returns Comparison")
     func protocolReturnsComparison() async throws {
         let profile = PerceptualProfile()
         let settings = TrainingSettings()

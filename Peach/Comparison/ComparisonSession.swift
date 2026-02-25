@@ -4,7 +4,7 @@ import os
 import AVFoundation
 
 /// States in the training comparison loop
-enum TrainingState {
+enum ComparisonSessionState {
     /// Training not started or stopped
     case idle
 
@@ -25,8 +25,8 @@ enum TrainingState {
 ///
 /// # Responsibilities
 ///
-/// TrainingSession coordinates the complete training loop:
-/// 1. Generate next comparison via NextNoteStrategy (adaptive algorithm)
+/// ComparisonSession coordinates the complete training loop:
+/// 1. Generate next comparison via NextComparisonStrategy (adaptive algorithm)
 /// 2. Play note 1 (transition to playingNote1)
 /// 3. Play note 2 (transition to playingNote2)
 /// 4. Await answer (transition to awaitingAnswer)
@@ -36,7 +36,7 @@ enum TrainingState {
 ///
 /// # Error Handling Boundary
 ///
-/// TrainingSession is the error boundary for training. It catches all service errors
+/// ComparisonSession is the error boundary for training. It catches all service errors
 /// (audio, data) and handles them gracefully:
 /// - **Audio failure**: Stop training silently (transition to idle), log error
 /// - **Data failure**: Log error but continue training (one lost record is acceptable)
@@ -64,15 +64,15 @@ enum TrainingState {
 /// The round-trip between comparisons must be effectively instantaneous (< 100ms target).
 /// Implementation strategy: pre-generate next comparison during feedback phase.
 @Observable
-final class TrainingSession {
+final class ComparisonSession {
     // MARK: - Logger
 
-    private let logger = Logger(subsystem: "com.peach.app", category: "TrainingSession")
+    private let logger = Logger(subsystem: "com.peach.app", category: "ComparisonSession")
 
     // MARK: - Observable State
 
     /// Current state of the training loop
-    private(set) var state: TrainingState = .idle
+    private(set) var state: ComparisonSessionState = .idle
 
     /// Whether to show feedback indicator (Story 3.3)
     private(set) var showFeedback: Bool = false
@@ -92,7 +92,7 @@ final class TrainingSession {
     private let notePlayer: NotePlayer
 
     /// Comparison selection strategy (Story 4.3)
-    private let strategy: NextNoteStrategy
+    private let strategy: NextComparisonStrategy
 
     /// User's perceptual profile (Story 4.1)
     private let profile: PerceptualProfile
@@ -104,7 +104,7 @@ final class TrainingSession {
     private let thresholdTimeline: ThresholdTimeline?
 
     /// Observers notified when comparisons are completed (Story 4.1)
-    /// Decouples TrainingSession from specific persistence and analytics implementations
+    /// Decouples ComparisonSession from specific persistence and analytics implementations
     private let observers: [ComparisonObserver]
 
     /// Notification center for audio interruption observers (injectable for test isolation)
@@ -176,7 +176,7 @@ final class TrainingSession {
 
     // MARK: - Initialization
 
-    /// Creates a TrainingSession with injected dependencies
+    /// Creates a ComparisonSession with injected dependencies
     ///
     /// - Parameters:
     ///   - notePlayer: Service for playing audio notes
@@ -191,7 +191,7 @@ final class TrainingSession {
     ///   - notificationCenter: Notification center for audio interruption observers (defaults to .default)
     init(
         notePlayer: NotePlayer,
-        strategy: NextNoteStrategy,
+        strategy: NextComparisonStrategy,
         profile: PerceptualProfile,
         settingsOverride: TrainingSettings? = nil,
         noteDurationOverride: TimeInterval? = nil,

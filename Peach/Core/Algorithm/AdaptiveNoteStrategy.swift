@@ -3,7 +3,7 @@ import OSLog
 
 /// Adaptive comparison selection strategy for intelligent training
 ///
-/// Implements NextNoteStrategy with stateless comparison selection:
+/// Implements NextComparisonStrategy with stateless comparison selection:
 /// - Reads user's PerceptualProfile for difficulty and weak spots
 /// - Uses TrainingSettings for configuration
 /// - Uses last completed comparison for nearby note selection
@@ -27,7 +27,7 @@ import OSLog
 /// Must be fast (< 1ms) to meet NFR2 (no perceptible delay).
 /// - In-memory only, no database queries
 /// - Simple math: random selection, weighted probability, mean calculation
-final class AdaptiveNoteStrategy: NextNoteStrategy {
+final class AdaptiveNoteStrategy: NextComparisonStrategy {
 
     // MARK: - Difficulty Parameters
 
@@ -65,7 +65,7 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
         logger.info("AdaptiveNoteStrategy initialized (stateless)")
     }
 
-    // MARK: - NextNoteStrategy Protocol
+    // MARK: - NextComparisonStrategy Protocol
 
     /// Selects the next comparison based on perceptual profile and settings
     ///

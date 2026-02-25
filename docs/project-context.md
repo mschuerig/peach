@@ -61,8 +61,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftUI Views:**
 - **Views are thin** — observe state, render, send actions; no business logic in views
-- **Views only interact with `TrainingSession` and `PerceptualProfile`** — never import or reference `NotePlayer`, `NextNoteStrategy`, or `TrainingDataStore` from views
-- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var trainingSession = TrainingSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
+- **Views only interact with `ComparisonSession` and `PerceptualProfile`** — never import or reference `NotePlayer`, `NextComparisonStrategy`, or `TrainingDataStore` from views
+- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var comparisonSession = ComparisonSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
 - **Extract subviews at ~40 lines** — when a view body exceeds ~40 lines, extract child views
 - **Responsive layout** — detect `@Environment(\.verticalSizeClass)` for compact/regular; extract layout parameters to `static` methods for unit testability
 - **`NavigationDestination` enum** for type-safe routing — no string-based navigation
@@ -81,10 +81,10 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **MIDI-to-Hz conversion** — use existing `FrequencyCalculation.swift`, never reimplement. Includes `midiNoteAndCents(frequency:referencePitch:)` for Hz→MIDI reverse conversion
 
 **State Management:**
-- **`TrainingSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
+- **`ComparisonSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
 - **State transitions are guarded** — preconditions enforced; never skip states
-- **Observer pattern** — `ComparisonObserver` protocol; observers injected as array into `TrainingSession`
-- **Settings read live** — `TrainingSession` reads `@AppStorage` on each comparison, not cached; `SoundFontNotePlayer` reads `soundSource` on each `play()` call
+- **Observer pattern** — `ComparisonObserver` protocol; observers injected as array into `ComparisonSession`
+- **Settings read live** — `ComparisonSession` reads `@AppStorage` on each comparison, not cached; `SoundFontNotePlayer` reads `soundSource` on each `play()` call
 
 **Composition Root (`PeachApp.swift`):**
 - **All service instantiation happens in `PeachApp.swift`** — this is the single dependency graph source of truth
@@ -95,7 +95,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - New `ComparisonObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
 - New SwiftData `@Model` → register in `ModelContainer` schema in `PeachApp.swift`
 - New layout logic → extract to `static` methods for unit testability
-- New state transitions → respect existing guards in `TrainingSession`; use `waitForState` helper in tests
+- New state transitions → respect existing guards in `ComparisonSession`; use `waitForState` helper in tests
 
 ### Testing Rules
 
@@ -129,8 +129,8 @@ Never run only specific test files — always the complete suite.
 - Provide `reset()` method for cleanup
 
 **Test Helpers:**
-- **`waitForState` helper** — async assertion for `TrainingSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
-- **Factory methods return tuples** — `makeTrainingSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
+- **`waitForState` helper** — async assertion for `ComparisonSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
+- **Factory methods return tuples** — `makeComparisonSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
 - **Layout tests use `static` methods** — test layout logic without instantiating SwiftUI views
 
 **Coverage:**
@@ -139,10 +139,10 @@ Never run only specific test files — always the complete suite.
 ### Code Quality & Style Rules
 
 **Project-Specific Naming (non-obvious conventions):**
-- **Protocols:** capability nouns — `NotePlayer`, `NextNoteStrategy` (not `-able`, not `-Protocol` suffix)
+- **Protocols:** capability nouns — `NotePlayer`, `NextComparisonStrategy` (not `-able`, not `-Protocol` suffix)
 - **Protocol implementations:** descriptive prefix — `SoundFontNotePlayer`, `KazezNoteStrategy`
 - **Screens:** `{Name}Screen.swift` — not `{Name}View` or `{Name}ViewController`
-- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `FeedbackIndicator.swift`
+- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `ComparisonFeedbackIndicator.swift`
 - **Mocks:** `Mock{Name}.swift` — not `{Name}Mock`, `Fake{Name}`, or `Stub{Name}`
 - **Boolean properties:** `is`/`has`/`should` prefix — `isCorrect`, `isCompact`, `shouldThrowError`
 - **Enum cases:** `lowerCamelCase` — `case playingNote1`, not `case PlayingNote1`
@@ -198,8 +198,8 @@ Never run only specific test files — always the complete suite.
 - **Read before writing** — before implementing anything, read the existing implementation of the component you're modifying or the closest analogous component; the codebase is the primary source of truth for patterns
 
 **Architectural Boundaries (hard rules):**
-- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `TrainingSession` or `PerceptualProfile` as computed properties
-- **`TrainingSession` is the ONLY component that understands "comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextNoteStrategy` knows note selection, neither knows about the loop
+- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `ComparisonSession` or `PerceptualProfile` as computed properties
+- **`ComparisonSession` is the ONLY component that understands "comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextComparisonStrategy` knows note selection, neither knows about the loop
 - **`PerceptualProfile` is in-memory only** — rebuilt from `ComparisonRecord` on startup, updated incrementally; never persist it to SwiftData
 
 **Domain Rules Agents Will Get Wrong:**
@@ -223,7 +223,7 @@ Never run only specific test files — always the complete suite.
 - Premature abstractions, `Utils/` directories, speculative features → keep it simple
 
 **Error Resilience:**
-- **`TrainingSession` is the error boundary** — catches all service errors; training loop continues gracefully
+- **`ComparisonSession` is the error boundary** — catches all service errors; training loop continues gracefully
 - **Audio interruption mid-comparison** → discard incomplete comparison, stop training
 - **App backgrounding** → stop training; return to Start Screen on foreground
 - **Empty profile (cold start)** → `KazezNoteStrategy` starts at `maxCentDifference` (or `profile.overallMean` if some training exists); handle gracefully

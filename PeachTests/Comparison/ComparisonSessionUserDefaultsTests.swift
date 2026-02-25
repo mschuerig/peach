@@ -2,9 +2,9 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Tests for TrainingSession live settings via UserDefaults (Story 6.2)
-@Suite("TrainingSession UserDefaults Settings Tests", .serialized)
-struct TrainingSessionUserDefaultsTests {
+/// Tests for ComparisonSession live settings via UserDefaults (Story 6.2)
+@Suite("ComparisonSession UserDefaults Settings Tests", .serialized)
+struct ComparisonSessionUserDefaultsTests {
 
     func cleanUpSettingsDefaults() {
         let keys = [
@@ -21,7 +21,7 @@ struct TrainingSessionUserDefaultsTests {
 
     // MARK: - UserDefaults Settings Tests
 
-    @Test("Changing UserDefaults values changes TrainingSettings built by TrainingSession")
+    @Test("Changing UserDefaults values changes TrainingSettings built by ComparisonSession")
     func userDefaultsChangesAffectSettings() async throws {
         cleanUpSettingsDefaults()
         defer { cleanUpSettingsDefaults() }
@@ -29,14 +29,14 @@ struct TrainingSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
 
         UserDefaults.standard.set(0.8, forKey: SettingsKeys.naturalVsMechanical)
         UserDefaults.standard.set(50, forKey: SettingsKeys.noteRangeMin)
         UserDefaults.standard.set(70, forKey: SettingsKeys.noteRangeMax)
         UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -62,11 +62,11 @@ struct TrainingSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
 
         UserDefaults.standard.set(2.5, forKey: SettingsKeys.noteDuration)
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -89,13 +89,13 @@ struct TrainingSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy(comparisons: [
+        let mockStrategy = MockNextComparisonStrategy(comparisons: [
             Comparison(note1: 69, note2: 69, centDifference: 100.0, isSecondNoteHigher: true)
         ])
 
         UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -126,9 +126,9 @@ struct TrainingSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -155,12 +155,12 @@ struct TrainingSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy(comparisons: [
+        let mockStrategy = MockNextComparisonStrategy(comparisons: [
             Comparison(note1: 60, note2: 60, centDifference: 100.0, isSecondNoteHigher: true),
             Comparison(note1: 62, note2: 62, centDifference: 95.0, isSecondNoteHigher: false)
         ])
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,

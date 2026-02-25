@@ -1,9 +1,9 @@
 import Testing
 @testable import Peach
 
-/// Tests for TrainingSession settings propagation and overrides (Stories 4.3, 6.2)
-@Suite("TrainingSession Settings Tests")
-struct TrainingSessionSettingsTests {
+/// Tests for ComparisonSession settings propagation and overrides (Stories 4.3, 6.2)
+@Suite("ComparisonSession Settings Tests")
+struct ComparisonSessionSettingsTests {
 
     // MARK: - Settings Propagation Tests (Story 4.3)
 
@@ -12,13 +12,13 @@ struct TrainingSessionSettingsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
         let customSettings = TrainingSettings(
             noteRangeMin: 48,
             noteRangeMax: 72,
             naturalVsMechanical: 0.8
         )
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -36,7 +36,7 @@ struct TrainingSessionSettingsTests {
 
     @Test("Strategy receives updated profile after answer")
     func strategyReceivesUpdatedProfileAfterAnswer() async throws {
-        let f = makeTrainingSession()
+        let f = makeComparisonSession()
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -55,19 +55,19 @@ struct TrainingSessionSettingsTests {
 
     // MARK: - Settings Override Tests (Story 6.2)
 
-    @Test("TrainingSession with settingsOverride uses override values")
+    @Test("ComparisonSession with settingsOverride uses override values")
     func settingsOverrideUsesOverrideValues() async throws {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
         let overrideSettings = TrainingSettings(
             noteRangeMin: 48,
             noteRangeMax: 72,
             naturalVsMechanical: 0.3,
             referencePitch: 432.0
         )
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
@@ -89,9 +89,9 @@ struct TrainingSessionSettingsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextNoteStrategy()
+        let mockStrategy = MockNextComparisonStrategy()
 
-        let session = TrainingSession(
+        let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,

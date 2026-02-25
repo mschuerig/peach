@@ -7,7 +7,7 @@ import Foundation
 ///
 /// # Architecture Boundary
 ///
-/// NextNoteStrategy reads from PerceptualProfile and TrainingSettings,
+/// NextComparisonStrategy reads from PerceptualProfile and TrainingSettings,
 /// and returns a Comparison value type. It has no concept of:
 /// - Audio playback (NotePlayer's responsibility)
 /// - Data persistence (TrainingDataStore's responsibility)
@@ -16,13 +16,13 @@ import Foundation
 ///
 /// # Usage
 ///
-/// The default implementation (`KazezNoteStrategy`) is injected into TrainingSession
+/// The default implementation (`KazezNoteStrategy`) is injected into ComparisonSession
 /// in `PeachApp.swift` (Story 9.1). `AdaptiveNoteStrategy` is retained for future use.
 /// ```swift
-/// let strategy: NextNoteStrategy = KazezNoteStrategy()
+/// let strategy: NextComparisonStrategy = KazezNoteStrategy()
 /// let comparison = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
 /// ```
-protocol NextNoteStrategy {
+protocol NextComparisonStrategy {
     /// Selects the next comparison based on user's perceptual profile and settings
     ///
     /// Stateless selection - all inputs passed via parameters, output depends only on inputs.
@@ -42,7 +42,7 @@ protocol NextNoteStrategy {
 /// Training configuration for comparison selection
 ///
 /// Contains settings that control the adaptive algorithm's behavior.
-/// Exposed to users via SettingsScreen (@AppStorage) and read live by TrainingSession.
+/// Exposed to users via SettingsScreen (@AppStorage) and read live by ComparisonSession.
 ///
 /// # Defaults
 ///

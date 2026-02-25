@@ -21,7 +21,7 @@ struct SettingsScreen: View {
     private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.trainingSession) private var trainingSession
+    @Environment(\.comparisonSession) private var comparisonSession
     @Environment(\.soundFontLibrary) private var soundFontLibrary
 
     @State private var showResetConfirmation = false
@@ -164,7 +164,7 @@ struct SettingsScreen: View {
             return
         }
 
-        trainingSession.resetTrainingData()
+        comparisonSession.resetTrainingData()
     }
 }
 

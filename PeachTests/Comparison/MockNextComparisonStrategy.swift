@@ -1,11 +1,11 @@
 import Foundation
 @testable import Peach
 
-/// Mock NextNoteStrategy for deterministic testing of TrainingSession
+/// Mock NextComparisonStrategy for deterministic testing of ComparisonSession
 ///
 /// Returns predetermined comparisons in sequence, and captures received
 /// profile and settings for assertion in tests.
-final class MockNextNoteStrategy: NextNoteStrategy {
+final class MockNextComparisonStrategy: NextComparisonStrategy {
     // MARK: - Test State Tracking
 
     /// Predetermined comparisons to return (cycles through the list)
@@ -37,7 +37,7 @@ final class MockNextNoteStrategy: NextNoteStrategy {
         self.comparisons = comparisons
     }
 
-    // MARK: - NextNoteStrategy Protocol
+    // MARK: - NextComparisonStrategy Protocol
 
     func nextComparison(
         profile: PerceptualProfile,
