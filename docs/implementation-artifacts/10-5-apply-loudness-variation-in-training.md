@@ -1,6 +1,6 @@
 # Story 10.5: Apply Loudness Variation in Training
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -14,9 +14,9 @@ So that I learn to distinguish pitch from loudness and sharpen my pitch percepti
 
 1. **Given** the "Vary Loudness" slider is set to 0.0, **When** a comparison is played, **Then** both notes are played at the same amplitude (amplitudeDB: 0.0 for both — no loudness offset applied to note2).
 
-2. **Given** the "Vary Loudness" slider is set to 1.0, **When** a comparison is played, **Then** note2's amplitude is offset by a random value in the range ±maxOffset dB (initially ±2.0 dB) relative to note1 (note1 always plays at amplitudeDB: 0.0).
+2. **Given** the "Vary Loudness" slider is set to 1.0, **When** a comparison is played, **Then** note2's amplitude is offset by a random value in the range ±maxOffset dB (±5.0 dB, tuned up from initial 2.0 after manual testing) relative to note1 (note1 always plays at amplitudeDB: 0.0).
 
-3. **Given** the "Vary Loudness" slider is set to a value between 0.0 and 1.0 (e.g., 0.5), **When** a comparison is played, **Then** note2's amplitude offset is drawn from ±(sliderValue × maxOffset) dB (e.g., ±1.0 dB at slider 0.5).
+3. **Given** the "Vary Loudness" slider is set to a value between 0.0 and 1.0 (e.g., 0.5), **When** a comparison is played, **Then** note2's amplitude offset is drawn from ±(sliderValue × maxOffset) dB (e.g., ±2.5 dB at slider 0.5).
 
 4. **Given** `TrainingSession` is about to play a comparison, **When** it reads the "Vary Loudness" setting, **Then** it reads the current value from UserDefaults live (not cached), consistent with how other settings are read.
 
@@ -32,7 +32,7 @@ So that I learn to distinguish pitch from loudness and sharpen my pitch percepti
   - [x] Store override in `private let varyLoudnessOverride: Double?`
 
 - [x] Task 2: Add loudness offset calculation in `playNextComparison()` (AC: #1, #2, #3, #5, #6)
-  - [x] Add `private let maxLoudnessOffsetDB: Float = 2.0` constant (AC: #6)
+  - [x] Add `private let maxLoudnessOffsetDB: Float = 5.0` constant (AC: #6)
   - [x] In `playNextComparison()`, read `varyLoudness` once per comparison (cache alongside `settings` and `noteDuration`)
   - [x] Calculate: if `varyLoudness > 0.0`, generate `let offsetDB = Float.random(in: -range...range)` where `range = Float(varyLoudness) * maxLoudnessOffsetDB`; else `offsetDB = 0.0`
   - [x] Clamp result: `let clampedAmplitudeDB = min(max(offsetDB, -90.0), 12.0)` (AC: #5)
@@ -61,7 +61,7 @@ The change is surgical: two lines in `TrainingSession.playNextComparison()` (lin
 let varyLoudness = currentVaryLoudness
 let note2AmplitudeDB: Float = {
     guard varyLoudness > 0.0 else { return 0.0 }
-    let range = Float(varyLoudness) * maxLoudnessOffsetDB
+    let range = Float(varyLoudness) * maxLoudnessOffsetDB  // maxLoudnessOffsetDB = 5.0
     let offset = Float.random(in: -range...range)
     return min(max(offset, -90.0), 12.0)
 }()
@@ -96,11 +96,11 @@ The override is `Double?` (nil = read from UserDefaults). The init parameter fol
 
 ### maxLoudnessOffsetDB Constant
 
-`private let maxLoudnessOffsetDB: Float = 2.0` — placed as a stored property on `TrainingSession` alongside other configuration constants (`velocity`, `feedbackDuration`). At slider=1.0 the range is ±2.0 dB, well within the valid -90.0...+12.0 dB range.
+`private let maxLoudnessOffsetDB: Float = 5.0` — placed as a stored property on `TrainingSession` alongside other configuration constants (`velocity`, `feedbackDuration`). At slider=1.0 the range is ±5.0 dB, well within the valid -90.0...+12.0 dB range. (Tuned up from initial 2.0 dB after manual testing showed ±2.0 dB was too subtle.)
 
 ### Clamping (AC #5)
 
-While ±2.0 dB will never exceed the -90.0...+12.0 range, clamping is a safety net against future changes to `maxLoudnessOffsetDB`. Simple `min(max(...))` is sufficient — no complex logic needed.
+While ±5.0 dB will never exceed the -90.0...+12.0 range, clamping is a safety net against future changes to `maxLoudnessOffsetDB`. Simple `min(max(...))` is sufficient — no complex logic needed.
 
 ### Testing Strategy
 
@@ -196,7 +196,7 @@ None — clean implementation with no issues.
 ### Completion Notes List
 
 - Added `varyLoudnessOverride: Double?` init parameter and `currentVaryLoudness` computed property to `TrainingSession`, following the exact `noteDurationOverride`/`currentNoteDuration` pattern
-- Added `maxLoudnessOffsetDB: Float = 2.0` stored property constant alongside `velocity` and `feedbackDuration`
+- Added `maxLoudnessOffsetDB: Float = 5.0` stored property constant alongside `velocity` and `feedbackDuration` (tuned up from initial 2.0 after manual testing)
 - Modified `playNextComparison()` to read `varyLoudness` once per comparison and calculate a random offset for note2's `amplitudeDB`; note1 always plays at `amplitudeDB: 0.0`
 - Offset formula: `Float(varyLoudness) * maxLoudnessOffsetDB` gives the range, `Float.random(in: -range...range)` gives the offset, clamped to -90.0...12.0 dB
 - Updated `makeTrainingSession()` factory with `varyLoudnessOverride: Double? = 0.0` default — all existing tests unaffected (both notes at amplitudeDB: 0.0)
@@ -207,6 +207,7 @@ None — clean implementation with no issues.
 
 - 2026-02-25: Implemented story 10.5 — TrainingSession applies random loudness offset to note2 based on "Vary Loudness" slider value
 - 2026-02-25: Fix code review findings — replaced deprecated `masterGain` with `overallGain` (iOS 15+), added visible "Vary Loudness" label on Settings slider, moved note2AmplitudeDB calculation before do block and consolidated log statements
+- 2026-02-25: Fix code review findings — updated maxLoudnessOffsetDB references from 2.0 to 5.0 in ACs, dev notes, and test comments (value was tuned up from 2.0 after manual testing showed ±2.0 dB was too subtle)
 
 ### File List
 
