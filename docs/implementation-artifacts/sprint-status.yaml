@@ -130,3 +130,7 @@ development_status:
   epic-12: done
   12-1-playbackhandle-protocol-and-noteplayer-redesign: done # PlaybackHandle protocol, NotePlayer redesign, SoundFontPlaybackHandle
   12-2-comparisonsession-playbackhandle-integration: wont-do # Superseded by 12.1 — stopAll() and convenience method cover ComparisonSession's needs
+
+  # Epic 13: Remember Every Match — Pitch Matching Data Layer
+  epic-13: in-progress
+  13-1-pitchmatchingrecord-data-model-and-trainingdatastore-extension: ready-for-dev
