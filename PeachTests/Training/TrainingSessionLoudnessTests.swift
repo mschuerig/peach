@@ -88,7 +88,7 @@ struct TrainingSessionLoudnessTests {
 
     @Test("Loudness offset is clamped within valid range")
     func offsetClampedToValidRange() async throws {
-        // Even with maxLoudnessOffsetDB = 2.0, the offset can't exceed -90.0...12.0
+        // Even with maxLoudnessOffsetDB = 5.0, the offset can't exceed -90.0...12.0
         // This test verifies the safety net is in place
         let f = makeTrainingSession(varyLoudnessOverride: 1.0)
 
