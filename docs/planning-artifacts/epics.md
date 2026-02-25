@@ -1,6 +1,6 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation']
-inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation']
+inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md']
 ---
 
 # Peach - Epic Breakdown
@@ -57,6 +57,16 @@ FR40: User can use the app in portrait and landscape orientations
 FR41: User can use the app in iPad windowed/compact mode
 FR42: User can operate the training loop one-handed with large, imprecise-tap-friendly controls
 FR43: User can view an Info Screen from the Start Screen showing app name, developer, copyright, and version number
+FR44: User can start pitch matching training from the Start Screen via a dedicated button
+FR45: System plays a reference note for the configured note duration, then plays a tunable note indefinitely
+FR46: User can adjust the pitch of the tunable note in real time via a large vertical slider control
+FR47: System stops the tunable note and records the result when the user releases the slider
+FR48: System records pitch matching results: reference note, user's final pitch, error in cents, timestamp
+FR49: System provides visual feedback showing the signed cent offset and directional proximity after the user releases the slider (post-release only). No visual feedback during active tuning
+FR50: System discards incomplete pitch matching attempts on interruption (navigation away, app backgrounding, phone call, headphone disconnect)
+FR50a: System returns to the Start Screen when foregrounded after being backgrounded during pitch matching
+FR51: System supports indefinite note playback (no fixed duration) with explicit stop trigger
+FR52: System supports real-time frequency adjustment of an actively playing note without audible artifacts
 
 ### NonFunctional Requirements
 
@@ -72,6 +82,7 @@ NFR9: Feedback Indicator provides non-visual feedback (haptic) in addition to vi
 NFR10: Training data must survive app crashes, force quits, and unexpected termination without loss
 NFR11: Data writes must be atomic — no partial comparison records
 NFR12: App updates must preserve all existing training data (no migration data loss)
+NFR13: Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
 
 ### Additional Requirements
 
@@ -105,6 +116,36 @@ NFR12: App updates must preserve all existing training data (no migration data l
 - Settings Screen: stock SwiftUI Form with Slider, Stepper, Picker controls
 - No onboarding, no tutorials, no session summaries, no gamification
 - Sensory hierarchy: ears > fingers > eyes (audio-haptic primary, visual secondary)
+
+**From Architecture (v0.2 Amendment):**
+- Prerequisite renames: TrainingSession→ComparisonSession, TrainingState→ComparisonSessionState, TrainingScreen→ComparisonScreen, Training/→Comparison/, FeedbackIndicator→ComparisonFeedbackIndicator, NextNoteStrategy→NextComparisonStrategy
+- PlaybackHandle protocol: new protocol with stop() and adjustFrequency(); NotePlayer.play() returns handle; stop() removed from NotePlayer; fixed-duration convenience via default extension
+- SoundFontPlaybackHandle implementation + MockPlaybackHandle for tests
+- PitchMatchingRecord SwiftData @Model: referenceNote, initialCentOffset, userCentError, timestamp
+- TrainingDataStore extended with pitch matching CRUD + PitchMatchingObserver conformance
+- ModelContainer schema updated to include PitchMatchingRecord
+- Profile protocol split: PitchDiscriminationProfile (existing behavior extracted) + PitchMatchingProfile (new matching stats)
+- PerceptualProfile conforms to both protocols, rebuilt from both record types at startup
+- PitchMatchingSession state machine: idle → playingReference → playingTunable → showingFeedback → loop
+- PitchMatchingObserver protocol + CompletedPitchMatching value type
+- PitchMatchingChallenge value type (random note + random ±100 cent offset for v0.2)
+- New PitchMatching/ feature directory
+- PeachApp.swift wiring for PitchMatchingSession + NavigationDestination update
+- Implementation sequence: renames → PlaybackHandle → data model → profile split → session → UI → Start Screen → Profile Screen
+
+**From UX Design (v0.2 Amendment):**
+- Vertical Pitch Slider: custom DragGesture-based, large thumb (>>44pt), no markings, always starts center, states: inactive/active/dragging/released
+- Pitch Matching Feedback Indicator: SF Symbol arrow + signed cent offset, green (<10¢) / yellow (10-30¢) / red (>30¢), green dot for dead center
+- Start Screen hierarchy: Start Training (.borderedProminent) above Pitch Matching (.bordered)
+- Auto-start tunable note after reference stops — no touch-to-start
+- No visual feedback during active tuning — ears-only principle (non-negotiable)
+- Same ~400ms feedback duration as comparison training
+- Same interruption patterns as comparison training
+- VoiceOver: accessibilityAdjustableAction for slider, custom labels for feedback ("4 cents sharp", "Dead center")
+- Profile Screen: shows matching statistics alongside discrimination profile (empty state for cold start)
+
+**From Glossary (v0.2):**
+- Domain terminology confirmed: ComparisonSession, ComparisonSessionState, PlaybackHandle, PitchMatchingSession, PitchMatchingSessionState, PitchMatchingChallenge, CompletedPitchMatching, PitchDiscriminationProfile, PitchMatchingProfile
 
 ### FR Coverage Map
 
@@ -154,6 +195,16 @@ NFR12: App updates must preserve all existing training data (no migration data l
 | FR41 | Epic 7 | iPad windowed/compact mode |
 | FR42 | Epic 3 | One-handed, large tap targets |
 | FR43 | Epic 7 | Info Screen |
+| FR44 | Epic 17 | Start pitch matching from Start Screen |
+| FR45 | Epic 15 | Reference note + indefinite tunable note |
+| FR46 | Epic 16 | Real-time pitch adjustment via slider |
+| FR47 | Epic 15 | Stop tunable on slider release, record result |
+| FR48 | Epic 13 | Pitch matching result recording |
+| FR49 | Epic 16 | Post-release visual feedback (arrow + cents) |
+| FR50 | Epic 15 | Discard incomplete pitch matching on interruption |
+| FR50a | Epic 15 | Return to Start Screen on foreground after backgrounding |
+| FR51 | Epic 12 | Indefinite note playback with explicit stop |
+| FR52 | Epic 12 | Real-time frequency adjustment of playing note |
 
 ## Epic List
 
@@ -189,6 +240,39 @@ Users can use the app in English or German, on iPhone and iPad, in both orientat
 Users can enable loudness variation in Settings so that note2 is played at a slightly different volume than note1, adding a perceptual challenge that trains the ear to distinguish pitch from loudness.
 **FRs covered:** FR1 (E10), FR2 (E10), FR3 (E10), FR4 (E10), FR5 (E10)
 **NFRs covered:** NFR1 (E10), NFR2 (E10)
+
+### Epic 11: Clear the Decks — Prerequisite Renames
+All MVP names that are now ambiguous with two training modes are renamed to comparison-specific names. Pure refactoring — no functional changes, all tests continue to pass.
+**FRs covered:** None (refactoring only)
+
+### Epic 12: Own Every Note — PlaybackHandle Redesign
+The NotePlayer protocol is redesigned around a PlaybackHandle that represents ownership of a playing note, enabling both fixed-duration playback (comparisons) and indefinite playback with real-time frequency adjustment (pitch matching).
+**FRs covered:** FR51, FR52
+
+### Epic 13: Remember Every Match — Pitch Matching Data Layer
+Pitch matching results are reliably stored alongside comparison records, extending the data foundation to support both training modes.
+**FRs covered:** FR48
+
+### Epic 14: Know Both Skills — Profile Protocol Split
+The perceptual profile is split into two protocol interfaces — pitch discrimination and pitch matching — so that each training mode depends only on the statistics it needs.
+**FRs covered:** None (architectural refactoring enabling FR45-FR50a)
+
+### Epic 15: Tune Your Ear — PitchMatchingSession
+The pitch matching state machine orchestrates the complete training loop: reference note playback, indefinite tunable note, slider-driven frequency adjustment, result recording, and observer notification.
+**FRs covered:** FR45, FR47, FR50, FR50a
+
+### Epic 16: See and Slide — Pitch Matching Screen
+Users interact with pitch matching through a custom vertical slider and receive post-release visual feedback showing their accuracy.
+**FRs covered:** FR46, FR49
+**NFRs covered:** NFR13
+
+### Epic 17: Two Modes, One App — Start Screen Integration
+Users can access pitch matching from the Start Screen alongside comparison training, with proper navigation routing.
+**FRs covered:** FR44
+
+### Epic 18: The Full Picture — Profile Screen Integration
+Users can see their pitch matching accuracy statistics alongside their discrimination profile on the Profile Screen.
+**FRs covered:** None (extends FR21-FR26 to include matching data)
 
 ## Epic 1: Remember Every Note — Data Foundation
 
@@ -1079,3 +1163,600 @@ So that I learn to distinguish pitch from loudness and sharpen my pitch percepti
 **Given** the maxOffset constant is defined
 **When** a developer needs to adjust it after testing
 **Then** it is a single tunable constant, easy to find and change
+
+## Epic 11: Clear the Decks — Prerequisite Renames
+
+With two training modes, several MVP names are now ambiguous. All ambiguous names are renamed to comparison-specific names before any new feature work begins. This is pure refactoring — no functional changes, all tests continue to pass.
+
+### Story 11.1: Rename Training Types and Files to Comparison
+
+As a **developer**,
+I want all ambiguous "Training" names renamed to comparison-specific names,
+So that the codebase clearly distinguishes comparison training from future training modes and the namespace is clean for pitch matching.
+
+**Acceptance Criteria:**
+
+**Given** the type `TrainingSession` exists
+**When** the rename is applied
+**Then** it becomes `ComparisonSession` in all source files, test files, and references
+**And** the file is renamed from `TrainingSession.swift` to `ComparisonSession.swift`
+**And** the test file is renamed from `TrainingSessionTests.swift` to `ComparisonSessionTests.swift`
+
+**Given** the enum `TrainingState` exists
+**When** the rename is applied
+**Then** it becomes `ComparisonSessionState` in all source files, test files, and references
+
+**Given** the file `TrainingScreen.swift` exists
+**When** the rename is applied
+**Then** it becomes `ComparisonScreen.swift`
+**And** all references to `TrainingScreen` in source and test files are updated
+
+**Given** the `Training/` feature directory exists
+**When** the rename is applied
+**Then** it becomes `Comparison/`
+**And** the test directory `PeachTests/Training/` becomes `PeachTests/Comparison/`
+
+**Given** the view `FeedbackIndicator` exists
+**When** the rename is applied
+**Then** it becomes `ComparisonFeedbackIndicator` in all source files, test files, and references
+**And** the file is renamed from `FeedbackIndicator.swift` to `ComparisonFeedbackIndicator.swift`
+
+**Given** the protocol `NextNoteStrategy` exists
+**When** the rename is applied
+**Then** it becomes `NextComparisonStrategy` in all source files, test files, and references
+**And** the file is renamed from `NextNoteStrategy.swift` to `NextComparisonStrategy.swift`
+**And** the method `nextNote()` is renamed to `nextComparison()` (or equivalent, matching existing method name)
+
+**Given** the following names exist in the codebase
+**When** the rename is applied
+**Then** these names remain UNCHANGED: `TrainingDataStore`, `TrainingSettings`, `ComparisonObserver`, `Comparison`, `CompletedComparison`, `PerceptualProfile`, `NotePlayer`, `HapticFeedbackManager`
+
+**Given** `docs/project-context.md` references old names (TrainingSession, TrainingScreen, TrainingState, NextNoteStrategy, FeedbackIndicator)
+**When** the rename is applied
+**Then** all references in `docs/project-context.md` are updated to use the new names
+
+**Given** the full test suite
+**When** all tests are run after the rename
+**Then** all existing tests pass with zero functional changes — this is a pure rename/refactoring operation
+
+## Epic 12: Own Every Note — PlaybackHandle Redesign
+
+The NotePlayer protocol is redesigned around a PlaybackHandle that represents ownership of a playing note. Every started note has an explicit owner responsible for stopping it. This enables both fixed-duration playback (comparisons, via convenience method) and indefinite playback with real-time frequency adjustment (pitch matching).
+
+### Story 12.1: PlaybackHandle Protocol and NotePlayer Redesign
+
+As a **developer**,
+I want the audio layer redesigned around a PlaybackHandle pattern where callers own the notes they start,
+So that the audio engine supports both fixed-duration and indefinite playback with explicit note lifecycle management.
+
+**Acceptance Criteria:**
+
+**Given** no `PlaybackHandle` protocol exists
+**When** the protocol is created
+**Then** `PlaybackHandle` defines `func stop() async throws` (first call sends noteOff, subsequent calls are no-ops) and `func adjustFrequency(_ frequency: Double) async throws` (adjusts pitch of the playing note in real time, caller passes absolute Hz)
+**And** the file is located at `Core/Audio/PlaybackHandle.swift`
+
+**Given** the current `NotePlayer` protocol has `play(frequency:duration:velocity:amplitudeDB:)` and `stop()`
+**When** the protocol is redesigned
+**Then** the primary method becomes `func play(frequency: Double, velocity: UInt8, amplitudeDB: Float) async throws -> PlaybackHandle` which returns immediately after note onset
+**And** `stop()` is removed from the `NotePlayer` protocol — stopping is done through the handle only
+**And** a default extension provides `func play(frequency: Double, duration: TimeInterval, velocity: UInt8, amplitudeDB: Float) async throws` that internally uses the handle (play → sleep → stop)
+
+**Given** `SoundFontNotePlayer` is the sole `NotePlayer` implementation
+**When** it is updated
+**Then** `play(frequency:velocity:amplitudeDB:)` returns a `SoundFontPlaybackHandle` that wraps the MIDI note and sampler reference
+**And** `SoundFontPlaybackHandle` implements `stop()` by sending MIDI noteOff (idempotent)
+**And** `SoundFontPlaybackHandle` implements `adjustFrequency()` by computing the relative pitch bend from the base MIDI note to the target Hz and applying it via the sampler's pitch bend API
+**And** `SoundFontPlaybackHandle.swift` is located at `Core/Audio/SoundFontPlaybackHandle.swift`
+
+**Given** `MockNotePlayer` is used in tests
+**When** it is updated
+**Then** `play(frequency:velocity:amplitudeDB:)` returns a `MockPlaybackHandle`
+**And** `MockPlaybackHandle` tracks `stopCallCount`, `adjustFrequencyCallCount`, `lastAdjustedFrequency`
+**And** `MockPlaybackHandle` supports `instantPlayback` mode and `shouldThrowError` injection
+**And** `MockPlaybackHandle.swift` is located in the test target
+
+**Given** the fixed-duration convenience method is provided via default protocol extension
+**When** existing comparison training call sites use `play(frequency:duration:velocity:amplitudeDB:)`
+**Then** they continue to work without any call-site changes — the convenience method delegates to the handle internally
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: PlaybackHandle stop idempotency, adjustFrequency updates, MockPlaybackHandle tracking, fixed-duration convenience method behavior
+
+### Story 12.2: ComparisonSession PlaybackHandle Integration
+
+As a **developer**,
+I want ComparisonSession to use PlaybackHandle for note lifecycle management,
+So that interruption cleanup is explicit and consistent with the new audio ownership pattern.
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonSession` currently calls `notePlayer.stop()` for interruption cleanup
+**When** PlaybackHandle integration is applied
+**Then** `ComparisonSession` holds a `currentHandle: PlaybackHandle?` property
+**And** when the fixed-duration convenience method is used for normal playback, no handle tracking is needed (the convenience method manages its own handle)
+
+**Given** `ComparisonSession.stop()` is called during active playback
+**When** an interruption occurs (navigate away, backgrounding, audio interruption)
+**Then** `stop()` calls `currentHandle?.stop()` to explicitly stop whatever note is playing
+**And** incomplete comparisons are discarded as before
+**And** the session transitions to `idle`
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing ComparisonSession tests pass
+**And** interruption tests verify that `currentHandle.stop()` is called
+
+## Epic 13: Remember Every Match — Pitch Matching Data Layer
+
+Pitch matching results are reliably stored alongside comparison records, with the observer pattern enabling decoupled persistence. This extends the data foundation to support both training modes.
+
+### Story 13.1: PitchMatchingRecord Data Model and TrainingDataStore Extension
+
+As a **developer**,
+I want pitch matching results persisted in SwiftData alongside comparison records,
+So that all training data is reliably stored and available for profile computation and future analysis.
+
+**Acceptance Criteria:**
+
+**Given** no `PitchMatchingRecord` model exists
+**When** the model is created
+**Then** it is a SwiftData `@Model` with fields: `referenceNote` (Int, MIDI 0-127), `initialCentOffset` (Double, ±100 cents), `userCentError` (Double, signed — positive = sharp, negative = flat), `timestamp` (Date)
+**And** the file is located at `Core/Data/PitchMatchingRecord.swift`
+
+**Given** no `CompletedPitchMatching` value type exists
+**When** it is created
+**Then** it is a struct with fields: `referenceNote` (Int), `initialCentOffset` (Double), `userCentError` (Double), `timestamp` (Date)
+**And** the file is located at `PitchMatching/CompletedPitchMatching.swift`
+
+**Given** no `PitchMatchingChallenge` value type exists
+**When** it is created
+**Then** it is a struct with fields: `referenceNote` (Int, MIDI 0-127), `initialCentOffset` (Double, random ±100 cents)
+**And** the file is located at `PitchMatching/PitchMatchingChallenge.swift`
+
+**Given** no `PitchMatchingObserver` protocol exists
+**When** it is created
+**Then** it defines `func pitchMatchingCompleted(_ result: CompletedPitchMatching)`
+**And** the file is located at `PitchMatching/PitchMatchingObserver.swift`
+
+**Given** `TrainingDataStore` currently handles only comparison records
+**When** pitch matching CRUD is added
+**Then** it supports `save(_ record: PitchMatchingRecord) throws`, `fetchAllPitchMatching() throws -> [PitchMatchingRecord]`, and `deleteAllPitchMatching() throws`
+**And** `TrainingDataStore` conforms to `PitchMatchingObserver`, automatically persisting completed pitch matching attempts
+
+**Given** the `ModelContainer` in `PeachApp.swift` registers only `ComparisonRecord`
+**When** the schema is updated
+**Then** it registers both `ComparisonRecord.self` and `PitchMatchingRecord.self`
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: PitchMatchingRecord CRUD operations, TrainingDataStore pitch matching persistence, atomic writes, in-memory ModelContainer for tests
+
+## Epic 14: Know Both Skills — Profile Protocol Split
+
+The perceptual profile is split into two protocol interfaces representing the two distinct skills being trained. Each training mode depends only on the statistics it needs, maintaining clean dependency boundaries.
+
+### Story 14.1: Extract PitchDiscriminationProfile Protocol
+
+As a **developer**,
+I want the existing PerceptualProfile discrimination interface extracted into a protocol,
+So that ComparisonSession and NextComparisonStrategy depend on an abstract interface rather than the concrete class.
+
+**Acceptance Criteria:**
+
+**Given** `PerceptualProfile` exposes discrimination methods directly
+**When** the protocol is extracted
+**Then** `PitchDiscriminationProfile` protocol defines: `func update(note: Int, centOffset: Double, isCorrect: Bool)`, `func weakSpots(count: Int) -> [Int]`, `var overallMean: Double? { get }`, `var overallStdDev: Double? { get }`, `func statsForNote(_ note: Int) -> PerceptualNote`, `func averageThreshold(midiRange: ClosedRange<Int>) -> Int?`, `func setDifficulty(note: Int, difficulty: Double)`, `func reset()`
+**And** the file is located at `Core/Profile/PitchDiscriminationProfile.swift`
+
+**Given** `PerceptualProfile` already implements all these methods
+**When** it conforms to `PitchDiscriminationProfile`
+**Then** no implementation changes are needed — conformance is declarative
+
+**Given** `ComparisonSession` currently depends on `PerceptualProfile` (concrete)
+**When** the dependency is updated
+**Then** it depends on `PitchDiscriminationProfile` (protocol) — accepting any conforming type
+
+**Given** `NextComparisonStrategy` (and implementations like `KazezNoteStrategy`) depend on `PerceptualProfile`
+**When** the dependency is updated
+**Then** they depend on `PitchDiscriminationProfile` (protocol)
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero functional changes — this is a pure extraction refactoring
+
+### Story 14.2: PitchMatchingProfile Protocol and Matching Statistics
+
+As a **developer**,
+I want PerceptualProfile to track pitch matching statistics via a new protocol,
+So that PitchMatchingSession can record and read matching accuracy data through a clean interface.
+
+**Acceptance Criteria:**
+
+**Given** no `PitchMatchingProfile` protocol exists
+**When** it is created
+**Then** it defines: `func updateMatching(note: Int, centError: Double)`, `var matchingMean: Double? { get }` (mean absolute error in cents), `var matchingStdDev: Double? { get }` (standard deviation), `var matchingSampleCount: Int { get }`, `func resetMatching()`
+**And** the file is located at `Core/Profile/PitchMatchingProfile.swift`
+
+**Given** `PerceptualProfile` does not track matching statistics
+**When** `PitchMatchingProfile` conformance is added
+**Then** `PerceptualProfile` stores aggregate matching statistics: running mean absolute error, running standard deviation (Welford's algorithm), and sample count
+**And** these are overall aggregates — not per-note for v0.2
+
+**Given** `PerceptualProfile` conforms to `PitchMatchingProfile`
+**When** it also conforms to `PitchMatchingObserver`
+**Then** `pitchMatchingCompleted(_:)` calls `updateMatching(note:centError:)` to update matching statistics incrementally
+
+**Given** the app starts up and `PitchMatchingRecord` data exists in SwiftData
+**When** `PerceptualProfile` is rebuilt
+**Then** it loads both `ComparisonRecord` data (discrimination) and `PitchMatchingRecord` data (matching) to reconstruct the complete profile
+
+**Given** no pitch matching data exists (cold start or comparison-only user)
+**When** matching statistics are queried
+**Then** `matchingMean` and `matchingStdDev` return `nil`, `matchingSampleCount` returns `0`
+
+**Given** `resetMatching()` is called
+**When** matching statistics are queried afterward
+**Then** all matching statistics are cleared (`nil`/`0`) while discrimination statistics remain untouched
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: matching statistics update via Welford's, cold start nil values, reset independence from discrimination, profile rebuild from both record types
+
+## Epic 15: Tune Your Ear — PitchMatchingSession
+
+The pitch matching state machine orchestrates the complete training loop: play a reference note, auto-start a tunable note, accept real-time frequency adjustments from the slider, record the result on release, show feedback, and repeat.
+
+### Story 15.1: PitchMatchingSession Core State Machine
+
+As a **musician using Peach**,
+I want a pitch matching training loop where I hear a reference note, then tune a second note to match it,
+So that I train my ability to actively reproduce a target pitch.
+
+**Acceptance Criteria:**
+
+**Given** no `PitchMatchingSession` exists
+**When** it is created
+**Then** it is an `@Observable final class` with dependencies: `notePlayer: NotePlayer`, `profile: PitchMatchingProfile`, `observers: [PitchMatchingObserver]`, `settingsOverride: TrainingSettings?`, `noteDurationOverride: TimeInterval?`, `notificationCenter: NotificationCenter`
+**And** it starts in the `idle` state
+
+**Given** `PitchMatchingSessionState` does not exist
+**When** it is created
+**Then** it defines cases: `idle`, `playingReference`, `playingTunable`, `showingFeedback`
+
+**Given** the session is in `idle` state
+**When** `startPitchMatching()` is called
+**Then** the session generates a random `PitchMatchingChallenge` (random MIDI note within configured training range, random initial offset ±100 cents)
+**And** it plays the reference note for the configured note duration using `notePlayer.play(frequency:duration:velocity:amplitudeDB:)` (fixed-duration convenience)
+**And** the state transitions to `playingReference`
+
+**Given** the session is in `playingReference` state
+**When** the reference note finishes playing
+**Then** the session immediately starts the tunable note at the offset frequency using `notePlayer.play(frequency:velocity:amplitudeDB:)` (handle-returning, indefinite)
+**And** the state transitions to `playingTunable`
+**And** the session holds the returned `PlaybackHandle`
+
+**Given** the session is in `playingTunable` state
+**When** `adjustFrequency(_ frequency: Double)` is called (from slider movement)
+**Then** the session calls `currentHandle?.adjustFrequency(frequency)` to change the pitch in real time
+
+**Given** the session is in `playingTunable` state
+**When** `commitResult(userFrequency: Double)` is called (slider released)
+**Then** the session calls `currentHandle?.stop()` to stop the tunable note
+**And** it computes the signed cent error between the user's final frequency and the reference frequency using `FrequencyCalculation`
+**And** it creates a `CompletedPitchMatching` with: referenceNote, initialCentOffset, userCentError, timestamp
+**And** it notifies all observers via `pitchMatchingCompleted(_:)`
+**And** the state transitions to `showingFeedback`
+
+**Given** the session is in `showingFeedback` state
+**When** ~400ms elapses
+**Then** the session automatically starts the next challenge (back to `playingReference`)
+
+**Given** `PitchMatchingSession` generates a challenge
+**When** note selection occurs
+**Then** the note is random within `TrainingSettings.noteRangeMin...noteRangeMax`
+**And** the initial cent offset is random within ±100 cents
+**And** this logic is a private method — no protocol, no separate file
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: state transitions (idle → playingReference → playingTunable → showingFeedback → loop), random challenge generation within configured range, adjustFrequency delegation to handle, commitResult computation and observer notification, feedback timer auto-advance
+
+### Story 15.2: PitchMatchingSession Interruption and Lifecycle Handling
+
+As a **musician using Peach**,
+I want pitch matching to handle interruptions gracefully — discarding incomplete attempts and returning to the Start Screen when appropriate,
+So that my training data is never corrupted and the app behaves predictably when I switch away.
+
+**Acceptance Criteria:**
+
+**Given** the session is in `playingReference` state
+**When** `stop()` is called
+**Then** the reference note handle is stopped
+**And** the state transitions to `idle`
+**And** no result is recorded
+
+**Given** the session is in `playingTunable` state
+**When** `stop()` is called
+**Then** the tunable note handle is stopped via `currentHandle?.stop()`
+**And** the incomplete attempt is discarded — no result recorded, no observer notification
+**And** the state transitions to `idle`
+
+**Given** the session is in `showingFeedback` state
+**When** `stop()` is called
+**Then** the feedback timer is cancelled
+**And** the state transitions to `idle`
+
+**Given** the session is in `idle` state
+**When** `stop()` is called
+**Then** it is a no-op
+
+**Given** the app is backgrounded during pitch matching (any state except idle)
+**When** the `UIApplication.didEnterBackgroundNotification` is received
+**Then** `stop()` is called automatically
+**And** the session transitions to `idle` (FR50a — the view layer handles returning to Start Screen, same pattern as ComparisonSession)
+
+**Given** an audio interruption occurs (phone call, Siri, headphone disconnect)
+**When** the `AVAudioSession.interruptionNotification` is received with `.began` type
+**Then** `stop()` is called automatically
+**And** the incomplete attempt is discarded
+
+**Given** the user navigates to Settings or Profile from the Pitch Matching Screen
+**When** navigation occurs
+**Then** the view calls `session.stop()` before navigating
+**And** incomplete attempts are discarded
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: stop() from each state, background notification handling, audio interruption handling, idempotent stop calls, no observer notification on discarded attempts
+
+## Epic 16: See and Slide — Pitch Matching Screen
+
+Users interact with pitch matching through a custom vertical slider control and receive post-release visual feedback showing directional accuracy. The screen follows the same navigation and layout patterns as the Comparison Screen.
+
+### Story 16.1: Vertical Pitch Slider Component
+
+As a **musician using Peach**,
+I want a large vertical slider that changes the pitch of the tunable note as I drag it,
+So that I can tune by ear using an intuitive physical gesture — up for sharper, down for flatter.
+
+**Acceptance Criteria:**
+
+**Given** no `VerticalPitchSlider` component exists
+**When** it is created
+**Then** it is a custom SwiftUI view using `DragGesture` for vertical pitch control
+**And** dragging up increases the cent offset (sharper), dragging down decreases it (flatter)
+**And** the slider occupies most of the available screen height
+**And** the file is located at `PitchMatching/VerticalPitchSlider.swift`
+
+**Given** the slider thumb/handle
+**When** rendered
+**Then** it significantly exceeds 44x44pt for imprecise one-handed grip
+**And** the track has no markings — no tick marks, no labels, no center indicator (a blank instrument)
+
+**Given** the slider's starting position
+**When** a new pitch matching challenge begins
+**Then** the slider always starts at the same physical position (center of track) regardless of the pitch offset
+
+**Given** the slider is in `inactive` state (during reference note)
+**When** the user attempts to drag
+**Then** the slider does not respond to touch
+**And** it is visually dimmed per stock SwiftUI disabled appearance
+
+**Given** the slider is in `active` state (tunable note playing)
+**When** the user drags the thumb
+**Then** a continuous cent offset value is produced
+**And** the `onFrequencyChange` callback fires with the computed frequency
+
+**Given** the user releases the slider
+**When** the drag gesture ends
+**Then** the `onRelease` callback fires with the final frequency
+**And** the slider returns to inactive appearance
+
+**Given** VoiceOver is active
+**When** the slider is focused
+**Then** it has the accessibility label "Pitch adjustment slider"
+**And** it supports `accessibilityAdjustableAction` for increment/decrement tuning as a fallback
+
+**Given** the slider renders in portrait orientation
+**When** the device is rotated to landscape
+**Then** the slider remains vertical (the up=higher metaphor is non-negotiable)
+**And** it uses the reduced screen height, mapping the same ±100 cent range
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: cent offset calculation from drag position, frequency computation from cent offset (using FrequencyCalculation), callback invocations, inactive state ignores gestures
+
+### Story 16.2: Pitch Matching Feedback Indicator
+
+As a **musician using Peach**,
+I want to see a brief directional arrow and cent offset after each pitch matching attempt,
+So that I know how close I was and in which direction I erred — without judgment.
+
+**Acceptance Criteria:**
+
+**Given** no `PitchMatchingFeedbackIndicator` exists
+**When** it is created
+**Then** it is a SwiftUI view showing a directional arrow (or green dot) and signed cent offset text
+**And** the file is located at `PitchMatching/PitchMatchingFeedbackIndicator.swift`
+
+**Given** the user's cent error is approximately 0 cents (dead center)
+**When** feedback is displayed
+**Then** a green dot (`circle.fill` SF Symbol) is shown in system green
+**And** the text reads "0 cents"
+
+**Given** the user's cent error is positive and < 10 cents (slightly sharp)
+**When** feedback is displayed
+**Then** a short upward arrow (`arrow.up` SF Symbol) is shown in system green
+**And** the text reads the signed offset (e.g., "+4 cents")
+
+**Given** the user's cent error is negative and magnitude < 10 cents (slightly flat)
+**When** feedback is displayed
+**Then** a short downward arrow (`arrow.down` SF Symbol) is shown in system green
+**And** the text reads the signed offset (e.g., "-3 cents")
+
+**Given** the user's cent error magnitude is 10-30 cents (moderate)
+**When** feedback is displayed
+**Then** a medium-length arrow (up or down matching sign) is shown in system yellow
+
+**Given** the user's cent error magnitude is > 30 cents (far off)
+**When** feedback is displayed
+**Then** a long arrow (up or down matching sign) is shown in system red
+
+**Given** the feedback is displayed
+**When** ~400ms elapses
+**Then** the indicator clears with `.transition(.opacity)` — same pattern as `ComparisonFeedbackIndicator`
+
+**Given** VoiceOver is active
+**When** feedback is displayed
+**Then** it announces the result verbally: "4 cents sharp", "27 cents flat", or "Dead center"
+
+**Given** no haptic feedback
+**When** pitch matching feedback is displayed
+**Then** no haptic vibration occurs — pitch matching feedback is purely visual (UX spec decision)
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+**And** new tests verify: correct arrow direction and color for each band, cent offset text formatting, green dot for dead center, band threshold boundaries (0, 10, 30)
+
+### Story 16.3: Pitch Matching Screen Assembly
+
+As a **musician using Peach**,
+I want a complete Pitch Matching Screen that assembles the slider, feedback, and navigation,
+So that I can do a full pitch matching training session with the same navigation patterns as comparison training.
+
+**Acceptance Criteria:**
+
+**Given** no `PitchMatchingScreen` exists
+**When** it is created
+**Then** it is a SwiftUI view observing `PitchMatchingSession` via `@Environment`
+**And** it contains: `VerticalPitchSlider`, `PitchMatchingFeedbackIndicator`, Settings button, Profile button
+**And** the file is located at `PitchMatching/PitchMatchingScreen.swift`
+
+**Given** the screen appears
+**When** displayed
+**Then** `PitchMatchingSession.startPitchMatching()` is called to begin the loop
+
+**Given** the session is in `playingReference` state
+**When** the screen renders
+**Then** the `VerticalPitchSlider` is visible but inactive (disabled appearance)
+**And** the feedback indicator is hidden
+
+**Given** the session is in `playingTunable` state
+**When** the user drags the slider
+**Then** the screen calls `session.adjustFrequency()` with the computed frequency from the slider
+**And** the slider is active and responsive
+
+**Given** the user releases the slider
+**When** the drag gesture ends
+**Then** the screen calls `session.commitResult(userFrequency:)` with the final frequency
+
+**Given** the session is in `showingFeedback` state
+**When** the screen renders
+**Then** the `PitchMatchingFeedbackIndicator` displays the result from the session
+**And** the slider is inactive
+
+**Given** the user taps the Settings button
+**When** navigation occurs
+**Then** `session.stop()` is called before navigating to Settings Screen
+**And** the session discards any incomplete attempt
+
+**Given** the user taps the Profile button
+**When** navigation occurs
+**Then** `session.stop()` is called before navigating to Profile Screen
+
+**Given** the screen renders in portrait
+**When** the device is rotated to landscape
+**Then** the layout adapts — slider remains vertical, controls reflow appropriately
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+
+## Epic 17: Two Modes, One App — Start Screen Integration
+
+Users can access both comparison training and pitch matching from the Start Screen, with clear visual hierarchy and proper navigation routing.
+
+### Story 17.1: Pitch Matching Button and Navigation Routing
+
+As a **musician using Peach**,
+I want a "Pitch Matching" button on the Start Screen below "Start Training",
+So that I can start pitch matching with a single tap, just like comparison training.
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen currently shows a "Start Training" button
+**When** the Pitch Matching button is added
+**Then** a "Pitch Matching" button appears below the "Start Training" button
+**And** "Start Training" retains `.borderedProminent` style (primary/hero action)
+**And** "Pitch Matching" uses `.bordered` style (secondary — visible but visually subordinate)
+
+**Given** `NavigationDestination` currently has no pitch matching case
+**When** the destination is added
+**Then** `NavigationDestination` includes a `.pitchMatching` case
+**And** the navigation stack resolves `.pitchMatching` to `PitchMatchingScreen`
+
+**Given** `PeachApp.swift` currently creates only `ComparisonSession`
+**When** `PitchMatchingSession` is wired
+**Then** `PeachApp.swift` creates a `PitchMatchingSession` with `notePlayer`, `profile` (as `PitchMatchingProfile`), and observers (`trainingDataStore`, `perceptualProfile`)
+**And** `PitchMatchingSession` is injected via `@Environment` using `@Entry var pitchMatchingSession`
+
+**Given** the user taps the "Pitch Matching" button
+**When** navigation occurs
+**Then** the app navigates to `PitchMatchingScreen`
+**And** pitch matching begins automatically
+
+**Given** the "Pitch Matching" button label
+**When** localization is active
+**Then** the label is localized in both English and German
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
+
+## Epic 18: The Full Picture — Profile Screen Integration
+
+Users can see their pitch matching accuracy statistics alongside their discrimination profile on the Profile Screen, giving a complete view of both training skills.
+
+### Story 18.1: Display Pitch Matching Statistics on Profile Screen
+
+As a **musician using Peach**,
+I want to see my pitch matching accuracy on the Profile Screen alongside my discrimination profile,
+So that I can track improvement in both training modes from one place.
+
+**Acceptance Criteria:**
+
+**Given** the Profile Screen currently shows only discrimination statistics (mean detection threshold, standard deviation, trend)
+**When** pitch matching statistics are added
+**Then** a new section displays: matching mean absolute error (cents), matching standard deviation (cents), and matching sample count
+**And** the section is visually distinct from the discrimination section
+
+**Given** the user has pitch matching data
+**When** the Profile Screen is displayed
+**Then** matching statistics are computed from the `PitchMatchingProfile` protocol
+**And** values are formatted to a reasonable precision (e.g., 1 decimal place for cents)
+
+**Given** the user has NO pitch matching data (cold start or comparison-only user)
+**When** the Profile Screen is displayed
+**Then** the matching section shows an empty state: a brief message like "Start pitch matching to see your accuracy" (localized)
+**And** no placeholder numbers are shown — honest absence of data
+
+**Given** the matching statistics labels
+**When** localization is active
+**Then** all labels and the empty state message are localized in English and German
+
+**Given** the Profile Screen renders in portrait
+**When** the device is rotated to landscape
+**Then** the layout adapts — matching statistics section reflows with the existing layout
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass
