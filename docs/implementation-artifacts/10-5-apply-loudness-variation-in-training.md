@@ -1,6 +1,6 @@
 # Story 10.5: Apply Loudness Variation in Training
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -26,29 +26,29 @@ So that I learn to distinguish pitch from loudness and sharpen my pitch percepti
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `varyLoudness` to `TrainingSession` settings reading (AC: #4)
-  - [ ] Read `SettingsKeys.varyLoudness` from `UserDefaults.standard` in a new computed property `currentVaryLoudness`, following the same pattern as `currentNoteDuration`
-  - [ ] Add `varyLoudnessOverride: Double?` init parameter for deterministic testing (pattern: same as `noteDurationOverride`)
-  - [ ] Store override in `private let varyLoudnessOverride: Double?`
+- [x] Task 1: Add `varyLoudness` to `TrainingSession` settings reading (AC: #4)
+  - [x] Read `SettingsKeys.varyLoudness` from `UserDefaults.standard` in a new computed property `currentVaryLoudness`, following the same pattern as `currentNoteDuration`
+  - [x] Add `varyLoudnessOverride: Double?` init parameter for deterministic testing (pattern: same as `noteDurationOverride`)
+  - [x] Store override in `private let varyLoudnessOverride: Double?`
 
-- [ ] Task 2: Add loudness offset calculation in `playNextComparison()` (AC: #1, #2, #3, #5, #6)
-  - [ ] Add `private let maxLoudnessOffsetDB: Float = 2.0` constant (AC: #6)
-  - [ ] In `playNextComparison()`, read `varyLoudness` once per comparison (cache alongside `settings` and `noteDuration`)
-  - [ ] Calculate: if `varyLoudness > 0.0`, generate `let offsetDB = Float.random(in: -range...range)` where `range = Float(varyLoudness) * maxLoudnessOffsetDB`; else `offsetDB = 0.0`
-  - [ ] Clamp result: `let clampedAmplitudeDB = min(max(offsetDB, -90.0), 12.0)` (AC: #5)
-  - [ ] Pass `amplitudeDB: 0.0` for note1 (unchanged) and `amplitudeDB: clampedAmplitudeDB` for note2
-  - [ ] Note1 MUST always play at `amplitudeDB: 0.0` — variation applies ONLY to note2
+- [x] Task 2: Add loudness offset calculation in `playNextComparison()` (AC: #1, #2, #3, #5, #6)
+  - [x] Add `private let maxLoudnessOffsetDB: Float = 2.0` constant (AC: #6)
+  - [x] In `playNextComparison()`, read `varyLoudness` once per comparison (cache alongside `settings` and `noteDuration`)
+  - [x] Calculate: if `varyLoudness > 0.0`, generate `let offsetDB = Float.random(in: -range...range)` where `range = Float(varyLoudness) * maxLoudnessOffsetDB`; else `offsetDB = 0.0`
+  - [x] Clamp result: `let clampedAmplitudeDB = min(max(offsetDB, -90.0), 12.0)` (AC: #5)
+  - [x] Pass `amplitudeDB: 0.0` for note1 (unchanged) and `amplitudeDB: clampedAmplitudeDB` for note2
+  - [x] Note1 MUST always play at `amplitudeDB: 0.0` — variation applies ONLY to note2
 
-- [ ] Task 3: Write tests for loudness variation (AC: #1, #2, #3, #4, #5)
-  - [ ] Test: when `varyLoudnessOverride: 0.0`, both play() calls receive `amplitudeDB: 0.0`
-  - [ ] Test: when `varyLoudnessOverride: 1.0`, note1 receives `amplitudeDB: 0.0` and note2 receives `amplitudeDB != 0.0` (statistically — run multiple comparisons)
-  - [ ] Test: when `varyLoudnessOverride: 0.5`, note2's amplitude is within ±1.0 dB range
-  - [ ] Test: loudness offset is clamped within -90.0...12.0 dB range (extreme offset test)
-  - [ ] Test: default factory `makeTrainingSession()` passes `varyLoudnessOverride: 0.0` so existing tests are unaffected
+- [x] Task 3: Write tests for loudness variation (AC: #1, #2, #3, #4, #5)
+  - [x] Test: when `varyLoudnessOverride: 0.0`, both play() calls receive `amplitudeDB: 0.0`
+  - [x] Test: when `varyLoudnessOverride: 1.0`, note1 receives `amplitudeDB: 0.0` and note2 receives `amplitudeDB != 0.0` (statistically — run multiple comparisons)
+  - [x] Test: when `varyLoudnessOverride: 0.5`, note2's amplitude is within ±1.0 dB range
+  - [x] Test: loudness offset is clamped within -90.0...12.0 dB range (extreme offset test)
+  - [x] Test: default factory `makeTrainingSession()` passes `varyLoudnessOverride: 0.0` so existing tests are unaffected
 
-- [ ] Task 4: Run full test suite and verify (AC: all)
-  - [ ] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests must pass with zero failures
+- [x] Task 4: Run full test suite and verify (AC: all)
+  - [x] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests must pass with zero failures
 
 ## Dev Notes
 
@@ -187,10 +187,31 @@ Pattern: story file committed first, then implementation, then review fixes. Com
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no issues.
+
 ### Completion Notes List
 
+- Added `varyLoudnessOverride: Double?` init parameter and `currentVaryLoudness` computed property to `TrainingSession`, following the exact `noteDurationOverride`/`currentNoteDuration` pattern
+- Added `maxLoudnessOffsetDB: Float = 2.0` stored property constant alongside `velocity` and `feedbackDuration`
+- Modified `playNextComparison()` to read `varyLoudness` once per comparison and calculate a random offset for note2's `amplitudeDB`; note1 always plays at `amplitudeDB: 0.0`
+- Offset formula: `Float(varyLoudness) * maxLoudnessOffsetDB` gives the range, `Float.random(in: -range...range)` gives the offset, clamped to -90.0...12.0 dB
+- Updated `makeTrainingSession()` factory with `varyLoudnessOverride: Double? = 0.0` default — all existing tests unaffected (both notes at amplitudeDB: 0.0)
+- Created 6 new tests covering: zero variation, full variation single & statistical, mid-slider range, clamping, and default factory behavior
+- Full test suite passes with zero failures and zero regressions
+
+### Change Log
+
+- 2026-02-25: Implemented story 10.5 — TrainingSession applies random loudness offset to note2 based on "Vary Loudness" slider value
+- 2026-02-25: Fix code review findings — replaced deprecated `masterGain` with `overallGain` (iOS 15+), added visible "Vary Loudness" label on Settings slider, moved note2AmplitudeDB calculation before do block and consolidated log statements
+
 ### File List
+
+- `Peach/Training/TrainingSession.swift` — Modified: added `varyLoudnessOverride`, `currentVaryLoudness`, `maxLoudnessOffsetDB`; updated init and `playNextComparison()` to apply loudness offset to note2; consolidated logging
+- `Peach/Core/Audio/SoundFontNotePlayer.swift` — Modified: replaced deprecated `masterGain` with `overallGain`
+- `Peach/Settings/SettingsScreen.swift` — Modified: added visible "Vary Loudness" label above slider
+- `PeachTests/Training/TrainingTestHelpers.swift` — Modified: added `varyLoudnessOverride` parameter (default 0.0) to `makeTrainingSession()` factory
+- `PeachTests/Training/TrainingSessionLoudnessTests.swift` — New: 6 tests for loudness variation behavior

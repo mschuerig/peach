@@ -87,12 +87,15 @@ struct SettingsScreen: View {
                 in: 380...500,
                 step: 1
             )
-            Slider(value: $varyLoudness, in: 0...1) {
+            VStack(alignment: .leading) {
                 Text("Vary Loudness")
-            } minimumValueLabel: {
-                Text("Off")
-            } maximumValueLabel: {
-                Text("Max")
+                Slider(value: $varyLoudness, in: 0...1) {
+                    Text("Vary Loudness")
+                } minimumValueLabel: {
+                    Text("Off")
+                } maximumValueLabel: {
+                    Text("Max")
+                }
             }
         }
     }
