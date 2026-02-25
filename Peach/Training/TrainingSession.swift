@@ -118,6 +118,9 @@ final class TrainingSession {
     /// Optional note duration override for deterministic testing
     private let noteDurationOverride: TimeInterval?
 
+    /// Optional vary loudness override for deterministic testing (nil = read from UserDefaults)
+    private let varyLoudnessOverride: Double?
+
     /// Build live settings from UserDefaults on each comparison (or use override for tests)
     private var currentSettings: TrainingSettings {
         if let override = settingsOverride { return override }
@@ -134,6 +137,14 @@ final class TrainingSession {
     private var currentNoteDuration: TimeInterval {
         noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
     }
+
+    /// Current vary loudness value from UserDefaults (or override for tests)
+    private var currentVaryLoudness: Double {
+        varyLoudnessOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.varyLoudness) as? Double ?? SettingsKeys.defaultVaryLoudness)
+    }
+
+    /// Maximum loudness offset in dB at full slider (varyLoudness = 1.0)
+    private let maxLoudnessOffsetDB: Float = 5.0
 
     /// MIDI velocity for note playback (1-127)
     private let velocity: UInt8 = 63
@@ -173,6 +184,7 @@ final class TrainingSession {
     ///   - profile: User's perceptual profile (Story 4.3)
     ///   - settingsOverride: Optional settings for test injection (nil = read from @AppStorage)
     ///   - noteDurationOverride: Optional duration for test injection (nil = read from @AppStorage)
+    ///   - varyLoudnessOverride: Optional vary loudness for test injection (nil = read from @AppStorage)
     ///   - trendAnalyzer: Trend analyzer for reset coordination (nil in tests that don't need it)
     ///   - thresholdTimeline: Threshold timeline for reset coordination (nil in tests that don't need it)
     ///   - observers: Observers notified when comparisons complete (e.g., dataStore, profile, hapticManager)
@@ -183,6 +195,7 @@ final class TrainingSession {
         profile: PerceptualProfile,
         settingsOverride: TrainingSettings? = nil,
         noteDurationOverride: TimeInterval? = nil,
+        varyLoudnessOverride: Double? = nil,
         trendAnalyzer: TrendAnalyzer? = nil,
         thresholdTimeline: ThresholdTimeline? = nil,
         observers: [ComparisonObserver] = [],
@@ -193,6 +206,7 @@ final class TrainingSession {
         self.profile = profile
         self.settingsOverride = settingsOverride
         self.noteDurationOverride = noteDurationOverride
+        self.varyLoudnessOverride = varyLoudnessOverride
         self.trendAnalyzer = trendAnalyzer
         self.thresholdTimeline = thresholdTimeline
         self.observers = observers
@@ -373,12 +387,11 @@ final class TrainingSession {
 
     /// Plays a single comparison: note1 → note2 → await answer
     private func playNextComparison() async {
-        logger.info("playNextComparison() started")
-
         // Build live settings from @AppStorage (or use override for tests)
-        // Cache both once per comparison to ensure note1 and note2 use identical values
+        // Cache once per comparison to ensure note1 and note2 use identical values
         let settings = currentSettings
         let noteDuration = currentNoteDuration
+        let varyLoudness = currentVaryLoudness
 
         // Generate next comparison using adaptive strategy (Story 4.3)
         let comparison = strategy.nextComparison(
@@ -387,17 +400,23 @@ final class TrainingSession {
             lastComparison: lastCompletedComparison
         )
         currentComparison = comparison
-        logger.info("Generated comparison: note1=\(comparison.note1), centDiff=\(comparison.centDifference), higher=\(comparison.isSecondNoteHigher)")
+
+        // Calculate loudness offset for note2
+        let note2AmplitudeDB: Float = {
+            guard varyLoudness > 0.0 else { return 0.0 }
+            let range = Float(varyLoudness) * maxLoudnessOffsetDB
+            let offset = Float.random(in: -range...range)
+            return min(max(offset, -90.0), 12.0)
+        }()
 
         do {
             // Calculate frequencies with live reference pitch
             let freq1 = try comparison.note1Frequency(referencePitch: settings.referencePitch)
             let freq2 = try comparison.note2Frequency(referencePitch: settings.referencePitch)
-            logger.info("Frequencies: note1=\(freq1)Hz, note2=\(freq2)Hz")
+            logger.info("Comparison: note1=\(comparison.note1) \(freq1)Hz @0.0dB, note2 \(freq2)Hz @\(note2AmplitudeDB)dB, centDiff=\(comparison.centDifference), higher=\(comparison.isSecondNoteHigher)")
 
             // Play note 1
             state = .playingNote1
-            logger.info("Playing note 1...")
             try await notePlayer.play(frequency: freq1, duration: noteDuration, velocity: velocity, amplitudeDB: 0.0)
 
             // Check if training was stopped during note 1
@@ -408,8 +427,7 @@ final class TrainingSession {
 
             // Play note 2
             state = .playingNote2
-            logger.info("Playing note 2...")
-            try await notePlayer.play(frequency: freq2, duration: noteDuration, velocity: velocity, amplitudeDB: 0.0)
+            try await notePlayer.play(frequency: freq2, duration: noteDuration, velocity: velocity, amplitudeDB: note2AmplitudeDB)
 
             // Check if training was stopped during note 2
             guard state != .idle && !Task.isCancelled else {

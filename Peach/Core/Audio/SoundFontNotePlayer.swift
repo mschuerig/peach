@@ -156,7 +156,7 @@ final class SoundFontNotePlayer: NotePlayer {
         let bendValue = Self.pitchBendValue(forCents: conversion.cents)
 
         // Set volume offset (independent of MIDI velocity)
-        sampler.masterGain = amplitudeDB
+        sampler.overallGain = amplitudeDB
 
         // Apply pitch bend before starting note
         sampler.sendPitchBend(bendValue, onChannel: Self.channel)

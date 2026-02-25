@@ -23,6 +23,7 @@ func makeTrainingSession(
     ],
     settingsOverride: TrainingSettings? = TrainingSettings(),
     noteDurationOverride: TimeInterval? = 1.0,
+    varyLoudnessOverride: Double? = 0.0,
     includeHaptic: Bool = false,
     notificationCenter: NotificationCenter? = nil
 ) -> TrainingSessionFixture {
@@ -47,6 +48,7 @@ func makeTrainingSession(
         profile: profile,
         settingsOverride: settingsOverride,
         noteDurationOverride: noteDurationOverride,
+        varyLoudnessOverride: varyLoudnessOverride,
         observers: observers,
         notificationCenter: notificationCenter ?? .default
     )
