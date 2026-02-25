@@ -123,10 +123,10 @@ development_status:
   10-5-apply-loudness-variation-in-training: done # TrainingSession applies random loudness offset to note2
 
   # Epic 11: Clear the Decks — Prerequisite Renames
-  epic-11: in-progress
+  epic-11: done
   11-1-rename-training-types-and-files-to-comparison: done # Rename ambiguous Training names to Comparison-specific names
 
   # Epic 12: Own Every Note — PlaybackHandle Redesign
-  epic-12: in-progress
+  epic-12: done
   12-1-playbackhandle-protocol-and-noteplayer-redesign: done # PlaybackHandle protocol, NotePlayer redesign, SoundFontPlaybackHandle
-  12-2-comparisonsession-playbackhandle-integration: backlog # ComparisonSession uses PlaybackHandle for note lifecycle
+  12-2-comparisonsession-playbackhandle-integration: wont-do # Superseded by 12.1 — stopAll() and convenience method cover ComparisonSession's needs
