@@ -13,11 +13,11 @@ protocol ComparisonRecordStoring {
     /// Fetches all comparison records from persistent storage
     /// - Returns: All ComparisonRecord instances
     /// - Throws: DataStoreError.fetchFailed if fetch operation fails
-    func fetchAll() throws -> [ComparisonRecord]
+    func fetchAllComparisons() throws -> [ComparisonRecord]
 }
 
 /// Extension to make TrainingDataStore conform to the protocol
 extension TrainingDataStore: ComparisonRecordStoring {
-    // TrainingDataStore already implements save() and fetchAll()
+    // TrainingDataStore already implements save() and fetchAllComparisons()
     // This extension just declares conformance
 }

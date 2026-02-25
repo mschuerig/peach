@@ -1,6 +1,6 @@
 # Story 13.1: PitchMatchingRecord Data Model and TrainingDataStore Extension
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -222,6 +222,7 @@ cd3f1d6 Add story 12.1: PlaybackHandle Protocol and NotePlayer Redesign
 ## Change Log
 
 - 2026-02-25: Implemented story 13.1 — PitchMatchingRecord data model, PitchMatching value types/observer protocol, TrainingDataStore CRUD extension, ModelContainer schema update, MockTrainingDataStore update, Settings reset integration. 422 tests passing (13 new).
+- 2026-02-25: Code review fixes — (M1) Renamed `fetchAll()` → `fetchAllComparisons()`, `fetchAllPitchMatching()` → `fetchAllPitchMatchings()`; made `deleteAll()` transactional deleting both record types with rollback; removed `deleteAllPitchMatching()`; simplified `SettingsScreen.resetAllTrainingData()`. (M2) Added timestamp verification in observer test. (M3) Renamed misleading test to match actual behavior. (L1) Removed unnecessary `import Foundation` from `PitchMatchingChallenge.swift`. (L2-L3) Updated docstrings for consistency. (L4) Updated File List. 421 tests passing.
 
 ## Dev Agent Record
 
@@ -257,8 +258,12 @@ New files:
 
 Modified files:
 - Peach/Core/Data/TrainingDataStore.swift
+- Peach/Core/Data/ComparisonRecordStoring.swift
 - Peach/App/PeachApp.swift
 - Peach/Settings/SettingsScreen.swift
+- Peach/Comparison/ComparisonScreen.swift
 - PeachTests/Core/Data/TrainingDataStoreTests.swift
 - PeachTests/Core/Data/TrainingDataStoreEdgeCaseTests.swift
 - PeachTests/Comparison/MockTrainingDataStore.swift
+- PeachTests/Settings/SettingsTests.swift
+- docs/project-context.md

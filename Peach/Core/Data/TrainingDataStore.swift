@@ -1,7 +1,7 @@
 import SwiftData
 import Foundation
 
-/// Pure persistence layer for ComparisonRecord storage and retrieval
+/// Pure persistence layer for ComparisonRecord and PitchMatchingRecord storage and retrieval
 /// Responsibilities: CREATE, READ, DELETE operations only - no business logic
 final class TrainingDataStore {
     private let modelContext: ModelContext
@@ -30,7 +30,7 @@ final class TrainingDataStore {
     /// - Note: Loads all records into memory at once. For MVP with expected low data volumes (hundreds to low thousands
     ///   of records), this is acceptable. Future optimization: implement batched iteration if data volume becomes large
     ///   (tens of thousands of records or memory pressure observed).
-    func fetchAll() throws -> [ComparisonRecord] {
+    func fetchAllComparisons() throws -> [ComparisonRecord] {
         let descriptor = FetchDescriptor<ComparisonRecord>(
             sortBy: [SortDescriptor(\.timestamp, order: .forward)]
         )
@@ -53,12 +53,15 @@ final class TrainingDataStore {
         }
     }
 
-    /// Deletes all comparison records from persistent storage
+    /// Deletes all records (comparisons and pitch matchings) from persistent storage
     /// Used by Settings "Reset All Training Data" action
-    /// - Throws: DataStoreError.deleteFailed if batch delete fails
+    /// - Throws: DataStoreError.deleteFailed if batch delete fails; rolls back on partial failure
     func deleteAll() throws {
         do {
-            try modelContext.delete(model: ComparisonRecord.self)
+            try modelContext.transaction {
+                try modelContext.delete(model: ComparisonRecord.self)
+                try modelContext.delete(model: PitchMatchingRecord.self)
+            }
         } catch {
             throw DataStoreError.deleteFailed("Failed to delete all records: \(error.localizedDescription)")
         }
@@ -66,6 +69,9 @@ final class TrainingDataStore {
 
     // MARK: - Pitch Matching CRUD
 
+    /// Saves a pitch matching record to persistent storage
+    /// - Parameter record: The PitchMatchingRecord to save
+    /// - Throws: DataStoreError.saveFailed if save operation fails
     func save(_ record: PitchMatchingRecord) throws {
         modelContext.insert(record)
         do {
@@ -75,7 +81,10 @@ final class TrainingDataStore {
         }
     }
 
-    func fetchAllPitchMatching() throws -> [PitchMatchingRecord] {
+    /// Fetches all pitch matching records from persistent storage
+    /// - Returns: All PitchMatchingRecord instances sorted by timestamp (oldest first)
+    /// - Throws: DataStoreError.fetchFailed if fetch operation fails
+    func fetchAllPitchMatchings() throws -> [PitchMatchingRecord] {
         let descriptor = FetchDescriptor<PitchMatchingRecord>(
             sortBy: [SortDescriptor(\.timestamp, order: .forward)]
         )
@@ -83,14 +92,6 @@ final class TrainingDataStore {
             return try modelContext.fetch(descriptor)
         } catch {
             throw DataStoreError.fetchFailed("Failed to fetch pitch matching records: \(error.localizedDescription)")
-        }
-    }
-
-    func deleteAllPitchMatching() throws {
-        do {
-            try modelContext.delete(model: PitchMatchingRecord.self)
-        } catch {
-            throw DataStoreError.deleteFailed("Failed to delete all pitch matching records: \(error.localizedDescription)")
         }
     }
 }

@@ -192,7 +192,7 @@ private final class MockPlaybackHandleForPreview: PlaybackHandle {
 
 private final class MockDataStoreForPreview: ComparisonRecordStoring, ComparisonObserver {
     func save(_ record: ComparisonRecord) throws {}
-    func fetchAll() throws -> [ComparisonRecord] { [] }
+    func fetchAllComparisons() throws -> [ComparisonRecord] { [] }
 
     func comparisonCompleted(_ completed: CompletedComparison) {
         // No-op for preview
