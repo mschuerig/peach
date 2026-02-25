@@ -5,12 +5,17 @@ import OSLog
 /// Aggregates comparison data into per-note statistics (mean, stdDev, sample count)
 /// Supports cold start, incremental updates, and weak spot identification
 @Observable
-final class PerceptualProfile: PitchDiscriminationProfile {
+final class PerceptualProfile: PitchDiscriminationProfile, PitchMatchingProfile {
 
     // MARK: - Properties
 
     /// Per-note statistics indexed by MIDI note (0-127)
     private var noteStats: [PerceptualNote]
+
+    // Matching aggregate accumulators (Welford's online algorithm)
+    private var matchingCount: Int = 0
+    private var matchingMeanAbs: Double = 0.0
+    private var matchingM2: Double = 0.0
 
     /// Logger for profile operations
     private let logger = Logger(subsystem: "com.peach.app", category: "PerceptualProfile")
@@ -163,6 +168,38 @@ final class PerceptualProfile: PitchDiscriminationProfile {
         noteStats[note].currentDifficulty = difficulty
         logger.debug("Set difficulty for note \(note): \(difficulty) cents")
     }
+
+
+    // MARK: - Matching Statistics (PitchMatchingProfile)
+
+    func updateMatching(note: Int, centError: Double) {
+        let absError = abs(centError)
+        matchingCount += 1
+        let delta = absError - matchingMeanAbs
+        matchingMeanAbs += delta / Double(matchingCount)
+        let delta2 = absError - matchingMeanAbs
+        matchingM2 += delta * delta2
+    }
+
+    var matchingMean: Double? {
+        matchingCount > 0 ? matchingMeanAbs : nil
+    }
+
+    var matchingStdDev: Double? {
+        guard matchingCount >= 2 else { return nil }
+        return sqrt(matchingM2 / Double(matchingCount - 1))
+    }
+
+    var matchingSampleCount: Int {
+        matchingCount
+    }
+
+    func resetMatching() {
+        matchingCount = 0
+        matchingMeanAbs = 0.0
+        matchingM2 = 0.0
+        logger.info("Matching statistics reset")
+    }
 }
 
 // MARK: - PerceptualNote
@@ -217,5 +254,13 @@ extension PerceptualProfile: ComparisonObserver {
             centOffset: centOffset,
             isCorrect: completed.isCorrect
         )
+    }
+}
+
+// MARK: - PitchMatchingObserver Conformance
+
+extension PerceptualProfile: PitchMatchingObserver {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+        updateMatching(note: result.referenceNote, centError: result.userCentError)
     }
 }

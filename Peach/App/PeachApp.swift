@@ -41,8 +41,12 @@ struct PeachApp: App {
                     isCorrect: record.isCorrect
                 )
             }
+            let pitchMatchingRecords = try dataStore.fetchAllPitchMatchings()
+            for record in pitchMatchingRecords {
+                profile.updateMatching(note: record.referenceNote, centError: record.userCentError)
+            }
             let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
-            Self.logger.info("Profile loaded from \(existingRecords.count) records in \(elapsed, format: .fixed(precision: 1))ms")
+            Self.logger.info("Profile loaded from \(existingRecords.count) comparison + \(pitchMatchingRecords.count) matching records in \(elapsed, format: .fixed(precision: 1))ms")
 
             // Create trend analyzer from existing records (Story 5.2)
             let trendAnalyzer = TrendAnalyzer(records: existingRecords)

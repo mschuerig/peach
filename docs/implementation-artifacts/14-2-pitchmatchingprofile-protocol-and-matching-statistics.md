@@ -1,6 +1,6 @@
 # Story 14.2: PitchMatchingProfile Protocol and Matching Statistics
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -30,37 +30,37 @@ So that PitchMatchingSession can record and read matching accuracy data through 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create PitchMatchingProfile protocol (AC: #1)
-  - [ ] 1.1 Create `Peach/Core/Profile/PitchMatchingProfile.swift` with all 5 method/property declarations matching architecture doc signatures
-  - [ ] 1.2 Write conformance test: `PeachTests/Core/Profile/PitchMatchingProfileTests.swift` — verify `PerceptualProfile` conforms to `PitchMatchingProfile` (compile-time check via type assignment)
+- [x] Task 1: Create PitchMatchingProfile protocol (AC: #1)
+  - [x] 1.1 Create `Peach/Core/Profile/PitchMatchingProfile.swift` with all 5 method/property declarations matching architecture doc signatures
+  - [x] 1.2 Write conformance test: `PeachTests/Core/Profile/PitchMatchingProfileTests.swift` — verify `PerceptualProfile` conforms to `PitchMatchingProfile` (compile-time check via type assignment)
 
-- [ ] Task 2: Implement matching statistics in PerceptualProfile (AC: #2, #5)
-  - [ ] 2.1 Add matching aggregate properties to `PerceptualProfile`: `private var matchingCount: Int`, `private var matchingMeanAbs: Double`, `private var matchingM2: Double`
-  - [ ] 2.2 Implement `updateMatching(note:centError:)` — take `abs(centError)`, apply Welford's algorithm to the three aggregate accumulators. The `note` parameter is accepted but unused in v0.2 (overall aggregates only)
-  - [ ] 2.3 Implement `matchingMean` — return `matchingMeanAbs` if `matchingCount > 0`, else `nil`
-  - [ ] 2.4 Implement `matchingStdDev` — return `sqrt(matchingM2 / (matchingCount - 1))` if `matchingCount >= 2`, else `nil`
-  - [ ] 2.5 Implement `matchingSampleCount` — return `matchingCount`
-  - [ ] 2.6 Implement `resetMatching()` — zero out all three matching accumulators; leave discrimination `noteStats` untouched
-  - [ ] 2.7 Add `: PitchMatchingProfile` to `PerceptualProfile` class declaration (alongside existing `: PitchDiscriminationProfile`)
-  - [ ] 2.8 Write tests: Welford's mean/stdDev accuracy after multiple updates, cold start nil/zero values, resetMatching independence from discrimination stats, reset() independence from matching stats
+- [x] Task 2: Implement matching statistics in PerceptualProfile (AC: #2, #5)
+  - [x] 2.1 Add matching aggregate properties to `PerceptualProfile`: `private var matchingCount: Int`, `private var matchingMeanAbs: Double`, `private var matchingM2: Double`
+  - [x] 2.2 Implement `updateMatching(note:centError:)` — take `abs(centError)`, apply Welford's algorithm to the three aggregate accumulators. The `note` parameter is accepted but unused in v0.2 (overall aggregates only)
+  - [x] 2.3 Implement `matchingMean` — return `matchingMeanAbs` if `matchingCount > 0`, else `nil`
+  - [x] 2.4 Implement `matchingStdDev` — return `sqrt(matchingM2 / (matchingCount - 1))` if `matchingCount >= 2`, else `nil`
+  - [x] 2.5 Implement `matchingSampleCount` — return `matchingCount`
+  - [x] 2.6 Implement `resetMatching()` — zero out all three matching accumulators; leave discrimination `noteStats` untouched
+  - [x] 2.7 Add `: PitchMatchingProfile` to `PerceptualProfile` class declaration (alongside existing `: PitchDiscriminationProfile`)
+  - [x] 2.8 Write tests: Welford's mean/stdDev accuracy after multiple updates, cold start nil/zero values, resetMatching independence from discrimination stats, reset() independence from matching stats
 
-- [ ] Task 3: Add PitchMatchingObserver conformance (AC: #3)
-  - [ ] 3.1 Add `extension PerceptualProfile: PitchMatchingObserver` at bottom of `PerceptualProfile.swift` (matches existing `ComparisonObserver` extension pattern)
-  - [ ] 3.2 Implement `pitchMatchingCompleted(_:)` — call `updateMatching(note: result.referenceNote, centError: result.userCentError)`
-  - [ ] 3.3 Write test: verify observer calls `updateMatching` and stats update correctly
+- [x] Task 3: Add PitchMatchingObserver conformance (AC: #3)
+  - [x] 3.1 Add `extension PerceptualProfile: PitchMatchingObserver` at bottom of `PerceptualProfile.swift` (matches existing `ComparisonObserver` extension pattern)
+  - [x] 3.2 Implement `pitchMatchingCompleted(_:)` — call `updateMatching(note: result.referenceNote, centError: result.userCentError)`
+  - [x] 3.3 Write test: verify observer calls `updateMatching` and stats update correctly
 
-- [ ] Task 4: Rebuild profile from PitchMatchingRecord on startup (AC: #4)
-  - [ ] 4.1 In `PeachApp.swift`, after the existing comparison record loop, add: fetch `PitchMatchingRecord` via `dataStore.fetchAllPitchMatchings()` and call `profile.updateMatching(note:centError:)` for each record
-  - [ ] 4.2 Include pitch matching record count in the startup log message
+- [x] Task 4: Rebuild profile from PitchMatchingRecord on startup (AC: #4)
+  - [x] 4.1 In `PeachApp.swift`, after the existing comparison record loop, add: fetch `PitchMatchingRecord` via `dataStore.fetchAllPitchMatchings()` and call `profile.updateMatching(note:centError:)` for each record
+  - [x] 4.2 Include pitch matching record count in the startup log message
 
-- [ ] Task 5: Update Settings reset to clear matching stats (AC: #6, #7)
-  - [ ] 5.1 Add `@Environment(\.perceptualProfile) private var profile` to `SettingsScreen`
-  - [ ] 5.2 In `resetAllTrainingData()`, after `comparisonSession.resetTrainingData()`, call `profile.resetMatching()`
+- [x] Task 5: Update Settings reset to clear matching stats (AC: #6, #7)
+  - [x] 5.1 Add `@Environment(\.perceptualProfile) private var profile` to `SettingsScreen`
+  - [x] 5.2 In `resetAllTrainingData()`, after `comparisonSession.resetTrainingData()`, call `profile.resetMatching()`
 
-- [ ] Task 6: Run full test suite and verify (AC: #8)
-  - [ ] 6.1 Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] 6.2 Verify all existing tests pass with zero regressions
-  - [ ] 6.3 Verify all new tests pass
+- [x] Task 6: Run full test suite and verify (AC: #8)
+  - [x] 6.1 Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] 6.2 Verify all existing tests pass with zero regressions
+  - [x] 6.3 Verify all new tests pass
 
 ## Dev Notes
 
@@ -380,10 +380,36 @@ for record in pitchMatchingRecords {
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no issues encountered.
+
 ### Completion Notes List
 
+- Created `PitchMatchingProfile` protocol with `AnyObject` constraint (mirroring `PitchDiscriminationProfile` pattern from story 14.1)
+- Implemented Welford's online algorithm for matching statistics using 3 scalar accumulators (`matchingCount`, `matchingMeanAbs`, `matchingM2`) — no per-note array per v0.2 spec
+- `updateMatching(note:centError:)` takes `abs(centError)` before applying Welford's, producing mean absolute error as specified
+- `PitchMatchingObserver` conformance added as extension at bottom of `PerceptualProfile.swift` (matching `ComparisonObserver` extension pattern)
+- `PeachApp.swift` startup now reconstructs profile from both `ComparisonRecord` and `PitchMatchingRecord` data
+- `SettingsScreen.resetAllTrainingData()` now calls both `comparisonSession.resetTrainingData()` and `profile.resetMatching()`
+- 8 new tests added covering: conformance, cold start, Welford's mean/stdDev accuracy, single-sample edge case, reset independence (both directions), and observer integration
+- All 430 tests pass (422 existing + 8 new), zero regressions
+
+### Change Log
+
+- 2026-02-26: Implemented story 14.2 — PitchMatchingProfile protocol, PerceptualProfile conformance with Welford's matching statistics, PitchMatchingObserver extension, startup profile rebuild from PitchMatchingRecord, Settings reset integration. 8 new tests, 430 total passing.
+
 ### File List
+
+New files:
+- Peach/Core/Profile/PitchMatchingProfile.swift
+- PeachTests/Core/Profile/PitchMatchingProfileTests.swift
+
+Modified files:
+- Peach/Core/Profile/PerceptualProfile.swift
+- Peach/App/PeachApp.swift
+- Peach/Settings/SettingsScreen.swift
+- docs/implementation-artifacts/sprint-status.yaml
+- docs/implementation-artifacts/14-2-pitchmatchingprofile-protocol-and-matching-statistics.md
