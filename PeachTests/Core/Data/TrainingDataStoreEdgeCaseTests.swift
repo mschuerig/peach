@@ -28,7 +28,7 @@ struct TrainingDataStoreEdgeCaseTests {
         try store.save(record1)
         try store.save(record2)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 2)
     }
 
@@ -44,7 +44,7 @@ struct TrainingDataStoreEdgeCaseTests {
         try store.save(minRecord)
         try store.save(maxRecord)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 2)
         #expect(fetched.contains { $0.note1 == 0 })
         #expect(fetched.contains { $0.note1 == 127 })
@@ -65,7 +65,7 @@ struct TrainingDataStoreEdgeCaseTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].note2CentOffset == 12.3)
     }
@@ -82,7 +82,7 @@ struct TrainingDataStoreEdgeCaseTests {
         try store.save(record)
 
         do {
-            _ = try store.fetchAll()
+            _ = try store.fetchAllComparisons()
         } catch let error as Peach.DataStoreError {
             switch error {
             case .fetchFailed(let message):

@@ -38,7 +38,7 @@ struct TrainingDataStoreTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].note1 == 60)
@@ -62,7 +62,7 @@ struct TrainingDataStoreTests {
         try store.save(record2)
         try store.save(record3)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
 
         #expect(fetched.count == 3)
         #expect(fetched[0].note1 == 60)
@@ -87,7 +87,7 @@ struct TrainingDataStoreTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
 
         #expect(fetched.count == 1)
         let retrieved = fetched[0]
@@ -109,12 +109,12 @@ struct TrainingDataStoreTests {
         let record = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
         try store.save(record)
 
-        var fetched = try store.fetchAll()
+        var fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 1)
 
         try store.delete(record)
 
-        fetched = try store.fetchAll()
+        fetched = try store.fetchAllComparisons()
         #expect(fetched.isEmpty)
     }
 
@@ -131,7 +131,7 @@ struct TrainingDataStoreTests {
 
         try store.delete(record1)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].note1 == 62)
     }
@@ -158,7 +158,7 @@ struct TrainingDataStoreTests {
         let context2 = ModelContext(container)
         let store2 = TrainingDataStore(modelContext: context2)
 
-        let fetched = try store2.fetchAll()
+        let fetched = try store2.fetchAllComparisons()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].note1 == 69)
@@ -176,7 +176,7 @@ struct TrainingDataStoreTests {
         let record = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
         try store.save(record)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].note1 == 60)
         #expect(fetched[0].note2 == 60)
@@ -192,7 +192,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let fetched = try store.fetchAll()
+        let fetched = try store.fetchAllComparisons()
 
         #expect(fetched.isEmpty)
     }
@@ -213,7 +213,7 @@ struct TrainingDataStoreTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
@@ -236,7 +236,7 @@ struct TrainingDataStoreTests {
         try store.save(record2)
         try store.save(record3)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
 
         #expect(fetched.count == 3)
         #expect(fetched[0].referenceNote == 60)
@@ -250,32 +250,15 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
 
         #expect(fetched.isEmpty)
     }
 
-    // MARK: - Pitch Matching Delete Tests
+    // MARK: - Delete All Tests
 
-    @Test("DeleteAllPitchMatching removes all pitch matching records")
-    func deleteAllPitchMatching() async throws {
-        let container = try makeTestContainer()
-        let context = ModelContext(container)
-        let store = TrainingDataStore(modelContext: context)
-
-        let record1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
-        let record2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0)
-        try store.save(record1)
-        try store.save(record2)
-
-        try store.deleteAllPitchMatching()
-
-        let fetched = try store.fetchAllPitchMatching()
-        #expect(fetched.isEmpty)
-    }
-
-    @Test("DeleteAllPitchMatching does not affect comparison records")
-    func deleteAllPitchMatchingPreservesComparisons() async throws {
+    @Test("DeleteAll removes both comparison and pitch matching records")
+    func deleteAllRemovesBothTypes() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
@@ -283,45 +266,49 @@ struct TrainingDataStoreTests {
         let comparisonRecord = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
         try store.save(comparisonRecord)
 
-        let pitchRecord = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
-        try store.save(pitchRecord)
+        let pitchRecord1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
+        let pitchRecord2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0)
+        try store.save(pitchRecord1)
+        try store.save(pitchRecord2)
 
-        try store.deleteAllPitchMatching()
+        try store.deleteAll()
 
-        let comparisonFetched = try store.fetchAll()
-        #expect(comparisonFetched.count == 1)
+        let comparisonFetched = try store.fetchAllComparisons()
+        #expect(comparisonFetched.isEmpty)
 
-        let pitchFetched = try store.fetchAllPitchMatching()
+        let pitchFetched = try store.fetchAllPitchMatchings()
         #expect(pitchFetched.isEmpty)
     }
 
     // MARK: - PitchMatchingObserver Conformance Tests
 
-    @Test("PitchMatchingObserver conformance saves record via observer")
+    @Test("PitchMatchingObserver conformance saves record with all fields via observer")
     func pitchMatchingObserverSaves() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
+        let timestamp = Date()
         let completed = CompletedPitchMatching(
             referenceNote: 69,
             initialCentOffset: 42.5,
-            userCentError: -12.3
+            userCentError: -12.3,
+            timestamp: timestamp
         )
 
         store.pitchMatchingCompleted(completed)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
         #expect(fetched[0].initialCentOffset == 42.5)
         #expect(fetched[0].userCentError == -12.3)
+        #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
-    @Test("PitchMatchingObserver does not propagate errors")
-    func pitchMatchingObserverSwallowsErrors() async throws {
-        // Use a valid container — observer catches its own errors gracefully
+    @Test("PitchMatchingObserver saves multiple records from repeated calls")
+    func pitchMatchingObserverSavesMultiple() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
@@ -332,11 +319,10 @@ struct TrainingDataStoreTests {
             userCentError: -12.3
         )
 
-        // Should not throw even if called multiple times
         store.pitchMatchingCompleted(completed)
         store.pitchMatchingCompleted(completed)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
         #expect(fetched.count == 2)
     }
 
@@ -351,7 +337,7 @@ struct TrainingDataStoreTests {
         let record = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
         try store.save(record)
 
-        let fetched = try store.fetchAllPitchMatching()
+        let fetched = try store.fetchAllPitchMatchings()
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
         #expect(fetched[0].initialCentOffset == 10.0)

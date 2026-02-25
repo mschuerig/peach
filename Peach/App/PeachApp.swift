@@ -33,7 +33,7 @@ struct PeachApp: App {
             let profile = PerceptualProfile()
             _profile = State(wrappedValue: profile)
             let startTime = CFAbsoluteTimeGetCurrent()
-            let existingRecords = try dataStore.fetchAll()
+            let existingRecords = try dataStore.fetchAllComparisons()
             for record in existingRecords {
                 profile.update(
                     note: record.note1,

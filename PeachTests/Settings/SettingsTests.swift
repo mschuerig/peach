@@ -118,42 +118,52 @@ struct SettingsTests {
         #expect(analyzer.trend == nil)
     }
 
-    @Test("Reset deletes all ComparisonRecords from SwiftData")
-    func resetDeletesComparisonRecords() throws {
+    @Test("Reset deletes all records from SwiftData")
+    func resetDeletesAllRecords() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: ComparisonRecord.self, configurations: config)
+        let container = try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
         let context = container.mainContext
 
-        // Insert test records
-        let record1 = ComparisonRecord(
+        // Insert comparison records
+        let comparison1 = ComparisonRecord(
             note1: 60,
             note2: 61,
             note2CentOffset: 2.0,
             isCorrect: true
         )
-        let record2 = ComparisonRecord(
+        let comparison2 = ComparisonRecord(
             note1: 72,
             note2: 73,
             note2CentOffset: 2.5,
             isCorrect: false
         )
-        context.insert(record1)
-        context.insert(record2)
+        context.insert(comparison1)
+        context.insert(comparison2)
+
+        // Insert pitch matching records
+        let pitchMatching1 = PitchMatchingRecord(
+            referenceNote: 69,
+            initialCentOffset: 42.5,
+            userCentError: -12.3
+        )
+        context.insert(pitchMatching1)
         try context.save()
 
         // Verify records exist
-        let fetchBefore = FetchDescriptor<ComparisonRecord>()
-        let countBefore = try context.fetchCount(fetchBefore)
-        #expect(countBefore == 2)
+        let comparisonCountBefore = try context.fetchCount(FetchDescriptor<ComparisonRecord>())
+        #expect(comparisonCountBefore == 2)
+        let pitchCountBefore = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
+        #expect(pitchCountBefore == 1)
 
         // Delete all using TrainingDataStore.deleteAll() (same as SettingsScreen)
         let dataStore = TrainingDataStore(modelContext: context)
         try dataStore.deleteAll()
 
-        // Verify records deleted
-        let fetchAfter = FetchDescriptor<ComparisonRecord>()
-        let countAfter = try context.fetchCount(fetchAfter)
-        #expect(countAfter == 0)
+        // Verify all records deleted
+        let comparisonCountAfter = try context.fetchCount(FetchDescriptor<ComparisonRecord>())
+        #expect(comparisonCountAfter == 0)
+        let pitchCountAfter = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
+        #expect(pitchCountAfter == 0)
     }
 
     // MARK: - Task 5: Range Functions

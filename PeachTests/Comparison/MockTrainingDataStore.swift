@@ -30,7 +30,7 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
         savedRecords.append(record)
     }
 
-    func fetchAll() throws -> [ComparisonRecord] {
+    func fetchAllComparisons() throws -> [ComparisonRecord] {
         if shouldThrowError {
             throw DataStoreError.fetchFailed("Mock error")
         }
@@ -50,18 +50,11 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
         savedPitchMatchingRecords.append(record)
     }
 
-    func fetchAllPitchMatching() throws -> [PitchMatchingRecord] {
+    func fetchAllPitchMatchings() throws -> [PitchMatchingRecord] {
         if shouldThrowError {
             throw DataStoreError.fetchFailed("Mock error")
         }
         return savedPitchMatchingRecords
-    }
-
-    func deleteAllPitchMatching() throws {
-        if shouldThrowError {
-            throw DataStoreError.deleteFailed("Mock error")
-        }
-        savedPitchMatchingRecords = []
     }
 
     // MARK: - Test Helpers
