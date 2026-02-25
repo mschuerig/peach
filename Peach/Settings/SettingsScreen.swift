@@ -159,6 +159,7 @@ struct SettingsScreen: View {
         let dataStore = TrainingDataStore(modelContext: modelContext)
         do {
             try dataStore.deleteAll()
+            try dataStore.deleteAllPitchMatching()
         } catch {
             showResetError = true
             return
@@ -172,5 +173,5 @@ struct SettingsScreen: View {
     NavigationStack {
         SettingsScreen()
     }
-    .modelContainer(for: ComparisonRecord.self, inMemory: true)
+    .modelContainer(for: [ComparisonRecord.self, PitchMatchingRecord.self], inMemory: true)
 }

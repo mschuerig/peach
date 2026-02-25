@@ -69,7 +69,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftData:**
 - **`TrainingDataStore` is the sole data accessor** — all CRUD goes through this single service
-- **`ComparisonRecord` is the only `@Model`** — flat structure: `note1`, `note2`, `note2CentOffset`, `isCorrect`, `timestamp`
+- **`ComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `ComparisonRecord`: `note1`, `note2`, `note2CentOffset`, `isCorrect`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp`
 - **`ModelContainer` initialized once in `PeachApp.swift`** — passed via SwiftUI environment; new models must be registered in the schema there
 
 **AVAudioEngine:**

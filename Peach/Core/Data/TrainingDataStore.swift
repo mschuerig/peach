@@ -63,6 +63,57 @@ final class TrainingDataStore {
             throw DataStoreError.deleteFailed("Failed to delete all records: \(error.localizedDescription)")
         }
     }
+
+    // MARK: - Pitch Matching CRUD
+
+    func save(_ record: PitchMatchingRecord) throws {
+        modelContext.insert(record)
+        do {
+            try modelContext.save()
+        } catch {
+            throw DataStoreError.saveFailed("Failed to save PitchMatchingRecord: \(error.localizedDescription)")
+        }
+    }
+
+    func fetchAllPitchMatching() throws -> [PitchMatchingRecord] {
+        let descriptor = FetchDescriptor<PitchMatchingRecord>(
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)]
+        )
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            throw DataStoreError.fetchFailed("Failed to fetch pitch matching records: \(error.localizedDescription)")
+        }
+    }
+
+    func deleteAllPitchMatching() throws {
+        do {
+            try modelContext.delete(model: PitchMatchingRecord.self)
+        } catch {
+            throw DataStoreError.deleteFailed("Failed to delete all pitch matching records: \(error.localizedDescription)")
+        }
+    }
+}
+
+// MARK: - PitchMatchingObserver Conformance
+
+extension TrainingDataStore: PitchMatchingObserver {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+        let record = PitchMatchingRecord(
+            referenceNote: result.referenceNote,
+            initialCentOffset: result.initialCentOffset,
+            userCentError: result.userCentError,
+            timestamp: result.timestamp
+        )
+
+        do {
+            try save(record)
+        } catch let error as DataStoreError {
+            print("⚠️ TrainingDataStore pitch matching save error: \(error.localizedDescription)")
+        } catch {
+            print("⚠️ TrainingDataStore pitch matching unexpected error: \(error.localizedDescription)")
+        }
+    }
 }
 
 // MARK: - ComparisonObserver Conformance

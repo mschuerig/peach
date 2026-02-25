@@ -11,13 +11,13 @@ struct TrainingDataStoreTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: ComparisonRecord.self, configurations: config)
+        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     private func makeFileBasedContainer() throws -> ModelContainer {
         let tempDir = FileManager.default.temporaryDirectory
         let config = ModelConfiguration(url: tempDir.appendingPathComponent("test-\(UUID().uuidString).store"))
-        return try ModelContainer(for: ComparisonRecord.self, configurations: config)
+        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     // MARK: - Save and Fetch Tests
@@ -195,5 +195,166 @@ struct TrainingDataStoreTests {
         let fetched = try store.fetchAll()
 
         #expect(fetched.isEmpty)
+    }
+
+    // MARK: - Pitch Matching Save and Fetch Tests
+
+    @Test("Save and retrieve a single pitch matching record")
+    func saveAndRetrievePitchMatchingRecord() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = PitchMatchingRecord(
+            referenceNote: 69,
+            initialCentOffset: 42.5,
+            userCentError: -12.3
+        )
+
+        try store.save(record)
+
+        let fetched = try store.fetchAllPitchMatching()
+
+        #expect(fetched.count == 1)
+        #expect(fetched[0].referenceNote == 69)
+        #expect(fetched[0].initialCentOffset == 42.5)
+        #expect(fetched[0].userCentError == -12.3)
+    }
+
+    @Test("FetchAllPitchMatching returns records in timestamp order")
+    func fetchPitchMatchingInOrder() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let now = Date()
+        let record1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0, timestamp: now.addingTimeInterval(-60))
+        let record2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0, timestamp: now.addingTimeInterval(-30))
+        let record3 = PitchMatchingRecord(referenceNote: 72, initialCentOffset: 30.0, userCentError: 1.5, timestamp: now)
+
+        try store.save(record1)
+        try store.save(record2)
+        try store.save(record3)
+
+        let fetched = try store.fetchAllPitchMatching()
+
+        #expect(fetched.count == 3)
+        #expect(fetched[0].referenceNote == 60)
+        #expect(fetched[1].referenceNote == 64)
+        #expect(fetched[2].referenceNote == 72)
+    }
+
+    @Test("FetchAllPitchMatching returns empty array when no records exist")
+    func fetchPitchMatchingFromEmptyStore() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let fetched = try store.fetchAllPitchMatching()
+
+        #expect(fetched.isEmpty)
+    }
+
+    // MARK: - Pitch Matching Delete Tests
+
+    @Test("DeleteAllPitchMatching removes all pitch matching records")
+    func deleteAllPitchMatching() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
+        let record2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0)
+        try store.save(record1)
+        try store.save(record2)
+
+        try store.deleteAllPitchMatching()
+
+        let fetched = try store.fetchAllPitchMatching()
+        #expect(fetched.isEmpty)
+    }
+
+    @Test("DeleteAllPitchMatching does not affect comparison records")
+    func deleteAllPitchMatchingPreservesComparisons() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let comparisonRecord = ComparisonRecord(note1: 60, note2: 60, note2CentOffset: 10.0, isCorrect: true)
+        try store.save(comparisonRecord)
+
+        let pitchRecord = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
+        try store.save(pitchRecord)
+
+        try store.deleteAllPitchMatching()
+
+        let comparisonFetched = try store.fetchAll()
+        #expect(comparisonFetched.count == 1)
+
+        let pitchFetched = try store.fetchAllPitchMatching()
+        #expect(pitchFetched.isEmpty)
+    }
+
+    // MARK: - PitchMatchingObserver Conformance Tests
+
+    @Test("PitchMatchingObserver conformance saves record via observer")
+    func pitchMatchingObserverSaves() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let completed = CompletedPitchMatching(
+            referenceNote: 69,
+            initialCentOffset: 42.5,
+            userCentError: -12.3
+        )
+
+        store.pitchMatchingCompleted(completed)
+
+        let fetched = try store.fetchAllPitchMatching()
+
+        #expect(fetched.count == 1)
+        #expect(fetched[0].referenceNote == 69)
+        #expect(fetched[0].initialCentOffset == 42.5)
+        #expect(fetched[0].userCentError == -12.3)
+    }
+
+    @Test("PitchMatchingObserver does not propagate errors")
+    func pitchMatchingObserverSwallowsErrors() async throws {
+        // Use a valid container — observer catches its own errors gracefully
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let completed = CompletedPitchMatching(
+            referenceNote: 69,
+            initialCentOffset: 42.5,
+            userCentError: -12.3
+        )
+
+        // Should not throw even if called multiple times
+        store.pitchMatchingCompleted(completed)
+        store.pitchMatchingCompleted(completed)
+
+        let fetched = try store.fetchAllPitchMatching()
+        #expect(fetched.count == 2)
+    }
+
+    // MARK: - Pitch Matching Atomic Write Tests
+
+    @Test("Pitch matching atomic write - successful save is complete")
+    func pitchMatchingAtomicWriteSuccess() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let record = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
+        try store.save(record)
+
+        let fetched = try store.fetchAllPitchMatching()
+        #expect(fetched.count == 1)
+        #expect(fetched[0].referenceNote == 60)
+        #expect(fetched[0].initialCentOffset == 10.0)
+        #expect(fetched[0].userCentError == 5.0)
     }
 }

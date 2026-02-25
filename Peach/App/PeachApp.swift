@@ -16,7 +16,7 @@ struct PeachApp: App {
     init() {
         // Create model container
         do {
-            let container = try ModelContainer(for: ComparisonRecord.self)
+            let container = try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)
             _modelContainer = State(wrappedValue: container)
 
             // Create dependencies
