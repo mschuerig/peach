@@ -1,6 +1,6 @@
 # Story 19.1: Clamping Utility and Magic Value Constants
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,28 +24,28 @@ So that the code is easier to read, harder to get wrong, and changes to domain b
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `Comparable+Clamped.swift` extension (AC: #1)
-  - [ ] Create `Peach/Core/Comparable+Clamped.swift`
-  - [ ] Implement `func clamped(to range: ClosedRange<Self>) -> Self`
-  - [ ] Mark `nonisolated` (needed for use in `nonisolated` contexts under default MainActor isolation)
+- [x] Task 1: Create `Comparable+Clamped.swift` extension (AC: #1)
+  - [x] Create `Peach/Core/Comparable+Clamped.swift`
+  - [x] Implement `func clamped(to range: ClosedRange<Self>) -> Self`
+  - [x] Mark `nonisolated` (needed for use in `nonisolated` contexts under default MainActor isolation)
 
-- [ ] Task 2: Replace all inline clamping patterns (AC: #2)
-  - [ ] `AdaptiveNoteStrategy.swift`: Remove local `clamp()` function, replace usages with `.clamped(to:)`
-  - [ ] `AdaptiveNoteStrategy.swift`: Replace `max(p * ..., settings.minCentDifference)` / `min(p * ..., settings.maxCentDifference)` with `.clamped(to:)` where applicable
-  - [ ] `KazezNoteStrategy.swift`: Replace any inline `min(max(...))` with `.clamped(to:)`
-  - [ ] `ComparisonSession.swift`: Replace inline clamping of amplitude values
-  - [ ] `PitchMatchingSession.swift`: Replace inline clamping patterns
+- [x] Task 2: Replace all inline clamping patterns (AC: #2)
+  - [x] `AdaptiveNoteStrategy.swift`: Remove local `clamp()` function, replace usages with `.clamped(to:)`
+  - [x] `AdaptiveNoteStrategy.swift`: Replace `max(p * ..., settings.minCentDifference)` / `min(p * ..., settings.maxCentDifference)` with `.clamped(to:)` where applicable
+  - [x] `KazezNoteStrategy.swift`: Replace any inline `min(max(...))` with `.clamped(to:)`
+  - [x] `ComparisonSession.swift`: Replace inline clamping of amplitude values
+  - [x] `PitchMatchingSession.swift`: Replace inline clamping patterns
 
-- [ ] Task 3: Add named constant for initial cent offset range (AC: #3)
-  - [ ] In `PitchMatchingSession.swift`, replace the magic literal `-100.0...100.0` with a `private static let initialCentOffsetRange` constant
+- [x] Task 3: Add named constant for initial cent offset range (AC: #3)
+  - [x] In `PitchMatchingSession.swift`, replace the magic literal `-100.0...100.0` with a `private static let initialCentOffsetRange` constant
 
-- [ ] Task 4: Add named constants for amplitude dB bounds (AC: #4)
-  - [ ] In `ComparisonSession.swift`, extract `-90.0` and `12.0` amplitude bounds into named constants (e.g., `private static let amplitudeDBRange: ClosedRange<Float> = -90.0...12.0`)
-  - [ ] Use constant with `.clamped(to:)` at the clamping site
+- [x] Task 4: Add named constants for amplitude dB bounds (AC: #4)
+  - [x] In `ComparisonSession.swift`, extract `-90.0` and `12.0` amplitude bounds into named constants (e.g., `private static let amplitudeDBRange: ClosedRange<Float> = -90.0...12.0`)
+  - [x] Use constant with `.clamped(to:)` at the clamping site
 
-- [ ] Task 5: Run full test suite and verify (AC: #5)
-  - [ ] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 5: Run full test suite and verify (AC: #5)
+  - [x] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -154,13 +154,35 @@ Commit message for this story: `Implement story 19.1: Clamping utility and magic
 ## Change Log
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
+- 2026-02-26: Implemented all tasks — clamped(to:) extension, replaced inline clamping patterns, added named constants, 550/550 tests pass.
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+No issues encountered. Pure refactoring, all tests passed on first run.
 
 ### Completion Notes List
 
+- Created `Comparable+Clamped.swift` with `nonisolated func clamped(to:)` extension on `Comparable`
+- Removed local `clamp()` helper from `AdaptiveNoteStrategy.swift`, replaced with `.clamped(to:)` using a local `difficultyRange` for readability
+- Restructured Kazez adjustment in `AdaptiveNoteStrategy` to compute raw diff first, then clamp to `difficultyRange` (equivalent behavior, cleaner expression)
+- Replaced `max(min, min(val, max))` pattern in `KazezNoteStrategy.swift` with `.clamped(to:)`
+- Added `private static let amplitudeDBRange: ClosedRange<Float> = -90.0...12.0` to `ComparisonSession`, replaced `min(max(offset, -90.0), 12.0)` with `.clamped(to:)`
+- Added `private static let initialCentOffsetRange: ClosedRange<Double> = -100.0...100.0` to `PitchMatchingSession`, replaced magic literal in `generateChallenge()`
+- No inline clamping patterns found in `PitchMatchingSession.swift` (Task 2 subtask had nothing to do)
+- Full test suite: 550/550 tests pass, zero regressions
+
 ### File List
+
+- `Peach/Core/Comparable+Clamped.swift` (new)
+- `Peach/Core/Algorithm/AdaptiveNoteStrategy.swift` (modified)
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift` (modified)
+- `Peach/Comparison/ComparisonSession.swift` (modified)
+- `Peach/PitchMatching/PitchMatchingSession.swift` (modified)
+- `docs/implementation-artifacts/19-1-clamping-utility-and-magic-value-constants.md` (modified)
+- `docs/implementation-artifacts/sprint-status.yaml` (modified)
