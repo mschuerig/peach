@@ -144,7 +144,7 @@ Commit message for this story: `Implement story 19.1: Clamping utility and magic
 
 ### References
 
-- [Source: docs/planning-artifacts/epics.md -- Epic 19 (to be added)]
+- [Source: docs/planning-artifacts/epics.md -- Epic 19: Clean Foundations — Code Review Refactoring]
 - [Source: docs/project-context.md -- Language Rules, Code Quality]
 - [Source: Peach/Core/Algorithm/AdaptiveNoteStrategy.swift -- Local clamp() function]
 - [Source: Peach/Comparison/ComparisonSession.swift -- Amplitude dB magic values]
