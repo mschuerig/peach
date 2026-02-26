@@ -1742,3 +1742,151 @@ So that I can track improvement in both training modes from one place.
 **Given** the full test suite
 **When** all tests are run
 **Then** all existing tests pass
+
+## Epic 19: Clean Foundations — Code Review Refactoring
+
+Address all code review findings from the initial implementation: replace magic values with named constants, wrap primitives in validated Value Objects, encapsulate UserDefaults behind a protocol, extract long methods, and introduce a TrainingSession protocol to decouple views from concrete session types.
+
+### Story 19.1: Clamping Utility and Magic Value Constants
+
+As a **developer maintaining Peach**,
+I want inline clamping patterns and magic numeric literals replaced with a reusable utility and named constants,
+So that the code is easier to read, harder to get wrong, and changes to domain bounds propagate from a single source of truth.
+
+**Acceptance Criteria:**
+
+**Given** inline `min(max(...))` / `max(..., min(...))` clamping patterns exist in production code
+**When** the refactoring is applied
+**Then** a `Comparable.clamped(to:)` extension replaces all inline patterns
+**And** the local `clamp()` helper in `AdaptiveNoteStrategy.swift` is removed
+
+**Given** the magic literal `-100.0...100.0` in `PitchMatchingSession.swift`
+**When** the refactoring is applied
+**Then** it is replaced with a named `static let` constant with a descriptive name
+
+**Given** the magic literals `-90.0` and `12.0` used as amplitude dB bounds in `ComparisonSession.swift`
+**When** the refactoring is applied
+**Then** they are replaced with a named constant
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero regressions
+
+### Story 19.2: Value Objects for Domain Primitives
+
+As a **developer maintaining Peach**,
+I want naked primitive types (Int, Double, UInt8, Float) wrapped in validated domain-specific Value Objects,
+So that MIDI note ranges, cent values, frequencies, velocities, and amplitudes are enforced at compile time and the code communicates intent clearly.
+
+**Acceptance Criteria:**
+
+**Given** no domain-specific value types exist
+**When** the value objects are created
+**Then** `MIDINote` (validated 0–127), `MIDIVelocity` (validated 1–127), `Cents` (signed Double), `Frequency` (positive Double), and `AmplitudeDB` (Float clamped to -90…12) exist in `Peach/Core/Audio/`
+**And** each supports `ExpressibleByLiteral` conformance and `Comparable`
+
+**Given** `NotePlayer.play()`, `PlaybackHandle.adjustFrequency()`, profile methods, and session signatures use raw primitives
+**When** the value objects are adopted
+**Then** signatures use `Frequency`, `MIDIVelocity`, `AmplitudeDB`, `MIDINote`, and `Cents` where appropriate
+
+**Given** `Comparison` stores `note1: Int`, `note2: Int`, `isSecondNoteHigher: Bool`
+**When** the redesign is applied
+**Then** `note1` and `note2` are `MIDINote`, `centDifference` is signed `Cents`, and `isSecondNoteHigher` is a computed property
+
+**Given** `ComparisonRecord` and `PitchMatchingRecord` are SwiftData `@Model` types
+**When** value objects are adopted
+**Then** the records retain raw `Int` and `Double` storage to avoid SwiftData migration
+**And** conversion happens at boundaries via `.rawValue` and constructor calls
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero regressions
+**And** each new value type has its own test file
+
+### Story 19.3: UserSettings Wrapper for UserDefaults
+
+As a **developer maintaining Peach**,
+I want all `UserDefaults.standard` access encapsulated behind a `UserSettings` protocol with typed properties,
+So that business logic is decoupled from the persistence singleton, type casting and default fallbacks are centralized, and tests can inject a mock instead of using override parameters.
+
+**Acceptance Criteria:**
+
+**Given** sessions and `SoundFontNotePlayer` access `UserDefaults.standard` directly
+**When** the `UserSettings` protocol is created
+**Then** it exposes typed read-only properties for all user-configurable settings
+**And** `AppUserSettings` reads from `UserDefaults.standard` internally
+
+**Given** `ComparisonSession`, `PitchMatchingSession`, and `SoundFontNotePlayer` accept override parameters for testing
+**When** dependency injection is applied
+**Then** they accept a `UserSettings` parameter instead of accessing `UserDefaults.standard` directly
+**And** override parameters (`settingsOverride`, `noteDurationOverride`, `varyLoudnessOverride`) are removed
+
+**Given** tests that previously relied on overrides or `UserDefaults.standard` manipulation
+**When** `MockUserSettings` is created
+**Then** tests inject `MockUserSettings` with mutable properties instead
+
+**Given** `SettingsScreen` uses `@AppStorage`
+**When** the refactoring is applied
+**Then** `SettingsScreen` is unchanged — it writes to the same `UserDefaults` backing store
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero regressions
+
+### Story 19.4: Extract Long Methods
+
+As a **developer maintaining Peach**,
+I want the three long methods (`PeachApp.init()`, `ComparisonSession.handleAnswer()`, `ComparisonSession.playNextComparison()`) broken into smaller, named helper methods,
+So that each method does one thing, the code is easier to read and navigate, and the former inline comments become self-documenting method names.
+
+**Acceptance Criteria:**
+
+**Given** `PeachApp.init()` is ~70 lines with comment-delimited sections
+**When** it is extracted
+**Then** each section (create model container, create dependencies, populate profile, create sessions) becomes a named method
+
+**Given** `ComparisonSession.handleAnswer()` is ~60 lines
+**When** it is extracted
+**Then** it is split into helpers: stopping note 2 if playing, tracking session best, and transitioning to feedback state
+
+**Given** `ComparisonSession.playNextComparison()` is ~70 lines
+**When** it is extracted
+**Then** it is split into helpers: calculating note 2 amplitude from loudness variation, and playing the comparison note pair
+
+**Given** three `REVIEW:` comments exist on the extracted methods
+**When** the extraction is complete
+**Then** all three `REVIEW:` comments are removed
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero regressions
+
+### Story 19.5: TrainingSession Protocol and Dependency Cleanup
+
+As a **developer maintaining Peach**,
+I want `ContentView` decoupled from concrete session types via a `TrainingSession` protocol, and `VerticalPitchSlider` simplified to produce normalized values instead of frequencies,
+So that the view layer depends only on abstractions, components have single responsibilities, and the pitch domain logic lives entirely in `PitchMatchingSession`.
+
+**Acceptance Criteria:**
+
+**Given** `ContentView.handleAppBackgrounding()` checks two concrete session types
+**When** the `TrainingSession` protocol is created
+**Then** both `ComparisonSession` and `PitchMatchingSession` conform to it with `stop()` and `isIdle`
+**And** `ContentView` calls `activeSession?.stop()` on a single `TrainingSession?` reference
+
+**Given** `PeachApp` creates both session types
+**When** active session tracking is added
+**Then** `PeachApp` tracks which session is currently active and injects it into `ContentView` via environment
+
+**Given** `VerticalPitchSlider` exposes `centRange`, `referenceFrequency`, `onFrequencyChange`, and `onRelease` parameters
+**When** the slider is simplified
+**Then** it produces values in `-1.0...1.0` only via `onNormalizedValueChange` and `onCommit`
+**And** `PitchMatchingSession` owns the conversion from normalized value to frequency
+
+**Given** `REVIEW:` comments on `ContentView.swift` and `VerticalPitchSlider.swift`
+**When** the refactoring is complete
+**Then** all `REVIEW:` comments are removed
+
+**Given** the full test suite
+**When** all tests are run
+**Then** all existing tests pass with zero regressions
