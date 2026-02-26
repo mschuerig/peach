@@ -9,14 +9,14 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("Handle stop after play silences the note")
     func handleStopAfterPlay() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
     }
 
     @Test("Handle stop is idempotent — multiple calls do not crash")
     func handleStopIdempotent() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
         try await handle.stop()
@@ -27,7 +27,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency succeeds for frequency within pitch bend range")
     func adjustFrequencyValid() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.adjustFrequency(460.0)
         try await handle.stop()
@@ -35,7 +35,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency after stop is a no-op")
     func adjustFrequencyAfterStop() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
         try await handle.adjustFrequency(880.0)
@@ -43,7 +43,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("Multiple adjustFrequency calls succeed")
     func multipleAdjustFrequencyCalls() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.adjustFrequency(450.0)
         try await handle.adjustFrequency(430.0)
@@ -55,7 +55,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency throws for frequency below valid range")
     func adjustFrequencyBelowRange() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         await #expect(throws: AudioError.self) {
             try await handle.adjustFrequency(10.0)
@@ -65,7 +65,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency throws for frequency above valid range")
     func adjustFrequencyAboveRange() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         await #expect(throws: AudioError.self) {
             try await handle.adjustFrequency(25000.0)
@@ -75,7 +75,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency throws when target exceeds pitch bend range")
     func adjustFrequencyExceedsPitchBendRange() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         // Play A4 (440 Hz), then try to adjust to C6 (1046 Hz) — way beyond ±200 cents
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         await #expect(throws: AudioError.self) {
@@ -86,7 +86,7 @@ struct SoundFontPlaybackHandleTests {
 
     @Test("adjustFrequency at boundary of pitch bend range succeeds")
     func adjustFrequencyAtPitchBendBoundary() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         // Play A4 (440 Hz), adjust to ~2 semitones up (~493 Hz = B4) — within ±200 cents
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.adjustFrequency(493.88)

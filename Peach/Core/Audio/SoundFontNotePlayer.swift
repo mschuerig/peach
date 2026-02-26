@@ -34,14 +34,19 @@ final class SoundFontNotePlayer: NotePlayer {
 
     private let sf2URL: URL
 
+    // MARK: - Settings
+
+    private let userSettings: UserSettings
+
     // MARK: - Initialization
 
-    init(sf2Name: String = "GeneralUser-GS") throws {
+    init(sf2Name: String = "GeneralUser-GS", userSettings: UserSettings) throws {
         guard let sf2URL = Bundle.main.url(forResource: sf2Name, withExtension: "sf2") else {
             throw AudioError.contextUnavailable
         }
 
         self.sf2URL = sf2URL
+        self.userSettings = userSettings
         self.engine = AVAudioEngine()
         self.sampler = AVAudioUnitSampler()
         self.loadedProgram = Self.defaultPresetProgram
@@ -96,9 +101,8 @@ final class SoundFontNotePlayer: NotePlayer {
     // MARK: - NotePlayer Protocol
 
     func play(frequency: Frequency, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws -> PlaybackHandle {
-        // Select preset from UserDefaults sound source setting
-        let source = UserDefaults.standard.string(forKey: SettingsKeys.soundSource)
-            ?? SettingsKeys.defaultSoundSource
+        // Select preset from user settings
+        let source = userSettings.soundSource
 
         if let (bank, program) = Self.parseSF2Tag(from: source) {
             do {

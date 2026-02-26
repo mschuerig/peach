@@ -15,8 +15,7 @@ struct ComparisonSessionResetTests {
             notePlayer: MockNotePlayer(),
             strategy: MockNextComparisonStrategy(),
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 1.0
+            userSettings: MockUserSettings()
         )
 
         // Simulate converged state: lower difficulty on several notes
@@ -46,8 +45,7 @@ struct ComparisonSessionResetTests {
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 1.0
+            userSettings: MockUserSettings()
         )
 
         // Simulate converged state
@@ -74,8 +72,7 @@ struct ComparisonSessionResetTests {
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 1.0
+            userSettings: MockUserSettings()
         )
 
         // Set up trained neighbors across a range
@@ -118,8 +115,7 @@ struct ComparisonSessionResetTests {
             notePlayer: MockNotePlayer(),
             strategy: MockNextComparisonStrategy(),
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 1.0,
+            userSettings: MockUserSettings(),
             trendAnalyzer: trendAnalyzer
         )
 
@@ -140,8 +136,7 @@ struct ComparisonSessionResetTests {
             notePlayer: mockPlayer,
             strategy: MockNextComparisonStrategy(),
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 1.0
+            userSettings: MockUserSettings()
         )
 
         // Start training and wait for non-idle state

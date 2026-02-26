@@ -35,27 +35,23 @@ final class ComparisonSession {
 
     // MARK: - Configuration
 
-    private let settingsOverride: TrainingSettings?
-    private let noteDurationOverride: TimeInterval?
-    private let varyLoudnessOverride: Double?
+    private let userSettings: UserSettings
 
     private var currentSettings: TrainingSettings {
-        if let override = settingsOverride { return override }
-        let defaults = UserDefaults.standard
-        return TrainingSettings(
-            noteRangeMin: MIDINote(defaults.object(forKey: SettingsKeys.noteRangeMin) as? Int ?? SettingsKeys.defaultNoteRangeMin),
-            noteRangeMax: MIDINote(defaults.object(forKey: SettingsKeys.noteRangeMax) as? Int ?? SettingsKeys.defaultNoteRangeMax),
-            naturalVsMechanical: defaults.object(forKey: SettingsKeys.naturalVsMechanical) as? Double ?? SettingsKeys.defaultNaturalVsMechanical,
-            referencePitch: defaults.object(forKey: SettingsKeys.referencePitch) as? Double ?? SettingsKeys.defaultReferencePitch
+        TrainingSettings(
+            noteRangeMin: userSettings.noteRangeMin,
+            noteRangeMax: userSettings.noteRangeMax,
+            naturalVsMechanical: userSettings.naturalVsMechanical,
+            referencePitch: userSettings.referencePitch
         )
     }
 
     private var currentNoteDuration: TimeInterval {
-        noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
+        userSettings.noteDuration
     }
 
     private var currentVaryLoudness: Double {
-        varyLoudnessOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.varyLoudness) as? Double ?? SettingsKeys.defaultVaryLoudness)
+        userSettings.varyLoudness
     }
 
     private let maxLoudnessOffsetDB: Float = 5.0
@@ -77,9 +73,7 @@ final class ComparisonSession {
         notePlayer: NotePlayer,
         strategy: NextComparisonStrategy,
         profile: PitchDiscriminationProfile,
-        settingsOverride: TrainingSettings? = nil,
-        noteDurationOverride: TimeInterval? = nil,
-        varyLoudnessOverride: Double? = nil,
+        userSettings: UserSettings,
         trendAnalyzer: TrendAnalyzer? = nil,
         thresholdTimeline: ThresholdTimeline? = nil,
         observers: [ComparisonObserver] = [],
@@ -88,9 +82,7 @@ final class ComparisonSession {
         self.notePlayer = notePlayer
         self.strategy = strategy
         self.profile = profile
-        self.settingsOverride = settingsOverride
-        self.noteDurationOverride = noteDurationOverride
-        self.varyLoudnessOverride = varyLoudnessOverride
+        self.userSettings = userSettings
         self.trendAnalyzer = trendAnalyzer
         self.thresholdTimeline = thresholdTimeline
         self.observers = observers

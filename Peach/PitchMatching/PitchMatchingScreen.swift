@@ -71,7 +71,8 @@ extension EnvironmentValues {
         return PitchMatchingSession(
             notePlayer: MockNotePlayerForPitchMatchingPreview(),
             profile: PerceptualProfile(),
-            observers: []
+            observers: [],
+            userSettings: AppUserSettings()
         )
     }()
 }
