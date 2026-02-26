@@ -4,13 +4,8 @@ import os
 struct PitchMatchingScreen: View {
     @Environment(\.pitchMatchingSession) private var pitchMatchingSession
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private let logger = Logger(subsystem: "com.peach.app", category: "PitchMatchingScreen")
-
-    private var isCompactHeight: Bool {
-        verticalSizeClass == .compact
-    }
 
     var body: some View {
         VerticalPitchSlider(
