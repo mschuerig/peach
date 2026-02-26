@@ -51,13 +51,15 @@ final class KazezNoteStrategy: NextComparisonStrategy {
     ) -> Comparison {
         let centDifference: Double
 
+        let difficultyRange = settings.minCentDifference...settings.maxCentDifference
+
         if let last = lastComparison {
             let p = last.comparison.centDifference
             centDifference = last.isCorrect
-                ? kazezNarrow(p: p, min: settings.minCentDifference)
-                : kazezWiden(p: p, max: settings.maxCentDifference)
+                ? kazezNarrow(p: p).clamped(to: difficultyRange)
+                : kazezWiden(p: p).clamped(to: difficultyRange)
         } else if let profileMean = profile.overallMean {
-            centDifference = profileMean.clamped(to: settings.minCentDifference...settings.maxCentDifference)
+            centDifference = profileMean.clamped(to: difficultyRange)
         } else {
             centDifference = settings.maxCentDifference
         }
@@ -77,14 +79,12 @@ final class KazezNoteStrategy: NextComparisonStrategy {
     // MARK: - Kazez Formulas
 
     /// After correct answer: N = P × [1 - (0.05 × √P)]
-    private func kazezNarrow(p: Double, min: Double) -> Double {
-        let n = p * (1.0 - 0.05 * p.squareRoot())
-        return max(n, min)
+    private func kazezNarrow(p: Double) -> Double {
+        p * (1.0 - 0.05 * p.squareRoot())
     }
 
     /// After incorrect answer: N = P × [1 + (0.09 × √P)]
-    private func kazezWiden(p: Double, max: Double) -> Double {
-        let n = p * (1.0 + 0.09 * p.squareRoot())
-        return min(n, max)
+    private func kazezWiden(p: Double) -> Double {
+        p * (1.0 + 0.09 * p.squareRoot())
     }
 }

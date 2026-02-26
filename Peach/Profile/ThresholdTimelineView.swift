@@ -130,7 +130,7 @@ struct ThresholdTimelineView: View {
                 selectedPoint = nearest
                 let popupPadding: CGFloat = 80
                 selectedPosition = CGPoint(
-                    x: max(popupPadding, min(plotSize.width + plotOrigin.x - popupPadding, pointX + plotOrigin.x)),
+                    x: (pointX + plotOrigin.x).clamped(to: popupPadding...(plotSize.width + plotOrigin.x - popupPadding)),
                     y: max(80, adjustedLocation.y + plotOrigin.y - 60)
                 )
             } else {
@@ -149,7 +149,7 @@ struct ThresholdTimelineView: View {
 
         let newDomain = baseVisibleDomainLength / scale
         let minDomain = estimatedDomainForPeriods(minVisiblePeriods)
-        visibleDomainLength = max(minDomain, min(totalSpan, newDomain))
+        visibleDomainLength = newDomain.clamped(to: minDomain...totalSpan)
     }
 
     private var totalDataSpan: TimeInterval {
