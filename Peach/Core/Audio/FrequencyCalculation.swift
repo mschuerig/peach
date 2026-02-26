@@ -17,6 +17,8 @@ import Foundation
 ///     return try FrequencyCalculation.frequency(midiNote: midiNote, cents: cents, referencePitch: referencePitch)
 /// }
 /// ```
+///
+/// REVIEW: use Value Types for MIDI notes, frequencies, and cents
 public enum FrequencyCalculation {
     /// Converts a MIDI note number and cent offset to a frequency in Hz.
     ///

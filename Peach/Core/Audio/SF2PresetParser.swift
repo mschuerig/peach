@@ -1,5 +1,6 @@
 import Foundation
 
+// REVIEW: ensure that always this type is used for passing around presets, never just the raw name
 struct SF2Preset: Sendable, Equatable, Hashable {
     let name: String
     let program: Int

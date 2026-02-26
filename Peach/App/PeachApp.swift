@@ -15,6 +15,8 @@ struct PeachApp: App {
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
     init() {
+        // REVIEW: This method is too long. The intervening comments could easily be replaced by similarly named methods.
+        
         // Create model container
         do {
             let container = try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)

@@ -64,6 +64,9 @@ enum ComparisonSessionState {
 /// Implementation strategy: pre-generate next comparison during feedback phase.
 @Observable
 final class ComparisonSession {
+    
+    // REVIEW: Is it considered good practice to directly access the UserDefaults.standard singleton? I expect this makes testing harder. Also, there's a lot of type casting and defaulting happening around UserDefaults. All of that should be handled by a wrapper around UserDefaults -- maybe call it UserSettings. UserSettings should be passed explicitly as a dependency.
+    
     // MARK: - Logger
 
     private let logger = Logger(subsystem: "com.peach.app", category: "ComparisonSession")
@@ -119,7 +122,7 @@ final class ComparisonSession {
 
     /// Optional vary loudness override for deterministic testing (nil = read from UserDefaults)
     private let varyLoudnessOverride: Double?
-
+    
     /// Build live settings from UserDefaults on each comparison (or use override for tests)
     private var currentSettings: TrainingSettings {
         if let override = settingsOverride { return override }
@@ -235,6 +238,8 @@ final class ComparisonSession {
     ///
     /// - Parameter isHigher: True if user answered "higher", false if "lower"
     func handleAnswer(isHigher: Bool) {
+        // REVIEW: this method is too long and does too many things
+        
         guard state == .awaitingAnswer || state == .playingNote2 else {
             logger.warning("handleAnswer() called but state is \(String(describing: self.state))")
             return
@@ -368,6 +373,8 @@ final class ComparisonSession {
 
     /// Plays a single comparison: note1 → note2 → await answer
     private func playNextComparison() async {
+        // REVIEW: this method is far too long
+        
         // Build live settings from @AppStorage (or use override for tests)
         // Cache once per comparison to ensure note1 and note2 use identical values
         let settings = currentSettings
@@ -383,10 +390,12 @@ final class ComparisonSession {
         currentComparison = comparison
 
         // Calculate loudness offset for note2
+        // REVIEW: There should be a method for this. AmplitudeDB should be a Value Type.
         let note2AmplitudeDB: Float = {
             guard varyLoudness > 0.0 else { return 0.0 }
             let range = Float(varyLoudness) * maxLoudnessOffsetDB
             let offset = Float.random(in: -range...range)
+            // REVIEW: There should be global constants for max and min amplitudeDB. Clamping should be handled by a generic function.
             return min(max(offset, -90.0), 12.0)
         }()
 

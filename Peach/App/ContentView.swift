@@ -45,6 +45,11 @@ struct ContentView: View {
     private func handleAppBackgrounding() {
         logger.info("App backgrounded - stopping training if active")
 
+        // REVIEW: This method is suffering from feature envy. The view should not know
+        // about concrete training sessions. All it needs to know is that there is at most
+        // one training session in progress at any one time and that this training session
+        // needs to be told to stop, when the app is backgrounded.
+        
         // Stop training if it's active (AC#2)
         // This will stop audio and discard any incomplete comparison
         if comparisonSession.state != .idle {

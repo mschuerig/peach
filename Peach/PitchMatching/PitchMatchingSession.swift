@@ -39,6 +39,8 @@ final class PitchMatchingSession {
     private var feedbackTask: Task<Void, Never>?
 
     private let velocity: UInt8 = 63
+    
+    // REVIEW: Use the Duration type
     private let feedbackDuration: TimeInterval = 0.4
 
     // MARK: - Initialization
@@ -158,6 +160,8 @@ final class PitchMatchingSession {
 
     private func generateChallenge(settings: TrainingSettings) -> PitchMatchingChallenge {
         let note = Int.random(in: settings.noteRangeMin...settings.noteRangeMax)
+        
+        // REVIEW: There should be constants for this.
         let offset = Double.random(in: -100.0...100.0)
         return PitchMatchingChallenge(referenceNote: note, initialCentOffset: offset)
     }

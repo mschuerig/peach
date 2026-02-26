@@ -2,6 +2,8 @@ import AVFoundation
 import Foundation
 import os
 
+// REVIEW: Use a Value Type for presets. See SF2Preset
+
 final class SoundFontNotePlayer: NotePlayer {
 
     // MARK: - Logger

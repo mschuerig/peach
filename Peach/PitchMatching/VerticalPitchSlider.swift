@@ -1,5 +1,7 @@
 import SwiftUI
 
+// REVIEW: The slider should not know anything about cents and frequencies. I should only provide a in the range -1.0 .. 1.0. All calculations should be done by PitchMatchingSession.
+
 struct VerticalPitchSlider: View {
 
     /// Whether the slider responds to touch (active during `playingTunable`)
