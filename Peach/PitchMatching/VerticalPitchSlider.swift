@@ -54,26 +54,28 @@ struct VerticalPitchSlider: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        guard isActive else { return }
-                        let cents = Self.centOffset(
+                        if let result = Self.dragResult(
+                            isActive: isActive,
                             dragY: value.location.y,
                             trackHeight: trackHeight,
-                            centRange: centRange
-                        )
-                        currentCentOffset = cents
-                        let freq = Self.frequency(centOffset: cents, referenceFrequency: referenceFrequency)
-                        onFrequencyChange(freq)
+                            centRange: centRange,
+                            referenceFrequency: referenceFrequency
+                        ) {
+                            currentCentOffset = result.centOffset
+                            onFrequencyChange(result.frequency)
+                        }
                     }
                     .onEnded { value in
-                        guard isActive else { return }
-                        let cents = Self.centOffset(
+                        if let result = Self.dragResult(
+                            isActive: isActive,
                             dragY: value.location.y,
                             trackHeight: trackHeight,
-                            centRange: centRange
-                        )
-                        currentCentOffset = cents
-                        let freq = Self.frequency(centOffset: cents, referenceFrequency: referenceFrequency)
-                        onRelease(freq)
+                            centRange: centRange,
+                            referenceFrequency: referenceFrequency
+                        ) {
+                            currentCentOffset = result.centOffset
+                            onRelease(result.frequency)
+                        }
                     }
             )
             .disabled(!isActive)
@@ -93,6 +95,11 @@ struct VerticalPitchSlider: View {
             }
             let freq = Self.frequency(centOffset: currentCentOffset, referenceFrequency: referenceFrequency)
             onFrequencyChange(freq)
+        }
+        .accessibilityAction(named: String(localized: "Submit pitch")) {
+            guard isActive else { return }
+            let freq = Self.frequency(centOffset: currentCentOffset, referenceFrequency: referenceFrequency)
+            onRelease(freq)
         }
         .onChange(of: isActive) { oldValue, newValue in
             if !oldValue && newValue {
@@ -130,5 +137,20 @@ struct VerticalPitchSlider: View {
         // normalized = (1 - centOffset / centRange) / 2
         let normalized = (1.0 - centOffset / centRange) / 2.0
         return trackHeight * CGFloat(normalized)
+    }
+
+    /// Processes a drag gesture position and returns the resulting cent offset and frequency,
+    /// or nil if the slider is inactive.
+    static func dragResult(
+        isActive: Bool,
+        dragY: CGFloat,
+        trackHeight: CGFloat,
+        centRange: Double,
+        referenceFrequency: Double
+    ) -> (centOffset: Double, frequency: Double)? {
+        guard isActive else { return nil }
+        let cents = centOffset(dragY: dragY, trackHeight: trackHeight, centRange: centRange)
+        let freq = frequency(centOffset: cents, referenceFrequency: referenceFrequency)
+        return (cents, freq)
     }
 }
