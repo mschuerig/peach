@@ -38,7 +38,7 @@ struct PitchMatchingFeedbackIndicatorTests {
         #expect(band == .close)
     }
 
-    @Test("close band for boundary value 9.99 (rounds to 10 — moderate)")
+    @Test("boundary 9.99 rounds to 10 — moderate band, not close")
     func returnsModerateBandForNinePointNineNine() async {
         let band = PitchMatchingFeedbackIndicator.band(centError: 9.99)
         #expect(band == .moderate)

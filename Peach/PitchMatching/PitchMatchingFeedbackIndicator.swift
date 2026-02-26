@@ -1,15 +1,14 @@
 import SwiftUI
 
-enum FeedbackBand: Sendable {
-    case deadCenter
-    case close
-    case moderate
-    case far
-}
-
 struct PitchMatchingFeedbackIndicator: View {
     let centError: Double?
-    var iconSize: CGFloat = ComparisonFeedbackIndicator.defaultIconSize
+
+    enum FeedbackBand {
+        case deadCenter
+        case close
+        case moderate
+        case far
+    }
 
     private static let closeIconSize: CGFloat = 40
     private static let moderateIconSize: CGFloat = 70
@@ -93,7 +92,7 @@ struct PitchMatchingFeedbackIndicator: View {
 
     private static func iconSizeForBand(_ band: FeedbackBand) -> CGFloat {
         switch band {
-        case .deadCenter: return farIconSize
+        case .deadCenter: return ComparisonFeedbackIndicator.defaultIconSize
         case .close: return closeIconSize
         case .moderate: return moderateIconSize
         case .far: return farIconSize

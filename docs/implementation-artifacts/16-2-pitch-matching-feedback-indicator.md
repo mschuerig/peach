@@ -1,6 +1,6 @@
 # Story 16.2: Pitch Matching Feedback Indicator
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -60,7 +60,7 @@ So that I know how close I was and in which direction I erred — without judgme
   - [x] Test `centOffsetText()` formatting: "+4 cents", "-3 cents", "0 cents"
   - [x] Test `centOffsetText()` rounds to nearest integer
   - [x] Test `accessibilityLabel()`: "4 cents sharp", "27 cents flat", "Dead center"
-  - [x] Test nil centError produces no view content
+  - [ ] Test nil centError produces no view content (not unit-testable — SwiftUI rendering concern; verified via preview only)
 - [x] Task 5: Add SwiftUI previews
   - [x] Preview for dead center (0 cents)
   - [x] Preview for close match (+4 cents)
@@ -186,7 +186,8 @@ Arrow direction: positive `centError` = sharp = `arrow.up`; negative = flat = `a
 
 ## Change Log
 
-- 2026-02-26: Implemented PitchMatchingFeedbackIndicator view with FeedbackBand classification, directional arrows, VoiceOver accessibility, localization (EN/DE), 36 tests, and SwiftUI previews.
+- 2026-02-26: Implemented PitchMatchingFeedbackIndicator view with FeedbackBand classification, directional arrows, VoiceOver accessibility, localization (EN/DE), 33 tests, and SwiftUI previews.
+- 2026-02-26: Code review fixes — removed unused `iconSize` property (H1), nested `FeedbackBand` enum inside struct (M2), fixed misleading test description (M4), corrected test count documentation (M3), noted nil centError test as untestable (M1).
 
 ## Dev Agent Record
 
@@ -205,7 +206,7 @@ Claude Opus 4.6
 - All classification and formatting logic extracted to 5 static methods for testability: `band()`, `centOffsetText()`, `arrowSymbolName()`, `feedbackColor()`, `accessibilityLabel()`
 - VoiceOver accessibility: combined element with descriptive labels ("4 cents sharp", "Dead center"), `.accessibilityRemoveTraits(.isImage)`
 - Added English and German localization strings: "cents", "cents sharp"/"Cent zu hoch", "cents flat"/"Cent zu tief", "Dead center"/"Volltreffer"
-- 36 new tests (537 total, 0 failures): band classification, boundary values, arrow direction, colors, text formatting, rounding, accessibility labels
+- 33 new tests (537 total, 0 failures): band classification, boundary values, arrow direction, colors, text formatting, rounding, accessibility labels
 - 5 SwiftUI previews: dead center, close, moderate, far, nil
 - Follows `ComparisonFeedbackIndicator` architecture pattern exactly
 
