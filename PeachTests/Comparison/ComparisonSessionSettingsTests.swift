@@ -1,7 +1,7 @@
 import Testing
 @testable import Peach
 
-/// Tests for ComparisonSession settings propagation and overrides (Stories 4.3, 6.2)
+/// Tests for ComparisonSession settings propagation via UserSettings (Stories 4.3, 6.2, 19.3)
 @Suite("ComparisonSession Settings Tests")
 struct ComparisonSessionSettingsTests {
 
@@ -9,20 +9,21 @@ struct ComparisonSessionSettingsTests {
 
     @Test("Strategy receives correct settings")
     func strategyReceivesCorrectSettings() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(48)
+        mockSettings.noteRangeMax = MIDINote(72)
+        mockSettings.naturalVsMechanical = 0.8
+
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
         let mockStrategy = MockNextComparisonStrategy()
-        let customSettings = TrainingSettings(
-            noteRangeMin: 48,
-            noteRangeMax: 72,
-            naturalVsMechanical: 0.8
-        )
+
         let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
-            settingsOverride: customSettings,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -53,25 +54,26 @@ struct ComparisonSessionSettingsTests {
         #expect(stats.sampleCount == 1)
     }
 
-    // MARK: - Settings Override Tests (Story 6.2)
+    // MARK: - Settings Override Tests (Story 19.3)
 
-    @Test("ComparisonSession with settingsOverride uses override values")
-    func settingsOverrideUsesOverrideValues() async throws {
+    @Test("ComparisonSession with custom UserSettings uses those values")
+    func customUserSettingsUsesValues() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(48)
+        mockSettings.noteRangeMax = MIDINote(72)
+        mockSettings.naturalVsMechanical = 0.3
+        mockSettings.referencePitch = 432.0
+
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
         let mockStrategy = MockNextComparisonStrategy()
-        let overrideSettings = TrainingSettings(
-            noteRangeMin: 48,
-            noteRangeMax: 72,
-            naturalVsMechanical: 0.3,
-            referencePitch: 432.0
-        )
+
         let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
-            settingsOverride: overrideSettings,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -84,8 +86,11 @@ struct ComparisonSessionSettingsTests {
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
     }
 
-    @Test("noteDurationOverride takes precedence over UserDefaults")
-    func noteDurationOverrideTakesPrecedence() async throws {
+    @Test("noteDuration from UserSettings takes effect")
+    func noteDurationFromUserSettingsTakesEffect() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteDuration = 0.5
+
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
@@ -95,8 +100,7 @@ struct ComparisonSessionSettingsTests {
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
-            settingsOverride: TrainingSettings(),
-            noteDurationOverride: 0.5,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 

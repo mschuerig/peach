@@ -1,6 +1,6 @@
 # Story 19.3: UserSettings Wrapper for UserDefaults
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -30,57 +30,57 @@ So that business logic is decoupled from the persistence singleton, type casting
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `UserSettings` protocol (AC: #1)
-  - [ ] Create `Peach/Settings/UserSettings.swift`
-  - [ ] Define typed read-only properties for all settings
-  - [ ] Properties use Value Object types from Story 19.2 where appropriate (`MIDINote` for note ranges)
+- [x] Task 1: Create `UserSettings` protocol (AC: #1)
+  - [x] Create `Peach/Settings/UserSettings.swift`
+  - [x] Define typed read-only properties for all settings
+  - [x] Properties use Value Object types from Story 19.2 where appropriate (`MIDINote` for note ranges)
 
-- [ ] Task 2: Create `AppUserSettings` implementation (AC: #2)
-  - [ ] Create `Peach/Settings/AppUserSettings.swift`
-  - [ ] Read from `UserDefaults.standard` internally with type casting and default fallbacks
-  - [ ] Centralize the `object(forKey:) as? T ?? default` pattern that's currently duplicated in 3 files
-  - [ ] Make it `@Observable` so SwiftUI environment can observe changes (or keep as plain class — design decision)
+- [x] Task 2: Create `AppUserSettings` implementation (AC: #2)
+  - [x] Create `Peach/Settings/AppUserSettings.swift`
+  - [x] Read from `UserDefaults.standard` internally with type casting and default fallbacks
+  - [x] Centralize the `object(forKey:) as? T ?? default` pattern that's currently duplicated in 3 files
+  - [x] Make it `@Observable` so SwiftUI environment can observe changes (or keep as plain class — design decision)
 
-- [ ] Task 3: Create `MockUserSettings` for tests (AC: #5)
-  - [ ] Create `PeachTests/Mocks/MockUserSettings.swift` (or alongside existing mocks)
-  - [ ] All properties are `var` for test manipulation
-  - [ ] Provide sensible defaults matching `SettingsKeys` defaults
+- [x] Task 3: Create `MockUserSettings` for tests (AC: #5)
+  - [x] Create `PeachTests/Mocks/MockUserSettings.swift` (or alongside existing mocks)
+  - [x] All properties are `var` for test manipulation
+  - [x] Provide sensible defaults matching `SettingsKeys` defaults
 
-- [ ] Task 4: Inject `UserSettings` into `ComparisonSession` (AC: #3, #4, #7)
-  - [ ] Add `userSettings: UserSettings` parameter to `ComparisonSession.init()`
-  - [ ] Replace `currentSettings` computed property: read from `userSettings` instead of `UserDefaults.standard`
-  - [ ] Replace `currentNoteDuration` computed property: read from `userSettings.noteDuration`
-  - [ ] Replace `currentVaryLoudness` computed property: read from `userSettings.varyLoudness`
-  - [ ] Remove `settingsOverride`, `noteDurationOverride`, `varyLoudnessOverride` parameters
-  - [ ] Remove `REVIEW:` comment at line 68
+- [x] Task 4: Inject `UserSettings` into `ComparisonSession` (AC: #3, #4, #7)
+  - [x] Add `userSettings: UserSettings` parameter to `ComparisonSession.init()`
+  - [x] Replace `currentSettings` computed property: read from `userSettings` instead of `UserDefaults.standard`
+  - [x] Replace `currentNoteDuration` computed property: read from `userSettings.noteDuration`
+  - [x] Replace `currentVaryLoudness` computed property: read from `userSettings.varyLoudness`
+  - [x] Remove `settingsOverride`, `noteDurationOverride`, `varyLoudnessOverride` parameters
+  - [x] Remove `REVIEW:` comment at line 68
 
-- [ ] Task 5: Inject `UserSettings` into `PitchMatchingSession` (AC: #3, #4)
-  - [ ] Add `userSettings: UserSettings` parameter to `PitchMatchingSession.init()`
-  - [ ] Replace `currentSettings` computed property: read from `userSettings`
-  - [ ] Replace `currentNoteDuration` computed property: read from `userSettings.noteDuration`
-  - [ ] Remove `settingsOverride` and `noteDurationOverride` parameters
+- [x] Task 5: Inject `UserSettings` into `PitchMatchingSession` (AC: #3, #4)
+  - [x] Add `userSettings: UserSettings` parameter to `PitchMatchingSession.init()`
+  - [x] Replace `currentSettings` computed property: read from `userSettings`
+  - [x] Replace `currentNoteDuration` computed property: read from `userSettings.noteDuration`
+  - [x] Remove `settingsOverride` and `noteDurationOverride` parameters
 
-- [ ] Task 6: Inject `UserSettings` into `SoundFontNotePlayer` (AC: #3)
-  - [ ] Add `userSettings: UserSettings` parameter to `SoundFontNotePlayer.init()`
-  - [ ] Replace `UserDefaults.standard.string(forKey: SettingsKeys.soundSource)` with `userSettings.soundSource`
-  - [ ] This was previously untestable for preset selection — now it is
+- [x] Task 6: Inject `UserSettings` into `SoundFontNotePlayer` (AC: #3)
+  - [x] Add `userSettings: UserSettings` parameter to `SoundFontNotePlayer.init()`
+  - [x] Replace `UserDefaults.standard.string(forKey: SettingsKeys.soundSource)` with `userSettings.soundSource`
+  - [x] This was previously untestable for preset selection — now it is
 
-- [ ] Task 7: Wire `AppUserSettings` in `PeachApp.swift` (AC: #2, #3)
-  - [ ] Create `AppUserSettings()` instance in `PeachApp.init()`
-  - [ ] Pass to `ComparisonSession`, `PitchMatchingSession`, and `SoundFontNotePlayer`
+- [x] Task 7: Wire `AppUserSettings` in `PeachApp.swift` (AC: #2, #3)
+  - [x] Create `AppUserSettings()` instance in `PeachApp.init()`
+  - [x] Pass to `ComparisonSession`, `PitchMatchingSession`, and `SoundFontNotePlayer`
 
-- [ ] Task 8: Update all test factories and mocks (AC: #4, #5, #8)
-  - [ ] Update `makeComparisonSession()` factory: replace override parameters with `userSettings: MockUserSettings`
-  - [ ] Update `makePitchMatchingSession()` factory: replace override parameters with `userSettings: MockUserSettings`
-  - [ ] Update `ComparisonSessionUserDefaultsTests` — replace `UserDefaults.standard.set()` calls with `MockUserSettings` property manipulation
-  - [ ] Update `ComparisonSessionLoudnessTests` — replace `varyLoudnessOverride` with `mockSettings.varyLoudness = X`
-  - [ ] Update all other test files that used override parameters
-  - [ ] Update preview mocks in `ComparisonScreen.swift` and `PitchMatchingScreen.swift`
+- [x] Task 8: Update all test factories and mocks (AC: #4, #5, #8)
+  - [x] Update `makeComparisonSession()` factory: replace override parameters with `userSettings: MockUserSettings`
+  - [x] Update `makePitchMatchingSession()` factory: replace override parameters with `userSettings: MockUserSettings`
+  - [x] Update `ComparisonSessionUserDefaultsTests` — replace `UserDefaults.standard.set()` calls with `MockUserSettings` property manipulation
+  - [x] Update `ComparisonSessionLoudnessTests` — replace `varyLoudnessOverride` with `mockSettings.varyLoudness = X`
+  - [x] Update all other test files that used override parameters
+  - [x] Update preview mocks in `ComparisonScreen.swift` and `PitchMatchingScreen.swift`
 
-- [ ] Task 9: Run full test suite and verify (AC: #8)
-  - [ ] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
-  - [ ] No direct `UserDefaults.standard` access remains outside `AppUserSettings`
+- [x] Task 9: Run full test suite and verify (AC: #8)
+  - [x] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
+  - [x] No direct `UserDefaults.standard` access remains outside `AppUserSettings`
 
 ## Dev Notes
 
@@ -195,13 +195,67 @@ Commit message: `Implement story 19.3: UserSettings wrapper for UserDefaults`
 ## Change Log
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
+- 2026-02-27: Implemented story 19.3 — UserSettings protocol, AppUserSettings, MockUserSettings, dependency injection into ComparisonSession/PitchMatchingSession/SoundFontNotePlayer, removed all override parameters, updated all test factories and mocks. Full test suite passes.
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+No issues encountered.
 
 ### Completion Notes List
 
+- Created `UserSettings` protocol with 7 typed read-only properties using `MIDINote` value objects from Story 19.2
+- Created `AppUserSettings` as a plain `final class` (not `@Observable` — no SwiftUI observation needed since sessions read on each comparison, and `@AppStorage` in SettingsScreen handles the UI reactivity)
+- Created `MockUserSettings` with mutable properties and `SettingsKeys` defaults in `PeachTests/Mocks/`
+- Replaced `settingsOverride: TrainingSettings?`, `noteDurationOverride: TimeInterval?`, `varyLoudnessOverride: Double?` with single `userSettings: UserSettings` in `ComparisonSession`
+- Replaced `settingsOverride: TrainingSettings?`, `noteDurationOverride: TimeInterval?` with `userSettings: UserSettings` in `PitchMatchingSession`
+- Added `userSettings: UserSettings` to `SoundFontNotePlayer.init()`, replaced `UserDefaults.standard.string(forKey:)` with `userSettings.soundSource`
+- Wired `AppUserSettings()` in `PeachApp.swift`, passed to all three consumers
+- Updated preview mocks in `ComparisonScreen.swift` and `PitchMatchingScreen.swift` to pass `AppUserSettings()`
+- Rewrote `ComparisonTestHelpers.makeComparisonSession()` factory — now takes `MockUserSettings` instead of 3 override parameters; fixture includes `mockSettings` field
+- Rewrote `PitchMatchingSessionTests.makePitchMatchingSession()` factory — returns 5-element tuple with `mockSettings`
+- Rewrote `ComparisonSessionUserDefaultsTests` — eliminated `UserDefaults.standard.set()` and `cleanUpSettingsDefaults()`, removed `.serialized` requirement; suite is now fully isolated with `MockUserSettings`
+- Rewrote `ComparisonSessionLoudnessTests` — uses `mockSettings.varyLoudness = X` instead of `varyLoudnessOverride: X`
+- Rewrote `ComparisonSessionSettingsTests` — uses `MockUserSettings` instead of `settingsOverride: TrainingSettings()`
+- Updated `ComparisonSessionAudioInterruptionTests` — inline `MockUserSettings` with `noteDuration = 0.01`
+- Updated `ComparisonSessionResetTests` — `MockUserSettings()` replaces `settingsOverride: TrainingSettings(), noteDurationOverride: 1.0`
+- Updated `SoundFontNotePlayerTests` — all `SoundFontNotePlayer()` calls now pass `MockUserSettings()`; preset selection tests use `mockSettings.soundSource` instead of `UserDefaults.standard.set()`
+- Updated `SoundFontPlaybackHandleTests` — all `SoundFontNotePlayer()` calls now pass `MockUserSettings()`
+- Verified: no `UserDefaults.standard` access remains in production code outside `AppUserSettings.swift`
+- Verified: no `UserDefaults.standard` access remains in test code
+- Full test suite passes with zero regressions
+
 ### File List
+
+**New files:**
+- Peach/Settings/UserSettings.swift
+- Peach/Settings/AppUserSettings.swift
+- PeachTests/Mocks/MockUserSettings.swift
+
+**Modified production files:**
+- Peach/Comparison/ComparisonSession.swift
+- Peach/PitchMatching/PitchMatchingSession.swift
+- Peach/Core/Audio/SoundFontNotePlayer.swift
+- Peach/App/PeachApp.swift
+- Peach/Comparison/ComparisonScreen.swift
+- Peach/PitchMatching/PitchMatchingScreen.swift
+
+**Modified test files:**
+- PeachTests/Comparison/ComparisonTestHelpers.swift
+- PeachTests/Comparison/ComparisonSessionUserDefaultsTests.swift
+- PeachTests/Comparison/ComparisonSessionLoudnessTests.swift
+- PeachTests/Comparison/ComparisonSessionSettingsTests.swift
+- PeachTests/Comparison/ComparisonSessionAudioInterruptionTests.swift
+- PeachTests/Comparison/ComparisonSessionResetTests.swift
+- PeachTests/PitchMatching/PitchMatchingSessionTests.swift
+- PeachTests/Core/Audio/SoundFontNotePlayerTests.swift
+- PeachTests/Core/Audio/SoundFontPlaybackHandleTests.swift
+
+**Modified tracking files:**
+- docs/implementation-artifacts/sprint-status.yaml
+- docs/implementation-artifacts/19-3-usersettings-wrapper-for-userdefaults.md

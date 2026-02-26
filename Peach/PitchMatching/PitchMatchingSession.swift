@@ -27,8 +27,7 @@ final class PitchMatchingSession {
     private let notePlayer: NotePlayer
     private let profile: PitchMatchingProfile
     private let observers: [PitchMatchingObserver]
-    private let settingsOverride: TrainingSettings?
-    private let noteDurationOverride: TimeInterval?
+    private let userSettings: UserSettings
     private var interruptionMonitor: AudioSessionInterruptionMonitor?
 
     // MARK: - Internal State
@@ -49,15 +48,13 @@ final class PitchMatchingSession {
         notePlayer: NotePlayer,
         profile: PitchMatchingProfile,
         observers: [PitchMatchingObserver] = [],
-        settingsOverride: TrainingSettings? = nil,
-        noteDurationOverride: TimeInterval? = nil,
+        userSettings: UserSettings,
         notificationCenter: NotificationCenter = .default
     ) {
         self.notePlayer = notePlayer
         self.profile = profile
         self.observers = observers
-        self.settingsOverride = settingsOverride
-        self.noteDurationOverride = noteDurationOverride
+        self.userSettings = userSettings
 
         self.interruptionMonitor = AudioSessionInterruptionMonitor(
             notificationCenter: notificationCenter,
@@ -143,17 +140,15 @@ final class PitchMatchingSession {
     // MARK: - Configuration
 
     private var currentSettings: TrainingSettings {
-        if let override = settingsOverride { return override }
-        let defaults = UserDefaults.standard
-        return TrainingSettings(
-            noteRangeMin: MIDINote(defaults.object(forKey: SettingsKeys.noteRangeMin) as? Int ?? SettingsKeys.defaultNoteRangeMin),
-            noteRangeMax: MIDINote(defaults.object(forKey: SettingsKeys.noteRangeMax) as? Int ?? SettingsKeys.defaultNoteRangeMax),
-            referencePitch: defaults.object(forKey: SettingsKeys.referencePitch) as? Double ?? SettingsKeys.defaultReferencePitch
+        TrainingSettings(
+            noteRangeMin: userSettings.noteRangeMin,
+            noteRangeMax: userSettings.noteRangeMax,
+            referencePitch: userSettings.referencePitch
         )
     }
 
     private var currentNoteDuration: TimeInterval {
-        noteDurationOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.noteDuration) as? Double ?? SettingsKeys.defaultNoteDuration)
+        userSettings.noteDuration
     }
 
     // MARK: - Challenge Generation

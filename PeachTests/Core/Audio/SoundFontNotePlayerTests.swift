@@ -9,14 +9,14 @@ struct SoundFontNotePlayerTests {
 
     @Test("SoundFontNotePlayer conforms to NotePlayer protocol")
     func conformsToNotePlayer() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         #expect(player is NotePlayer)
     }
 
     @Test("Initializes successfully with bundled SF2")
     func initializesSuccessfully() async {
         #expect(throws: Never.self) {
-            _ = try SoundFontNotePlayer()
+            _ = try SoundFontNotePlayer(userSettings: MockUserSettings())
         }
     }
 
@@ -25,7 +25,7 @@ struct SoundFontNotePlayerTests {
     @Test("Fails gracefully with missing SF2 file")
     func failsWithMissingSF2() async {
         #expect(throws: AudioError.self) {
-            _ = try SoundFontNotePlayer(sf2Name: "NonExistent")
+            _ = try SoundFontNotePlayer(sf2Name: "NonExistent", userSettings: MockUserSettings())
         }
     }
 
@@ -33,20 +33,20 @@ struct SoundFontNotePlayerTests {
 
     @Test("Play returns a PlaybackHandle and convenience method completes without crash")
     func playReturnsHandle() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
     }
 
     @Test("Fixed-duration convenience method works without crash")
     func fixedDurationConvenienceMethod() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("PlaybackHandle stop is idempotent")
     func handleStopIdempotent() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
         try await handle.stop()
@@ -101,13 +101,13 @@ struct SoundFontNotePlayerTests {
 
     @Test("Velocity 127 is accepted")
     func velocity127_accepted() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 127, amplitudeDB: 0.0)
     }
 
     @Test("Velocity within range plays successfully")
     func velocityWithinRange_plays() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
@@ -115,31 +115,31 @@ struct SoundFontNotePlayerTests {
 
     @Test("amplitudeDB 0.0 (default) plays successfully")
     func amplitudeDB_default_playsSuccessfully() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("amplitudeDB positive offset accepted")
     func amplitudeDB_positiveOffset_accepted() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 2.0)
     }
 
     @Test("amplitudeDB negative offset accepted")
     func amplitudeDB_negativeOffset_accepted() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: -2.0)
     }
 
     @Test("amplitudeDB at minimum boundary (-90.0) accepted")
     func amplitudeDB_atMinimumBoundary_accepted() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: -90.0)
     }
 
     @Test("amplitudeDB at maximum boundary (12.0) accepted")
     func amplitudeDB_atMaximumBoundary_accepted() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 12.0)
     }
 
@@ -150,13 +150,13 @@ struct SoundFontNotePlayerTests {
 
     @Test("loadPreset to program 0 (piano) succeeds")
     func loadPresetPiano() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.loadPreset(program: 0)
     }
 
     @Test("loadPreset to program 42 (cello) succeeds")
     func loadPresetCello() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         // Player starts with program 42, so load something else first, then back
         try await player.loadPreset(program: 0)
         try await player.loadPreset(program: 42)
@@ -164,27 +164,27 @@ struct SoundFontNotePlayerTests {
 
     @Test("loadPreset with bank parameter loads bank variant")
     func loadPresetBankVariant() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.loadPreset(program: 4, bank: 8) // Chorused Tine EP
     }
 
     @Test("Loading same preset twice is a no-op (no error)")
     func loadSamePresetTwice() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.loadPreset(program: 0)
         try await player.loadPreset(program: 0) // should be skipped, no error
     }
 
     @Test("Play works after preset switch")
     func playAfterPresetSwitch() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.loadPreset(program: 0) // switch to piano
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("loadPreset throws for out-of-range program")
     func loadPresetInvalidProgram() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         await #expect(throws: AudioError.self) {
             try await player.loadPreset(program: 999)
         }
@@ -192,7 +192,7 @@ struct SoundFontNotePlayerTests {
 
     @Test("loadPreset throws for negative program")
     func loadPresetNegativeProgram() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         await #expect(throws: AudioError.self) {
             try await player.loadPreset(program: -1)
         }
@@ -200,7 +200,7 @@ struct SoundFontNotePlayerTests {
 
     @Test("loadPreset throws for out-of-range bank")
     func loadPresetInvalidBank() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         await #expect(throws: AudioError.self) {
             try await player.loadPreset(program: 0, bank: 200)
         }
@@ -246,56 +246,56 @@ struct SoundFontNotePlayerTests {
 
     @Test("stopAll does not crash when no notes are playing")
     func stopAllNoNotes() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.stopAll()
     }
 
     @Test("stopAll silences a playing note")
     func stopAllSilencesNote() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         _ = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await player.stopAll()
     }
 
     @Test("stopAll silences multiple playing notes")
     func stopAllSilencesMultipleNotes() async throws {
-        let player = try SoundFontNotePlayer()
+        let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         _ = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         _ = try await player.play(frequency: 880.0, velocity: 63, amplitudeDB: 0.0)
         try await player.stopAll()
     }
 
-    // MARK: - Preset Selection from UserDefaults
+    // MARK: - Preset Selection from UserSettings
 
-    @Test("play reads UserDefaults soundSource and uses the selected preset")
+    @Test("play reads soundSource from UserSettings and uses the selected preset")
     func playReadsSoundSource() async throws {
-        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
-        let player = try SoundFontNotePlayer()
-        UserDefaults.standard.set("sf2:0:0", forKey: SettingsKeys.soundSource)
+        let mockSettings = MockUserSettings()
+        mockSettings.soundSource = "sf2:0:0"
+        let player = try SoundFontNotePlayer(userSettings: mockSettings)
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset for unparseable soundSource")
     func playFallsBackForUnparseableSource() async throws {
-        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
-        let player = try SoundFontNotePlayer()
-        UserDefaults.standard.set("garbage", forKey: SettingsKeys.soundSource)
+        let mockSettings = MockUserSettings()
+        mockSettings.soundSource = "garbage"
+        let player = try SoundFontNotePlayer(userSettings: mockSettings)
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset when loadPreset fails for invalid program")
     func playFallsBackOnLoadFailure() async throws {
-        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
-        let player = try SoundFontNotePlayer()
-        UserDefaults.standard.set("sf2:0:999", forKey: SettingsKeys.soundSource)
+        let mockSettings = MockUserSettings()
+        mockSettings.soundSource = "sf2:0:999"
+        let player = try SoundFontNotePlayer(userSettings: mockSettings)
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset for legacy 'cello' tag")
     func playFallsBackForLegacyCelloTag() async throws {
-        defer { UserDefaults.standard.removeObject(forKey: SettingsKeys.soundSource) }
-        let player = try SoundFontNotePlayer()
-        UserDefaults.standard.set("cello", forKey: SettingsKeys.soundSource)
+        let mockSettings = MockUserSettings()
+        mockSettings.soundSource = "cello"
+        let player = try SoundFontNotePlayer(userSettings: mockSettings)
         try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
     }
 }

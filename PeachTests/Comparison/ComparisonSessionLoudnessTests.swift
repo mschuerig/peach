@@ -9,7 +9,9 @@ struct ComparisonSessionLoudnessTests {
 
     @Test("Both notes play at amplitudeDB 0.0 when varyLoudness is 0.0")
     func zeroVariationBothNotesAtZero() async throws {
-        let f = makeComparisonSession(varyLoudnessOverride: 0.0)
+        let mockSettings = MockUserSettings()
+        mockSettings.varyLoudness = 0.0
+        let f = makeComparisonSession(userSettings: mockSettings)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -23,7 +25,9 @@ struct ComparisonSessionLoudnessTests {
 
     @Test("Note1 always at 0.0 and note2 within ±5.0 dB at full slider")
     func fullVariationNote2HasOffset() async throws {
-        let f = makeComparisonSession(varyLoudnessOverride: 1.0)
+        let mockSettings = MockUserSettings()
+        mockSettings.varyLoudness = 1.0
+        let f = makeComparisonSession(userSettings: mockSettings)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -41,7 +45,9 @@ struct ComparisonSessionLoudnessTests {
         let comparisons = (0..<10).map { i in
             Comparison(note1: 60, note2: 60, centDifference: Cents(i % 2 == 0 ? 100.0 : -100.0))
         }
-        let f = makeComparisonSession(comparisons: comparisons, varyLoudnessOverride: 1.0)
+        let mockSettings = MockUserSettings()
+        mockSettings.varyLoudness = 1.0
+        let f = makeComparisonSession(comparisons: comparisons, userSettings: mockSettings)
 
         // Run multiple comparisons
         f.session.startTraining()
@@ -71,7 +77,9 @@ struct ComparisonSessionLoudnessTests {
 
     @Test("Note2 amplitude within ±2.5 dB at slider 0.5")
     func midSliderHalvesRange() async throws {
-        let f = makeComparisonSession(varyLoudnessOverride: 0.5)
+        let mockSettings = MockUserSettings()
+        mockSettings.varyLoudness = 0.5
+        let f = makeComparisonSession(userSettings: mockSettings)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -90,7 +98,9 @@ struct ComparisonSessionLoudnessTests {
     func offsetClampedToValidRange() async throws {
         // Even with maxLoudnessOffsetDB = 5.0, the offset can't exceed -90.0...12.0
         // This test verifies the safety net is in place
-        let f = makeComparisonSession(varyLoudnessOverride: 1.0)
+        let mockSettings = MockUserSettings()
+        mockSettings.varyLoudness = 1.0
+        let f = makeComparisonSession(userSettings: mockSettings)
 
         f.session.startTraining()
         try await waitForState(f.session, .awaitingAnswer)
@@ -102,7 +112,7 @@ struct ComparisonSessionLoudnessTests {
 
     // MARK: - Default Factory (AC #4 — existing tests unaffected)
 
-    @Test("Default makeComparisonSession passes varyLoudnessOverride 0.0")
+    @Test("Default makeComparisonSession passes varyLoudness 0.0")
     func defaultFactoryPassesZeroLoudness() async throws {
         let f = makeComparisonSession()
 

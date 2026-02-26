@@ -12,6 +12,7 @@ struct ComparisonSessionFixture {
     let mockStrategy: MockNextComparisonStrategy
     let mockHaptic: MockHapticFeedbackManager?
     let notificationCenter: NotificationCenter?
+    let mockSettings: MockUserSettings
 }
 
 func makeComparisonSession(
@@ -19,9 +20,7 @@ func makeComparisonSession(
         Comparison(note1: 60, note2: 60, centDifference: Cents(100.0)),
         Comparison(note1: 62, note2: 62, centDifference: Cents(-95.0))
     ],
-    settingsOverride: TrainingSettings? = TrainingSettings(),
-    noteDurationOverride: TimeInterval? = 1.0,
-    varyLoudnessOverride: Double? = 0.0,
+    userSettings: MockUserSettings = MockUserSettings(),
     includeHaptic: Bool = false,
     notificationCenter: NotificationCenter? = nil
 ) -> ComparisonSessionFixture {
@@ -44,9 +43,7 @@ func makeComparisonSession(
         notePlayer: mockPlayer,
         strategy: mockStrategy,
         profile: profile,
-        settingsOverride: settingsOverride,
-        noteDurationOverride: noteDurationOverride,
-        varyLoudnessOverride: varyLoudnessOverride,
+        userSettings: userSettings,
         observers: observers,
         notificationCenter: notificationCenter ?? .default
     )
@@ -58,7 +55,8 @@ func makeComparisonSession(
         profile: profile,
         mockStrategy: mockStrategy,
         mockHaptic: mockHaptic,
-        notificationCenter: notificationCenter
+        notificationCenter: notificationCenter,
+        mockSettings: userSettings
     )
 }
 

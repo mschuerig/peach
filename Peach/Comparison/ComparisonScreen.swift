@@ -170,6 +170,7 @@ extension EnvironmentValues {
             notePlayer: MockNotePlayerForPreview(),
             strategy: strategy,
             profile: profile,
+            userSettings: AppUserSettings(),
             observers: observers
         )
     }()

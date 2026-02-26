@@ -27,8 +27,11 @@ struct PeachApp: App {
             let soundFontLibrary = SoundFontLibrary()
             _soundFontLibrary = State(wrappedValue: soundFontLibrary)
 
+            // Create UserSettings — centralized settings access (Story 19.3)
+            let userSettings = AppUserSettings()
+
             // Create SoundFontNotePlayer — sole NotePlayer implementation (Story 8.3)
-            let notePlayer = try SoundFontNotePlayer()
+            let notePlayer = try SoundFontNotePlayer(userSettings: userSettings)
 
             // Create and populate perceptual profile from existing data (Story 4.1, 5.1)
             let profile = PerceptualProfile()
@@ -68,6 +71,7 @@ struct PeachApp: App {
                 notePlayer: notePlayer,
                 strategy: strategy,
                 profile: profile,
+                userSettings: userSettings,
                 trendAnalyzer: trendAnalyzer,
                 thresholdTimeline: thresholdTimeline,
                 observers: observers
@@ -78,7 +82,8 @@ struct PeachApp: App {
             let pitchMatchingSession = PitchMatchingSession(
                 notePlayer: notePlayer,
                 profile: profile,
-                observers: [dataStore, profile]
+                observers: [dataStore, profile],
+                userSettings: userSettings
             )
             _pitchMatchingSession = State(wrappedValue: pitchMatchingSession)
         } catch {

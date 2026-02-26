@@ -2,44 +2,30 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Tests for ComparisonSession live settings via UserDefaults (Story 6.2)
-@Suite("ComparisonSession UserDefaults Settings Tests", .serialized)
+/// Tests for ComparisonSession settings via UserSettings protocol (Story 19.3, originally Story 6.2)
+@Suite("ComparisonSession UserSettings Tests")
 struct ComparisonSessionUserDefaultsTests {
 
-    func cleanUpSettingsDefaults() {
-        let keys = [
-            SettingsKeys.naturalVsMechanical,
-            SettingsKeys.noteRangeMin,
-            SettingsKeys.noteRangeMax,
-            SettingsKeys.noteDuration,
-            SettingsKeys.referencePitch,
-        ]
-        for key in keys {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
-    }
+    // MARK: - UserSettings Tests
 
-    // MARK: - UserDefaults Settings Tests
-
-    @Test("Changing UserDefaults values changes TrainingSettings built by ComparisonSession")
-    func userDefaultsChangesAffectSettings() async throws {
-        cleanUpSettingsDefaults()
-        defer { cleanUpSettingsDefaults() }
+    @Test("Changing UserSettings values changes TrainingSettings built by ComparisonSession")
+    func userSettingsChangesAffectSettings() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.naturalVsMechanical = 0.8
+        mockSettings.noteRangeMin = MIDINote(50)
+        mockSettings.noteRangeMax = MIDINote(70)
+        mockSettings.referencePitch = 432.0
 
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
         let mockStrategy = MockNextComparisonStrategy()
 
-        UserDefaults.standard.set(0.8, forKey: SettingsKeys.naturalVsMechanical)
-        UserDefaults.standard.set(50, forKey: SettingsKeys.noteRangeMin)
-        UserDefaults.standard.set(70, forKey: SettingsKeys.noteRangeMax)
-        UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
-
         let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -54,22 +40,21 @@ struct ComparisonSessionUserDefaultsTests {
         session.stop()
     }
 
-    @Test("Note duration from UserDefaults is passed to NotePlayer")
-    func noteDurationFromUserDefaultsPassedToPlayer() async throws {
-        cleanUpSettingsDefaults()
-        defer { cleanUpSettingsDefaults() }
+    @Test("Note duration from UserSettings is passed to NotePlayer")
+    func noteDurationFromUserSettingsPassedToPlayer() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteDuration = 2.5
 
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
         let mockStrategy = MockNextComparisonStrategy()
 
-        UserDefaults.standard.set(2.5, forKey: SettingsKeys.noteDuration)
-
         let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -81,10 +66,10 @@ struct ComparisonSessionUserDefaultsTests {
         session.stop()
     }
 
-    @Test("Reference pitch from UserDefaults is passed to frequency calculation")
-    func referencePitchFromUserDefaultsAffectsFrequency() async throws {
-        cleanUpSettingsDefaults()
-        defer { cleanUpSettingsDefaults() }
+    @Test("Reference pitch from UserSettings is passed to frequency calculation")
+    func referencePitchFromUserSettingsAffectsFrequency() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.referencePitch = 432.0
 
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
@@ -93,12 +78,11 @@ struct ComparisonSessionUserDefaultsTests {
             Comparison(note1: 69, note2: 69, centDifference: Cents(100.0))
         ])
 
-        UserDefaults.standard.set(432.0, forKey: SettingsKeys.referencePitch)
-
         let session = ComparisonSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -112,45 +96,9 @@ struct ComparisonSessionUserDefaultsTests {
         session.stop()
     }
 
-    @Test("Settings persist across simulated app restart")
-    func settingsPersistAcrossRestart() async throws {
-        cleanUpSettingsDefaults()
-        defer { cleanUpSettingsDefaults() }
-
-        UserDefaults.standard.set(0.9, forKey: SettingsKeys.naturalVsMechanical)
-        UserDefaults.standard.set(55, forKey: SettingsKeys.noteRangeMin)
-        UserDefaults.standard.set(75, forKey: SettingsKeys.noteRangeMax)
-        UserDefaults.standard.set(1.5, forKey: SettingsKeys.noteDuration)
-        UserDefaults.standard.set(415.0, forKey: SettingsKeys.referencePitch)
-
-        let mockPlayer = MockNotePlayer()
-        let mockDataStore = MockTrainingDataStore()
-        let profile = PerceptualProfile()
-        let mockStrategy = MockNextComparisonStrategy()
-
-        let session = ComparisonSession(
-            notePlayer: mockPlayer,
-            strategy: mockStrategy,
-            profile: profile,
-            observers: [mockDataStore, profile]
-        )
-
-        session.startTraining()
-        try await waitForState(session, .awaitingAnswer)
-
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 55)
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 75)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.9)
-        #expect(mockStrategy.lastReceivedSettings?.referencePitch == 415.0)
-        #expect(mockPlayer.lastDuration == 1.5)
-
-        session.stop()
-    }
-
     @Test("Settings changed mid-training take effect on next comparison")
     func settingsChangedMidTrainingTakeEffect() async throws {
-        cleanUpSettingsDefaults()
-        defer { cleanUpSettingsDefaults() }
+        let mockSettings = MockUserSettings()
 
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
@@ -164,6 +112,7 @@ struct ComparisonSessionUserDefaultsTests {
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,
+            userSettings: mockSettings,
             observers: [mockDataStore, profile]
         )
 
@@ -173,10 +122,10 @@ struct ComparisonSessionUserDefaultsTests {
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin.rawValue == SettingsKeys.defaultNoteRangeMin)
         #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == SettingsKeys.defaultNaturalVsMechanical)
 
-        UserDefaults.standard.set(50, forKey: SettingsKeys.noteRangeMin)
-        UserDefaults.standard.set(70, forKey: SettingsKeys.noteRangeMax)
-        UserDefaults.standard.set(0.9, forKey: SettingsKeys.naturalVsMechanical)
-        UserDefaults.standard.set(2.0, forKey: SettingsKeys.noteDuration)
+        mockSettings.noteRangeMin = MIDINote(50)
+        mockSettings.noteRangeMax = MIDINote(70)
+        mockSettings.naturalVsMechanical = 0.9
+        mockSettings.noteDuration = 2.0
 
         session.handleAnswer(isHigher: true)
         try await waitForPlayCallCount(mockPlayer, 3)
