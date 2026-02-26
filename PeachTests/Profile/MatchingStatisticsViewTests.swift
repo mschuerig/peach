@@ -7,18 +7,17 @@ struct MatchingStatisticsViewTests {
     // MARK: - Stats Computation
 
     @Test("computes matching stats from profile with data")
-    func computeStatsWithData() async {
+    func computeStatsWithData() async throws {
         let profile = PerceptualProfile()
         profile.updateMatching(note: 60, centError: 10.0)
         profile.updateMatching(note: 62, centError: 20.0)
         profile.updateMatching(note: 64, centError: 15.0)
 
-        let stats = MatchingStatisticsView.computeMatchingStats(from: profile)
+        let stats = try #require(MatchingStatisticsView.computeMatchingStats(from: profile))
 
-        #expect(stats != nil)
-        #expect(stats!.meanError > 0)
-        #expect(stats!.stdDev != nil)
-        #expect(stats!.sampleCount == 3)
+        #expect(stats.meanError == 15.0)
+        #expect(stats.stdDev != nil)
+        #expect(stats.sampleCount == 3)
     }
 
     @Test("returns nil stats when no matching data")
@@ -31,29 +30,27 @@ struct MatchingStatisticsViewTests {
     }
 
     @Test("mean error matches profile matchingMean")
-    func meanErrorMatchesProfile() async {
+    func meanErrorMatchesProfile() async throws {
         let profile = PerceptualProfile()
         profile.updateMatching(note: 60, centError: 12.0)
         profile.updateMatching(note: 62, centError: 18.0)
 
-        let stats = MatchingStatisticsView.computeMatchingStats(from: profile)
+        let stats = try #require(MatchingStatisticsView.computeMatchingStats(from: profile))
 
-        #expect(stats != nil)
         // Mean of abs errors: (12 + 18) / 2 = 15
-        #expect(stats!.meanError == 15.0)
+        #expect(stats.meanError == 15.0)
     }
 
     @Test("stdDev is nil with fewer than 2 samples")
-    func stdDevNilWithOneSample() async {
+    func stdDevNilWithOneSample() async throws {
         let profile = PerceptualProfile()
         profile.updateMatching(note: 60, centError: 10.0)
 
-        let stats = MatchingStatisticsView.computeMatchingStats(from: profile)
+        let stats = try #require(MatchingStatisticsView.computeMatchingStats(from: profile))
 
-        #expect(stats != nil)
-        #expect(stats!.meanError == 10.0)
-        #expect(stats!.stdDev == nil)
-        #expect(stats!.sampleCount == 1)
+        #expect(stats.meanError == 10.0)
+        #expect(stats.stdDev == nil)
+        #expect(stats.sampleCount == 1)
     }
 
     // MARK: - Formatting
@@ -63,11 +60,6 @@ struct MatchingStatisticsViewTests {
         let result = MatchingStatisticsView.formatMeanError(12.34)
         let expected = 12.3.formatted(.number.precision(.fractionLength(1)))
         #expect(result.contains(expected))
-    }
-
-    @Test("formats mean error nil as dash")
-    func formatMeanErrorNil() async {
-        #expect(MatchingStatisticsView.formatMeanError(nil) == "—")
     }
 
     @Test("formats stdDev with one decimal place and ± prefix")
@@ -103,10 +95,17 @@ struct MatchingStatisticsViewTests {
         #expect(label.contains(expected))
     }
 
-    @Test("accessibility label for mean error nil describes empty state")
-    func accessibilityMeanErrorNil() async {
-        let label = MatchingStatisticsView.accessibilityMeanError(nil)
+    @Test("accessibility label for stdDev includes value")
+    func accessibilityStdDev() async {
+        let label = MatchingStatisticsView.accessibilityStdDev(5.7)
+        let expected = 5.7.formatted(.number.precision(.fractionLength(1)))
         #expect(!label.isEmpty)
+        #expect(label.contains(expected))
+    }
+
+    @Test("accessibility label for stdDev nil returns empty string")
+    func accessibilityStdDevNil() async {
+        #expect(MatchingStatisticsView.accessibilityStdDev(nil) == "")
     }
 
     @Test("accessibility label for samples includes count")

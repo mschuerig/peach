@@ -158,5 +158,5 @@ development_status:
   17-1-pitch-matching-button-and-navigation-routing: done # Implemented as part of 16-3-pitch-matching-screen-assembly
 
   # Epic 18: The Full Picture — Profile Screen Integration
-  epic-18: in-progress
-  18-1-display-pitch-matching-statistics-on-profile-screen: review
+  epic-18: done
+  18-1-display-pitch-matching-statistics-on-profile-screen: done

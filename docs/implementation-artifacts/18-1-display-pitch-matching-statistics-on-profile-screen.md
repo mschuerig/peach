@@ -1,6 +1,6 @@
 # Story 18.1: Display Pitch Matching Statistics on Profile Screen
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -224,6 +224,7 @@ Files modified in recent epics that are relevant:
 ## Change Log
 
 - 2026-02-26: Implemented story 18.1 — Added MatchingStatisticsView to Profile Screen displaying mean error, std dev, and sample count from PitchMatchingProfile. Added localization (EN/DE), accessibility labels, cold start empty state, and 13 unit tests. Full test suite passes (548 tests).
+- 2026-02-26: Code review fixes — Added visible "Pitch Matching" section header (M1). Added missing accessibilityStdDev tests (M2). Replaced force unwraps with `#require` in tests (M3). Changed `formatMeanError`/`accessibilityMeanError` to take non-optional `Double` removing dead nil branches (M4). Full test suite: 550 tests pass, 0 failures.
 
 ## Dev Agent Record
 

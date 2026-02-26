@@ -6,38 +6,43 @@ struct MatchingStatisticsView: View {
     var body: some View {
         let stats = Self.computeMatchingStats(from: profile)
 
-        if let stats {
-            HStack(spacing: 24) {
-                statItem(
-                    label: "Mean Error",
-                    value: Self.formatMeanError(stats.meanError)
-                )
-                .accessibilityLabel(Self.accessibilityMeanError(stats.meanError))
-
-                statItem(
-                    label: "Std Dev",
-                    value: Self.formatStdDev(stats.stdDev)
-                )
-                .accessibilityLabel(Self.accessibilityStdDev(stats.stdDev))
-
-                statItem(
-                    label: "Samples",
-                    value: Self.formatSampleCount(stats.sampleCount)
-                )
-                .accessibilityLabel(Self.accessibilitySamples(stats.sampleCount))
-            }
-            .padding(.vertical, 8)
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel(String(localized: "Pitch matching statistics"))
-            .dynamicTypeSize(...DynamicTypeSize.accessibility3)
-        } else {
-            Text("Start pitch matching to see your accuracy")
-                .font(.caption)
+        VStack(spacing: 4) {
+            Text("Pitch Matching")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
+
+            if let stats {
+                HStack(spacing: 24) {
+                    statItem(
+                        label: "Mean Error",
+                        value: Self.formatMeanError(stats.meanError)
+                    )
+                    .accessibilityLabel(Self.accessibilityMeanError(stats.meanError))
+
+                    statItem(
+                        label: "Std Dev",
+                        value: Self.formatStdDev(stats.stdDev)
+                    )
+                    .accessibilityLabel(Self.accessibilityStdDev(stats.stdDev))
+
+                    statItem(
+                        label: "Samples",
+                        value: Self.formatSampleCount(stats.sampleCount)
+                    )
+                    .accessibilityLabel(Self.accessibilitySamples(stats.sampleCount))
+                }
                 .padding(.vertical, 8)
-                .accessibilityLabel(String(localized: "Start pitch matching to see your accuracy"))
-                .dynamicTypeSize(...DynamicTypeSize.accessibility3)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(String(localized: "Pitch matching statistics"))
+            } else {
+                Text("Start pitch matching to see your accuracy")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 8)
+                    .accessibilityLabel(String(localized: "Start pitch matching to see your accuracy"))
+            }
         }
+        .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 
     private func statItem(label: LocalizedStringKey, value: String) -> some View {
@@ -69,9 +74,8 @@ struct MatchingStatisticsView: View {
 
     // MARK: - Formatting
 
-    static func formatMeanError(_ value: Double?) -> String {
-        guard let value else { return "—" }
-        return String(localized: "\(value, specifier: "%.1f") cents")
+    static func formatMeanError(_ value: Double) -> String {
+        String(localized: "\(value, specifier: "%.1f") cents")
     }
 
     static func formatStdDev(_ value: Double?) -> String {
@@ -85,11 +89,8 @@ struct MatchingStatisticsView: View {
 
     // MARK: - Accessibility
 
-    static func accessibilityMeanError(_ value: Double?) -> String {
-        guard let value else {
-            return String(localized: "Start pitch matching to see your accuracy")
-        }
-        return String(localized: "Mean matching error: \(value, specifier: "%.1f") cents")
+    static func accessibilityMeanError(_ value: Double) -> String {
+        String(localized: "Mean matching error: \(value, specifier: "%.1f") cents")
     }
 
     static func accessibilityStdDev(_ value: Double?) -> String {
