@@ -1,6 +1,6 @@
 # Story 19.1: Clamping Utility and Magic Value Constants
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -34,7 +34,7 @@ So that the code is easier to read, harder to get wrong, and changes to domain b
   - [x] `AdaptiveNoteStrategy.swift`: Replace `max(p * ..., settings.minCentDifference)` / `min(p * ..., settings.maxCentDifference)` with `.clamped(to:)` where applicable
   - [x] `KazezNoteStrategy.swift`: Replace any inline `min(max(...))` with `.clamped(to:)`
   - [x] `ComparisonSession.swift`: Replace inline clamping of amplitude values
-  - [x] `PitchMatchingSession.swift`: Replace inline clamping patterns
+  - [x] `PitchMatchingSession.swift`: Replace inline clamping patterns (N/A — no patterns found)
 
 - [x] Task 3: Add named constant for initial cent offset range (AC: #3)
   - [x] In `PitchMatchingSession.swift`, replace the magic literal `-100.0...100.0` with a `private static let initialCentOffsetRange` constant
@@ -155,6 +155,7 @@ Commit message for this story: `Implement story 19.1: Clamping utility and magic
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
 - 2026-02-26: Implemented all tasks — clamped(to:) extension, replaced inline clamping patterns, added named constants, 550/550 tests pass.
+- 2026-02-26: Code review fixes — converted remaining `max(..., min(...))` in ThresholdTimelineView.swift, refactored KazezNoteStrategy to use `.clamped(to:)` consistently, added unit tests for clamped(to:) extension. 556/556 tests pass.
 
 ## Dev Agent Record
 
@@ -177,6 +178,13 @@ No issues encountered. Pure refactoring, all tests passed on first run.
 - No inline clamping patterns found in `PitchMatchingSession.swift` (Task 2 subtask had nothing to do)
 - Full test suite: 550/550 tests pass, zero regressions
 
+#### Code Review Fixes (AI)
+
+- Converted 2 remaining `max(..., min(...))` patterns in `ThresholdTimelineView.swift` to `.clamped(to:)` (lines 133, 152)
+- Refactored `KazezNoteStrategy.kazezNarrow`/`kazezWiden` to return raw values, apply `.clamped(to: difficultyRange)` at call site — consistent with `AdaptiveNoteStrategy` pattern
+- Added `Comparable+ClampedTests.swift` with 6 unit tests covering: within range, below range, above range, at bounds, single-value range
+- Full test suite: 556/556 tests pass (550 original + 6 new)
+
 ### File List
 
 - `Peach/Core/Comparable+Clamped.swift` (new)
@@ -184,5 +192,7 @@ No issues encountered. Pure refactoring, all tests passed on first run.
 - `Peach/Core/Algorithm/KazezNoteStrategy.swift` (modified)
 - `Peach/Comparison/ComparisonSession.swift` (modified)
 - `Peach/PitchMatching/PitchMatchingSession.swift` (modified)
+- `Peach/Profile/ThresholdTimelineView.swift` (modified — code review fix)
+- `PeachTests/Core/Comparable+ClampedTests.swift` (new — code review fix)
 - `docs/implementation-artifacts/19-1-clamping-utility-and-magic-value-constants.md` (modified)
 - `docs/implementation-artifacts/sprint-status.yaml` (modified)
