@@ -747,9 +747,7 @@
         }
       }
     },
-    "Time" : {
-
-    },
+    "Time" : {},
     "Training" : {
       "localizations" : {
         "de" : {
@@ -909,6 +907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dein Trainingsfortschritt. Tippe für Details. Aktuelle Schwelle: %lld Cent."
+          }
+        }
+      }
+    },
+    "Pitch adjustment slider" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonhöhenregler"
           }
         }
       }
