@@ -1,6 +1,6 @@
 # Story 16.2: Pitch Matching Feedback Indicator
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -32,41 +32,41 @@ So that I know how close I was and in which direction I erred — without judgme
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `PitchMatchingFeedbackIndicator` view (AC: #1, #2, #3, #4, #5, #6)
-  - [ ] Define view struct with `centError: Double?` parameter and configurable `iconSize: CGFloat`
-  - [ ] Implement `FeedbackBand` classification: `deadCenter`, `close`, `moderate`, `far` — extract to `static func band(centError: Double) -> FeedbackBand`
-  - [ ] Render green dot (`circle.fill`) for dead center
-  - [ ] Render directional arrows (`arrow.up`/`arrow.down`) with size varying by band (short/medium/long)
-  - [ ] Apply system colors: `.green` for dead center and close, `.yellow` for moderate, `.red` for far
-  - [ ] Display signed cent offset text below icon (e.g., "+4 cents", "-3 cents", "0 cents")
-  - [ ] Extract text formatting to `static func centOffsetText(centError: Double) -> String`
-  - [ ] Extract arrow SF Symbol name to `static func arrowSymbolName(centError: Double) -> String`
-  - [ ] Extract color to `static func feedbackColor(band: FeedbackBand) -> Color`
-- [ ] Task 2: Add VoiceOver accessibility (AC: #7)
-  - [ ] Set combined accessibility label via `static func accessibilityLabel(centError: Double) -> String`
-  - [ ] Format: "4 cents sharp", "27 cents flat", "Dead center"
-  - [ ] Apply `.accessibilityRemoveTraits(.isImage)` — same pattern as `ComparisonFeedbackIndicator`
-  - [ ] Add `.accessibilityElement(children: .combine)` to group icon + text as single element
-- [ ] Task 3: Add localization strings (AC: #7)
-  - [ ] Add English and German strings to `Localizable.xcstrings` for: "cents sharp", "cents flat", "Dead center", "0 cents", "cents"
-- [ ] Task 4: Write tests for `PitchMatchingFeedbackIndicator` (AC: #9)
-  - [ ] Test `band()` returns `.deadCenter` for 0.0
-  - [ ] Test `band()` returns `.close` for errors 0 < |e| < 10
-  - [ ] Test `band()` returns `.moderate` for errors 10 <= |e| <= 30
-  - [ ] Test `band()` returns `.far` for errors |e| > 30
-  - [ ] Test exact boundary values: 0.0, 9.99, 10.0, 30.0, 30.01
-  - [ ] Test arrow direction: positive centError → `arrow.up`, negative → `arrow.down`, zero → `circle.fill`
-  - [ ] Test colors: green for deadCenter/close, yellow for moderate, red for far
-  - [ ] Test `centOffsetText()` formatting: "+4 cents", "-3 cents", "0 cents"
-  - [ ] Test `centOffsetText()` rounds to nearest integer
-  - [ ] Test `accessibilityLabel()`: "4 cents sharp", "27 cents flat", "Dead center"
-  - [ ] Test nil centError produces no view content
-- [ ] Task 5: Add SwiftUI previews
-  - [ ] Preview for dead center (0 cents)
-  - [ ] Preview for close match (+4 cents)
-  - [ ] Preview for moderate miss (-22 cents)
-  - [ ] Preview for far off (+55 cents)
-  - [ ] Preview for nil (no feedback)
+- [x] Task 1: Create `PitchMatchingFeedbackIndicator` view (AC: #1, #2, #3, #4, #5, #6)
+  - [x] Define view struct with `centError: Double?` parameter and configurable `iconSize: CGFloat`
+  - [x] Implement `FeedbackBand` classification: `deadCenter`, `close`, `moderate`, `far` — extract to `static func band(centError: Double) -> FeedbackBand`
+  - [x] Render green dot (`circle.fill`) for dead center
+  - [x] Render directional arrows (`arrow.up`/`arrow.down`) with size varying by band (short/medium/long)
+  - [x] Apply system colors: `.green` for dead center and close, `.yellow` for moderate, `.red` for far
+  - [x] Display signed cent offset text below icon (e.g., "+4 cents", "-3 cents", "0 cents")
+  - [x] Extract text formatting to `static func centOffsetText(centError: Double) -> String`
+  - [x] Extract arrow SF Symbol name to `static func arrowSymbolName(centError: Double) -> String`
+  - [x] Extract color to `static func feedbackColor(band: FeedbackBand) -> Color`
+- [x] Task 2: Add VoiceOver accessibility (AC: #7)
+  - [x] Set combined accessibility label via `static func accessibilityLabel(centError: Double) -> String`
+  - [x] Format: "4 cents sharp", "27 cents flat", "Dead center"
+  - [x] Apply `.accessibilityRemoveTraits(.isImage)` — same pattern as `ComparisonFeedbackIndicator`
+  - [x] Add `.accessibilityElement(children: .combine)` to group icon + text as single element
+- [x] Task 3: Add localization strings (AC: #7)
+  - [x] Add English and German strings to `Localizable.xcstrings` for: "cents sharp", "cents flat", "Dead center", "0 cents", "cents"
+- [x] Task 4: Write tests for `PitchMatchingFeedbackIndicator` (AC: #9)
+  - [x] Test `band()` returns `.deadCenter` for 0.0
+  - [x] Test `band()` returns `.close` for errors 0 < |e| < 10
+  - [x] Test `band()` returns `.moderate` for errors 10 <= |e| <= 30
+  - [x] Test `band()` returns `.far` for errors |e| > 30
+  - [x] Test exact boundary values: 0.0, 9.99, 10.0, 30.0, 30.01
+  - [x] Test arrow direction: positive centError → `arrow.up`, negative → `arrow.down`, zero → `circle.fill`
+  - [x] Test colors: green for deadCenter/close, yellow for moderate, red for far
+  - [x] Test `centOffsetText()` formatting: "+4 cents", "-3 cents", "0 cents"
+  - [x] Test `centOffsetText()` rounds to nearest integer
+  - [x] Test `accessibilityLabel()`: "4 cents sharp", "27 cents flat", "Dead center"
+  - [x] Test nil centError produces no view content
+- [x] Task 5: Add SwiftUI previews
+  - [x] Preview for dead center (0 cents)
+  - [x] Preview for close match (+4 cents)
+  - [x] Preview for moderate miss (-22 cents)
+  - [x] Preview for far off (+55 cents)
+  - [x] Preview for nil (no feedback)
 
 ## Dev Notes
 
@@ -184,14 +184,35 @@ Arrow direction: positive `centError` = sharp = `arrow.up`; negative = flat = `a
 - [Source: Peach/PitchMatching/CompletedPitchMatching.swift — userCentError property]
 - [Source: docs/implementation-artifacts/16-1-vertical-pitch-slider-component.md — Previous story learnings]
 
+## Change Log
+
+- 2026-02-26: Implemented PitchMatchingFeedbackIndicator view with FeedbackBand classification, directional arrows, VoiceOver accessibility, localization (EN/DE), 36 tests, and SwiftUI previews.
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Initial test run: 11 test failures due to localized string assertions — simulator runs in German locale, so `String(localized:)` returns German translations. Fixed by using `String(localized:)` in test assertions.
+
 ### Completion Notes List
 
+- Created `PitchMatchingFeedbackIndicator` SwiftUI view with `centError: Double?` parameter
+- Implemented `FeedbackBand` enum (`deadCenter`, `close`, `moderate`, `far`) with categorical arrow sizing (40/70/100pt)
+- All classification and formatting logic extracted to 5 static methods for testability: `band()`, `centOffsetText()`, `arrowSymbolName()`, `feedbackColor()`, `accessibilityLabel()`
+- VoiceOver accessibility: combined element with descriptive labels ("4 cents sharp", "Dead center"), `.accessibilityRemoveTraits(.isImage)`
+- Added English and German localization strings: "cents", "cents sharp"/"Cent zu hoch", "cents flat"/"Cent zu tief", "Dead center"/"Volltreffer"
+- 36 new tests (537 total, 0 failures): band classification, boundary values, arrow direction, colors, text formatting, rounding, accessibility labels
+- 5 SwiftUI previews: dead center, close, moderate, far, nil
+- Follows `ComparisonFeedbackIndicator` architecture pattern exactly
+
 ### File List
+
+- Peach/PitchMatching/PitchMatchingFeedbackIndicator.swift (new)
+- PeachTests/PitchMatching/PitchMatchingFeedbackIndicatorTests.swift (new)
+- Peach/Resources/Localizable.xcstrings (modified — added "cents", "cents sharp", "cents flat", "Dead center" with German translations)
+- docs/implementation-artifacts/sprint-status.yaml (modified — status: ready-for-dev → review)
+- docs/implementation-artifacts/16-2-pitch-matching-feedback-indicator.md (modified — tasks marked complete, status → review)
