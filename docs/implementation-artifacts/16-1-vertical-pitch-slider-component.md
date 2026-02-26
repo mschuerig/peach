@@ -1,6 +1,6 @@
 # Story 16.1: Vertical Pitch Slider Component
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -48,11 +48,11 @@ So that I can tune by ear using an intuitive physical gesture — up for sharper
   - [x] Ensure ±100 cent range maps correctly in both orientations
 - [x] Task 4: Write tests for `VerticalPitchSlider` (AC: #9)
   - [x] Test cent offset calculation from drag position (top = +100, center = 0, bottom = -100)
-  - [x] Test frequency computation from cent offset using `FrequencyCalculation`
-  - [x] Test `onFrequencyChange` callback fires during drag
-  - [x] Test `onRelease` callback fires on gesture end
-  - [x] Test inactive state ignores gestures (no callbacks when `isActive == false`)
-  - [x] Test thumb resets to center when `isActive` transitions from false to true
+  - [x] Test frequency computation from cent offset using `FrequencyCalculation` (cross-validation added in review)
+  - [x] Test `onFrequencyChange` callback data via `dragResult` when active (refactored in review)
+  - [x] Test `onRelease` callback data via `dragResult` when active (refactored in review)
+  - [x] Test inactive state ignores gestures — `dragResult` returns nil (refactored in review)
+  - [ ] Test thumb resets to center when `isActive` transitions — requires SwiftUI view lifecycle; not unit-testable
   - [x] Extract layout/calculation logic to `static` methods for unit testability
 
 ## Dev Notes
@@ -155,15 +155,17 @@ Claude Opus 4.6
 - Orientation support: `GeometryReader` naturally adapts to available height; cent-to-position mapping is proportional
 - 18 new tests covering centOffset, frequency, thumbPosition calculations plus edge cases and round-trip consistency
 - All 491 tests pass (473 baseline + 18 new)
+- **Code review (2026-02-26):** Extracted `dragResult` static method for testable gesture logic, added 5 tests (inactive state, callback data, FrequencyCalculation cross-validation), added VoiceOver "Submit pitch" action, total 23 tests, all 501 tests pass
 
 ### File List
 
 - `Peach/PitchMatching/VerticalPitchSlider.swift` (new)
 - `PeachTests/PitchMatching/VerticalPitchSliderTests.swift` (new)
-- `Peach/Resources/Localizable.xcstrings` (modified — added "Pitch adjustment slider" / "Tonhöhenregler")
-- `docs/implementation-artifacts/sprint-status.yaml` (modified — 16-1 status: ready-for-dev → review)
+- `Peach/Resources/Localizable.xcstrings` (modified — added "Pitch adjustment slider" / "Tonhöhenregler", "Submit pitch" / "Tonhöhe bestätigen")
+- `docs/implementation-artifacts/sprint-status.yaml` (modified — 16-1 status: ready-for-dev → done)
 - `docs/implementation-artifacts/16-1-vertical-pitch-slider-component.md` (modified — task checkboxes, dev record, status)
 
 ## Change Log
 
 - 2026-02-26: Implemented VerticalPitchSlider component with DragGesture, VoiceOver support, orientation support, and 18 unit tests
+- 2026-02-26: Code review fixes — extracted `dragResult` for testability, added VoiceOver "Submit pitch" action, added 5 tests (inactive state, callback data, FrequencyCalculation cross-validation), 23 total tests

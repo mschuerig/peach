@@ -129,4 +129,64 @@ struct VerticalPitchSliderTests {
 
         #expect(abs(recoveredY - originalY) < 0.001)
     }
+
+    // MARK: - dragResult Tests (gesture processing + inactive state)
+
+    @Test("dragResult returns nil when slider is inactive")
+    func dragResultReturnsNilWhenInactive() async {
+        let result = VerticalPitchSlider.dragResult(
+            isActive: false,
+            dragY: 200,
+            trackHeight: 400,
+            centRange: 100,
+            referenceFrequency: 440.0
+        )
+        #expect(result == nil)
+    }
+
+    @Test("dragResult returns cent offset and frequency when active")
+    func dragResultReturnsCentOffsetAndFrequencyWhenActive() async {
+        let result = VerticalPitchSlider.dragResult(
+            isActive: true,
+            dragY: 100,
+            trackHeight: 400,
+            centRange: 100,
+            referenceFrequency: 440.0
+        )
+        #expect(result != nil)
+        #expect(result!.centOffset == 50)
+        let expectedFreq = 440.0 * pow(2.0, 50.0 / 1200.0)
+        #expect(abs(result!.frequency - expectedFreq) < 0.001)
+    }
+
+    @Test("dragResult at center yields zero offset and reference frequency")
+    func dragResultAtCenterYieldsReferenceFrequency() async {
+        let result = VerticalPitchSlider.dragResult(
+            isActive: true,
+            dragY: 200,
+            trackHeight: 400,
+            centRange: 100,
+            referenceFrequency: 440.0
+        )
+        #expect(result != nil)
+        #expect(result!.centOffset == 0)
+        #expect(abs(result!.frequency - 440.0) < 0.001)
+    }
+
+    // MARK: - FrequencyCalculation Cross-Validation
+
+    @Test("frequency matches FrequencyCalculation for A4 with +50 cents")
+    func frequencyMatchesFrequencyCalculationForA4() async throws {
+        let sliderFreq = VerticalPitchSlider.frequency(centOffset: 50, referenceFrequency: 440.0)
+        let canonicalFreq = try FrequencyCalculation.frequency(midiNote: 69, cents: 50)
+        #expect(abs(sliderFreq - canonicalFreq) < 0.001)
+    }
+
+    @Test("frequency matches FrequencyCalculation for C4 with -100 cents")
+    func frequencyMatchesFrequencyCalculationForC4() async throws {
+        let baseFreq = try FrequencyCalculation.frequency(midiNote: 60)
+        let sliderFreq = VerticalPitchSlider.frequency(centOffset: -100, referenceFrequency: baseFreq)
+        let canonicalFreq = try FrequencyCalculation.frequency(midiNote: 60, cents: -100)
+        #expect(abs(sliderFreq - canonicalFreq) < 0.001)
+    }
 }
