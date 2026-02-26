@@ -208,11 +208,11 @@ final class AdaptiveNoteStrategy: NextComparisonStrategy {
         settings: TrainingSettings,
         lastComparison: CompletedComparison?
     ) -> Double {
+        let difficultyRange = settings.minCentDifference...settings.maxCentDifference
+
         guard let last = lastComparison else {
             let effective = weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
-            return clamp(effective,
-                         min: settings.minCentDifference,
-                         max: settings.maxCentDifference)
+            return effective.clamped(to: difficultyRange)
         }
 
         // Use the previous comparison's cent difference as Kazez input.
@@ -220,11 +220,10 @@ final class AdaptiveNoteStrategy: NextComparisonStrategy {
         // which note is selected, so the user sees steadily narrowing
         // difficulty instead of jumps when switching notes.
         let p = last.comparison.centDifference
-        let adjustedDiff = last.isCorrect
-            ? max(p * (1.0 - DifficultyParameters.correctNarrowingCoefficient * p.squareRoot()),
-                  settings.minCentDifference)
-            : min(p * (1.0 + DifficultyParameters.incorrectWideningCoefficient * p.squareRoot()),
-                  settings.maxCentDifference)
+        let rawDiff = last.isCorrect
+            ? p * (1.0 - DifficultyParameters.correctNarrowingCoefficient * p.squareRoot())
+            : p * (1.0 + DifficultyParameters.incorrectWideningCoefficient * p.squareRoot())
+        let adjustedDiff = rawDiff.clamped(to: difficultyRange)
 
         profile.setDifficulty(note: note, difficulty: adjustedDiff)
         logger.debug("Difficulty for note \(note): \(last.isCorrect ? "correct" : "incorrect") → \(adjustedDiff) cents")
@@ -298,14 +297,4 @@ final class AdaptiveNoteStrategy: NextComparisonStrategy {
         return weightedSum / weightSum
     }
 
-    /// Clamps a value between min and max bounds
-    ///
-    /// - Parameters:
-    ///   - value: Value to clamp
-    ///   - min: Minimum bound
-    ///   - max: Maximum bound
-    /// - Returns: Clamped value
-    private func clamp(_ value: Double, min: Double, max: Double) -> Double {
-        return Swift.max(min, Swift.min(max, value))
-    }
 }

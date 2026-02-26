@@ -142,6 +142,9 @@ final class ComparisonSession {
         varyLoudnessOverride ?? (UserDefaults.standard.object(forKey: SettingsKeys.varyLoudness) as? Double ?? SettingsKeys.defaultVaryLoudness)
     }
 
+    /// Valid amplitude range in decibels (silence floor to slight boost ceiling)
+    private static let amplitudeDBRange: ClosedRange<Float> = -90.0...12.0
+
     /// Maximum loudness offset in dB at full slider (varyLoudness = 1.0)
     private let maxLoudnessOffsetDB: Float = 5.0
 
@@ -387,7 +390,7 @@ final class ComparisonSession {
             guard varyLoudness > 0.0 else { return 0.0 }
             let range = Float(varyLoudness) * maxLoudnessOffsetDB
             let offset = Float.random(in: -range...range)
-            return min(max(offset, -90.0), 12.0)
+            return offset.clamped(to: Self.amplitudeDBRange)
         }()
 
         do {
