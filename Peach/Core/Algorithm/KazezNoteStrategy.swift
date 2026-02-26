@@ -57,8 +57,7 @@ final class KazezNoteStrategy: NextComparisonStrategy {
                 ? kazezNarrow(p: p, min: settings.minCentDifference)
                 : kazezWiden(p: p, max: settings.maxCentDifference)
         } else if let profileMean = profile.overallMean {
-            // REVIEW: clamping should be handled by a generic utility function
-            centDifference = max(settings.minCentDifference, min(profileMean, settings.maxCentDifference))
+            centDifference = profileMean.clamped(to: settings.minCentDifference...settings.maxCentDifference)
         } else {
             centDifference = settings.maxCentDifference
         }

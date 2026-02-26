@@ -210,9 +210,7 @@ final class AdaptiveNoteStrategy: NextComparisonStrategy {
     ) -> Double {
         guard let last = lastComparison else {
             let effective = weightedEffectiveDifficulty(for: note, profile: profile, settings: settings)
-            return clamp(effective,
-                         min: settings.minCentDifference,
-                         max: settings.maxCentDifference)
+            return effective.clamped(to: settings.minCentDifference...settings.maxCentDifference)
         }
 
         // Use the previous comparison's cent difference as Kazez input.
@@ -298,14 +296,4 @@ final class AdaptiveNoteStrategy: NextComparisonStrategy {
         return weightedSum / weightSum
     }
 
-    /// Clamps a value between min and max bounds
-    ///
-    /// - Parameters:
-    ///   - value: Value to clamp
-    ///   - min: Minimum bound
-    ///   - max: Maximum bound
-    /// - Returns: Clamped value
-    private func clamp(_ value: Double, min: Double, max: Double) -> Double {
-        return Swift.max(min, Swift.min(max, value))
-    }
 }

@@ -142,7 +142,7 @@ final class SoundFontNotePlayer: NotePlayer {
         }
 
         let conversion = FrequencyCalculation.midiNoteAndCents(frequency: frequency)
-        let clampedNote = min(127, max(0, conversion.midiNote))
+        let clampedNote = conversion.midiNote.clamped(to: 0...127)
         let midiNote = UInt8(clampedNote)
         let bendValue = Self.pitchBendValue(forCents: conversion.cents)
 
@@ -183,7 +183,7 @@ final class SoundFontNotePlayer: NotePlayer {
 
     nonisolated static func pitchBendValue(forCents cents: Double) -> UInt16 {
         let raw = Int(8192.0 + cents * 8192.0 / 200.0)
-        let clamped = Swift.min(16383, Swift.max(0, raw))
+        let clamped = raw.clamped(to: 0...16383)
         return UInt16(clamped)
     }
 

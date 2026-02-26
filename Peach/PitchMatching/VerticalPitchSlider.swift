@@ -120,7 +120,7 @@ struct VerticalPitchSlider: View {
     static func centOffset(dragY: CGFloat, trackHeight: CGFloat, centRange: Double) -> Double {
         guard trackHeight > 0 else { return 0 }
         let normalized = dragY / trackHeight       // 0 (top) to 1 (bottom)
-        let clamped = min(1.0, max(0.0, normalized))
+        let clamped = normalized.clamped(to: 0.0...1.0)
         // Invert: top (0) = +centRange, bottom (1) = -centRange
         return centRange * (1.0 - 2.0 * clamped)
     }
