@@ -61,7 +61,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftUI Views:**
 - **Views are thin** — observe state, render, send actions; no business logic in views
-- **Views only interact with `ComparisonSession` and `PerceptualProfile`** — never import or reference `NotePlayer`, `NextComparisonStrategy`, or `TrainingDataStore` from views
+- **Views only interact with `ComparisonSession`, `PitchMatchingSession`, and `PerceptualProfile`** — never import or reference `NotePlayer`, `NextComparisonStrategy`, or `TrainingDataStore` from views
 - **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var comparisonSession = ComparisonSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
 - **Extract subviews at ~40 lines** — when a view body exceeds ~40 lines, extract child views
 - **Responsive layout** — detect `@Environment(\.verticalSizeClass)` for compact/regular; extract layout parameters to `static` methods for unit testability

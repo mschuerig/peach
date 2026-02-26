@@ -1,6 +1,6 @@
 # Story 16.3: Pitch Matching Screen Assembly
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -328,6 +328,7 @@ Files this story will modify:
 ## Change Log
 
 - 2026-02-26: Implemented story 16.3 — Pitch Matching Screen Assembly. Created PitchMatchingScreen view, wired PitchMatchingSession in PeachApp, added navigation routing and Start Screen button, added app lifecycle handling, added English + German localization. All 537 tests pass.
+- 2026-02-26: Code review — removed dead `isCompactHeight` property and unused `verticalSizeClass` environment read from PitchMatchingScreen (slider handles responsive layout internally). Updated project-context.md views rule to include PitchMatchingSession. Accepted `feedbackAnimation` duplication per project conventions.
 
 ## Dev Agent Record
 
@@ -352,12 +353,13 @@ No issues encountered during implementation.
 
 ### File List
 
-- `Peach/PitchMatching/PitchMatchingScreen.swift` (new)
+- `Peach/PitchMatching/PitchMatchingScreen.swift` (new; review: removed dead `isCompactHeight`)
 - `Peach/PitchMatching/PitchMatchingSession.swift` (modified — `referenceFrequency` visibility)
 - `Peach/App/PeachApp.swift` (modified — session creation and environment injection)
 - `Peach/App/NavigationDestination.swift` (modified — `.pitchMatching` case)
 - `Peach/Start/StartScreen.swift` (modified — button and routing)
 - `Peach/App/ContentView.swift` (modified — lifecycle handling)
 - `Peach/Resources/Localizable.xcstrings` (modified — "Pitch Matching" strings)
-- `docs/implementation-artifacts/16-3-pitch-matching-screen-assembly.md` (modified — task completion)
+- `docs/implementation-artifacts/16-3-pitch-matching-screen-assembly.md` (modified — task completion, review notes)
 - `docs/implementation-artifacts/sprint-status.yaml` (modified — status update)
+- `docs/project-context.md` (modified — updated views rule to include PitchMatchingSession)
