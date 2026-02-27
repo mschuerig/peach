@@ -1,6 +1,6 @@
 # Story 20.8: Resettable Protocol for ComparisonSession Dependencies
 
-Status: pending
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -32,29 +32,29 @@ So that the session is decoupled from specific profile/analytics implementations
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Resettable protocol (AC: #1)
-  - [ ] Create `Peach/Core/Training/Resettable.swift`
-  - [ ] Define `protocol Resettable { func reset() }`
+- [x] Task 1: Create Resettable protocol (AC: #1)
+  - [x] Create `Peach/Core/Training/Resettable.swift`
+  - [x] Define `protocol Resettable { func reset() }`
 
-- [ ] Task 2: Add conformance (AC: #2, #3)
-  - [ ] Add `extension TrendAnalyzer: Resettable {}` (already has `reset()`)
-  - [ ] Add `extension ThresholdTimeline: Resettable {}` (already has `reset()`)
+- [x] Task 2: Add conformance (AC: #2, #3)
+  - [x] Add `extension TrendAnalyzer: Resettable {}` (already has `reset()`)
+  - [x] Add `extension ThresholdTimeline: Resettable {}` (already has `reset()`)
 
-- [ ] Task 3: Refactor ComparisonSession (AC: #4, #5, #6, #7)
-  - [ ] Replace `private let trendAnalyzer: TrendAnalyzer?` and `private let thresholdTimeline: ThresholdTimeline?` with `private let resettables: [Resettable]`
-  - [ ] Replace init parameters with `resettables: [Resettable] = []`
-  - [ ] Replace `trendAnalyzer?.reset()` and `thresholdTimeline?.reset()` with `resettables.forEach { $0.reset() }`
+- [x] Task 3: Refactor ComparisonSession (AC: #4, #5, #6, #7)
+  - [x] Replace `private let trendAnalyzer: TrendAnalyzer?` and `private let thresholdTimeline: ThresholdTimeline?` with `private let resettables: [Resettable]`
+  - [x] Replace init parameters with `resettables: [Resettable] = []`
+  - [x] Replace `trendAnalyzer?.reset()` and `thresholdTimeline?.reset()` with `resettables.forEach { $0.reset() }`
 
-- [ ] Task 4: Update PeachApp (AC: #8)
-  - [ ] Change `createComparisonSession()` to pass `resettables: [trendAnalyzer, thresholdTimeline]`
+- [x] Task 4: Update PeachApp (AC: #8)
+  - [x] Change `createComparisonSession()` to pass `resettables: [trendAnalyzer, thresholdTimeline]`
 
-- [ ] Task 5: Update test helpers (AC: #9)
-  - [ ] Update `ComparisonTestHelpers.makeComparisonSession()` to use new `resettables` parameter (default `[]`)
-  - [ ] Update reset-specific tests to inject mock `Resettable` objects
+- [x] Task 5: Update test helpers (AC: #9)
+  - [x] Update `ComparisonTestHelpers.makeComparisonSession()` to use new `resettables` parameter (default `[]`)
+  - [x] Update reset-specific tests to inject mock `Resettable` objects
 
-- [ ] Task 6: Run full test suite (AC: #9)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 6: Run full test suite (AC: #9)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -105,6 +105,39 @@ Commit message: `Implement story 20.7: Resettable protocol for ComparisonSession
 - [Source: docs/project-context.md -- "Protocol-first design"]
 - [Source: docs/planning-artifacts/epics.md -- Epic 20]
 
+## Dev Agent Record
+
+### Implementation Plan
+
+- Created `Resettable` protocol with single `reset()` method in `Core/Training/`
+- Added empty conformance extensions for `TrendAnalyzer` and `ThresholdTimeline` (both already had `reset()`)
+- Replaced two optional concrete properties in `ComparisonSession` with a single `[Resettable]` array
+- Updated `PeachApp.createComparisonSession()` to pass resettables array
+- Updated `ComparisonSessionResetTests` to use `resettables:` parameter
+- Created `MockResettable` for testing the protocol contract
+- Created `ResettableTests` verifying protocol usage, conformances, and `ComparisonSession` integration
+
+### Completion Notes
+
+- All 9 acceptance criteria satisfied
+- `ComparisonSession.swift` has zero references to `TrendAnalyzer` or `ThresholdTimeline`
+- `ComparisonTestHelpers.makeComparisonSession()` already defaulted to no trend/timeline — no changes needed
+- Full test suite passes with zero regressions
+
+## File List
+
+- `Peach/Core/Training/Resettable.swift` (new) — protocol definition
+- `Peach/Core/Profile/TrendAnalyzer.swift` (modified) — added `Resettable` conformance extension
+- `Peach/Core/Profile/ThresholdTimeline.swift` (modified) — added `Resettable` conformance extension
+- `Peach/Comparison/ComparisonSession.swift` (modified) — replaced concrete types with `[Resettable]`
+- `Peach/App/PeachApp.swift` (modified) — pass `resettables:` instead of named parameters
+- `PeachTests/Core/Training/ResettableTests.swift` (new) — protocol and integration tests
+- `PeachTests/Mocks/MockResettable.swift` (new) — mock for testing
+- `PeachTests/Comparison/ComparisonSessionResetTests.swift` (modified) — use `resettables:` parameter
+- `docs/implementation-artifacts/sprint-status.yaml` (modified) — status tracking
+- `docs/implementation-artifacts/20-8-resettable-protocol-for-comparisonsession.md` (modified) — story file
+
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
+- 2026-02-27: Implementation complete — Resettable protocol introduced, ComparisonSession decoupled from TrendAnalyzer and ThresholdTimeline concrete types.

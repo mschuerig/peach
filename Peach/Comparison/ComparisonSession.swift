@@ -28,8 +28,7 @@ final class ComparisonSession: TrainingSession {
     private let notePlayer: NotePlayer
     private let strategy: NextComparisonStrategy
     private let profile: PitchDiscriminationProfile
-    private let trendAnalyzer: TrendAnalyzer?
-    private let thresholdTimeline: ThresholdTimeline?
+    private let resettables: [Resettable]
     private let observers: [ComparisonObserver]
     private var interruptionMonitor: AudioSessionInterruptionMonitor?
 
@@ -73,8 +72,7 @@ final class ComparisonSession: TrainingSession {
         strategy: NextComparisonStrategy,
         profile: PitchDiscriminationProfile,
         userSettings: UserSettings,
-        trendAnalyzer: TrendAnalyzer? = nil,
-        thresholdTimeline: ThresholdTimeline? = nil,
+        resettables: [Resettable] = [],
         observers: [ComparisonObserver] = [],
         notificationCenter: NotificationCenter = .default
     ) {
@@ -82,8 +80,7 @@ final class ComparisonSession: TrainingSession {
         self.strategy = strategy
         self.profile = profile
         self.userSettings = userSettings
-        self.trendAnalyzer = trendAnalyzer
-        self.thresholdTimeline = thresholdTimeline
+        self.resettables = resettables
         self.observers = observers
         self.interruptionMonitor = AudioSessionInterruptionMonitor(
             notificationCenter: notificationCenter,
@@ -143,8 +140,7 @@ final class ComparisonSession: TrainingSession {
         lastCompletedComparison = nil
         sessionBestCentDifference = nil
         profile.reset()
-        trendAnalyzer?.reset()
-        thresholdTimeline?.reset()
+        resettables.forEach { $0.reset() }
 
         logger.info("Training data reset to cold start")
     }

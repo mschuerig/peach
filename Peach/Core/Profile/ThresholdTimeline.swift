@@ -106,6 +106,10 @@ final class ThresholdTimeline {
     }
 }
 
+// MARK: - Resettable Conformance
+
+extension ThresholdTimeline: Resettable {}
+
 // MARK: - ComparisonObserver Conformance
 
 extension ThresholdTimeline: ComparisonObserver {

@@ -116,7 +116,7 @@ struct ComparisonSessionResetTests {
             strategy: MockNextComparisonStrategy(),
             profile: profile,
             userSettings: MockUserSettings(),
-            trendAnalyzer: trendAnalyzer
+            resettables: [trendAnalyzer]
         )
 
         // Reset via ComparisonSession
