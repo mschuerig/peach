@@ -1,6 +1,6 @@
 # Story 20.2: Move SoundSourceID to Core/Audio/
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -97,3 +97,4 @@ Commit message: `Implement story 20.2: Move SoundSourceID to Core/Audio/`
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implementation complete — moved SoundSourceID and tests to Core/Audio/, all 588 tests pass.
+- 2026-02-27: Code review passed — 0 High, 0 Medium, 3 Low (all informational). Marked done.
