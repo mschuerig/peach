@@ -63,34 +63,6 @@ struct PitchMatchingScreen: View {
     }
 }
 
-// MARK: - Environment Key for PitchMatchingSession
-
-extension EnvironmentValues {
-    @Entry var pitchMatchingSession: PitchMatchingSession = {
-        return PitchMatchingSession(
-            notePlayer: MockNotePlayerForPitchMatchingPreview(),
-            profile: PerceptualProfile(),
-            observers: [],
-            userSettings: AppUserSettings()
-        )
-    }()
-}
-
-// MARK: - Preview Mocks
-
-private final class MockNotePlayerForPitchMatchingPreview: NotePlayer {
-    func play(frequency: Frequency, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws -> PlaybackHandle {
-        MockPlaybackHandleForPitchMatchingPreview()
-    }
-
-    func stopAll() async throws {}
-}
-
-private final class MockPlaybackHandleForPitchMatchingPreview: PlaybackHandle {
-    func stop() async throws {}
-    func adjustFrequency(_ frequency: Frequency) async throws {}
-}
-
 // MARK: - Previews
 
 #Preview {

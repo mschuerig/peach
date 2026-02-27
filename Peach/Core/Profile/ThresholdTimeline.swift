@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 struct TimelineDataPoint {
     let timestamp: Date
@@ -119,10 +118,4 @@ extension ThresholdTimeline: ComparisonObserver {
         ))
         recomputeAggregatedPoints()
     }
-}
-
-// MARK: - Environment Key
-
-extension EnvironmentValues {
-    @Entry var thresholdTimeline = ThresholdTimeline()
 }

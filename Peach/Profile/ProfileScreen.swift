@@ -104,9 +104,3 @@ struct ProfileScreen: View {
         ProfileScreen()
     }
 }
-
-// MARK: - Environment Key for PerceptualProfile
-
-extension EnvironmentValues {
-    @Entry var perceptualProfile = PerceptualProfile()
-}
