@@ -1,6 +1,6 @@
 # Story 20.9: Move MockHapticFeedbackManager to Test Target
 
-Status: pending
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,22 +24,22 @@ So that mock types do not ship in the production binary and the project follows 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create mock in test target (AC: #2)
-  - [ ] Create `PeachTests/Comparison/MockHapticFeedbackManager.swift`
-  - [ ] Copy `MockHapticFeedbackManager` class
-  - [ ] Add `@testable import Peach` at top
-  - [ ] Ensure it conforms to `HapticFeedback` and `ComparisonObserver` protocols
+- [x] Task 1: Create mock in test target (AC: #2)
+  - [x] Create `PeachTests/Comparison/MockHapticFeedbackManager.swift`
+  - [x] Copy `MockHapticFeedbackManager` class
+  - [x] Add `@testable import Peach` at top
+  - [x] Ensure it conforms to `HapticFeedback` and `ComparisonObserver` protocols
 
-- [ ] Task 2: Remove mock from production (AC: #1)
-  - [ ] Remove lines 59-83 (the `// MARK: - Mock for Testing` section) from `Peach/Comparison/HapticFeedbackManager.swift`
+- [x] Task 2: Remove mock from production (AC: #1)
+  - [x] Remove lines 59-83 (the `// MARK: - Mock for Testing` section) from `Peach/Comparison/HapticFeedbackManager.swift`
 
-- [ ] Task 3: Verify no production references (AC: #3)
-  - [ ] Search production code for `MockHapticFeedbackManager`
-  - [ ] If `EnvironmentKeys.swift` references it, replace with a `private` no-op stub
+- [x] Task 3: Verify no production references (AC: #3)
+  - [x] Search production code for `MockHapticFeedbackManager`
+  - [x] If `EnvironmentKeys.swift` references it, replace with a `private` no-op stub
 
-- [ ] Task 4: Run full test suite (AC: #4, #5)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 4: Run full test suite (AC: #4, #5)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -79,6 +79,26 @@ Commit message: `Implement story 20.8: Move MockHapticFeedbackManager to test ta
 - [Source: docs/project-context.md -- "Mock files live in test target"]
 - [Source: docs/planning-artifacts/epics.md -- Epic 20]
 
+## Dev Agent Record
+
+### Implementation Notes
+- Verified no production code references `MockHapticFeedbackManager` after story 20.5 (grep confirmed `EnvironmentKeys.swift` is clean)
+- Clean removal: mock class copied verbatim to test target, removed from production file
+- All existing tests pass unchanged — `@testable import Peach` resolves the type from the new test-target location
+
+### Completion Notes
+- All 4 tasks completed, all 5 ACs satisfied
+- Full test suite: **TEST SUCCEEDED** with zero regressions
+- Task 3 (AC #3) required no code change — `EnvironmentKeys.swift` already had no reference to `MockHapticFeedbackManager`
+
+## File List
+
+- `PeachTests/Comparison/MockHapticFeedbackManager.swift` (new) — mock moved to test target
+- `Peach/Comparison/HapticFeedbackManager.swift` (modified) — removed mock class (lines 59-83)
+- `docs/implementation-artifacts/20-9-move-mockhapticfeedbackmanager-to-test-target.md` (modified) — story file updated
+- `docs/implementation-artifacts/sprint-status.yaml` (modified) — status updated
+
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
+- 2026-02-27: Implementation complete — mock moved to test target, all tests pass.
