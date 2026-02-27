@@ -1,6 +1,6 @@
 # Story 19.4: Extract Long Methods
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -137,6 +137,7 @@ Commit message: `Implement story 19.4: Extract long methods`
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
 - 2026-02-27: Story implemented — extracted 9 methods across 2 files, all 586 tests pass.
+- 2026-02-27: Code review — 3 findings fixed (1 HIGH, 2 MEDIUM). Inlined trivial `createModelContainer()`, refactored `loadPerceptualProfile` to accept pre-fetched records (eliminated double SwiftData fetch), fixed inconsistent parameter ordering in factory methods. 586 tests pass.
 
 ## Dev Agent Record
 
@@ -150,15 +151,31 @@ None — clean implementation with no issues.
 
 ### Completion Notes List
 
-- Extracted `PeachApp.init()` into 4 private static factory methods: `createModelContainer()`, `loadPerceptualProfile(from:)`, `createComparisonSession(...)`, `createPitchMatchingSession(...)`. Methods are `static` because they're called from a struct initializer before `self` is available.
+- Extracted `PeachApp.init()` into 3 private static factory methods: `loadPerceptualProfile(comparisonRecords:pitchMatchingRecords:)`, `createComparisonSession(...)`, `createPitchMatchingSession(...)`. Methods are `static` because they're called from a struct initializer before `self` is available. `createModelContainer()` was inlined (trivial one-liner) per code review.
 - Extracted `ComparisonSession.handleAnswer()` into 3 private helpers: `stopNote2IfPlaying()`, `trackSessionBest(_:)`, `transitionToFeedback(_:)`. The `handleAnswer` body is now 12 lines of clear, sequential steps.
 - Extracted `ComparisonSession.playNextComparison()` into 2 private helpers: `calculateNote2Amplitude(varyLoudness:)` and `playComparisonNotes(comparison:settings:noteDuration:amplitudeDB:) async throws`. Error handling stays in the caller as specified.
 - REVIEW comments were already absent from the codebase (AC #4 pre-satisfied).
 - All 586 tests pass with zero regressions.
 
+### Senior Developer Review (AI)
+
+**Reviewer:** Claude Opus 4.6 | **Date:** 2026-02-27
+
+**Findings (3 fixed, 2 noted):**
+
+1. **[HIGH] Double fetch of comparison records — FIXED** — `loadPerceptualProfile(from:)` fetched comparison records internally, then `init()` fetched them again for TrendAnalyzer/ThresholdTimeline. Refactored `loadPerceptualProfile` to accept pre-fetched records as parameters, eliminating the redundant SwiftData query.
+
+2. **[MEDIUM] Trivial `createModelContainer()` extraction — FIXED** — One-liner method wrapping `ModelContainer(for:)` added indirection without readability benefit. Inlined back into init().
+
+3. **[MEDIUM] Inconsistent factory method parameter ordering — FIXED** — `createPitchMatchingSession` placed `userSettings` last while `createComparisonSession` placed it 4th. Standardized: core deps → userSettings → data/observers.
+
+4. **[LOW] Observer composition rationale lost** — Comment explaining each observer's role ("dataStore (persistence), profile (analytics), hapticManager (feedback)") is now inside `createComparisonSession`. Not blocking.
+
+5. **[LOW] HapticFeedbackManager creation hidden in factory** — Service creation less visible in init() flow, though still within PeachApp.swift. Not blocking.
+
 ### File List
 
-- `Peach/App/PeachApp.swift` — extracted init into 4 static factory methods
+- `Peach/App/PeachApp.swift` — extracted init into 3 static factory methods (review: inlined createModelContainer, refactored loadPerceptualProfile params, fixed param ordering)
 - `Peach/Comparison/ComparisonSession.swift` — extracted handleAnswer into 3 helpers, playNextComparison into 2 helpers
 - `docs/implementation-artifacts/sprint-status.yaml` — status updated
 - `docs/implementation-artifacts/19-4-extract-long-methods.md` — story file updated
