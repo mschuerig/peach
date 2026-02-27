@@ -1,6 +1,6 @@
 # Story 19.5: TrainingSession Protocol and Dependency Cleanup
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -203,10 +203,23 @@ Commit message: `Implement story 19.5: TrainingSession protocol and dependency c
 - [Source: docs/project-context.md -- Views are thin, protocol-first design]
 - [Source: docs/implementation-artifacts/19-4-extract-long-methods.md -- Prerequisite story]
 
+## Senior Developer Review (AI)
+
+**Reviewer:** Michael (via BMAD code-review workflow) on 2026-02-27
+
+**Findings (5 total: 4 Medium, 1 Low) — All Fixed:**
+
+- [x] [M1] Removed dead `adjustFrequency(_ frequency: Double)` from PitchMatchingSession. Renamed `adjustNormalizedPitch` → `adjustPitch` and `commitNormalizedPitch` → `commitPitch`. Removed "normalized" naming throughout slider and session.
+- [x] [M2] Made `commitResult(userFrequency:)` `private`. Updated all tests to use `commitPitch` API.
+- [x] [M3] Removed duplicate `centRange` constant — now derived from `initialCentOffsetRange.upperBound`.
+- [x] [M4] Added `accessibilityValue` to `VerticalPitchSlider` (reports position as percentage).
+- [x] [L1] Updated `project-context.md` to include `TrainingSession` in view-accessible types list.
+
 ## Change Log
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
 - 2026-02-27: Implemented all 9 tasks. TrainingSession protocol, active session tracking, ContentView refactor, VerticalPitchSlider normalized API, PitchMatchingSession pitch calculations, environment wiring, tests updated. Full suite passes.
+- 2026-02-27: Code review fixes applied — removed dead API, renamed normalized→pitch, made commitResult private, derived centRange, added accessibilityValue, updated project-context.md. Full suite passes.
 
 ## Dev Agent Record
 

@@ -10,11 +10,11 @@ struct PitchMatchingScreen: View {
     var body: some View {
         VerticalPitchSlider(
             isActive: pitchMatchingSession.state == .playingTunable,
-            onNormalizedValueChange: { normalized in
-                pitchMatchingSession.adjustNormalizedPitch(normalized)
+            onValueChange: { value in
+                pitchMatchingSession.adjustPitch(value)
             },
-            onCommit: { normalized in
-                pitchMatchingSession.commitNormalizedPitch(normalized)
+            onCommit: { value in
+                pitchMatchingSession.commitPitch(value)
             }
         )
         .padding()

@@ -167,5 +167,5 @@ development_status:
   19-2-value-objects-for-domain-primitives: done
   19-3-usersettings-wrapper-for-userdefaults: done
   19-4-extract-long-methods: done
-  19-5-trainingsession-protocol-and-dependency-cleanup: review
+  19-5-trainingsession-protocol-and-dependency-cleanup: done
   epic-19-retrospective: optional

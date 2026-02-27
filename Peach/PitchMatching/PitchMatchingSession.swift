@@ -78,32 +78,23 @@ final class PitchMatchingSession: TrainingSession {
         }
     }
 
-    private static let centRange: Double = 100
-
-    func adjustNormalizedPitch(_ normalized: Double) {
+    func adjustPitch(_ value: Double) {
         guard state == .playingTunable, let referenceFrequency else { return }
-        let centOffset = normalized * Self.centRange
+        let centOffset = value * Self.initialCentOffsetRange.upperBound
         let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
         Task {
             try? await currentHandle?.adjustFrequency(Frequency(frequency))
         }
     }
 
-    func commitNormalizedPitch(_ normalized: Double) {
+    func commitPitch(_ value: Double) {
         guard state == .playingTunable, let referenceFrequency else { return }
-        let centOffset = normalized * Self.centRange
+        let centOffset = value * Self.initialCentOffsetRange.upperBound
         let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
         commitResult(userFrequency: frequency)
     }
 
-    func adjustFrequency(_ frequency: Double) {
-        guard state == .playingTunable else { return }
-        Task {
-            try? await currentHandle?.adjustFrequency(Frequency(frequency))
-        }
-    }
-
-    func commitResult(userFrequency: Double) {
+    private func commitResult(userFrequency: Double) {
         guard state == .playingTunable else { return }
         guard let challenge = currentChallenge else { return }
 
