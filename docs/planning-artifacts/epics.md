@@ -274,6 +274,14 @@ Users can access pitch matching from the Start Screen alongside comparison train
 Users can see their pitch matching accuracy statistics alongside their discrimination profile on the Profile Screen.
 **FRs covered:** None (extends FR21-FR26 to include matching data)
 
+### Epic 19: Clean Foundations — Code Review Refactoring
+Address all code review findings from the initial implementation: replace magic values with named constants, wrap primitives in validated Value Objects, encapsulate UserDefaults behind a protocol, extract long methods, and introduce a TrainingSession protocol.
+**FRs covered:** None (refactoring only)
+
+### Epic 20: Right Direction — Dependency Inversion Cleanup
+Resolve all dependency direction violations: move shared domain types from feature modules to Core/, remove SwiftUI and UIKit imports from domain code, consolidate @Entry environment keys, inject services instead of creating them in views, and use protocols at module boundaries.
+**FRs covered:** None (refactoring only)
+
 ## Epic 1: Remember Every Note — Data Foundation
 
 Every comparison the user answers is reliably stored and persists across sessions, crashes, and restarts — so that no training is ever lost. This includes establishing the Xcode project and folder structure as the implementation foundation.
@@ -1890,3 +1898,143 @@ So that the view layer depends only on abstractions, components have single resp
 **Given** the full test suite
 **When** all tests are run
 **Then** all existing tests pass with zero regressions
+
+## Epic 20: Right Direction — Dependency Inversion Cleanup
+
+Resolve all dependency direction violations found by adversarial code review: move shared domain types from feature modules to Core/, remove SwiftUI and UIKit imports from domain code, consolidate @Entry environment keys, inject services instead of creating them in views, and use protocols instead of concrete types at module boundaries.
+
+### Story 20.1: Move Shared Domain Types to Core/Training/
+
+As a **developer maintaining Peach**,
+I want shared domain types (`Comparison`, `CompletedComparison`, `ComparisonObserver`, `CompletedPitchMatching`, `PitchMatchingObserver`) moved from feature directories to `Core/Training/`,
+So that Core/ no longer has upward dependencies on feature modules, and the dependency arrows point in the correct direction.
+
+**Acceptance Criteria:**
+
+**Given** `Comparison`, `CompletedComparison`, and `ComparisonObserver` are defined in `Comparison/` and `CompletedPitchMatching` and `PitchMatchingObserver` are defined in `PitchMatching/`
+**When** they are moved to `Peach/Core/Training/`
+**Then** no Core/ file depends on any type defined in a feature directory
+**And** the full test suite passes with zero code changes (single-module app resolves types by name)
+
+### Story 20.2: Move SoundSourceID to Core/Audio/
+
+As a **developer maintaining Peach**,
+I want `SoundSourceID` moved from `Settings/` to `Core/Audio/`,
+So that `SoundFontNotePlayer` no longer depends on the Settings module, and audio domain types are co-located.
+
+**Acceptance Criteria:**
+
+**Given** `SoundSourceID.swift` lives in `Settings/` but is consumed by `SoundFontNotePlayer` in `Core/Audio/`
+**When** it is moved to `Peach/Core/Audio/SoundSourceID.swift`
+**Then** no Core/ file references any type defined in Settings/
+**And** the full test suite passes with zero code changes
+
+### Story 20.3: Remove Cross-Feature Feedback Icon Size Dependency
+
+As a **developer maintaining Peach**,
+I want `PitchMatchingFeedbackIndicator` to define its own icon size constant instead of referencing `ComparisonFeedbackIndicator.defaultIconSize`,
+So that PitchMatching/ has no dependency on Comparison/ and each feature module is self-contained.
+
+**Acceptance Criteria:**
+
+**Given** `PitchMatchingFeedbackIndicator` references `ComparisonFeedbackIndicator.defaultIconSize`
+**When** a local `private static let defaultIconSize: CGFloat = 100` is defined
+**Then** `PitchMatchingFeedbackIndicator.swift` contains no reference to `ComparisonFeedbackIndicator`
+**And** the full test suite passes
+
+### Story 20.4: Use Protocols in Profile Views
+
+As a **developer maintaining Peach**,
+I want `SummaryStatisticsView` and `MatchingStatisticsView` to depend on protocols (`PitchDiscriminationProfile` and `PitchMatchingProfile`) instead of the concrete `PerceptualProfile` class,
+So that the views follow the Dependency Inversion Principle and depend on abstractions rather than implementations.
+
+**Acceptance Criteria:**
+
+**Given** `SummaryStatisticsView.computeStats(from:)` takes `PerceptualProfile` and `MatchingStatisticsView.computeMatchingStats(from:)` takes `PerceptualProfile`
+**When** parameter types are changed to `PitchDiscriminationProfile` and `PitchMatchingProfile` respectively
+**Then** the methods accept any protocol-conforming type
+**And** the full test suite passes (existing tests pass `PerceptualProfile` which conforms to both)
+
+### Story 20.5: Extract @Entry Environment Keys from Core/
+
+As a **developer maintaining Peach**,
+I want all `@Entry` environment key definitions consolidated into a single `App/EnvironmentKeys.swift` file,
+So that Core/ files no longer import SwiftUI, the domain layer is framework-free, and all environment wiring is visible in one place.
+
+**Acceptance Criteria:**
+
+**Given** four Core/ files (`SoundFontLibrary`, `TrendAnalyzer`, `ThresholdTimeline`, `TrainingSession`) import SwiftUI solely for `@Entry` definitions
+**When** all `@Entry` definitions are moved to `App/EnvironmentKeys.swift`
+**Then** no file in Core/ imports SwiftUI
+**And** SwiftUI previews for all screens still render
+**And** the full test suite passes
+
+### Story 20.6: Remove UIKit from AudioSessionInterruptionMonitor
+
+As a **developer maintaining Peach**,
+I want `AudioSessionInterruptionMonitor` to not import UIKit by accepting notification names as parameters instead of hardcoding `UIApplication` constants,
+So that Core/ files have no UIKit dependency and the monitor is more testable.
+
+**Acceptance Criteria:**
+
+**Given** `AudioSessionInterruptionMonitor` imports UIKit for `UIApplication.didEnterBackgroundNotification`
+**When** the `observeBackgrounding: Bool` parameter is replaced with `backgroundNotificationName: Notification.Name? = nil`
+**Then** `AudioSessionInterruptionMonitor.swift` has no `import UIKit`
+**And** `PeachApp` provides the UIKit notification names at the composition root
+**And** the full test suite passes
+
+### Story 20.7: Resettable Protocol for ComparisonSession Dependencies
+
+As a **developer maintaining Peach**,
+I want `ComparisonSession` to depend on a `Resettable` protocol instead of storing `TrendAnalyzer` and `ThresholdTimeline` as concrete types,
+So that the session is decoupled from specific profile/analytics implementations and only knows that some of its dependencies can be reset.
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonSession` stores `TrendAnalyzer?` and `ThresholdTimeline?` solely for their `reset()` method
+**When** a `Resettable` protocol is introduced and both types conform
+**Then** `ComparisonSession` stores `[Resettable]` instead of named concrete types
+**And** `resetTrainingData()` calls `resettables.forEach { $0.reset() }`
+**And** the full test suite passes
+
+### Story 20.8: Move MockHapticFeedbackManager to Test Target
+
+As a **developer maintaining Peach**,
+I want `MockHapticFeedbackManager` moved from the production target to the test target,
+So that mock types do not ship in the production binary and the project follows its own convention that mocks belong in `PeachTests/`.
+
+**Acceptance Criteria:**
+
+**Given** `MockHapticFeedbackManager` exists in `Peach/Comparison/HapticFeedbackManager.swift`
+**When** it is moved to `PeachTests/Comparison/MockHapticFeedbackManager.swift`
+**Then** no mock class exists in the production target
+**And** all tests using `MockHapticFeedbackManager` still pass via `@testable import Peach`
+
+### Story 20.9: Inject TrainingDataStore into SettingsScreen
+
+As a **developer maintaining Peach**,
+I want `SettingsScreen` to receive `TrainingDataStore` via `@Environment` instead of constructing it from a raw `ModelContext`,
+So that the view no longer imports SwiftData, service instantiation stays in the composition root, and the persistence implementation detail is hidden behind the existing abstraction.
+
+**Acceptance Criteria:**
+
+**Given** `SettingsScreen` creates `TrainingDataStore(modelContext:)` directly and imports SwiftData
+**When** `TrainingDataStore` is injected via `@Environment(\.trainingDataStore)`
+**Then** `SettingsScreen.swift` has no `import SwiftData` and no `ModelContext` reference
+**And** Reset All Training Data still works correctly
+**And** the full test suite passes
+
+### Story 20.10: Update Documentation
+
+As a **developer maintaining Peach**,
+I want all architecture documentation updated to reflect the dependency direction cleanup from Epic 20,
+So that the docs accurately describe the current codebase, new conventions are captured, and resolved technical debt is marked.
+
+**Acceptance Criteria:**
+
+**Given** Epic 20 changes the directory structure, dependency patterns, and conventions
+**When** documentation is updated
+**Then** arc42 sections 5, 8, 9, and 11 reflect the new architecture
+**And** `project-context.md` includes new file placement rules and framework import restrictions
+**And** `epics.md` includes Epic 20 with all stories
+**And** `sprint-status.yaml` includes Epic 20 entries

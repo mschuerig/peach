@@ -162,10 +162,24 @@ development_status:
   18-1-display-pitch-matching-statistics-on-profile-screen: done
 
   # Epic 19: Code Review Refactoring
-  epic-19: in-progress
+  epic-19: done
   19-1-clamping-utility-and-magic-value-constants: done
   19-2-value-objects-for-domain-primitives: done
   19-3-usersettings-wrapper-for-userdefaults: done
   19-4-extract-long-methods: done
   19-5-trainingsession-protocol-and-dependency-cleanup: done
   epic-19-retrospective: optional
+
+  # Epic 20: Right Direction — Dependency Inversion Cleanup
+  epic-20: in-progress
+  20-1-move-shared-domain-types-to-core: ready-for-dev
+  20-2-move-soundsourceid-to-core: ready-for-dev
+  20-3-remove-cross-feature-feedback-icon-size-dependency: ready-for-dev
+  20-4-use-protocols-in-profile-views: ready-for-dev
+  20-5-extract-entry-environment-keys-from-core: ready-for-dev
+  20-6-remove-uikit-from-audiosessioninterruptionmonitor: ready-for-dev
+  20-7-resettable-protocol-for-comparisonsession: ready-for-dev
+  20-8-move-mockhapticfeedbackmanager-to-test-target: ready-for-dev
+  20-9-inject-trainingdatastore-into-settingsscreen: ready-for-dev
+  20-10-update-documentation: ready-for-dev
+  epic-20-retrospective: optional
