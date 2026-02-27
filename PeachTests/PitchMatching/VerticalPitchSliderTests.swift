@@ -5,188 +5,86 @@ import Testing
 @Suite("VerticalPitchSlider")
 struct VerticalPitchSliderTests {
 
-    // MARK: - centOffset Tests
+    // MARK: - normalizedValue Tests
 
-    @Test("center drag position yields zero cent offset")
-    func centerDragYieldsZeroCentOffset() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 200, trackHeight: 400, centRange: 100)
-        #expect(offset == 0)
+    @Test("center drag position yields zero normalized value")
+    func centerDragYieldsZeroNormalizedValue() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: 200, trackHeight: 400)
+        #expect(value == 0)
     }
 
-    @Test("top of track yields positive cent offset (sharper)")
-    func topOfTrackYieldsPositiveCentOffset() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 0, trackHeight: 400, centRange: 100)
-        #expect(offset == 100)
+    @Test("top of track yields +1.0 (sharper)")
+    func topOfTrackYieldsPositiveOne() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: 0, trackHeight: 400)
+        #expect(value == 1.0)
     }
 
-    @Test("bottom of track yields negative cent offset (flatter)")
-    func bottomOfTrackYieldsNegativeCentOffset() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 400, trackHeight: 400, centRange: 100)
-        #expect(offset == -100)
+    @Test("bottom of track yields -1.0 (flatter)")
+    func bottomOfTrackYieldsNegativeOne() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: 400, trackHeight: 400)
+        #expect(value == -1.0)
     }
 
-    @Test("quarter from top yields +50 cent offset")
-    func quarterFromTopYieldsHalfPositiveCentOffset() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 100, trackHeight: 400, centRange: 100)
-        #expect(offset == 50)
+    @Test("quarter from top yields +0.5")
+    func quarterFromTopYieldsHalf() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: 100, trackHeight: 400)
+        #expect(value == 0.5)
     }
 
-    @Test("drag beyond top clamps to positive centRange")
-    func dragBeyondTopClampsToPositiveCentRange() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: -50, trackHeight: 400, centRange: 100)
-        #expect(offset == 100)
+    @Test("drag beyond top clamps to +1.0")
+    func dragBeyondTopClampsToPositiveOne() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: -50, trackHeight: 400)
+        #expect(value == 1.0)
     }
 
-    @Test("drag beyond bottom clamps to negative centRange")
-    func dragBeyondBottomClampsToNegativeCentRange() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 450, trackHeight: 400, centRange: 100)
-        #expect(offset == -100)
+    @Test("drag beyond bottom clamps to -1.0")
+    func dragBeyondBottomClampsToNegativeOne() async {
+        let value = VerticalPitchSlider.normalizedValue(dragY: 450, trackHeight: 400)
+        #expect(value == -1.0)
     }
 
-    @Test("custom centRange of 50 scales correctly")
-    func customCentRangeScalesCorrectly() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 0, trackHeight: 400, centRange: 50)
-        #expect(offset == 50)
-    }
-
-    @Test("zero track height returns zero offset")
+    @Test("zero track height returns zero")
     func zeroTrackHeightReturnsZero() async {
-        let offset = VerticalPitchSlider.centOffset(dragY: 100, trackHeight: 0, centRange: 100)
-        #expect(offset == 0)
-    }
-
-    // MARK: - frequency Tests
-
-    @Test("zero cent offset returns reference frequency unchanged")
-    func zeroCentOffsetReturnsReferenceFrequency() async {
-        let freq = VerticalPitchSlider.frequency(centOffset: 0, referenceFrequency: 440.0)
-        #expect(abs(freq - 440.0) < 0.001)
-    }
-
-    @Test("+100 cents returns one semitone above reference")
-    func positiveCentsReturnsHigherFrequency() async {
-        let freq = VerticalPitchSlider.frequency(centOffset: 100, referenceFrequency: 440.0)
-        let expected = 440.0 * pow(2.0, 100.0 / 1200.0)
-        #expect(abs(freq - expected) < 0.001)
-    }
-
-    @Test("-100 cents returns one semitone below reference")
-    func negativeCentsReturnsLowerFrequency() async {
-        let freq = VerticalPitchSlider.frequency(centOffset: -100, referenceFrequency: 440.0)
-        let expected = 440.0 * pow(2.0, -100.0 / 1200.0)
-        #expect(abs(freq - expected) < 0.001)
-    }
-
-    @Test("+50 cents returns quarter-tone above reference")
-    func fiftyPositiveCentsReturnsQuarterToneAbove() async {
-        let freq = VerticalPitchSlider.frequency(centOffset: 50, referenceFrequency: 440.0)
-        let expected = 440.0 * pow(2.0, 50.0 / 1200.0)
-        #expect(abs(freq - expected) < 0.001)
-    }
-
-    @Test("different reference frequency computes correctly")
-    func differentReferenceFrequencyComputesCorrectly() async {
-        let freq = VerticalPitchSlider.frequency(centOffset: 0, referenceFrequency: 261.63)
-        #expect(abs(freq - 261.63) < 0.001)
+        let value = VerticalPitchSlider.normalizedValue(dragY: 100, trackHeight: 0)
+        #expect(value == 0)
     }
 
     // MARK: - thumbPosition Tests
 
-    @Test("zero cent offset places thumb at center")
-    func zeroCentOffsetPlacesThumbAtCenter() async {
-        let pos = VerticalPitchSlider.thumbPosition(centOffset: 0, trackHeight: 400, centRange: 100)
+    @Test("zero normalized value places thumb at center")
+    func zeroNormalizedValuePlacesThumbAtCenter() async {
+        let pos = VerticalPitchSlider.thumbPosition(normalizedValue: 0, trackHeight: 400)
         #expect(abs(pos - 200) < 0.001)
     }
 
-    @Test("+100 cent offset places thumb at top")
-    func maxPositiveCentOffsetPlacesThumbAtTop() async {
-        let pos = VerticalPitchSlider.thumbPosition(centOffset: 100, trackHeight: 400, centRange: 100)
+    @Test("+1.0 normalized value places thumb at top")
+    func positiveOneNormalizedValuePlacesThumbAtTop() async {
+        let pos = VerticalPitchSlider.thumbPosition(normalizedValue: 1.0, trackHeight: 400)
         #expect(pos < 0.001)
     }
 
-    @Test("-100 cent offset places thumb at bottom")
-    func maxNegativeCentOffsetPlacesThumbAtBottom() async {
-        let pos = VerticalPitchSlider.thumbPosition(centOffset: -100, trackHeight: 400, centRange: 100)
+    @Test("-1.0 normalized value places thumb at bottom")
+    func negativeOneNormalizedValuePlacesThumbAtBottom() async {
+        let pos = VerticalPitchSlider.thumbPosition(normalizedValue: -1.0, trackHeight: 400)
         #expect(abs(pos - 400) < 0.001)
     }
 
-    @Test("+50 cent offset places thumb at quarter from top")
-    func halfPositiveCentOffsetPlacesThumbAtQuarterFromTop() async {
-        let pos = VerticalPitchSlider.thumbPosition(centOffset: 50, trackHeight: 400, centRange: 100)
+    @Test("+0.5 normalized value places thumb at quarter from top")
+    func halfNormalizedValuePlacesThumbAtQuarterFromTop() async {
+        let pos = VerticalPitchSlider.thumbPosition(normalizedValue: 0.5, trackHeight: 400)
         #expect(abs(pos - 100) < 0.001)
     }
 
     // MARK: - Round-trip consistency
 
-    @Test("centOffset and thumbPosition are inverse operations")
-    func centOffsetAndThumbPositionAreInverse() async {
+    @Test("normalizedValue and thumbPosition are inverse operations")
+    func normalizedValueAndThumbPositionAreInverse() async {
         let trackHeight: CGFloat = 600
-        let centRange: Double = 100
         let originalY: CGFloat = 150
 
-        let cents = VerticalPitchSlider.centOffset(dragY: originalY, trackHeight: trackHeight, centRange: centRange)
-        let recoveredY = VerticalPitchSlider.thumbPosition(centOffset: cents, trackHeight: trackHeight, centRange: centRange)
+        let normalized = VerticalPitchSlider.normalizedValue(dragY: originalY, trackHeight: trackHeight)
+        let recoveredY = VerticalPitchSlider.thumbPosition(normalizedValue: normalized, trackHeight: trackHeight)
 
         #expect(abs(recoveredY - originalY) < 0.001)
-    }
-
-    // MARK: - dragResult Tests (gesture processing + inactive state)
-
-    @Test("dragResult returns nil when slider is inactive")
-    func dragResultReturnsNilWhenInactive() async {
-        let result = VerticalPitchSlider.dragResult(
-            isActive: false,
-            dragY: 200,
-            trackHeight: 400,
-            centRange: 100,
-            referenceFrequency: 440.0
-        )
-        #expect(result == nil)
-    }
-
-    @Test("dragResult returns cent offset and frequency when active")
-    func dragResultReturnsCentOffsetAndFrequencyWhenActive() async {
-        let result = VerticalPitchSlider.dragResult(
-            isActive: true,
-            dragY: 100,
-            trackHeight: 400,
-            centRange: 100,
-            referenceFrequency: 440.0
-        )
-        #expect(result != nil)
-        #expect(result!.centOffset == 50)
-        let expectedFreq = 440.0 * pow(2.0, 50.0 / 1200.0)
-        #expect(abs(result!.frequency - expectedFreq) < 0.001)
-    }
-
-    @Test("dragResult at center yields zero offset and reference frequency")
-    func dragResultAtCenterYieldsReferenceFrequency() async {
-        let result = VerticalPitchSlider.dragResult(
-            isActive: true,
-            dragY: 200,
-            trackHeight: 400,
-            centRange: 100,
-            referenceFrequency: 440.0
-        )
-        #expect(result != nil)
-        #expect(result!.centOffset == 0)
-        #expect(abs(result!.frequency - 440.0) < 0.001)
-    }
-
-    // MARK: - FrequencyCalculation Cross-Validation
-
-    @Test("frequency matches FrequencyCalculation for A4 with +50 cents")
-    func frequencyMatchesFrequencyCalculationForA4() async throws {
-        let sliderFreq = VerticalPitchSlider.frequency(centOffset: 50, referenceFrequency: 440.0)
-        let canonicalFreq = try FrequencyCalculation.frequency(midiNote: 69, cents: 50)
-        #expect(abs(sliderFreq - canonicalFreq) < 0.001)
-    }
-
-    @Test("frequency matches FrequencyCalculation for C4 with -100 cents")
-    func frequencyMatchesFrequencyCalculationForC4() async throws {
-        let baseFreq = try FrequencyCalculation.frequency(midiNote: 60)
-        let sliderFreq = VerticalPitchSlider.frequency(centOffset: -100, referenceFrequency: baseFreq)
-        let canonicalFreq = try FrequencyCalculation.frequency(midiNote: 60, cents: -100)
-        #expect(abs(sliderFreq - canonicalFreq) < 0.001)
     }
 }

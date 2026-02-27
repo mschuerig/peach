@@ -2,11 +2,8 @@ import SwiftUI
 import os
 
 struct ContentView: View {
-    /// Training session injected from app
-    @Environment(\.comparisonSession) private var comparisonSession
-
-    /// Pitch matching session injected from app
-    @Environment(\.pitchMatchingSession) private var pitchMatchingSession
+    /// Active training session (if any) injected from app
+    @Environment(\.activeSession) private var activeSession
 
     /// Scene phase for app lifecycle monitoring (Story 3.4)
     @Environment(\.scenePhase) private var scenePhase
@@ -44,23 +41,7 @@ struct ContentView: View {
     /// Handles app entering background state
     private func handleAppBackgrounding() {
         logger.info("App backgrounded - stopping training if active")
-
-        // Stop training if it's active (AC#2)
-        // This will stop audio and discard any incomplete comparison
-        if comparisonSession.state != .idle {
-            logger.info("Training was active (state: \(String(describing: comparisonSession.state))) - stopping")
-            comparisonSession.stop()
-        } else {
-            logger.info("Training was already idle - no action needed")
-        }
-
-        // Stop pitch matching if it's active (Story 16.3)
-        if pitchMatchingSession.state != .idle {
-            logger.info("Pitch matching was active (state: \(String(describing: pitchMatchingSession.state))) - stopping")
-            pitchMatchingSession.stop()
-        }
-
-        // Note: We DON'T clear navigation here - user stays on current screen while backgrounded
+        activeSession?.stop()
     }
 
     /// Handles app returning to foreground from background

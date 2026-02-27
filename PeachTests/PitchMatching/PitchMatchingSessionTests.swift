@@ -429,6 +429,105 @@ struct PitchMatchingSessionTests {
         #expect(session.state == .idle)
     }
 
+    // MARK: - Normalized Pitch Tests
+
+    @Test("adjustNormalizedPitch converts normalized value to frequency and delegates to handle")
+    func adjustNormalizedPitchDelegatesToHandle() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(69)
+        mockSettings.noteRangeMax = MIDINote(69)
+        mockSettings.referencePitch = 440.0
+        let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.startPitchMatching()
+        try await waitForState(session, .playingTunable)
+
+        let handle = try #require(notePlayer.lastHandle)
+
+        // Normalized 0.0 should produce reference frequency (0 cent offset)
+        session.adjustNormalizedPitch(0.0)
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(handle.adjustFrequencyCallCount == 1)
+        let refFreq = try FrequencyCalculation.frequency(midiNote: 69, referencePitch: 440.0)
+        #expect(abs(handle.lastAdjustedFrequency! - refFreq) < 0.01)
+    }
+
+    @Test("adjustNormalizedPitch with +1.0 produces frequency 100 cents above reference")
+    func adjustNormalizedPitchPositiveOne() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(69)
+        mockSettings.noteRangeMax = MIDINote(69)
+        mockSettings.referencePitch = 440.0
+        let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.startPitchMatching()
+        try await waitForState(session, .playingTunable)
+
+        let handle = try #require(notePlayer.lastHandle)
+        session.adjustNormalizedPitch(1.0)
+        try await Task.sleep(for: .milliseconds(50))
+
+        let expectedFreq = 440.0 * pow(2.0, 100.0 / 1200.0)
+        #expect(handle.adjustFrequencyCallCount == 1)
+        #expect(abs(handle.lastAdjustedFrequency! - expectedFreq) < 0.01)
+    }
+
+    @Test("commitNormalizedPitch converts and commits result")
+    func commitNormalizedPitchCommitsResult() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(69)
+        mockSettings.noteRangeMax = MIDINote(69)
+        mockSettings.referencePitch = 440.0
+        let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.startPitchMatching()
+        try await waitForState(session, .playingTunable)
+
+        // Normalized 0.0 = reference frequency = 0 cent error
+        session.commitNormalizedPitch(0.0)
+        try await waitForState(session, .showingFeedback)
+
+        let result = try #require(observer.lastResult)
+        #expect(abs(result.userCentError) < 0.01)
+    }
+
+    @Test("commitNormalizedPitch with +0.5 produces 50 cent sharp error")
+    func commitNormalizedPitchHalfPositive() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.noteRangeMin = MIDINote(69)
+        mockSettings.noteRangeMax = MIDINote(69)
+        mockSettings.referencePitch = 440.0
+        let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.startPitchMatching()
+        try await waitForState(session, .playingTunable)
+
+        session.commitNormalizedPitch(0.5)
+        try await waitForState(session, .showingFeedback)
+
+        let result = try #require(observer.lastResult)
+        #expect(result.userCentError > 0)
+        #expect(abs(result.userCentError - 50.0) < 0.1)
+    }
+
+    @Test("adjustNormalizedPitch is no-op when not playingTunable")
+    func adjustNormalizedPitchNoOpWhenNotPlayingTunable() async {
+        let (session, notePlayer, _, _, _) = makePitchMatchingSession()
+        // Session is idle
+        session.adjustNormalizedPitch(0.5)
+        try? await Task.sleep(for: .milliseconds(50))
+
+        let adjustCount = notePlayer.handleHistory.reduce(0) { $0 + $1.adjustFrequencyCallCount }
+        #expect(adjustCount == 0)
+    }
+
+    @Test("commitNormalizedPitch is no-op when not playingTunable")
+    func commitNormalizedPitchNoOpWhenNotPlayingTunable() async {
+        let (session, _, _, observer, _) = makePitchMatchingSession()
+        // Session is idle
+        session.commitNormalizedPitch(0.5)
+
+        #expect(session.state == .idle)
+        #expect(observer.pitchMatchingCompletedCallCount == 0)
+    }
+
     // MARK: - Full Cycle Tests
 
     @Test("full cycle: idle → playingReference → playingTunable → showingFeedback → loop")

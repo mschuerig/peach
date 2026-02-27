@@ -11,6 +11,7 @@ struct PeachApp: App {
     @State private var trendAnalyzer: TrendAnalyzer
     @State private var thresholdTimeline: ThresholdTimeline
     @State private var soundFontLibrary: SoundFontLibrary
+    @State private var activeSession: (any TrainingSession)?
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
@@ -70,11 +71,32 @@ struct PeachApp: App {
             ContentView()
                 .environment(\.comparisonSession, comparisonSession)
                 .environment(\.pitchMatchingSession, pitchMatchingSession)
+                .environment(\.activeSession, activeSession)
                 .environment(\.perceptualProfile, profile)
                 .environment(\.trendAnalyzer, trendAnalyzer)
                 .environment(\.thresholdTimeline, thresholdTimeline)
                 .environment(\.soundFontLibrary, soundFontLibrary)
                 .modelContainer(modelContainer)
+                .onChange(of: comparisonSession.isIdle) { _, isIdle in
+                    if !isIdle {
+                        if activeSession !== comparisonSession {
+                            activeSession?.stop()
+                        }
+                        activeSession = comparisonSession
+                    } else if activeSession === comparisonSession {
+                        activeSession = nil
+                    }
+                }
+                .onChange(of: pitchMatchingSession.isIdle) { _, isIdle in
+                    if !isIdle {
+                        if activeSession !== pitchMatchingSession {
+                            activeSession?.stop()
+                        }
+                        activeSession = pitchMatchingSession
+                    } else if activeSession === pitchMatchingSession {
+                        activeSession = nil
+                    }
+                }
         }
     }
 

@@ -10,12 +10,11 @@ struct PitchMatchingScreen: View {
     var body: some View {
         VerticalPitchSlider(
             isActive: pitchMatchingSession.state == .playingTunable,
-            referenceFrequency: pitchMatchingSession.referenceFrequency ?? 440.0,
-            onFrequencyChange: { frequency in
-                pitchMatchingSession.adjustFrequency(frequency)
+            onNormalizedValueChange: { normalized in
+                pitchMatchingSession.adjustNormalizedPitch(normalized)
             },
-            onRelease: { frequency in
-                pitchMatchingSession.commitResult(userFrequency: frequency)
+            onCommit: { normalized in
+                pitchMatchingSession.commitNormalizedPitch(normalized)
             }
         )
         .padding()
