@@ -156,37 +156,23 @@ struct PitchMatchingSessionTests {
         #expect(abs(tunableFreq - expectedTunableFreq) < 0.01)
     }
 
-    // MARK: - Task 4: adjustFrequency and commitResult Tests
+    // MARK: - commitPitch Tests
 
-    @Test("adjustFrequency delegates to handle")
-    func adjustFrequencyDelegatesToHandle() async throws {
+    @Test("commitPitch stops handle")
+    func commitPitchStopsHandle() async throws {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
-        session.adjustFrequency(450.0)
-        try await Task.sleep(for: .milliseconds(50))
-
-        #expect(handle.adjustFrequencyCallCount == 1)
-        #expect(handle.lastAdjustedFrequency == 450.0)
-    }
-
-    @Test("commitResult stops handle")
-    func commitResultStopsHandle() async throws {
-        let (session, notePlayer, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
-        try await waitForState(session, .playingTunable)
-
-        let handle = try #require(notePlayer.lastHandle)
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await Task.sleep(for: .milliseconds(50))
 
         #expect(handle.stopCallCount == 1)
     }
 
-    @Test("commitResult computes correct cent error")
-    func commitResultComputesCentError() async throws {
+    @Test("commitPitch at center produces zero cent error")
+    func commitPitchAtCenterProducesZeroCentError() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -195,17 +181,16 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        // User sings exactly at reference → 0 cent error
-        let referenceFreq = try FrequencyCalculation.frequency(midiNote: 69, referencePitch: 440.0)
-        session.commitResult(userFrequency: referenceFreq)
+        // Value 0.0 = reference frequency → 0 cent error
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
         #expect(abs(result.userCentError) < 0.01)
     }
 
-    @Test("commitResult computes positive cent error when sharp")
-    func commitResultSharpCentError() async throws {
+    @Test("commitPitch sharp produces positive cent error")
+    func commitPitchSharpCentError() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -214,9 +199,8 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        // User plays sharp (higher frequency)
-        let sharpFreq = 440.0 * pow(2.0, 50.0 / 1200.0) // 50 cents sharp
-        session.commitResult(userFrequency: sharpFreq)
+        // Value 0.5 = 50 cents sharp
+        session.commitPitch(0.5)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
@@ -224,26 +208,26 @@ struct PitchMatchingSessionTests {
         #expect(abs(result.userCentError - 50.0) < 0.1)
     }
 
-    @Test("commitResult notifies observers")
-    func commitResultNotifiesObservers() async throws {
+    @Test("commitPitch notifies observers")
+    func commitPitchNotifiesObservers() async throws {
         let (session, _, _, observer, _) = makePitchMatchingSession()
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         #expect(observer.pitchMatchingCompletedCallCount == 1)
         #expect(observer.lastResult != nil)
     }
 
-    @Test("transitions to showingFeedback after commitResult")
+    @Test("transitions to showingFeedback after commitPitch")
     func transitionsToShowingFeedback() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         #expect(session.state == .showingFeedback)
@@ -255,7 +239,7 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         // After feedback duration (~400ms), should auto-advance
@@ -280,27 +264,11 @@ struct PitchMatchingSessionTests {
         #expect(session.state == .playingTunable)
     }
 
-    @Test("adjustFrequency is no-op when not playingTunable")
-    func adjustFrequencyNoOpWhenNotPlayingTunable() async throws {
-        let (session, notePlayer, _, _, _) = makePitchMatchingSession()
-        notePlayer.instantPlayback = false
-        notePlayer.simulatedPlaybackDuration = 5.0
-        session.startPitchMatching()
-        try await waitForState(session, .playingReference)
-
-        session.adjustFrequency(450.0)
-        try await Task.sleep(for: .milliseconds(50))
-
-        // Guard prevents adjustFrequency during playingReference
-        let adjustCount = notePlayer.handleHistory.reduce(0) { $0 + $1.adjustFrequencyCallCount }
-        #expect(adjustCount == 0)
-    }
-
-    @Test("commitResult is no-op when not playingTunable")
-    func commitResultNoOpWhenNotPlayingTunable() async throws {
+    @Test("commitPitch is no-op when not playingTunable")
+    func commitPitchNoOpWhenNotPlayingTunable() async throws {
         let (session, _, _, observer, _) = makePitchMatchingSession()
-        // Session is idle — commitResult should do nothing
-        session.commitResult(userFrequency: 440.0)
+        // Session is idle — commitPitch should do nothing
+        session.commitPitch(0.0)
 
         #expect(session.state == .idle)
         #expect(observer.pitchMatchingCompletedCallCount == 0)
@@ -308,8 +276,8 @@ struct PitchMatchingSessionTests {
 
     // MARK: - Cent Error Tests
 
-    @Test("commitResult computes negative cent error when flat")
-    func commitResultFlatCentError() async throws {
+    @Test("commitPitch flat produces negative cent error")
+    func commitPitchFlatCentError() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -318,9 +286,8 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        // User plays flat (lower frequency) — 50 cents flat
-        let flatFreq = 440.0 * pow(2.0, -50.0 / 1200.0)
-        session.commitResult(userFrequency: flatFreq)
+        // Value -0.5 = 50 cents flat
+        session.commitPitch(-0.5)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
@@ -376,7 +343,7 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         session.stop()
@@ -429,10 +396,10 @@ struct PitchMatchingSessionTests {
         #expect(session.state == .idle)
     }
 
-    // MARK: - Normalized Pitch Tests
+    // MARK: - Pitch Adjustment Tests
 
-    @Test("adjustNormalizedPitch converts normalized value to frequency and delegates to handle")
-    func adjustNormalizedPitchDelegatesToHandle() async throws {
+    @Test("adjustPitch converts value to frequency and delegates to handle")
+    func adjustPitchDelegatesToHandle() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -443,8 +410,8 @@ struct PitchMatchingSessionTests {
 
         let handle = try #require(notePlayer.lastHandle)
 
-        // Normalized 0.0 should produce reference frequency (0 cent offset)
-        session.adjustNormalizedPitch(0.0)
+        // Value 0.0 = reference frequency (0 cent offset)
+        session.adjustPitch(0.0)
         try await Task.sleep(for: .milliseconds(50))
 
         #expect(handle.adjustFrequencyCallCount == 1)
@@ -452,8 +419,8 @@ struct PitchMatchingSessionTests {
         #expect(abs(handle.lastAdjustedFrequency! - refFreq) < 0.01)
     }
 
-    @Test("adjustNormalizedPitch with +1.0 produces frequency 100 cents above reference")
-    func adjustNormalizedPitchPositiveOne() async throws {
+    @Test("adjustPitch with +1.0 produces frequency 100 cents above reference")
+    func adjustPitchPositiveOne() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -463,7 +430,7 @@ struct PitchMatchingSessionTests {
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
-        session.adjustNormalizedPitch(1.0)
+        session.adjustPitch(1.0)
         try await Task.sleep(for: .milliseconds(50))
 
         let expectedFreq = 440.0 * pow(2.0, 100.0 / 1200.0)
@@ -471,8 +438,8 @@ struct PitchMatchingSessionTests {
         #expect(abs(handle.lastAdjustedFrequency! - expectedFreq) < 0.01)
     }
 
-    @Test("commitNormalizedPitch converts and commits result")
-    func commitNormalizedPitchCommitsResult() async throws {
+    @Test("commitPitch converts and commits result")
+    func commitPitchCommitsResult() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -481,16 +448,16 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        // Normalized 0.0 = reference frequency = 0 cent error
-        session.commitNormalizedPitch(0.0)
+        // Value 0.0 = reference frequency = 0 cent error
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
         #expect(abs(result.userCentError) < 0.01)
     }
 
-    @Test("commitNormalizedPitch with +0.5 produces 50 cent sharp error")
-    func commitNormalizedPitchHalfPositive() async throws {
+    @Test("commitPitch with +0.5 produces 50 cent sharp error")
+    func commitPitchHalfPositive() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
@@ -499,7 +466,7 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitNormalizedPitch(0.5)
+        session.commitPitch(0.5)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
@@ -507,25 +474,15 @@ struct PitchMatchingSessionTests {
         #expect(abs(result.userCentError - 50.0) < 0.1)
     }
 
-    @Test("adjustNormalizedPitch is no-op when not playingTunable")
-    func adjustNormalizedPitchNoOpWhenNotPlayingTunable() async {
+    @Test("adjustPitch is no-op when not playingTunable")
+    func adjustPitchNoOpWhenNotPlayingTunable() async {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
         // Session is idle
-        session.adjustNormalizedPitch(0.5)
+        session.adjustPitch(0.5)
         try? await Task.sleep(for: .milliseconds(50))
 
         let adjustCount = notePlayer.handleHistory.reduce(0) { $0 + $1.adjustFrequencyCallCount }
         #expect(adjustCount == 0)
-    }
-
-    @Test("commitNormalizedPitch is no-op when not playingTunable")
-    func commitNormalizedPitchNoOpWhenNotPlayingTunable() async {
-        let (session, _, _, observer, _) = makePitchMatchingSession()
-        // Session is idle
-        session.commitNormalizedPitch(0.5)
-
-        #expect(session.state == .idle)
-        #expect(observer.pitchMatchingCompletedCallCount == 0)
     }
 
     // MARK: - Full Cycle Tests
@@ -539,14 +496,14 @@ struct PitchMatchingSessionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
         #expect(observer.pitchMatchingCompletedCallCount == 1)
 
         // Wait for auto-advance to next challenge
         try await waitForState(session, .playingTunable, timeout: .seconds(3))
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
         #expect(observer.pitchMatchingCompletedCallCount == 2)
     }
@@ -662,7 +619,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
 
-        session.commitResult(userFrequency: 440.0)
+        session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         nc.post(
