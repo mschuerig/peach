@@ -49,7 +49,9 @@ final class PitchMatchingSession: TrainingSession {
         profile: PitchMatchingProfile,
         observers: [PitchMatchingObserver] = [],
         userSettings: UserSettings,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter = .default,
+        backgroundNotificationName: Notification.Name? = nil,
+        foregroundNotificationName: Notification.Name? = nil
     ) {
         self.notePlayer = notePlayer
         self.profile = profile
@@ -59,7 +61,8 @@ final class PitchMatchingSession: TrainingSession {
         self.interruptionMonitor = AudioSessionInterruptionMonitor(
             notificationCenter: notificationCenter,
             logger: logger,
-            observeBackgrounding: true,
+            backgroundNotificationName: backgroundNotificationName,
+            foregroundNotificationName: foregroundNotificationName,
             onStopRequired: { [weak self] in self?.stop() }
         )
     }

@@ -155,7 +155,9 @@ struct PeachApp: App {
             notePlayer: notePlayer,
             profile: profile,
             observers: [dataStore, profile],
-            userSettings: userSettings
+            userSettings: userSettings,
+            backgroundNotificationName: UIApplication.didEnterBackgroundNotification,
+            foregroundNotificationName: UIApplication.willEnterForegroundNotification
         )
     }
 }
