@@ -146,48 +146,4 @@ struct ComparisonSessionTests {
         #expect(f.mockDataStore.saveCallCount == 1)
     }
 
-    // MARK: - Comparison Value Type Tests
-
-    @Test("Comparison.note1Frequency calculates valid frequency")
-    func note1FrequencyCalculatesCorrectly() throws {
-        let comparison = Comparison(note1: 60, note2: 60, centDifference: Cents(100.0))
-
-        let freq = try comparison.note1Frequency()
-
-        #expect(freq.rawValue >= 260 && freq.rawValue <= 263)
-    }
-
-    @Test("Comparison.note2Frequency applies cent offset higher")
-    func note2FrequencyAppliesCentOffsetHigher() throws {
-        let comparison = Comparison(note1: 60, note2: 60, centDifference: Cents(100.0))
-
-        let freq1 = try comparison.note1Frequency()
-        let freq2 = try comparison.note2Frequency()
-
-        #expect(freq2 > freq1)
-
-        let ratio = freq2.rawValue / freq1.rawValue
-        #expect(ratio >= 1.05 && ratio <= 1.07)
-    }
-
-    @Test("Comparison.note2Frequency applies cent offset lower")
-    func note2FrequencyAppliesCentOffsetLower() throws {
-        let comparison = Comparison(note1: 60, note2: 60, centDifference: Cents(-100.0))
-
-        let freq1 = try comparison.note1Frequency()
-        let freq2 = try comparison.note2Frequency()
-
-        #expect(freq2 < freq1)
-    }
-
-    @Test("Comparison.isCorrect validates user answer correctly")
-    func isCorrectValidatesAnswer() {
-        let comparisonHigher = Comparison(note1: 60, note2: 60, centDifference: Cents(100.0))
-        let comparisonLower = Comparison(note1: 60, note2: 60, centDifference: Cents(-100.0))
-
-        #expect(comparisonHigher.isCorrect(userAnswerHigher: true) == true)
-        #expect(comparisonHigher.isCorrect(userAnswerHigher: false) == false)
-        #expect(comparisonLower.isCorrect(userAnswerHigher: false) == true)
-        #expect(comparisonLower.isCorrect(userAnswerHigher: true) == false)
-    }
 }

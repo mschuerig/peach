@@ -1,6 +1,6 @@
 # Story 20.1: Move Shared Domain Types to Core/Training/
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -121,11 +121,34 @@ Commit message: `Implement story 20.1: Move shared domain types to Core/Training
 - `Peach/Core/Training/ComparisonObserver.swift` (moved from `Peach/Comparison/`)
 - `Peach/Core/Training/CompletedPitchMatching.swift` (moved from `Peach/PitchMatching/`)
 - `Peach/Core/Training/PitchMatchingObserver.swift` (moved from `Peach/PitchMatching/`)
-- `PeachTests/Core/Training/.gitkeep` (new, empty test mirror directory)
+- `PeachTests/Core/Training/ComparisonTests.swift` (new, dedicated tests for Comparison and CompletedComparison)
 - `docs/implementation-artifacts/sprint-status.yaml` (status update)
 - `docs/implementation-artifacts/20-1-move-shared-domain-types-to-core.md` (this file)
+
+## Senior Developer Review (AI)
+
+**Reviewed:** 2026-02-27 | **Reviewer:** Michael (via adversarial code review workflow)
+
+### Review Findings & Fixes Applied
+
+**M1 (MEDIUM) — Fixed:** `ComparisonObserver.swift` docstring listed only 3 of 5 conforming types. Added `TrendAnalyzer` and `ThresholdTimeline` to the conforming types list.
+
+**M2 (MEDIUM) — Fixed:** Created `PeachTests/Core/Training/ComparisonTests.swift` with dedicated tests for `Comparison` (frequency calculations, `isSecondNoteHigher`, `isCorrect`) and `CompletedComparison` (delegation to comparison logic, default timestamp). Extracted tests from `ComparisonSessionTests.swift` to follow project convention "one test file per source file." Removed `.gitkeep` since directory now has a real file.
+
+**L1 (LOW) — Fixed:** Added documentation to `PitchMatchingObserver.swift` consistent with `ComparisonObserver.swift` style, including conforming types list (TrainingDataStore, PerceptualProfile).
+
+**L2 (LOW) — Fixed:** Full test suite run with evidence: 588 tests passed, zero failures.
+
+**L3 (LOW) — Noted:** `MockHapticFeedbackManager` in production target — deferred to Story 20.8.
+
+### Verification
+
+- All 8 Acceptance Criteria verified against git reality (R100 renames, originals deleted, directories exist)
+- AC #6 scoped to Core/Data/, Core/Profile/, Core/Algorithm/ — all confirmed clean
+- Full test suite: 588 tests passed, 0 failures
 
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implementation complete — moved 4 shared domain type files to Core/Training/, full test suite passes.
+- 2026-02-27: Code review complete — fixed stale docstrings (M1, L1), created dedicated ComparisonTests.swift (M2), verified 588 tests pass. Status → done.
