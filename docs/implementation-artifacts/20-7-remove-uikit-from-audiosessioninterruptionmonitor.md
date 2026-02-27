@@ -1,6 +1,6 @@
 # Story 20.7: Remove UIKit from AudioSessionInterruptionMonitor
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,7 +16,7 @@ So that Core/ files have no UIKit dependency and the monitor is more testable.
 
 2. **Background notification name is injected** -- The `observeBackgrounding: Bool` parameter is replaced with `backgroundNotificationName: Notification.Name? = nil`. When non-nil, the monitor observes that notification name for backgrounding. When nil (default), backgrounding is not monitored.
 
-3. **Foreground notification name is injected** -- Similarly, `UIApplication.willEnterForegroundNotification` is replaced with an injected `foregroundNotificationName: Notification.Name? = nil` parameter.
+3. **Foreground notification name is injected** -- A new `foregroundNotificationName: Notification.Name? = nil` parameter is added. When non-nil, the monitor observes that notification name and calls `onStopRequired`. When nil (default), foreground is not monitored.
 
 4. **PitchMatchingSession passes notification names** -- `PitchMatchingSession.init()` accepts optional notification name parameters and passes them through to `AudioSessionInterruptionMonitor`.
 
@@ -68,7 +68,7 @@ So that Core/ files have no UIKit dependency and the monitor is more testable.
 
 **Modified test files:**
 - `PeachTests/Core/Audio/AudioSessionInterruptionMonitorTests.swift` -- pass notification names
-- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` -- if it constructs sessions with backgrounding
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` -- Updated `makePitchMatchingSession` factory to pass notification names (defaulting to UIApplication constants for test parity)
 
 ### Existing Code to Reference
 
@@ -87,7 +87,7 @@ So that Core/ files have no UIKit dependency and the monitor is more testable.
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.6: Remove UIKit from AudioSessionInterruptionMonitor`
+Commit message: `Implement story 20.7: Remove UIKit from AudioSessionInterruptionMonitor`
 
 ### References
 
@@ -100,7 +100,7 @@ Commit message: `Implement story 20.6: Remove UIKit from AudioSessionInterruptio
 - `Peach/Core/Audio/AudioSessionInterruptionMonitor.swift` — Removed `import UIKit`; replaced `observeBackgrounding: Bool` with `backgroundNotificationName: Notification.Name?` and added `foregroundNotificationName: Notification.Name?`; added `foregroundObserver` property with cleanup in deinit
 - `Peach/PitchMatching/PitchMatchingSession.swift` — Added `backgroundNotificationName` and `foregroundNotificationName` parameters to init; passes them through to `AudioSessionInterruptionMonitor`
 - `Peach/App/PeachApp.swift` — `createPitchMatchingSession()` now passes `UIApplication.didEnterBackgroundNotification` and `UIApplication.willEnterForegroundNotification`
-- `PeachTests/Core/Audio/AudioSessionInterruptionMonitorTests.swift` — Updated background tests to use `backgroundNotificationName:` instead of `observeBackgrounding:`
+- `PeachTests/Core/Audio/AudioSessionInterruptionMonitorTests.swift` — Updated background tests to use `backgroundNotificationName:` instead of `observeBackgrounding:`; added foreground notification tests
 - `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` — Updated `makePitchMatchingSession` factory to pass notification names (defaulting to UIApplication constants for test parity)
 - `docs/implementation-artifacts/sprint-status.yaml` — Story status updated
 
@@ -123,3 +123,4 @@ Commit message: `Implement story 20.6: Remove UIKit from AudioSessionInterruptio
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implemented — removed UIKit import from AudioSessionInterruptionMonitor by injecting notification names as parameters. All tests pass.
+- 2026-02-27: Code review — Fixed: added missing foreground notification unit tests (M2), corrected story number in Git Intelligence from 20.6 to 20.7 (M3), clarified AC #3 wording that foreground observation is new not a replacement (M1), fixed hedging language in Modified test files (L1).
