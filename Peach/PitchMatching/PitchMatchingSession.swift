@@ -10,7 +10,7 @@ enum PitchMatchingSessionState {
 }
 
 @Observable
-final class PitchMatchingSession {
+final class PitchMatchingSession: TrainingSession {
 
     // MARK: - Logger
 
@@ -66,6 +66,8 @@ final class PitchMatchingSession {
 
     // MARK: - Public API
 
+    var isIdle: Bool { state == .idle }
+
     func startPitchMatching() {
         guard state == .idle else {
             logger.warning("startPitchMatching() called but state is \(String(describing: self.state)), not idle")
@@ -74,6 +76,24 @@ final class PitchMatchingSession {
         trainingTask = Task {
             await playNextChallenge()
         }
+    }
+
+    private static let centRange: Double = 100
+
+    func adjustNormalizedPitch(_ normalized: Double) {
+        guard state == .playingTunable, let referenceFrequency else { return }
+        let centOffset = normalized * Self.centRange
+        let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
+        Task {
+            try? await currentHandle?.adjustFrequency(Frequency(frequency))
+        }
+    }
+
+    func commitNormalizedPitch(_ normalized: Double) {
+        guard state == .playingTunable, let referenceFrequency else { return }
+        let centOffset = normalized * Self.centRange
+        let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
+        commitResult(userFrequency: frequency)
     }
 
     func adjustFrequency(_ frequency: Double) {

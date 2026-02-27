@@ -5,21 +5,15 @@ struct VerticalPitchSlider: View {
     /// Whether the slider responds to touch (active during `playingTunable`)
     var isActive: Bool
 
-    /// Maximum cent deviation in each direction (default ±100 = one semitone)
-    var centRange: Double = 100
+    /// Called continuously during drag with the current normalized value in -1.0...1.0
+    var onNormalizedValueChange: (Double) -> Void
 
-    /// Reference frequency in Hz for the current challenge
-    var referenceFrequency: Double
-
-    /// Called continuously during drag with the current computed frequency
-    var onFrequencyChange: (Double) -> Void
-
-    /// Called when the user releases the slider with the final frequency
-    var onRelease: (Double) -> Void
+    /// Called when the user releases the slider with the final normalized value
+    var onCommit: (Double) -> Void
 
     // MARK: - Internal State
 
-    @State private var currentCentOffset: Double = 0
+    @State private var currentNormalizedValue: Double = 0
 
     // MARK: - Layout Constants
 
@@ -45,37 +39,24 @@ struct VerticalPitchSlider: View {
                     .position(
                         x: geometry.size.width / 2,
                         y: Self.thumbPosition(
-                            centOffset: currentCentOffset,
-                            trackHeight: trackHeight,
-                            centRange: centRange
+                            normalizedValue: currentNormalizedValue,
+                            trackHeight: trackHeight
                         )
                     )
             }
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        if let result = Self.dragResult(
-                            isActive: isActive,
-                            dragY: value.location.y,
-                            trackHeight: trackHeight,
-                            centRange: centRange,
-                            referenceFrequency: referenceFrequency
-                        ) {
-                            currentCentOffset = result.centOffset
-                            onFrequencyChange(result.frequency)
-                        }
+                        guard isActive else { return }
+                        let normalized = Self.normalizedValue(dragY: value.location.y, trackHeight: trackHeight)
+                        currentNormalizedValue = normalized
+                        onNormalizedValueChange(normalized)
                     }
                     .onEnded { value in
-                        if let result = Self.dragResult(
-                            isActive: isActive,
-                            dragY: value.location.y,
-                            trackHeight: trackHeight,
-                            centRange: centRange,
-                            referenceFrequency: referenceFrequency
-                        ) {
-                            currentCentOffset = result.centOffset
-                            onRelease(result.frequency)
-                        }
+                        guard isActive else { return }
+                        let normalized = Self.normalizedValue(dragY: value.location.y, trackHeight: trackHeight)
+                        currentNormalizedValue = normalized
+                        onCommit(normalized)
                     }
             )
             .disabled(!isActive)
@@ -84,73 +65,48 @@ struct VerticalPitchSlider: View {
         .accessibilityLabel(String(localized: "Pitch adjustment slider"))
         .accessibilityAdjustableAction { direction in
             guard isActive else { return }
-            let step = centRange / 10.0
+            let step = 0.1
             switch direction {
             case .increment:
-                currentCentOffset = min(centRange, currentCentOffset + step)
+                currentNormalizedValue = min(1.0, currentNormalizedValue + step)
             case .decrement:
-                currentCentOffset = max(-centRange, currentCentOffset - step)
+                currentNormalizedValue = max(-1.0, currentNormalizedValue - step)
             @unknown default:
                 break
             }
-            let freq = Self.frequency(centOffset: currentCentOffset, referenceFrequency: referenceFrequency)
-            onFrequencyChange(freq)
+            onNormalizedValueChange(currentNormalizedValue)
         }
         .accessibilityAction(named: String(localized: "Submit pitch")) {
             guard isActive else { return }
-            let freq = Self.frequency(centOffset: currentCentOffset, referenceFrequency: referenceFrequency)
-            onRelease(freq)
+            onCommit(currentNormalizedValue)
         }
         .onChange(of: isActive) { oldValue, newValue in
             if !oldValue && newValue {
                 // Reset thumb to center when becoming active (new challenge)
-                currentCentOffset = 0
+                currentNormalizedValue = 0
             }
         }
     }
 
     // MARK: - Static Calculation Methods (testable)
 
-    /// Maps a vertical drag position to a cent offset.
+    /// Maps a vertical drag position to a normalized value in -1.0...1.0.
     ///
-    /// Top of track = +centRange (sharper), center = 0, bottom = -centRange (flatter).
-    /// Clamps to [-centRange, +centRange].
-    static func centOffset(dragY: CGFloat, trackHeight: CGFloat, centRange: Double) -> Double {
+    /// Top of track = +1.0 (sharper), center = 0, bottom = -1.0 (flatter).
+    static func normalizedValue(dragY: CGFloat, trackHeight: CGFloat) -> Double {
         guard trackHeight > 0 else { return 0 }
-        let normalized = dragY / trackHeight       // 0 (top) to 1 (bottom)
-        let clamped = min(1.0, max(0.0, normalized))
-        // Invert: top (0) = +centRange, bottom (1) = -centRange
-        return centRange * (1.0 - 2.0 * clamped)
+        let fraction = dragY / trackHeight       // 0 (top) to 1 (bottom)
+        let clamped = min(1.0, max(0.0, fraction))
+        // Invert: top (0) = +1.0, bottom (1) = -1.0
+        return 1.0 - 2.0 * clamped
     }
 
-    /// Computes frequency in Hz from a cent offset and reference frequency.
-    static func frequency(centOffset: Double, referenceFrequency: Double) -> Double {
-        referenceFrequency * pow(2.0, centOffset / 1200.0)
-    }
-
-    /// Computes the Y position of the thumb for a given cent offset.
+    /// Computes the Y position of the thumb for a given normalized value.
     ///
-    /// Inverse of `centOffset(dragY:trackHeight:centRange:)`.
-    static func thumbPosition(centOffset: Double, trackHeight: CGFloat, centRange: Double) -> CGFloat {
-        guard centRange > 0 else { return trackHeight / 2 }
-        // centOffset = centRange * (1 - 2 * normalized)
-        // normalized = (1 - centOffset / centRange) / 2
-        let normalized = (1.0 - centOffset / centRange) / 2.0
-        return trackHeight * CGFloat(normalized)
-    }
-
-    /// Processes a drag gesture position and returns the resulting cent offset and frequency,
-    /// or nil if the slider is inactive.
-    static func dragResult(
-        isActive: Bool,
-        dragY: CGFloat,
-        trackHeight: CGFloat,
-        centRange: Double,
-        referenceFrequency: Double
-    ) -> (centOffset: Double, frequency: Double)? {
-        guard isActive else { return nil }
-        let cents = centOffset(dragY: dragY, trackHeight: trackHeight, centRange: centRange)
-        let freq = frequency(centOffset: cents, referenceFrequency: referenceFrequency)
-        return (cents, freq)
+    /// Inverse of `normalizedValue(dragY:trackHeight:)`.
+    static func thumbPosition(normalizedValue: Double, trackHeight: CGFloat) -> CGFloat {
+        // normalizedValue = 1 - 2 * fraction  =>  fraction = (1 - normalizedValue) / 2
+        let fraction = (1.0 - normalizedValue) / 2.0
+        return trackHeight * CGFloat(fraction)
     }
 }

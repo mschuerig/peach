@@ -11,7 +11,7 @@ enum ComparisonSessionState {
 }
 
 @Observable
-final class ComparisonSession {
+final class ComparisonSession: TrainingSession {
     // MARK: - Logger
 
     private let logger = Logger(subsystem: "com.peach.app", category: "ComparisonSession")
@@ -93,6 +93,8 @@ final class ComparisonSession {
     }
 
     // MARK: - Public API
+
+    var isIdle: Bool { state == .idle }
 
     var currentDifficulty: Double? {
         currentComparison?.centDifference.magnitude

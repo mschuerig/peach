@@ -1,6 +1,6 @@
 # Story 19.5: TrainingSession Protocol and Dependency Cleanup
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -28,62 +28,62 @@ So that the view layer depends only on abstractions, components have single resp
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `TrainingSession` protocol (AC: #1)
-  - [ ] Create `Peach/Core/TrainingSession.swift`
-  - [ ] Define `protocol TrainingSession: AnyObject` with `func stop()` and `var isIdle: Bool { get }`
-  - [ ] Add `ComparisonSession` conformance (already has `stop()` and state-based idle check)
-  - [ ] Add `PitchMatchingSession` conformance (already has `stop()` and state-based idle check)
+- [x] Task 1: Create `TrainingSession` protocol (AC: #1)
+  - [x] Create `Peach/Core/TrainingSession.swift`
+  - [x] Define `protocol TrainingSession: AnyObject` with `func stop()` and `var isIdle: Bool { get }`
+  - [x] Add `ComparisonSession` conformance (already has `stop()` and state-based idle check)
+  - [x] Add `PitchMatchingSession` conformance (already has `stop()` and state-based idle check)
 
-- [ ] Task 2: Implement active session tracking in `PeachApp` (AC: #3)
-  - [ ] Add `private var activeSession: TrainingSession?` property to `PeachApp`
-  - [ ] Observe `comparisonSession.state` changes — when transitioning away from idle, set as active session
-  - [ ] Observe `pitchMatchingSession.state` changes — when transitioning away from idle, set as active session
-  - [ ] When a new session becomes active, stop the previous active session first
-  - [ ] Inject `activeSession` into environment for `ContentView`
+- [x] Task 2: Implement active session tracking in `PeachApp` (AC: #3)
+  - [x] Add `private var activeSession: TrainingSession?` property to `PeachApp`
+  - [x] Observe `comparisonSession.state` changes — when transitioning away from idle, set as active session
+  - [x] Observe `pitchMatchingSession.state` changes — when transitioning away from idle, set as active session
+  - [x] When a new session becomes active, stop the previous active session first
+  - [x] Inject `activeSession` into environment for `ContentView`
 
-- [ ] Task 3: Refactor `ContentView.handleAppBackgrounding()` (AC: #2, #6)
-  - [ ] Replace `comparisonSession` and `pitchMatchingSession` environment values with single `activeSession: TrainingSession?`
-  - [ ] Replace two concrete `if session.state != .idle { session.stop() }` blocks with `activeSession?.stop()`
-  - [ ] Remove REVIEW comment at line 48
-  - [ ] Remove `@Environment(\.comparisonSession)` and `@Environment(\.pitchMatchingSession)` from ContentView
-  - [ ] Add `@Environment(\.activeSession)` (new environment key)
+- [x] Task 3: Refactor `ContentView.handleAppBackgrounding()` (AC: #2, #6)
+  - [x] Replace `comparisonSession` and `pitchMatchingSession` environment values with single `activeSession: TrainingSession?`
+  - [x] Replace two concrete `if session.state != .idle { session.stop() }` blocks with `activeSession?.stop()`
+  - [x] Remove REVIEW comment at line 48
+  - [x] Remove `@Environment(\.comparisonSession)` and `@Environment(\.pitchMatchingSession)` from ContentView
+  - [x] Add `@Environment(\.activeSession)` (new environment key)
 
-- [ ] Task 4: Normalize `VerticalPitchSlider` API (AC: #4, #6)
-  - [ ] Remove `centRange: Double` parameter
-  - [ ] Remove `referenceFrequency: Double` parameter
-  - [ ] Remove `onFrequencyChange: (Double) -> Void` callback
-  - [ ] Remove `onRelease: (Double) -> Void` callback
-  - [ ] Add `onNormalizedValueChange: (Double) -> Void` — called during drag with value in -1.0...1.0
-  - [ ] Add `onCommit: (Double) -> Void` — called on release with final normalized value
-  - [ ] Remove internal `centOffset(dragY:trackHeight:centRange:)` method (or simplify to normalized math)
-  - [ ] Remove internal `frequency(centOffset:referenceFrequency:)` method
-  - [ ] Keep `thumbPosition` logic but map from normalized value instead of cent offset
-  - [ ] Remove REVIEW comment at line 3
-  - [ ] Update accessibility actions to use normalized increments
+- [x] Task 4: Normalize `VerticalPitchSlider` API (AC: #4, #6)
+  - [x] Remove `centRange: Double` parameter
+  - [x] Remove `referenceFrequency: Double` parameter
+  - [x] Remove `onFrequencyChange: (Double) -> Void` callback
+  - [x] Remove `onRelease: (Double) -> Void` callback
+  - [x] Add `onNormalizedValueChange: (Double) -> Void` — called during drag with value in -1.0...1.0
+  - [x] Add `onCommit: (Double) -> Void` — called on release with final normalized value
+  - [x] Remove internal `centOffset(dragY:trackHeight:centRange:)` method (or simplify to normalized math)
+  - [x] Remove internal `frequency(centOffset:referenceFrequency:)` method
+  - [x] Keep `thumbPosition` logic but map from normalized value instead of cent offset
+  - [x] Remove REVIEW comment at line 3
+  - [x] Update accessibility actions to use normalized increments
 
-- [ ] Task 5: Move pitch calculations to `PitchMatchingSession` (AC: #5)
-  - [ ] Add `adjustNormalizedPitch(_ normalized: Double)` method — converts normalized → frequency → internal state
-  - [ ] Add `commitNormalizedPitch(_ normalized: Double)` method — converts and calls existing `commitResult()`
-  - [ ] The session knows `centRange` and `referenceFrequency` — it computes `centOffset = normalized * centRange` and `frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)`
+- [x] Task 5: Move pitch calculations to `PitchMatchingSession` (AC: #5)
+  - [x] Add `adjustNormalizedPitch(_ normalized: Double)` method — converts normalized → frequency → internal state
+  - [x] Add `commitNormalizedPitch(_ normalized: Double)` method — converts and calls existing `commitResult()`
+  - [x] The session knows `centRange` and `referenceFrequency` — it computes `centOffset = normalized * centRange` and `frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)`
 
-- [ ] Task 6: Update `PitchMatchingScreen` to use new APIs (AC: #4, #5)
-  - [ ] Pass `onNormalizedValueChange:` → `pitchMatchingSession.adjustNormalizedPitch(_:)`
-  - [ ] Pass `onCommit:` → `pitchMatchingSession.commitNormalizedPitch(_:)`
-  - [ ] Remove `referenceFrequency:` and `centRange:` from slider construction
+- [x] Task 6: Update `PitchMatchingScreen` to use new APIs (AC: #4, #5)
+  - [x] Pass `onNormalizedValueChange:` → `pitchMatchingSession.adjustNormalizedPitch(_:)`
+  - [x] Pass `onCommit:` → `pitchMatchingSession.commitNormalizedPitch(_:)`
+  - [x] Remove `referenceFrequency:` and `centRange:` from slider construction
 
-- [ ] Task 7: Add environment key for `activeSession` (AC: #3)
-  - [ ] Add `@Entry var activeSession: TrainingSession? = nil` in EnvironmentValues extension
-  - [ ] Wire in `PeachApp.swift` body
+- [x] Task 7: Add environment key for `activeSession` (AC: #3)
+  - [x] Add `@Entry var activeSession: TrainingSession? = nil` in EnvironmentValues extension
+  - [x] Wire in `PeachApp.swift` body
 
-- [ ] Task 8: Update tests (AC: #7)
-  - [ ] Update `VerticalPitchSlider` tests to use normalized API (if layout tests exist)
-  - [ ] Update `PitchMatchingScreen` tests if any reference frequency/cent parameters
-  - [ ] Verify `ContentView` no longer needs session-specific test setup
-  - [ ] Add tests for `PitchMatchingSession.adjustNormalizedPitch()` and `commitNormalizedPitch()`
+- [x] Task 8: Update tests (AC: #7)
+  - [x] Update `VerticalPitchSlider` tests to use normalized API (if layout tests exist)
+  - [x] Update `PitchMatchingScreen` tests if any reference frequency/cent parameters
+  - [x] Verify `ContentView` no longer needs session-specific test setup
+  - [x] Add tests for `PitchMatchingSession.adjustNormalizedPitch()` and `commitNormalizedPitch()`
 
-- [ ] Task 9: Run full test suite and verify (AC: #7)
-  - [ ] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 9: Run full test suite and verify (AC: #7)
+  - [x] Run `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -206,13 +206,37 @@ Commit message: `Implement story 19.5: TrainingSession protocol and dependency c
 ## Change Log
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
+- 2026-02-27: Implemented all 9 tasks. TrainingSession protocol, active session tracking, ContentView refactor, VerticalPitchSlider normalized API, PitchMatchingSession pitch calculations, environment wiring, tests updated. Full suite passes.
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+- VerticalPitchSlider test initially had ComparisonSession tests waiting for `.playingNote1` which transitions too fast with instant playback — fixed to wait for `.awaitingAnswer`
 
 ### Completion Notes List
 
+- Created `TrainingSession` protocol with `stop()` and `isIdle` — both `ComparisonSession` and `PitchMatchingSession` conform
+- Active session tracking via `.onChange(of: session.isIdle)` in PeachApp body — cleanly stops previous session when a new one starts
+- ContentView simplified from 2 concrete session references to 1 `activeSession: TrainingSession?` — `handleAppBackgrounding()` is now a single `activeSession?.stop()` call
+- VerticalPitchSlider transformed to pure UI component with normalized `-1.0...1.0` API — no pitch/frequency/cent domain knowledge
+- PitchMatchingSession now owns cent→frequency conversion via `adjustNormalizedPitch()` and `commitNormalizedPitch()`
+- All REVIEW comments removed from ContentView.swift and VerticalPitchSlider.swift
+- 6 new TrainingSession protocol tests, 7 new normalized pitch tests, 11 updated slider tests — full suite passes (zero regressions)
+
 ### File List
+
+- Peach/Core/TrainingSession.swift (new)
+- Peach/Comparison/ComparisonSession.swift (modified)
+- Peach/PitchMatching/PitchMatchingSession.swift (modified)
+- Peach/App/PeachApp.swift (modified)
+- Peach/App/ContentView.swift (modified)
+- Peach/PitchMatching/VerticalPitchSlider.swift (modified)
+- Peach/PitchMatching/PitchMatchingScreen.swift (modified)
+- PeachTests/Core/TrainingSessionTests.swift (new)
+- PeachTests/PitchMatching/VerticalPitchSliderTests.swift (modified)
+- PeachTests/PitchMatching/PitchMatchingSessionTests.swift (modified)
