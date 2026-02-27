@@ -1,6 +1,6 @@
 # Story 20.10: Inject TrainingDataStore into SettingsScreen
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,7 +22,7 @@ So that the view no longer imports SwiftData, service instantiation stays in the
 
 5. **Reset All Training Data still works** -- The `resetAllTrainingData()` method uses the injected data store to delete records. The injected instance is the same one used by `PeachApp` (shared reference), ensuring data consistency.
 
-6. **SettingsScreen preview updated** -- The `#Preview` block injects an in-memory `TrainingDataStore` via `.environment(\.trainingDataStore, ...)`.
+6. **SettingsScreen preview updated** -- The `#Preview` block uses the nil default for `dataStoreResetter` (reset button is non-functional in preview, which is acceptable).
 
 7. **All existing tests pass** -- Full test suite passes with zero regressions.
 
@@ -66,9 +66,9 @@ So that the view no longer imports SwiftData, service instantiation stays in the
 
 ### Existing Code to Reference
 
-- **`SettingsScreen.swift:~160`** -- `let dataStore = TrainingDataStore(modelContext: modelContext)` in `resetAllTrainingData()`. [Source: Peach/Settings/SettingsScreen.swift]
-- **`PeachApp.swift:~23`** -- `let dataStore = TrainingDataStore(modelContext: ...)` as local variable. [Source: Peach/App/PeachApp.swift]
-- **`TrainingDataStore.swift`** -- Requires `ModelContext` in init. [Source: Peach/Core/Data/TrainingDataStore.swift]
+- **`SettingsScreen.swift:~155`** -- `resetAllTrainingData()` calls `dataStoreResetter?()` closure. [Source: Peach/Settings/SettingsScreen.swift]
+- **`PeachApp.swift:~81`** -- `.environment(\.dataStoreResetter, { ... })` injects closure that deletes data, resets session, and resets profile. [Source: Peach/App/PeachApp.swift]
+- **`TrainingDataStore.swift`** -- Conforms to `Resettable` via `reset() throws { try deleteAll() }`. [Source: Peach/Core/Data/TrainingDataStore.swift]
 
 ### Testing Approach
 
@@ -83,7 +83,7 @@ So that the view no longer imports SwiftData, service instantiation stays in the
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.9: Inject TrainingDataStore into SettingsScreen`
+Commit message: `Implement story 20.10: Inject TrainingDataStore into SettingsScreen`
 
 ### References
 
@@ -101,13 +101,19 @@ Commit message: `Implement story 20.9: Inject TrainingDataStore into SettingsScr
 
 ## File List
 
-- `Peach/App/EnvironmentKeys.swift` — added `@Entry var trainingDataStore: TrainingDataStore? = nil`
-- `Peach/App/PeachApp.swift` — promoted `dataStore` to `@State`, added `.environment(\.trainingDataStore, dataStore)`
-- `Peach/Settings/SettingsScreen.swift` — replaced `@Environment(\.modelContext)` with `@Environment(\.trainingDataStore)`, removed `import SwiftData`, updated `resetAllTrainingData()` and preview
-- `docs/implementation-artifacts/sprint-status.yaml` — status updated to in-progress → review
+- `Peach/Core/Training/Resettable.swift` — `reset()` now throws
+- `Peach/Core/Data/TrainingDataStore.swift` — added `Resettable` conformance (`reset() throws { try deleteAll() }`)
+- `Peach/App/EnvironmentKeys.swift` — `@Entry var dataStoreResetter: (() throws -> Void)? = nil`
+- `Peach/App/PeachApp.swift` — promoted `dataStore` to `@State`, injects reset closure via `.environment(\.dataStoreResetter, { ... })`
+- `Peach/Comparison/ComparisonSession.swift` — `resetTrainingData()` now throws
+- `Peach/Settings/SettingsScreen.swift` — calls `dataStoreResetter?()` closure, removed `comparisonSession`/`profile` dependencies, no `TrainingDataStore` reference
+- `PeachTests/Core/Training/ResettableTests.swift` — added `try`/`throws` for throwing reset
+- `PeachTests/Comparison/ComparisonSessionResetTests.swift` — added `try`/`throws` for throwing resetTrainingData
+- `docs/implementation-artifacts/sprint-status.yaml` — status updated to done
 - `docs/implementation-artifacts/20-10-inject-trainingdatastore-into-settingsscreen.md` — story file updated
 
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implemented story — injected TrainingDataStore via @Environment, removed SwiftData from SettingsScreen, used optional nil default instead of fatalError due to SwiftUI eager evaluation.
+- 2026-02-27: Code review fixes — SettingsScreen reset logic moved to PeachApp closure (`dataStoreResetter`), removing `ComparisonSession`/`PerceptualProfile`/`TrainingDataStore` dependencies from SettingsScreen. Made `Resettable.reset()` throwing, `TrainingDataStore` conforms to `Resettable`, `ComparisonSession.resetTrainingData()` now throws. Fixed story number in Git Intelligence (20.9 → 20.10), updated AC #6 text.

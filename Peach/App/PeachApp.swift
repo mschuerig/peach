@@ -78,7 +78,11 @@ struct PeachApp: App {
                 .environment(\.trendAnalyzer, trendAnalyzer)
                 .environment(\.thresholdTimeline, thresholdTimeline)
                 .environment(\.soundFontLibrary, soundFontLibrary)
-                .environment(\.trainingDataStore, dataStore)
+                .environment(\.dataStoreResetter, { [dataStore, comparisonSession, profile] in
+                    try dataStore.deleteAll()
+                    try comparisonSession.resetTrainingData()
+                    profile.resetMatching()
+                })
                 .modelContainer(modelContainer)
                 .onChange(of: comparisonSession.isIdle) { _, isIdle in
                     if !isIdle {

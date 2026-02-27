@@ -5,41 +5,41 @@ import Testing
 struct ResettableTests {
 
     @Test("Resettable protocol can be used as a type-erased collection element")
-    func resettableCanBeStoredInArray() async {
+    func resettableCanBeStoredInArray() async throws {
         let mock = MockResettable()
         let resettables: [Resettable] = [mock]
-        resettables.forEach { $0.reset() }
+        for r in resettables { try r.reset() }
         #expect(mock.resetCallCount == 1)
     }
 
     @Test("Multiple resettables are all reset when iterating")
-    func multipleResettablesAllReset() async {
+    func multipleResettablesAllReset() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()
         let resettables: [Resettable] = [mock1, mock2]
-        resettables.forEach { $0.reset() }
+        for r in resettables { try r.reset() }
         #expect(mock1.resetCallCount == 1)
         #expect(mock2.resetCallCount == 1)
     }
 
     @Test("TrendAnalyzer conforms to Resettable")
-    func trendAnalyzerConformsToResettable() async {
+    func trendAnalyzerConformsToResettable() async throws {
         let analyzer = TrendAnalyzer()
         let resettable: Resettable = analyzer
-        resettable.reset()
+        try resettable.reset()
         #expect(analyzer.trend == nil)
     }
 
     @Test("ThresholdTimeline conforms to Resettable")
-    func thresholdTimelineConformsToResettable() async {
+    func thresholdTimelineConformsToResettable() async throws {
         let timeline = ThresholdTimeline()
         let resettable: Resettable = timeline
-        resettable.reset()
+        try resettable.reset()
         #expect(timeline.dataPoints.isEmpty)
     }
 
     @Test("ComparisonSession.resetTrainingData calls reset on all resettables")
-    func resetTrainingDataCallsAllResettables() async {
+    func resetTrainingDataCallsAllResettables() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()
         let session = ComparisonSession(
@@ -50,7 +50,7 @@ struct ResettableTests {
             resettables: [mock1, mock2]
         )
 
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         #expect(mock1.resetCallCount == 1)
         #expect(mock2.resetCallCount == 1)

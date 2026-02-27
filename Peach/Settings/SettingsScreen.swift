@@ -19,10 +19,8 @@ struct SettingsScreen: View {
     @AppStorage(SettingsKeys.varyLoudness)
     private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness
 
-    @Environment(\.trainingDataStore) private var dataStore
-    @Environment(\.comparisonSession) private var comparisonSession
+    @Environment(\.dataStoreResetter) private var dataStoreResetter
     @Environment(\.soundFontLibrary) private var soundFontLibrary
-    @Environment(\.perceptualProfile) private var profile
 
     @State private var showResetConfirmation = false
     @State private var showResetError = false
@@ -155,17 +153,11 @@ struct SettingsScreen: View {
     // MARK: - Actions
 
     private func resetAllTrainingData() {
-        // Guard: only clear convergence/profile/trend if data deletion succeeds
-        guard let dataStore else { return }
         do {
-            try dataStore.deleteAll()
+            try dataStoreResetter?()
         } catch {
             showResetError = true
-            return
         }
-
-        comparisonSession.resetTrainingData()
-        profile.resetMatching()
     }
 }
 

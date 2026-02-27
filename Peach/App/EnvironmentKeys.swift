@@ -8,7 +8,7 @@ extension EnvironmentValues {
     @Entry var thresholdTimeline = ThresholdTimeline()
     @Entry var activeSession: (any TrainingSession)? = nil
     @Entry var perceptualProfile = PerceptualProfile()
-    @Entry var trainingDataStore: TrainingDataStore? = nil
+    @Entry var dataStoreResetter: (() throws -> Void)? = nil
 }
 
 // MARK: - Session Environment Keys

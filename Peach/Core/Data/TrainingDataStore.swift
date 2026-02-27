@@ -96,6 +96,14 @@ final class TrainingDataStore {
     }
 }
 
+// MARK: - Resettable Conformance
+
+extension TrainingDataStore: Resettable {
+    func reset() throws {
+        try deleteAll()
+    }
+}
+
 // MARK: - PitchMatchingObserver Conformance
 
 extension TrainingDataStore: PitchMatchingObserver {
