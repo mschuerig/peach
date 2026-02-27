@@ -181,4 +181,43 @@ struct AudioSessionInterruptionMonitorTests {
         #expect(!stopCalled)
         _ = _monitor
     }
+
+    // MARK: - Foreground Notification Tests
+
+    @Test("Foreground notification calls onStopRequired when foregroundNotificationName is provided")
+    func foregroundNotificationCallsOnStopRequiredWhenEnabled() async throws {
+        let nc = NotificationCenter()
+        var stopCalled = false
+        let _monitor = AudioSessionInterruptionMonitor(
+            notificationCenter: nc,
+            logger: .init(subsystem: "test", category: "test"),
+            foregroundNotificationName: UIApplication.willEnterForegroundNotification,
+            onStopRequired: { stopCalled = true }
+        )
+
+        nc.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+
+        try await Task.sleep(for: .milliseconds(50))
+        await Task.yield()
+        #expect(stopCalled)
+        _ = _monitor
+    }
+
+    @Test("Foreground notification does not call onStopRequired when foregroundNotificationName is nil")
+    func foregroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async throws {
+        let nc = NotificationCenter()
+        var stopCalled = false
+        let _monitor = AudioSessionInterruptionMonitor(
+            notificationCenter: nc,
+            logger: .init(subsystem: "test", category: "test"),
+            onStopRequired: { stopCalled = true }
+        )
+
+        nc.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+
+        try await Task.sleep(for: .milliseconds(50))
+        await Task.yield()
+        #expect(!stopCalled)
+        _ = _monitor
+    }
 }
