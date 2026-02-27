@@ -145,14 +145,14 @@ struct AudioSessionInterruptionMonitorTests {
 
     // MARK: - Background Notification Tests
 
-    @Test("Background notification calls onStopRequired when observeBackgrounding is true")
+    @Test("Background notification calls onStopRequired when backgroundNotificationName is provided")
     func backgroundNotificationCallsOnStopRequiredWhenEnabled() async throws {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
             notificationCenter: nc,
             logger: .init(subsystem: "test", category: "test"),
-            observeBackgrounding: true,
+            backgroundNotificationName: UIApplication.didEnterBackgroundNotification,
             onStopRequired: { stopCalled = true }
         )
 
@@ -164,14 +164,13 @@ struct AudioSessionInterruptionMonitorTests {
         _ = _monitor
     }
 
-    @Test("Background notification does not call onStopRequired when observeBackgrounding is false")
+    @Test("Background notification does not call onStopRequired when backgroundNotificationName is nil")
     func backgroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async throws {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
             notificationCenter: nc,
             logger: .init(subsystem: "test", category: "test"),
-            observeBackgrounding: false,
             onStopRequired: { stopCalled = true }
         )
 

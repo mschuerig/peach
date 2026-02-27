@@ -1,6 +1,6 @@
 # Story 20.7: Remove UIKit from AudioSessionInterruptionMonitor
 
-Status: pending
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -28,28 +28,28 @@ So that Core/ files have no UIKit dependency and the monitor is more testable.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Refactor AudioSessionInterruptionMonitor init (AC: #1, #2, #3)
-  - [ ] Replace `observeBackgrounding: Bool = false` with `backgroundNotificationName: Notification.Name? = nil`
-  - [ ] Add `foregroundNotificationName: Notification.Name? = nil` parameter
-  - [ ] Replace hardcoded `UIApplication.didEnterBackgroundNotification` with `backgroundNotificationName`
-  - [ ] Replace hardcoded `UIApplication.willEnterForegroundNotification` with `foregroundNotificationName`
-  - [ ] Remove `import UIKit`
+- [x] Task 1: Refactor AudioSessionInterruptionMonitor init (AC: #1, #2, #3)
+  - [x] Replace `observeBackgrounding: Bool = false` with `backgroundNotificationName: Notification.Name? = nil`
+  - [x] Add `foregroundNotificationName: Notification.Name? = nil` parameter
+  - [x] Replace hardcoded `UIApplication.didEnterBackgroundNotification` with `backgroundNotificationName`
+  - [x] Replace hardcoded `UIApplication.willEnterForegroundNotification` with `foregroundNotificationName`
+  - [x] Remove `import UIKit`
 
-- [ ] Task 2: Update PitchMatchingSession (AC: #4)
-  - [ ] Add `backgroundNotificationName: Notification.Name? = nil` and `foregroundNotificationName: Notification.Name? = nil` parameters to init
-  - [ ] Pass through to `AudioSessionInterruptionMonitor(... backgroundNotificationName:, foregroundNotificationName:)`
+- [x] Task 2: Update PitchMatchingSession (AC: #4)
+  - [x] Add `backgroundNotificationName: Notification.Name? = nil` and `foregroundNotificationName: Notification.Name? = nil` parameters to init
+  - [x] Pass through to `AudioSessionInterruptionMonitor(... backgroundNotificationName:, foregroundNotificationName:)`
 
-- [ ] Task 3: Update PeachApp (AC: #5)
-  - [ ] In `createPitchMatchingSession()`, pass `backgroundNotificationName: UIApplication.didEnterBackgroundNotification` and `foregroundNotificationName: UIApplication.willEnterForegroundNotification`
+- [x] Task 3: Update PeachApp (AC: #5)
+  - [x] In `createPitchMatchingSession()`, pass `backgroundNotificationName: UIApplication.didEnterBackgroundNotification` and `foregroundNotificationName: UIApplication.willEnterForegroundNotification`
 
-- [ ] Task 4: Update tests (AC: #7)
-  - [ ] Update `AudioSessionInterruptionMonitorTests` to pass notification names explicitly instead of `observeBackgrounding: true`
-  - [ ] The test file can keep its `import UIKit` (acceptable for tests)
-  - [ ] Update `PitchMatchingSessionTests` if they construct sessions with backgrounding params
+- [x] Task 4: Update tests (AC: #7)
+  - [x] Update `AudioSessionInterruptionMonitorTests` to pass notification names explicitly instead of `observeBackgrounding: true`
+  - [x] The test file can keep its `import UIKit` (acceptable for tests)
+  - [x] Update `PitchMatchingSessionTests` if they construct sessions with backgrounding params
 
-- [ ] Task 5: Run full test suite (AC: #6, #7)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 5: Run full test suite (AC: #6, #7)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -94,6 +94,32 @@ Commit message: `Implement story 20.6: Remove UIKit from AudioSessionInterruptio
 - [Source: docs/project-context.md -- "no UIKit in views" (extending to "no UIKit in Core/")]
 - [Source: docs/planning-artifacts/epics.md -- Epic 20]
 
+## File List
+
+**Modified:**
+- `Peach/Core/Audio/AudioSessionInterruptionMonitor.swift` — Removed `import UIKit`; replaced `observeBackgrounding: Bool` with `backgroundNotificationName: Notification.Name?` and added `foregroundNotificationName: Notification.Name?`; added `foregroundObserver` property with cleanup in deinit
+- `Peach/PitchMatching/PitchMatchingSession.swift` — Added `backgroundNotificationName` and `foregroundNotificationName` parameters to init; passes them through to `AudioSessionInterruptionMonitor`
+- `Peach/App/PeachApp.swift` — `createPitchMatchingSession()` now passes `UIApplication.didEnterBackgroundNotification` and `UIApplication.willEnterForegroundNotification`
+- `PeachTests/Core/Audio/AudioSessionInterruptionMonitorTests.swift` — Updated background tests to use `backgroundNotificationName:` instead of `observeBackgrounding:`
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` — Updated `makePitchMatchingSession` factory to pass notification names (defaulting to UIApplication constants for test parity)
+- `docs/implementation-artifacts/sprint-status.yaml` — Story status updated
+
+## Dev Agent Record
+
+### Implementation Notes
+- Replaced `observeBackgrounding: Bool` parameter with two optional `Notification.Name?` parameters (`backgroundNotificationName`, `foregroundNotificationName`), both defaulting to nil
+- Added symmetric foreground notification observation (calls `onStopRequired` like background), with cleanup in `isolated deinit`
+- ComparisonSession is completely unaffected — it uses default nil parameters (no backgrounding)
+- PeachApp (composition root) provides the UIKit notification names via SwiftUI import, keeping UIKit knowledge at the app boundary
+- Test factory updated to default to UIApplication notification names to maintain test parity with previous behavior
+
+### Completion Notes
+- All 5 tasks completed successfully
+- Full test suite passes with zero regressions
+- `import UIKit` removed from `AudioSessionInterruptionMonitor.swift`
+- No new dependencies introduced
+
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
+- 2026-02-27: Implemented — removed UIKit import from AudioSessionInterruptionMonitor by injecting notification names as parameters. All tests pass.

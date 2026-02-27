@@ -1,6 +1,5 @@
 import Foundation
 import AVFoundation
-import UIKit
 import os
 
 final class AudioSessionInterruptionMonitor {
@@ -12,18 +11,23 @@ final class AudioSessionInterruptionMonitor {
     private var audioInterruptionObserver: NSObjectProtocol?
     private var audioRouteChangeObserver: NSObjectProtocol?
     private var backgroundObserver: NSObjectProtocol?
+    private var foregroundObserver: NSObjectProtocol?
 
     init(
         notificationCenter: NotificationCenter = .default,
         logger: Logger,
-        observeBackgrounding: Bool = false,
+        backgroundNotificationName: Notification.Name? = nil,
+        foregroundNotificationName: Notification.Name? = nil,
         onStopRequired: @escaping () -> Void
     ) {
         self.notificationCenter = notificationCenter
         self.logger = logger
         self.onStopRequired = onStopRequired
 
-        setupObservers(observeBackgrounding: observeBackgrounding)
+        setupObservers(
+            backgroundNotificationName: backgroundNotificationName,
+            foregroundNotificationName: foregroundNotificationName
+        )
     }
 
     isolated deinit {
@@ -36,11 +40,17 @@ final class AudioSessionInterruptionMonitor {
         if let observer = backgroundObserver {
             notificationCenter.removeObserver(observer)
         }
+        if let observer = foregroundObserver {
+            notificationCenter.removeObserver(observer)
+        }
     }
 
     // MARK: - Private
 
-    private func setupObservers(observeBackgrounding: Bool) {
+    private func setupObservers(
+        backgroundNotificationName: Notification.Name?,
+        foregroundNotificationName: Notification.Name?
+    ) {
         audioInterruptionObserver = notificationCenter.addObserver(
             forName: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance(),
@@ -63,9 +73,21 @@ final class AudioSessionInterruptionMonitor {
             }
         }
 
-        if observeBackgrounding {
+        if let backgroundNotificationName {
             backgroundObserver = notificationCenter.addObserver(
-                forName: UIApplication.didEnterBackgroundNotification,
+                forName: backgroundNotificationName,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.onStopRequired()
+                }
+            }
+        }
+
+        if let foregroundNotificationName {
+            foregroundObserver = notificationCenter.addObserver(
+                forName: foregroundNotificationName,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
