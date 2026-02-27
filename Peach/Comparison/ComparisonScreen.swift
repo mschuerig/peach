@@ -163,7 +163,7 @@ extension EnvironmentValues {
     @Entry var comparisonSession: ComparisonSession = {
         let dataStore = MockDataStoreForPreview()
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let strategy = KazezNoteStrategy()
         let hapticManager = MockHapticFeedbackManager()
         let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
         return ComparisonSession(

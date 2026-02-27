@@ -27,7 +27,7 @@ func waitForState(
 func makePitchMatchingSession(
     userSettings: MockUserSettings = {
         let s = MockUserSettings()
-        s.noteDuration = 0.0
+        s.noteDuration = NoteDuration(0.3)
         return s
     }(),
     notificationCenter: NotificationCenter = .default

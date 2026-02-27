@@ -12,7 +12,6 @@ struct SettingsTests {
     func algorithmDefaultsMatchTrainingSettings() {
         let trainingDefaults = TrainingSettings()
 
-        #expect(SettingsKeys.defaultNaturalVsMechanical == trainingDefaults.naturalVsMechanical)
         #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRangeMin.rawValue)
         #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRangeMax.rawValue)
         #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch)
@@ -28,7 +27,6 @@ struct SettingsTests {
 
     @Test("Storage keys are defined as string constants")
     func storageKeysAreDefined() {
-        #expect(SettingsKeys.naturalVsMechanical == "naturalVsMechanical")
         #expect(SettingsKeys.noteRangeMin == "noteRangeMin")
         #expect(SettingsKeys.noteRangeMax == "noteRangeMax")
         #expect(SettingsKeys.noteDuration == "noteDuration")

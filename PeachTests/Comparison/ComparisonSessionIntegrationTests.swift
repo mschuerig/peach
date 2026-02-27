@@ -212,7 +212,7 @@ struct ComparisonSessionIntegrationTests {
     @Test("Cold start with empty profile uses default difficulty")
     func coldStartWithEmptyProfile() async {
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let strategy = KazezNoteStrategy()
 
         let comparison = strategy.nextComparison(
             profile: profile,
