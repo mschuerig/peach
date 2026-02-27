@@ -132,7 +132,7 @@ final class ComparisonSession: TrainingSession {
         transitionToFeedback(completed)
     }
 
-    func resetTrainingData() {
+    func resetTrainingData() throws {
         if state != .idle {
             stop()
         }
@@ -140,7 +140,9 @@ final class ComparisonSession: TrainingSession {
         lastCompletedComparison = nil
         sessionBestCentDifference = nil
         profile.reset()
-        resettables.forEach { $0.reset() }
+        for resettable in resettables {
+            try resettable.reset()
+        }
 
         logger.info("Training data reset to cold start")
     }

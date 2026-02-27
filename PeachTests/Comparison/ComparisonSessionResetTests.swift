@@ -9,7 +9,7 @@ struct ComparisonSessionResetTests {
     // MARK: - Cold-Start Behavior After Reset
 
     @Test("after reset, PerceptualProfile statsForNote returns currentDifficulty 100.0 for all notes")
-    func resetTrainingDataResetsAllCurrentDifficultyToDefault() {
+    func resetTrainingDataResetsAllCurrentDifficultyToDefault() throws {
         let profile = PerceptualProfile()
         let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
@@ -27,7 +27,7 @@ struct ComparisonSessionResetTests {
         #expect(profile.statsForNote(62).currentDifficulty == 50.0)
 
         // Reset via ComparisonSession's centralized method
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         // Verify cold start for all notes
         for note in 0..<128 {
@@ -38,7 +38,7 @@ struct ComparisonSessionResetTests {
     }
 
     @Test("after reset, first comparison from KazezNoteStrategy uses 100 cents")
-    func afterResetFirstComparisonUses100Cents() {
+    func afterResetFirstComparisonUses100Cents() throws {
         let profile = PerceptualProfile()
         let strategy = KazezNoteStrategy()
         let session = ComparisonSession(
@@ -53,7 +53,7 @@ struct ComparisonSessionResetTests {
         profile.update(note: 60, centOffset: 30.0, isCorrect: true)
 
         // Reset via ComparisonSession
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         // Cold start: nil lastComparison with reset profile → should return 100.0
         let comparison = strategy.nextComparison(
@@ -65,7 +65,7 @@ struct ComparisonSessionResetTests {
     }
 
     @Test("after reset, weightedEffectiveDifficulty returns default with no trained neighbors")
-    func afterResetWeightedEffectiveDifficultyReturnsDefault() {
+    func afterResetWeightedEffectiveDifficultyReturnsDefault() throws {
         let profile = PerceptualProfile()
         let strategy = KazezNoteStrategy()
         let session = ComparisonSession(
@@ -82,7 +82,7 @@ struct ComparisonSessionResetTests {
         }
 
         // Reset via ComparisonSession
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         // With all stats cleared, bootstrap should find no trained neighbors → 100.0
         let comparison = strategy.nextComparison(
@@ -96,7 +96,7 @@ struct ComparisonSessionResetTests {
     // MARK: - TrendAnalyzer Reset
 
     @Test("resetTrainingData clears TrendAnalyzer trend data")
-    func resetTrainingDataClearsTrendAnalyzer() {
+    func resetTrainingDataClearsTrendAnalyzer() throws {
         // Create TrendAnalyzer with enough records to produce a trend
         var records: [ComparisonRecord] = []
         for i in 0..<30 {
@@ -120,7 +120,7 @@ struct ComparisonSessionResetTests {
         )
 
         // Reset via ComparisonSession
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         // Verify TrendAnalyzer is cleared
         #expect(trendAnalyzer.trend == nil)
@@ -129,7 +129,7 @@ struct ComparisonSessionResetTests {
     // MARK: - ThresholdTimeline Reset
 
     @Test("resetTrainingData clears ThresholdTimeline data points")
-    func resetTrainingDataClearsThresholdTimeline() {
+    func resetTrainingDataClearsThresholdTimeline() throws {
         var records: [ComparisonRecord] = []
         for i in 0..<10 {
             records.append(ComparisonRecord(
@@ -151,7 +151,7 @@ struct ComparisonSessionResetTests {
             resettables: [timeline]
         )
 
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         #expect(timeline.dataPoints.isEmpty)
         #expect(timeline.aggregatedPoints.isEmpty)
@@ -179,7 +179,7 @@ struct ComparisonSessionResetTests {
         profile.setDifficulty(note: 60, difficulty: 30.0)
 
         // Reset during active training
-        session.resetTrainingData()
+        try session.resetTrainingData()
 
         // Verify training stopped and state fully cleared
         #expect(session.state == .idle)
