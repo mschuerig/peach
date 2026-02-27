@@ -7,7 +7,7 @@
 **Severity:** Medium
 **Status:** Open
 
-The Kazez convergence chain (`lastComparison` in `TrainingSession`) is not persisted. On every app restart, the algorithm bootstraps difficulty from neighbor-weighted profile data instead of continuing from the exact point where the user left off. This means returning users experience wider intervals for the first few comparisons as the chain re-converges.
+The Kazez convergence chain (`lastCompletedComparison` in `ComparisonSession`) is not persisted. On every app restart, the algorithm bootstraps difficulty from neighbor-weighted profile data instead of continuing from the exact point where the user left off. This means returning users experience wider intervals for the first few comparisons as the chain re-converges.
 
 **Mitigation options:** Persist last cent offset to UserDefaults or SwiftData. Seed the chain on launch.
 
@@ -62,7 +62,7 @@ Peach plays comparison tones back-to-back without a gap. This may make pitch dif
 |---|---|---|
 | ~~**`nonisolated(unsafe)` env keys**~~ | ~~Resolved — replaced with `@Entry` macro under Swift 6.2 + default MainActor isolation.~~ | — |
 | ~~**Environment key boilerplate**~~ | ~~Resolved — `@Entry` macro eliminates boilerplate.~~ | — |
-| **`hasTrainingData` duplicated** | `ProfileScreen` and `ProfilePreviewView` independently check `profile.overallMean != nil`. Should be a computed property on `PerceptualProfile`. | `ProfileScreen.swift:86`, `ProfilePreviewView.swift:27` |
+| **`hasTrainingData` duplicated** | `ProfileScreen` and `ProfilePreviewView` independently check `timeline.dataPoints.isEmpty`. Should be a computed property on `ThresholdTimeline` or `PerceptualProfile`. | `ProfileScreen.swift:27`, `ProfilePreviewView.swift:8` |
 | **Dead code** | `ContentView.previousScenePhase` is written but never read. | `ContentView.swift:15,37` |
 | **Redundant `note2` field** | `ComparisonRecord` stores `note1` and `note2` separately, but they are always equal (per domain rules). | `ComparisonRecord.swift` |
 | **Polling loop** | `runTrainingLoop()` spin-waits with 100ms sleep to detect state changes. The training flow is otherwise event-driven. | `ComparisonSession.swift` |

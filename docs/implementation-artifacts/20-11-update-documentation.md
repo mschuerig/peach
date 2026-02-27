@@ -1,6 +1,6 @@
 # Story 20.11: Update Documentation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -42,7 +42,7 @@ So that the docs accurately describe the current codebase, new conventions are c
    - `Resettable` protocol noted where relevant
    - `SoundSourceID` listed under `Core/Audio/` (not Settings/)
 
-6. **epics.md updated** -- `docs/planning-artifacts/epics.md` includes Epic 20 with all 10 stories.
+6. **epics.md updated** -- `docs/planning-artifacts/epics.md` includes Epic 20 with all 11 stories.
 
 7. **sprint-status.yaml updated** -- `docs/implementation-artifacts/sprint-status.yaml` includes Epic 20 entries.
 
@@ -112,7 +112,7 @@ AD-10: Dependency Direction Discipline
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.10: Update documentation for Epic 20`
+Commit message: `Implement story 20.11: Update documentation for Epic 20`
 
 ### References
 
@@ -149,3 +149,4 @@ Story 20.11 is complete. All arc42 sections, project-context.md, and planning ar
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: All documentation updated to reflect Epic 20 changes. AD-10 added. Resolved debt items marked. File counts and type names corrected throughout.
+- 2026-02-27: Code review fixes — R-1 `TrainingSession` → `ComparisonSession`, added Core/ root-level files to building block tree, updated stale `hasTrainingData` debt description, fixed story Git Intelligence number and AC #6 story count.
