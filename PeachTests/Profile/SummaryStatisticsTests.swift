@@ -60,6 +60,20 @@ struct SummaryStatisticsTests {
         #expect(stats!.stdDev == nil)
     }
 
+    // MARK: - Protocol Abstraction Validation
+
+    @Test("computeStats works with any PitchDiscriminationProfile conformer")
+    func computeStatsAcceptsProtocol() async throws {
+        let mock = MockPitchDiscriminationProfile()
+        mock.setStats(for: MIDINote(60), mean: 40.0)
+        mock.setStats(for: MIDINote(62), mean: 20.0)
+
+        let stats = SummaryStatisticsView.computeStats(from: mock, midiRange: 36...84)
+
+        #expect(stats != nil)
+        #expect(stats!.mean == 30.0)
+    }
+
     // MARK: - Formatting
 
     @Test("Mean formatted as rounded integer with localized cent unit")

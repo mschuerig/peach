@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Displays mean detection threshold, standard deviation, and trend indicator
-/// Data is derived from PerceptualProfile (mean/stdDev) and TrendAnalyzer (trend)
+/// Data is derived from PitchDiscriminationProfile (mean/stdDev) and TrendAnalyzer (trend)
 struct SummaryStatisticsView: View {
     @Environment(\.perceptualProfile) private var profile
     @Environment(\.trendAnalyzer) private var trendAnalyzer
