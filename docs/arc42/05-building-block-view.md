@@ -10,7 +10,10 @@ Peach/
 │   ├── Algorithm/    Comparison selection
 │   ├── Data/         Persistence
 │   ├── Profile/      User statistics, timeline
-│   └── Training/     Shared domain types (Comparison, observers, Resettable)
+│   ├── Training/     Shared domain types (Comparison, CompletedPitchMatching, observers, Resettable)
+│   ├── TrainingSession.swift    Protocol shared by ComparisonSession and PitchMatchingSession
+│   ├── Comparable+Clamped.swift Clamping extension
+│   └── UnitInterval.swift       Value type for 0...1 range
 ├── Comparison/       Comparison training loop feature
 ├── PitchMatching/    Pitch matching training feature
 ├── Profile/          Profile visualization feature
