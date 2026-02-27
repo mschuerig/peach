@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 /// Direction of user's detection threshold trend
 enum Trend: Equatable {
@@ -84,10 +83,4 @@ extension TrendAnalyzer: ComparisonObserver {
         absOffsets.append(completed.comparison.centDifference.magnitude)
         recompute()
     }
-}
-
-// MARK: - Environment Key
-
-extension EnvironmentValues {
-    @Entry var trendAnalyzer = TrendAnalyzer()
 }

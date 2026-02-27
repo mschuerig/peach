@@ -157,49 +157,6 @@ struct ComparisonScreen: View {
     }
 }
 
-// MARK: - Environment Key for ComparisonSession
-
-extension EnvironmentValues {
-    @Entry var comparisonSession: ComparisonSession = {
-        let dataStore = MockDataStoreForPreview()
-        let profile = PerceptualProfile()
-        let strategy = KazezNoteStrategy()
-        let hapticManager = MockHapticFeedbackManager()
-        let observers: [ComparisonObserver] = [dataStore, profile, hapticManager]
-        return ComparisonSession(
-            notePlayer: MockNotePlayerForPreview(),
-            strategy: strategy,
-            profile: profile,
-            userSettings: AppUserSettings(),
-            observers: observers
-        )
-    }()
-}
-
-// MARK: - Preview Mocks
-
-private final class MockNotePlayerForPreview: NotePlayer {
-    func play(frequency: Frequency, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws -> PlaybackHandle {
-        MockPlaybackHandleForPreview()
-    }
-
-    func stopAll() async throws {}
-}
-
-private final class MockPlaybackHandleForPreview: PlaybackHandle {
-    func stop() async throws {}
-    func adjustFrequency(_ frequency: Frequency) async throws {}
-}
-
-private final class MockDataStoreForPreview: ComparisonRecordStoring, ComparisonObserver {
-    func save(_ record: ComparisonRecord) throws {}
-    func fetchAllComparisons() throws -> [ComparisonRecord] { [] }
-
-    func comparisonCompleted(_ completed: CompletedComparison) {
-        // No-op for preview
-    }
-}
-
 // MARK: - Previews
 
 #Preview {

@@ -1,10 +1,6 @@
-import SwiftUI
+import Foundation
 
 protocol TrainingSession: AnyObject {
     func stop()
     var isIdle: Bool { get }
-}
-
-extension EnvironmentValues {
-    @Entry var activeSession: (any TrainingSession)? = nil
 }

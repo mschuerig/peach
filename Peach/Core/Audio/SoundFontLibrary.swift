@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 import os
 
 final class SoundFontLibrary {
@@ -38,10 +37,4 @@ final class SoundFontLibrary {
               let program = Int(parts[1]) else { return nil }
         return availablePresets.first { $0.bank == bank && $0.program == program }
     }
-}
-
-// MARK: - Environment Key
-
-extension EnvironmentValues {
-    @Entry var soundFontLibrary = SoundFontLibrary()
 }
