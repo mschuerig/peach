@@ -76,6 +76,10 @@ final class TrendAnalyzer {
     }
 }
 
+// MARK: - Resettable Conformance
+
+extension TrendAnalyzer: Resettable {}
+
 // MARK: - ComparisonObserver Conformance
 
 extension TrendAnalyzer: ComparisonObserver {

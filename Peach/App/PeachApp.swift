@@ -139,8 +139,7 @@ struct PeachApp: App {
             strategy: strategy,
             profile: profile,
             userSettings: userSettings,
-            trendAnalyzer: trendAnalyzer,
-            thresholdTimeline: thresholdTimeline,
+            resettables: [trendAnalyzer, thresholdTimeline],
             observers: observers
         )
     }
