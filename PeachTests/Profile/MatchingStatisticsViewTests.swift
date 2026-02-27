@@ -53,6 +53,22 @@ struct MatchingStatisticsViewTests {
         #expect(stats.sampleCount == 1)
     }
 
+    // MARK: - Protocol Abstraction Validation
+
+    @Test("computeMatchingStats works with any PitchMatchingProfile conformer")
+    func computeMatchingStatsAcceptsProtocol() async throws {
+        let mock = MockPitchMatchingProfile()
+        mock.matchingMean = 12.5
+        mock.matchingStdDev = 3.2
+        mock.matchingSampleCount = 10
+
+        let stats = try #require(MatchingStatisticsView.computeMatchingStats(from: mock))
+
+        #expect(stats.meanError == 12.5)
+        #expect(stats.stdDev == 3.2)
+        #expect(stats.sampleCount == 10)
+    }
+
     // MARK: - Formatting
 
     @Test("formats mean error with one decimal place")

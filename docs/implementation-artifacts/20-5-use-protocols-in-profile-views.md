@@ -1,6 +1,6 @@
 # Story 20.5: Use Protocols in Profile Views
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -65,7 +65,7 @@ So that the views follow the Dependency Inversion Principle and depend on abstra
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.4: Use protocols in profile views`
+Commit message: `Implement story 20.5: Use protocols in profile views`
 
 ### References
 
@@ -84,10 +84,14 @@ Commit message: `Implement story 20.4: Use protocols in profile views`
 
 ## File List
 
-- `Peach/Profile/SummaryStatisticsView.swift` (modified) — parameter type change
+- `Peach/Profile/SummaryStatisticsView.swift` (modified) — parameter type change, docstring fix
 - `Peach/Profile/MatchingStatisticsView.swift` (modified) — parameter type change
+- `PeachTests/Profile/MockPitchDiscriminationProfile.swift` (new) — mock for protocol abstraction tests
+- `PeachTests/Profile/SummaryStatisticsTests.swift` (modified) — added protocol abstraction test
+- `PeachTests/Profile/MatchingStatisticsViewTests.swift` (modified) — added protocol abstraction test
 
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implementation complete — both computation methods now depend on protocol abstractions.
+- 2026-02-27: Code review fixes — fixed Git Intelligence typo (20.4→20.5), updated stale docstring, added protocol-validation tests with mocks.
