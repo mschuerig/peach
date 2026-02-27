@@ -28,7 +28,7 @@ extension EnvironmentValues {
     }()
 
     @Entry var pitchMatchingSession: PitchMatchingSession = {
-        return PitchMatchingSession(
+        PitchMatchingSession(
             notePlayer: PreviewNotePlayer(),
             profile: PerceptualProfile(),
             observers: [],
@@ -69,10 +69,10 @@ private final class PreviewComparisonStrategy: NextComparisonStrategy {
 }
 
 private final class PreviewUserSettings: UserSettings {
-    var noteRangeMin: MIDINote { MIDINote(36) }
-    var noteRangeMax: MIDINote { MIDINote(84) }
-    var noteDuration: NoteDuration { NoteDuration(0.75) }
-    var referencePitch: Frequency { Frequency(440.0) }
-    var soundSource: SoundSourceID { SoundSourceID("sf2:8:80") }
-    var varyLoudness: UnitInterval { UnitInterval(0.0) }
+    let noteRangeMin = MIDINote(36)
+    let noteRangeMax = MIDINote(84)
+    let noteDuration = NoteDuration(0.75)
+    let referencePitch = Frequency(440.0)
+    let soundSource = SoundSourceID("sf2:8:80")
+    let varyLoudness = UnitInterval(0.0)
 }

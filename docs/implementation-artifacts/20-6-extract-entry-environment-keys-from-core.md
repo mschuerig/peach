@@ -1,6 +1,6 @@
 # Story 20.6: Extract @Entry Environment Keys from Core/
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -113,7 +113,7 @@ So that Core/ files no longer import SwiftUI, the domain layer is framework-free
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.5: Extract @Entry environment keys from Core/`
+Commit message: `Implement story 20.6: Extract @Entry environment keys from Core/`
 
 ### Project Structure Notes
 
@@ -159,3 +159,4 @@ All @Entry environment key definitions extracted from 7 source files into a sing
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implementation complete — all @Entry keys consolidated into App/EnvironmentKeys.swift, Core/ files no longer import SwiftUI, preview stubs simplified.
+- 2026-02-27: Code review — 0 HIGH, 1 MEDIUM, 4 LOW issues found. All fixed: story typo (20.5→20.6), removed unnecessary `import Foundation` from TrainingSession.swift, `PreviewUserSettings` changed to stored `let` properties, removed explicit `return` in pitchMatchingSession closure. Reverted `TrendAnalyzer.swift` import change (Observation alone insufficient). All tests pass.
