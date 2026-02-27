@@ -16,7 +16,7 @@ struct PeachApp: App {
 
     init() {
         do {
-            let container = try Self.createModelContainer()
+            let container = try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)
             _modelContainer = State(wrappedValue: container)
 
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
@@ -27,10 +27,14 @@ struct PeachApp: App {
             let userSettings = AppUserSettings()
             let notePlayer = try SoundFontNotePlayer(userSettings: userSettings)
 
-            let profile = try Self.loadPerceptualProfile(from: dataStore)
-            _profile = State(wrappedValue: profile)
-
             let existingRecords = try dataStore.fetchAllComparisons()
+            let pitchMatchingRecords = try dataStore.fetchAllPitchMatchings()
+
+            let profile = Self.loadPerceptualProfile(
+                comparisonRecords: existingRecords,
+                pitchMatchingRecords: pitchMatchingRecords
+            )
+            _profile = State(wrappedValue: profile)
 
             let trendAnalyzer = TrendAnalyzer(records: existingRecords)
             _trendAnalyzer = State(wrappedValue: trendAnalyzer)
@@ -53,8 +57,8 @@ struct PeachApp: App {
             _pitchMatchingSession = State(wrappedValue: Self.createPitchMatchingSession(
                 notePlayer: notePlayer,
                 profile: profile,
-                dataStore: dataStore,
-                userSettings: userSettings
+                userSettings: userSettings,
+                dataStore: dataStore
             ))
         } catch {
             fatalError("Failed to initialize app: \(error)")
@@ -76,27 +80,24 @@ struct PeachApp: App {
 
     // MARK: - Init Helpers
 
-    private static func createModelContainer() throws -> ModelContainer {
-        try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self)
-    }
-
-    private static func loadPerceptualProfile(from dataStore: TrainingDataStore) throws -> PerceptualProfile {
+    private static func loadPerceptualProfile(
+        comparisonRecords: [ComparisonRecord],
+        pitchMatchingRecords: [PitchMatchingRecord]
+    ) -> PerceptualProfile {
         let profile = PerceptualProfile()
         let startTime = CFAbsoluteTimeGetCurrent()
-        let existingRecords = try dataStore.fetchAllComparisons()
-        for record in existingRecords {
+        for record in comparisonRecords {
             profile.update(
                 note: MIDINote(record.note1),
                 centOffset: abs(record.note2CentOffset),
                 isCorrect: record.isCorrect
             )
         }
-        let pitchMatchingRecords = try dataStore.fetchAllPitchMatchings()
         for record in pitchMatchingRecords {
             profile.updateMatching(note: MIDINote(record.referenceNote), centError: record.userCentError)
         }
         let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
-        logger.info("Profile loaded from \(existingRecords.count) comparison + \(pitchMatchingRecords.count) matching records in \(elapsed, format: .fixed(precision: 1))ms")
+        logger.info("Profile loaded from \(comparisonRecords.count) comparison + \(pitchMatchingRecords.count) matching records in \(elapsed, format: .fixed(precision: 1))ms")
         return profile
     }
 
@@ -125,8 +126,8 @@ struct PeachApp: App {
     private static func createPitchMatchingSession(
         notePlayer: NotePlayer,
         profile: PerceptualProfile,
-        dataStore: TrainingDataStore,
-        userSettings: UserSettings
+        userSettings: UserSettings,
+        dataStore: TrainingDataStore
     ) -> PitchMatchingSession {
         PitchMatchingSession(
             notePlayer: notePlayer,
