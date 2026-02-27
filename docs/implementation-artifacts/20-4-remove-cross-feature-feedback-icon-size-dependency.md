@@ -1,6 +1,6 @@
 # Story 20.4: Remove Cross-Feature Feedback Icon Size Dependency
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -60,7 +60,7 @@ So that PitchMatching/ has no dependency on Comparison/ and each feature module 
 
 ### Git Intelligence
 
-Commit message: `Implement story 20.3: Remove cross-feature feedback icon size dependency`
+Commit message: `Implement story 20.4: Remove cross-feature feedback icon size dependency`
 
 ### References
 
@@ -90,3 +90,4 @@ Commit message: `Implement story 20.3: Remove cross-feature feedback icon size d
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
 - 2026-02-27: Implemented — added local constant, removed cross-feature dependency, all tests pass.
+- 2026-02-27: Code review — 0 HIGH, 0 MEDIUM, 1 LOW (fixed: wrong story ID in Git Intelligence). Status → done.
