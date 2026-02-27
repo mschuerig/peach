@@ -1,6 +1,6 @@
 # Story 20.5: Use Protocols in Profile Views
 
-Status: pending
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,17 +22,17 @@ So that the views follow the Dependency Inversion Principle and depend on abstra
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Change `SummaryStatisticsView.computeStats(from:)` (AC: #1)
-  - [ ] Change parameter type from `PerceptualProfile` to `PitchDiscriminationProfile`
-  - [ ] Verify the method body only calls API defined on `PitchDiscriminationProfile`
+- [x] Task 1: Change `SummaryStatisticsView.computeStats(from:)` (AC: #1)
+  - [x] Change parameter type from `PerceptualProfile` to `PitchDiscriminationProfile`
+  - [x] Verify the method body only calls API defined on `PitchDiscriminationProfile`
 
-- [ ] Task 2: Change `MatchingStatisticsView.computeMatchingStats(from:)` (AC: #2)
-  - [ ] Change parameter type from `PerceptualProfile` to `PitchMatchingProfile`
-  - [ ] Verify the method body only calls API defined on `PitchMatchingProfile`
+- [x] Task 2: Change `MatchingStatisticsView.computeMatchingStats(from:)` (AC: #2)
+  - [x] Change parameter type from `PerceptualProfile` to `PitchMatchingProfile`
+  - [x] Verify the method body only calls API defined on `PitchMatchingProfile`
 
-- [ ] Task 3: Run full test suite (AC: #3, #4)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 3: Run full test suite (AC: #3, #4)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -73,6 +73,21 @@ Commit message: `Implement story 20.4: Use protocols in profile views`
 - [Source: Peach/Core/Profile/PitchDiscriminationProfile.swift -- Protocol definition]
 - [Source: Peach/Core/Profile/PitchMatchingProfile.swift -- Protocol definition]
 
+## Dev Agent Record
+
+### Implementation Notes
+
+- Changed `SummaryStatisticsView.computeStats(from:)` parameter type from `PerceptualProfile` to `PitchDiscriminationProfile` (line 86). Verified method body only calls `statsForNote()` which is defined on `PitchDiscriminationProfile`.
+- Changed `MatchingStatisticsView.computeMatchingStats(from:)` parameter type from `PerceptualProfile` to `PitchMatchingProfile` (line 66). Verified method body only accesses `matchingMean`, `matchingStdDev`, `matchingSampleCount` — all defined on `PitchMatchingProfile`.
+- No call-site changes needed: `PerceptualProfile` conforms to both protocols, so existing callers auto-upcast.
+- Full test suite: 588 passed, 0 failed.
+
+## File List
+
+- `Peach/Profile/SummaryStatisticsView.swift` (modified) — parameter type change
+- `Peach/Profile/MatchingStatisticsView.swift` (modified) — parameter type change
+
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
+- 2026-02-27: Implementation complete — both computation methods now depend on protocol abstractions.
