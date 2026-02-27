@@ -63,7 +63,7 @@ struct MatchingStatisticsView: View {
         let sampleCount: Int
     }
 
-    static func computeMatchingStats(from profile: PerceptualProfile) -> MatchingStats? {
+    static func computeMatchingStats(from profile: PitchMatchingProfile) -> MatchingStats? {
         guard let mean = profile.matchingMean else { return nil }
         return MatchingStats(
             meanError: mean,
