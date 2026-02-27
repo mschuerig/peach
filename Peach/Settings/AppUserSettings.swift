@@ -24,8 +24,4 @@ final class AppUserSettings: UserSettings {
     var varyLoudness: UnitInterval {
         UnitInterval(UserDefaults.standard.object(forKey: SettingsKeys.varyLoudness) as? Double ?? SettingsKeys.defaultVaryLoudness)
     }
-
-    var naturalVsMechanical: Double {
-        UserDefaults.standard.object(forKey: SettingsKeys.naturalVsMechanical) as? Double ?? SettingsKeys.defaultNaturalVsMechanical
-    }
 }

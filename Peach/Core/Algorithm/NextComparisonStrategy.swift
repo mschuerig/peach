@@ -17,7 +17,7 @@ import Foundation
 /// # Usage
 ///
 /// The default implementation (`KazezNoteStrategy`) is injected into ComparisonSession
-/// in `PeachApp.swift` (Story 9.1). `AdaptiveNoteStrategy` is retained for future use.
+/// in `PeachApp.swift` (Story 9.1).
 /// ```swift
 /// let strategy: NextComparisonStrategy = KazezNoteStrategy()
 /// let comparison = strategy.nextComparison(profile: profile, settings: settings, lastComparison: nil)
@@ -47,13 +47,11 @@ protocol NextComparisonStrategy {
 /// # Defaults
 ///
 /// - Note range: C2 to C6 (MIDI 36-84) — typical vocal/instrument range
-/// - Natural/Mechanical: 0.5 — balanced between exploration and weak spot focus
 /// - Reference pitch: 440Hz — standard concert pitch (A4)
 /// - Difficulty bounds: 0.1 to 100.0 cents — practical human discrimination range
 struct TrainingSettings {
     var noteRangeMin: MIDINote
     var noteRangeMax: MIDINote
-    var naturalVsMechanical: Double
     var referencePitch: Double
     var minCentDifference: Cents
     var maxCentDifference: Cents
@@ -61,14 +59,12 @@ struct TrainingSettings {
     init(
         noteRangeMin: MIDINote = 36,
         noteRangeMax: MIDINote = 84,
-        naturalVsMechanical: Double = 0.5,
         referencePitch: Double = 440.0,
         minCentDifference: Cents = 0.1,
         maxCentDifference: Cents = 100.0
     ) {
         self.noteRangeMin = noteRangeMin
         self.noteRangeMax = noteRangeMax
-        self.naturalVsMechanical = naturalVsMechanical
         self.referencePitch = referencePitch
         self.minCentDifference = minCentDifference
         self.maxCentDifference = maxCentDifference

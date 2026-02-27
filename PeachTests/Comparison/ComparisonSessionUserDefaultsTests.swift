@@ -11,7 +11,6 @@ struct ComparisonSessionUserDefaultsTests {
     @Test("Changing UserSettings values changes TrainingSettings built by ComparisonSession")
     func userSettingsChangesAffectSettings() async throws {
         let mockSettings = MockUserSettings()
-        mockSettings.naturalVsMechanical = 0.8
         mockSettings.noteRangeMin = MIDINote(50)
         mockSettings.noteRangeMax = MIDINote(70)
         mockSettings.referencePitch = 432.0
@@ -34,7 +33,6 @@ struct ComparisonSessionUserDefaultsTests {
 
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 50)
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 70)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.8)
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
 
         session.stop()
@@ -120,11 +118,9 @@ struct ComparisonSessionUserDefaultsTests {
         try await waitForState(session, .awaitingAnswer)
 
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin.rawValue == SettingsKeys.defaultNoteRangeMin)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == SettingsKeys.defaultNaturalVsMechanical)
 
         mockSettings.noteRangeMin = MIDINote(50)
         mockSettings.noteRangeMax = MIDINote(70)
-        mockSettings.naturalVsMechanical = 0.9
         mockSettings.noteDuration = 2.0
 
         session.handleAnswer(isHigher: true)
@@ -133,7 +129,6 @@ struct ComparisonSessionUserDefaultsTests {
         #expect(mockStrategy.callCount == 2, "Second comparison should have been requested")
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 50)
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 70)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.9)
         #expect(mockPlayer.lastDuration == 2.0)
 
         session.stop()

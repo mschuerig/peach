@@ -12,7 +12,6 @@ struct ComparisonSessionSettingsTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(48)
         mockSettings.noteRangeMax = MIDINote(72)
-        mockSettings.naturalVsMechanical = 0.8
 
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
@@ -32,7 +31,6 @@ struct ComparisonSessionSettingsTests {
 
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.8)
     }
 
     @Test("Strategy receives updated profile after answer")
@@ -61,7 +59,6 @@ struct ComparisonSessionSettingsTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(48)
         mockSettings.noteRangeMax = MIDINote(72)
-        mockSettings.naturalVsMechanical = 0.3
         mockSettings.referencePitch = 432.0
 
         let mockPlayer = MockNotePlayer()
@@ -82,7 +79,6 @@ struct ComparisonSessionSettingsTests {
 
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
         #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
-        #expect(mockStrategy.lastReceivedSettings?.naturalVsMechanical == 0.3)
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
     }
 

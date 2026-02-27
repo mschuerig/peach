@@ -41,7 +41,6 @@ final class ComparisonSession {
         TrainingSettings(
             noteRangeMin: userSettings.noteRangeMin,
             noteRangeMax: userSettings.noteRangeMax,
-            naturalVsMechanical: userSettings.naturalVsMechanical,
             referencePitch: userSettings.referencePitch.rawValue
         )
     }

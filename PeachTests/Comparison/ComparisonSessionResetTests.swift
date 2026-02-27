@@ -37,10 +37,10 @@ struct ComparisonSessionResetTests {
         #expect(profile.statsForNote(62).sampleCount == 0)
     }
 
-    @Test("after reset, first comparison from AdaptiveNoteStrategy uses 100 cents")
+    @Test("after reset, first comparison from KazezNoteStrategy uses 100 cents")
     func afterResetFirstComparisonUses100Cents() {
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let strategy = KazezNoteStrategy()
         let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,
@@ -67,7 +67,7 @@ struct ComparisonSessionResetTests {
     @Test("after reset, weightedEffectiveDifficulty returns default with no trained neighbors")
     func afterResetWeightedEffectiveDifficultyReturnsDefault() {
         let profile = PerceptualProfile()
-        let strategy = AdaptiveNoteStrategy()
+        let strategy = KazezNoteStrategy()
         let session = ComparisonSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,

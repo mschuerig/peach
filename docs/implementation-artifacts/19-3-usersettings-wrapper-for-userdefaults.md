@@ -196,6 +196,7 @@ Commit message: `Implement story 19.3: UserSettings wrapper for UserDefaults`
 
 - 2026-02-26: Story created by BMAD create-story workflow from Epic 19 code review plan.
 - 2026-02-27: Implemented story 19.3 — UserSettings protocol, AppUserSettings, MockUserSettings, dependency injection into ComparisonSession/PitchMatchingSession/SoundFontNotePlayer, removed all override parameters, updated all test factories and mocks. Full test suite passes.
+- 2026-02-27: Code review fix-up — Removed dead `naturalVsMechanical` setting and `AdaptiveNoteStrategy` (replaced by `KazezNoteStrategy` in story 9.1). Fixed `NoteDuration` clamping in test factories (`0.0`/`0.01` → `NoteDuration(0.3)`).
 
 ## Dev Agent Record
 
@@ -237,6 +238,11 @@ No issues encountered.
 - Peach/Settings/AppUserSettings.swift
 - PeachTests/Mocks/MockUserSettings.swift
 
+**Deleted files (code review fix-up):**
+- Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+- PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+- PeachTests/Core/Algorithm/AdaptiveNoteStrategyRegionalTests.swift
+
 **Modified production files:**
 - Peach/Comparison/ComparisonSession.swift
 - Peach/PitchMatching/PitchMatchingSession.swift
@@ -244,6 +250,8 @@ No issues encountered.
 - Peach/App/PeachApp.swift
 - Peach/Comparison/ComparisonScreen.swift
 - Peach/PitchMatching/PitchMatchingScreen.swift
+- Peach/Settings/SettingsKeys.swift (code review fix-up)
+- Peach/Core/Algorithm/NextComparisonStrategy.swift (code review fix-up)
 
 **Modified test files:**
 - PeachTests/Comparison/ComparisonTestHelpers.swift
@@ -252,7 +260,10 @@ No issues encountered.
 - PeachTests/Comparison/ComparisonSessionSettingsTests.swift
 - PeachTests/Comparison/ComparisonSessionAudioInterruptionTests.swift
 - PeachTests/Comparison/ComparisonSessionResetTests.swift
+- PeachTests/Comparison/ComparisonSessionIntegrationTests.swift (code review fix-up)
 - PeachTests/PitchMatching/PitchMatchingSessionTests.swift
+- PeachTests/Settings/SettingsTests.swift (code review fix-up)
+- PeachTests/Mocks/MockUserSettings.swift (code review fix-up)
 - PeachTests/Core/Audio/SoundFontNotePlayerTests.swift
 - PeachTests/Core/Audio/SoundFontPlaybackHandleTests.swift
 
