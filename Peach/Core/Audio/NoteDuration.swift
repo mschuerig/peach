@@ -1,7 +1,7 @@
 import Foundation
 
 struct NoteDuration: Hashable, Comparable, Sendable {
-    static let validRange: ClosedRange<Double> = 0.3...3.0
+    private static let validRange: ClosedRange<Double> = 0.3...3.0
 
     let rawValue: Double
 

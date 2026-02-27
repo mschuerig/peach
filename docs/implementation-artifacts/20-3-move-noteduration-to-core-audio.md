@@ -1,6 +1,6 @@
 # Story 20.3: Move NoteDuration to Core/Audio/
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -56,7 +56,7 @@ So that all audio domain value types are co-located in `Core/Audio/`, the `UserS
 
 ### Existing Code to Reference
 
-- **`NoteDuration.swift`** -- Pure value type, ~33 lines. `struct NoteDuration: Hashable, Comparable, Sendable` with `rawValue: Double`, clamping init, `ExpressibleByFloatLiteral`, `ExpressibleByIntegerLiteral`. Uses `clamped(to:)` utility. [Source: Peach/Settings/NoteDuration.swift]
+- **`NoteDuration.swift`** -- Pure value type, ~33 lines. `struct NoteDuration: Hashable, Comparable, Sendable` with `rawValue: Double`, clamping init, `ExpressibleByFloatLiteral`, `ExpressibleByIntegerLiteral`. Uses `clamped(to:)` utility. [Source: Peach/Core/Audio/NoteDuration.swift]
 - **`UserSettings.swift`** -- Protocol exposing `var noteDuration: NoteDuration`. After this move, all types in the protocol signature live in Core/. [Source: Peach/Settings/UserSettings.swift]
 - **`ComparisonSession.swift`** -- Reads `currentNoteDuration` computed property (delegates to `userSettings.noteDuration`). [Source: Peach/Comparison/ComparisonSession.swift]
 - **`PitchMatchingSession.swift`** -- Reads `currentNoteDuration` computed property (delegates to `userSettings.noteDuration`). [Source: Peach/PitchMatching/PitchMatchingSession.swift]
@@ -119,6 +119,26 @@ No issues encountered.
 - `docs/implementation-artifacts/20-3-move-noteduration-to-core-audio.md` (updated)
 - `docs/implementation-artifacts/sprint-status.yaml` (updated)
 
+## Senior Developer Review (AI)
+
+**Reviewer:** Michael (via Claude Opus 4.6) on 2026-02-27
+**Outcome:** Approved — 0 High, 0 Medium, 3 Low (2 fixed, 1 informational)
+
+### Findings
+
+- **L-1 (Fixed):** `NoteDuration.validRange` had internal access but was never referenced outside the file. Made `private` per project rules.
+- **L-2 (Fixed):** Stale source path `[Source: Peach/Settings/NoteDuration.swift]` in "Existing Code to Reference" section updated to post-move path.
+- **L-3 (Informational):** `NoteDuration` lacks `Codable` unlike sibling `MIDINote`. Intentional — persists via `@AppStorage` as raw `Double`, not via Codable. No action needed.
+
+### Verification
+
+- All 5 Acceptance Criteria validated against actual implementation
+- All 4 tasks verified as genuinely complete
+- Git diff confirms pure rename (100% similarity) with zero code changes
+- File List matches git reality — 0 discrepancies
+- Full test suite passes after `private` fix
+
 ## Change Log
 
 - 2026-02-27: Implemented story 20.3 — moved NoteDuration.swift and NoteDurationTests.swift from Settings/ to Core/Audio/, completing the domain type co-location pattern started in stories 20.1 and 20.2
+- 2026-02-27: Code review passed — 0 High, 0 Medium, 3 Low (2 fixed, 1 informational). Marked done.
