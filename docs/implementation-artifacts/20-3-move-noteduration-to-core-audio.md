@@ -1,6 +1,6 @@
 # Story 20.3: Move NoteDuration to Core/Audio/
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,19 +24,19 @@ So that all audio domain value types are co-located in `Core/Audio/`, the `UserS
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Move production file (AC: #1)
-  - [ ] `git mv Peach/Settings/NoteDuration.swift Peach/Core/Audio/NoteDuration.swift`
+- [x] Task 1: Move production file (AC: #1)
+  - [x] `git mv Peach/Settings/NoteDuration.swift Peach/Core/Audio/NoteDuration.swift`
 
-- [ ] Task 2: Move test file (AC: #2)
-  - [ ] `git mv PeachTests/Settings/NoteDurationTests.swift PeachTests/Core/Audio/NoteDurationTests.swift`
+- [x] Task 2: Move test file (AC: #2)
+  - [x] `git mv PeachTests/Settings/NoteDurationTests.swift PeachTests/Core/Audio/NoteDurationTests.swift`
 
-- [ ] Task 3: Verify dependency direction (AC: #3)
-  - [ ] Confirm all types in `UserSettings` protocol are now defined in `Core/`
-  - [ ] Confirm no Core/ file references any type defined in Settings/
+- [x] Task 3: Verify dependency direction (AC: #3)
+  - [x] Confirm all types in `UserSettings` protocol are now defined in `Core/`
+  - [x] Confirm no Core/ file references any type defined in Settings/
 
-- [ ] Task 4: Run full test suite (AC: #4, #5)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions, zero code changes
+- [x] Task 4: Run full test suite (AC: #4, #5)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions, zero code changes
 
 ## Dev Notes
 
@@ -98,10 +98,27 @@ Story 20.2 (Move SoundSourceID to Core/Audio/) is the direct precedent:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+No issues encountered.
+
 ### Completion Notes List
 
+- Moved `NoteDuration.swift` from `Peach/Settings/` to `Peach/Core/Audio/` via `git mv` — zero code changes
+- Moved `NoteDurationTests.swift` from `PeachTests/Settings/` to `PeachTests/Core/Audio/` via `git mv`
+- Verified all 5 types in `UserSettings` protocol signature (`MIDINote`, `NoteDuration`, `Frequency`, `SoundSourceID`, `UnitInterval`) now live in `Core/`
+- Confirmed no `Core/` file has code dependencies on `Settings/` types (one comment reference only)
+- Full test suite passed — zero regressions, zero code changes
+
 ### File List
+
+- `Peach/Settings/NoteDuration.swift` → `Peach/Core/Audio/NoteDuration.swift` (moved)
+- `PeachTests/Settings/NoteDurationTests.swift` → `PeachTests/Core/Audio/NoteDurationTests.swift` (moved)
+- `docs/implementation-artifacts/20-3-move-noteduration-to-core-audio.md` (updated)
+- `docs/implementation-artifacts/sprint-status.yaml` (updated)
+
+## Change Log
+
+- 2026-02-27: Implemented story 20.3 — moved NoteDuration.swift and NoteDurationTests.swift from Settings/ to Core/Audio/, completing the domain type co-location pattern started in stories 20.1 and 20.2
