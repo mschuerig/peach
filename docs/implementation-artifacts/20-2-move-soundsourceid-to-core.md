@@ -1,6 +1,6 @@
 # Story 20.2: Move SoundSourceID to Core/Audio/
 
-Status: pending
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,18 +24,18 @@ So that `SoundFontNotePlayer` no longer depends on the Settings module, and audi
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Move production file (AC: #1)
-  - [ ] `git mv Peach/Settings/SoundSourceID.swift Peach/Core/Audio/SoundSourceID.swift`
+- [x] Task 1: Move production file (AC: #1)
+  - [x] `git mv Peach/Settings/SoundSourceID.swift Peach/Core/Audio/SoundSourceID.swift`
 
-- [ ] Task 2: Move test file (AC: #2)
-  - [ ] `git mv PeachTests/Settings/SoundSourceIDTests.swift PeachTests/Core/Audio/SoundSourceIDTests.swift`
+- [x] Task 2: Move test file (AC: #2)
+  - [x] `git mv PeachTests/Settings/SoundSourceIDTests.swift PeachTests/Core/Audio/SoundSourceIDTests.swift`
 
-- [ ] Task 3: Verify dependency direction (AC: #3)
-  - [ ] Confirm no Core/ file references any type in Settings/ except the `UserSettings` protocol (which is a protocol boundary, not a concrete dependency)
+- [x] Task 3: Verify dependency direction (AC: #3)
+  - [x] Confirm no Core/ file references any type in Settings/ except the `UserSettings` protocol (which is a protocol boundary, not a concrete dependency)
 
-- [ ] Task 4: Run full test suite (AC: #4, #5)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass, zero regressions
+- [x] Task 4: Run full test suite (AC: #4, #5)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass, zero regressions
 
 ## Dev Notes
 
@@ -76,6 +76,24 @@ Commit message: `Implement story 20.2: Move SoundSourceID to Core/Audio/`
 - [Source: docs/planning-artifacts/epics.md -- Epic 20]
 - [Source: Peach/Core/Audio/SoundFontNotePlayer.swift -- Consumer of SoundSourceID]
 
+## Dev Agent Record
+
+### Implementation Notes
+
+- Pure file move via `git mv` — no code changes required
+- `SoundSourceID.swift` moved from `Settings/` to `Core/Audio/` alongside its consumer `SoundFontNotePlayer`
+- Test mirror maintained: `SoundSourceIDTests.swift` moved to `PeachTests/Core/Audio/`
+- Verified dependency direction: no Core/ file references Settings/ types. `UserSettings` protocol in Settings/ references `SoundSourceID` from Core/ — correct direction
+- 588 tests passed, 0 failures
+
+## File List
+
+- `Peach/Settings/SoundSourceID.swift` → `Peach/Core/Audio/SoundSourceID.swift` (moved)
+- `PeachTests/Settings/SoundSourceIDTests.swift` → `PeachTests/Core/Audio/SoundSourceIDTests.swift` (moved)
+- `docs/implementation-artifacts/sprint-status.yaml` (modified — status updated)
+- `docs/implementation-artifacts/20-2-move-soundsourceid-to-core.md` (modified — task tracking)
+
 ## Change Log
 
 - 2026-02-27: Story created from Epic 20 adversarial dependency review.
+- 2026-02-27: Implementation complete — moved SoundSourceID and tests to Core/Audio/, all 588 tests pass.
