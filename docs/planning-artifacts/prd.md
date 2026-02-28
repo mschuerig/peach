@@ -12,8 +12,10 @@ classification:
   complexity: low
   projectContext: greenfield
 workflowType: 'prd'
-lastEdited: '2026-02-25'
+lastEdited: '2026-02-28'
 editHistory:
+  - date: '2026-02-28'
+    changes: 'Added interval training variants (v0.3 scope): interval comparison, interval pitch matching, interval domain model, tuning system abstraction; two new user journeys; 15 new FRs (FR53-FR67)'
   - date: '2026-02-25'
     changes: 'Added pitch matching training paradigm (v0.2 scope); restructured phases; removed completed/obsolete roadmap items'
 ---
@@ -25,7 +27,7 @@ editHistory:
 
 ## Executive Summary
 
-Peach is a pitch ear training app for iOS. It trains musicians' pitch perception through two complementary modes: **Pitch Comparison** (two notes in sequence — user answers higher or lower) and **Pitch Matching** (user tunes a note to match a reference pitch). Both modes build a perceptual profile across the user's range and relentlessly target weak spots.
+Peach is a pitch ear training app for iOS. It trains musicians' pitch perception through two complementary modes: **Pitch Comparison** (two notes in sequence — user answers higher or lower) and **Pitch Matching** (user tunes a note to match a reference pitch). Both modes build a perceptual profile across the user's range and relentlessly target weak spots. Each mode has an **interval variant** that generalizes from unison to any musical interval — training the user to perceive and produce precise intonation within intervals, not just between isolated pitches.
 
 **Target users:** Musicians (singers, string, woodwind, brass players) for whom intonation is a practical challenge.
 
@@ -41,6 +43,8 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - The comparison training loop feels instinctive and low-friction — users can do 30 seconds of comparisons without thinking about the app, just about the sounds
 - Pitch matching accuracy improves over time — users achieve smaller cent errors with continued training
 - Summary statistics (mean and standard deviation of detection thresholds) show a visible improving trend over time
+- Interval training shows measurable improvement in detecting intonation deviations within intervals over time
+- Interval pitch matching accuracy improves — users achieve smaller cent errors when matching target intervals
 - Users return to the app regularly because it fits into incidental moments (practice breaks, commuting, waiting)
 
 ### Business Success
@@ -106,6 +110,28 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Same interruption handling as comparison training (discard on navigation away, backgrounding, etc.)
 
 **User Journey Supported:** Journey 6 (Pitch Matching)
+
+### Version 0.3 Scope (Phase 3 — Interval Training)
+
+**Core addition:** Interval-based variants of both training modes. Instead of comparing or matching unison (same pitch), the user works with musical intervals — detecting whether an interval is sharp/flat, or tuning a note to match a target interval from a reference.
+
+**Domain concepts introduced:**
+- Interval value object representing musical intervals from Prime (unison) through Octave
+- Tuning System abstraction — 12-tone equal temperament (12-TET) initially, extensible to Just Intonation and others
+
+**Must-Have Capabilities:**
+- Interval Comparison training: reference note plays, second note plays at target interval ± cent deviation, user judges higher/lower relative to the correct interval
+- Interval Pitch Matching training: reference note plays, user adjusts second note to match target interval
+- Start Screen integration: two new buttons ("Interval Comparison", "Interval Pitch Matching")
+- Existing comparison and pitch matching modes are the prime (unison) case — same underlying training session, fixed to prime interval
+- Initial implementation limited to a single fixed interval: perfect fifth up (700 cents in 12-TET)
+
+**Deferred to subsequent iteration:**
+- Settings UI for interval selection (per direction: up/down)
+- Multiple concurrent intervals in training rotation
+- Tuning system selection beyond 12-TET
+
+**User Journeys Supported:** Journey 7 (Interval Comparison), Journey 8 (Interval Pitch Matching)
 
 ### Future Ideas
 
@@ -213,6 +239,34 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 **Requirements revealed:** Pitch Matching Screen, indefinite note playback, real-time pitch adjustment via slider, visual proximity feedback, result recording, Start Screen integration, same interruption handling as comparison training.
 
+### Journey 7: Interval Comparison — "Is That Fifth In Tune?"
+
+**Persona:** Sarah, three months into comparison training. Her unison pitch discrimination has sharpened noticeably. She wants to train interval intonation — the skill she actually uses when playing with others.
+
+**Opening Scene:** She opens Peach and sees two new buttons below the existing ones: "Interval Comparison" and "Interval Pitch Matching." She taps "Interval Comparison."
+
+**Rising Action:** The screen indicates the target interval: Perfect Fifth Up. A reference note plays, then a second note plays — it should be a perfect fifth above, but it's slightly off. She taps "Higher" — the second note was a few cents sharp of a true fifth. Thumbs up. Next pair: she gets it wrong. The haptic buzz. The rhythm is familiar from unison training, but the listening task is different — she's not comparing two isolated pitches, she's evaluating the quality of an interval.
+
+**Climax:** After a minute, she notices her ear is doing something new. She's not just hearing "higher or lower" — she's hearing "sharp fifth or flat fifth." The training feels directly relevant to ensemble intonation. This is the skill gap she's been trying to close.
+
+**Resolution:** She switches back to unison comparison for a quick burst. Both modes feed her understanding of pitch. The interval mode trains a higher-order skill that builds on the foundation the unison mode established.
+
+**Requirements revealed:** Interval Comparison Screen, target interval display, second note offset from correct interval (not from reference), same higher/lower interaction pattern, same feedback mechanisms, Start Screen integration.
+
+### Journey 8: Interval Pitch Matching — "Tune That Fifth"
+
+**Persona:** Sarah, exploring the interval pitch matching mode for the first time.
+
+**Opening Scene:** She taps "Interval Pitch Matching" on the Start Screen. The screen indicates the target interval: Perfect Fifth Up.
+
+**Rising Action:** A reference note plays. Then a tunable note begins — but instead of matching the reference pitch, she needs to tune it to a perfect fifth above. The slider works the same way as unison pitch matching, but the target is different. She drags the slider, listening for the characteristic sound of a pure fifth. She overshoots, pulls back, fine-tunes.
+
+**Climax:** She releases the slider. The result shows she was 6 cents flat of a true fifth. Not bad for a first attempt. The next reference note plays. She goes again. This mode is harder than unison matching — she has to hold the interval relationship in her mind while tuning. It's exactly the skill she uses when tuning her cello's strings.
+
+**Resolution:** She does five matches and closes the app. The interval matching mode is more demanding but directly applicable to her instrument. She'll alternate between unison and interval modes in her daily training.
+
+**Requirements revealed:** Interval Pitch Matching Screen, target interval display, slider tuning to interval (not unison), result recording with target interval, same slider interaction pattern, same feedback mechanisms.
+
 ### Journey Requirements Summary
 
 | Capability Area | Journeys | Priority |
@@ -236,6 +290,11 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 | Visual proximity feedback for pitch matching | 6 | v0.2 |
 | Pitch matching result recording | 6 | v0.2 |
 | Interrupted pitch matching handling | 6 | v0.2 |
+| Interval Comparison Screen with target interval display | 7 | v0.3 |
+| Interval Pitch Matching Screen with target interval display | 8 | v0.3 |
+| Interval-based result recording (target interval + deviation) | 7, 8 | v0.3 |
+| Start Screen buttons for interval training variants | 7, 8 | v0.3 |
+| Tuning system abstraction (12-TET, extensible) | 7, 8 | v0.3 |
 | Temporal progress visualization | 3 | Future |
 | Per-note detail view | 3 | Future |
 
@@ -275,6 +334,10 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Test-first development with comprehensive coverage
 - Per-comparison data model: two notes, correct/wrong, timestamp
 - Per-pitch-matching data model: reference note, user's final pitch, error in cents, timestamp
+- Interval value object representing musical intervals (Prime through Octave)
+- Tuning System abstraction: maps intervals to cent offsets (12-TET initially, extensible to Just Intonation)
+- Per-interval-comparison data model: reference note, target interval, second note, correct/wrong, timestamp
+- Per-interval-pitch-matching data model: reference note, target interval, user's final pitch, error in cents relative to correct interval, timestamp
 
 ## Functional Requirements
 
@@ -362,6 +425,36 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 - **FR43:** User can view an Info Screen from the Start Screen showing app name, developer, copyright, and version number
 
+### Interval Domain
+
+- **FR53:** System represents musical intervals as a value object spanning Prime (unison) through Octave
+- **FR54:** System computes the target frequency for an interval using a Tuning System; 12-tone equal temperament (12-TET) is the initial tuning system
+- **FR55:** System supports extensible tuning systems beyond 12-TET (e.g., Just Intonation) — architecture must not hard-code 12-TET assumptions
+
+### Interval Comparison
+
+- **FR56:** User can start interval comparison training from the Start Screen via a dedicated button
+- **FR57:** Generalizes FR2: system plays a reference note followed by a second note at the target interval ± a signed cent deviation
+- **FR58:** Generalizes FR3: user answers whether the second note was higher or lower than the correct interval pitch
+- **FR59:** FR4, FR5, FR7, FR7a, and FR8 apply to interval comparison identically as to unison comparison
+
+### Interval Pitch Matching
+
+- **FR60:** User can start interval pitch matching training from the Start Screen via a dedicated button
+- **FR61:** Generalizes FR45: system plays a reference note for the configured duration, then plays a tunable note indefinitely; the user's target is the correct interval pitch, not unison
+- **FR62:** Generalizes FR46: user adjusts the pitch of the tunable note via slider to match the target interval
+- **FR63:** FR47, FR49, FR50, and FR50a apply to interval pitch matching identically as to unison pitch matching
+- **FR64:** System records interval pitch matching results: reference note, target interval, user's final pitch, error in cents relative to the correct interval pitch, timestamp
+
+### Start Screen Integration
+
+- **FR65:** Start Screen shows four training buttons: "Comparison", "Pitch Matching", "Interval Comparison", "Interval Pitch Matching"
+- **FR66:** "Comparison" and "Pitch Matching" buttons use the same underlying training session as interval variants, fixed to prime (unison) interval
+
+### Initial Scope Constraint
+
+- **FR67:** Initial interval training implementation uses a single fixed interval: perfect fifth up (700 cents in 12-TET)
+
 ## Non-Functional Requirements
 
 ### Performance
@@ -379,6 +472,10 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Sufficient color contrast ratios for all text and UI elements
 - Tap targets meet minimum size guidelines (44x44 points per Apple HIG)
 - Feedback Indicator provides non-visual feedback (haptic) in addition to visual
+
+### Tuning System Precision
+
+- Interval frequency computations must be accurate to within 0.1 cent of the theoretical value for any supported tuning system
 
 ### Data Integrity
 
