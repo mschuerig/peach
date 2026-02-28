@@ -92,4 +92,27 @@ struct MIDINoteTests {
         let decoded = try JSONDecoder().decode(MIDINote.self, from: data)
         #expect(decoded == note)
     }
+
+    // MARK: - Transposition
+
+    @Test("C4 transposed by perfect fifth gives G4")
+    func transposedByPerfectFifth() async {
+        let c4 = MIDINote(60)
+        let g4 = c4.transposed(by: .perfectFifth)
+        #expect(g4.rawValue == 67)
+    }
+
+    @Test("Transposition by prime returns same note")
+    func transposedByPrimeReturnsSameNote() async {
+        let note = MIDINote(60)
+        let result = note.transposed(by: .prime)
+        #expect(result == note)
+    }
+
+    @Test("Transposition at top of MIDI range succeeds when within bounds")
+    func transposedAtTopBoundary() async {
+        let note = MIDINote(120)
+        let result = note.transposed(by: .perfectFifth)
+        #expect(result.rawValue == 127)
+    }
 }

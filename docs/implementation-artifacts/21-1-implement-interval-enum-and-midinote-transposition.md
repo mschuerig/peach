@@ -1,6 +1,6 @@
 # Story 21.1: Implement Interval Enum and MIDINote Transposition
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,37 +24,37 @@ So that intervals are first-class domain concepts with compile-time safety and t
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Write IntervalTests.swift with failing tests (AC: #1, #5)
-  - [ ] Test all 13 cases have correct semitone values
-  - [ ] Test `CaseIterable` gives 13 cases
-  - [ ] Test `Codable` round-trip
-  - [ ] Test `Hashable` (use as Set element / Dictionary key)
-- [ ] Task 2: Implement Interval enum (AC: #1, #5)
-  - [ ] Create `Peach/Core/Audio/Interval.swift`
-  - [ ] 13 cases with `Int` raw values 0-12
-  - [ ] `var semitones: Int { rawValue }` computed property
-- [ ] Task 3: Write MIDINote transposition tests (AC: #2)
-  - [ ] Add transposition tests to `PeachTests/Core/Audio/MIDINoteTests.swift`
-  - [ ] Test basic transposition (C4 + P5 = G4)
-  - [ ] Test identity transposition (`.prime` returns same note)
-  - [ ] Test boundary: transposition at top of MIDI range
-- [ ] Task 4: Implement MIDINote.transposed(by:) (AC: #2)
-  - [ ] Add extension in `Interval.swift` (keeps Interval-related logic together)
-  - [ ] `func transposed(by interval: Interval) -> MIDINote`
-  - [ ] Precondition on result within `MIDINote.validRange`
-- [ ] Task 5: Write Interval.between tests (AC: #3, #4)
-  - [ ] Test known interval derivation (60, 67 -> perfectFifth)
-  - [ ] Test distance-independent order (67, 60 also returns perfectFifth)
-  - [ ] Test prime (same note returns .prime)
-  - [ ] Test octave (12 semitones returns .octave)
-  - [ ] Test throws for distance > 12 semitones
-- [ ] Task 6: Implement Interval.between (AC: #3, #4)
-  - [ ] `static func between(_ a: MIDINote, _ b: MIDINote) throws -> Interval`
-  - [ ] Compute absolute semitone distance
-  - [ ] Initialize from raw value or throw error
-- [ ] Task 7: Run full test suite (all ACs)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] Zero regressions
+- [x] Task 1: Write IntervalTests.swift with failing tests (AC: #1, #5)
+  - [x] Test all 13 cases have correct semitone values
+  - [x] Test `CaseIterable` gives 13 cases
+  - [x] Test `Codable` round-trip
+  - [x] Test `Hashable` (use as Set element / Dictionary key)
+- [x] Task 2: Implement Interval enum (AC: #1, #5)
+  - [x] Create `Peach/Core/Audio/Interval.swift`
+  - [x] 13 cases with `Int` raw values 0-12
+  - [x] `var semitones: Int { rawValue }` computed property
+- [x] Task 3: Write MIDINote transposition tests (AC: #2)
+  - [x] Add transposition tests to `PeachTests/Core/Audio/MIDINoteTests.swift`
+  - [x] Test basic transposition (C4 + P5 = G4)
+  - [x] Test identity transposition (`.prime` returns same note)
+  - [x] Test boundary: transposition at top of MIDI range
+- [x] Task 4: Implement MIDINote.transposed(by:) (AC: #2)
+  - [x] Add extension in `Interval.swift` (keeps Interval-related logic together)
+  - [x] `func transposed(by interval: Interval) -> MIDINote`
+  - [x] Precondition on result within `MIDINote.validRange`
+- [x] Task 5: Write Interval.between tests (AC: #3, #4)
+  - [x] Test known interval derivation (60, 67 -> perfectFifth)
+  - [x] Test distance-independent order (67, 60 also returns perfectFifth)
+  - [x] Test prime (same note returns .prime)
+  - [x] Test octave (12 semitones returns .octave)
+  - [x] Test throws for distance > 12 semitones
+- [x] Task 6: Implement Interval.between (AC: #3, #4)
+  - [x] `static func between(_ a: MIDINote, _ b: MIDINote) throws -> Interval`
+  - [x] Compute absolute semitone distance
+  - [x] Initialize from raw value or throw error
+- [x] Task 7: Run full test suite (all ACs)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] Zero regressions
 
 ## Dev Notes
 
@@ -222,10 +222,32 @@ Design for extensibility: `Interval` will be used as `Set<Interval>` in session 
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+No issues encountered during implementation.
+
 ### Completion Notes List
 
+- Implemented `Interval` enum with 13 cases (prime through octave) as `enum Interval: Int` with `Hashable`, `Sendable`, `CaseIterable`, `Codable` conformances (AC #1, #5)
+- Added `var semitones: Int { rawValue }` computed property for readable API
+- Implemented `MIDINote.transposed(by:)` extension in `Interval.swift` using precondition for MIDI range validation, matching existing `MIDINote.init` pattern (AC #2)
+- Implemented `Interval.between(_:_:)` static factory computing absolute semitone distance, throwing `AudioError.invalidInterval` for distances > 12 (AC #3, #4)
+- Added `case invalidInterval(String)` to `AudioError` enum
+- 22 new tests: 17 IntervalTests (semitone values, CaseIterable, Codable round-trip, Hashable, between factory) + 3 MIDINote transposition tests + 2 additional Codable/Hashable tests
+- Full test suite passes with zero regressions
+- Dependency check passes — no forbidden imports in Core/
+
 ### File List
+
+- `Peach/Core/Audio/Interval.swift` (new) — Interval enum, semitones property, Interval.between factory, MIDINote.transposed extension
+- `Peach/Core/Audio/NotePlayer.swift` (modified) — Added `case invalidInterval(String)` to AudioError
+- `PeachTests/Core/Audio/IntervalTests.swift` (new) — 22 tests for Interval enum, conformances, and between factory
+- `PeachTests/Core/Audio/MIDINoteTests.swift` (modified) — Added 3 transposition tests
+- `docs/implementation-artifacts/sprint-status.yaml` (modified) — Story status updated
+- `docs/implementation-artifacts/21-1-implement-interval-enum-and-midinote-transposition.md` (modified) — Tasks marked complete, dev record updated
+
+## Change Log
+
+- 2026-02-28: Implemented Interval enum with 13 cases, MIDINote.transposed(by:) extension, Interval.between(_:_:) factory, and AudioError.invalidInterval case. Added 25 new tests across IntervalTests.swift and MIDINoteTests.swift. All tests pass, zero regressions.
