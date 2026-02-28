@@ -6,6 +6,7 @@ enum AudioError: Error {
     case invalidDuration(String)
     case invalidPreset(String)
     case contextUnavailable
+    case invalidInterval(String)
 }
 
 protocol NotePlayer {
