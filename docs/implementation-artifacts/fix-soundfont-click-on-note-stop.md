@@ -1,6 +1,6 @@
 # Fix: SoundFont Click Artifact on Note Stop
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -60,11 +60,15 @@ Reintroduce the proven volume-mute approach from the former `SineWaveNotePlayer`
 func stop() async throws {
     guard !hasStopped else { return }
     hasStopped = true
-    sampler.volume = 0
-    try? await Task.sleep(for: SoundFontNotePlayer.stopPropagationDelay)
+    if stopPropagationDelay > .zero {
+        sampler.volume = 0
+        try? await Task.sleep(for: stopPropagationDelay)
+    }
     sampler.stopNote(midiNote, onChannel: channel)
     sampler.sendPitchBend(SoundFontNotePlayer.pitchBendCenter, onChannel: channel)
-    sampler.volume = 1.0
+    if stopPropagationDelay > .zero {
+        sampler.volume = 1.0
+    }
 }
 ```
 
@@ -72,11 +76,15 @@ func stop() async throws {
 
 ```swift
 func stopAll() async throws {
-    sampler.volume = 0
-    try? await Task.sleep(for: Self.stopPropagationDelay)
+    if stopPropagationDelay > .zero {
+        sampler.volume = 0
+        try? await Task.sleep(for: stopPropagationDelay)
+    }
     sampler.sendController(123, withValue: 0, onChannel: Self.channel)
     sampler.sendPitchBend(Self.pitchBendCenter, onChannel: Self.channel)
-    sampler.volume = 1.0
+    if stopPropagationDelay > .zero {
+        sampler.volume = 1.0
+    }
 }
 ```
 
@@ -146,24 +154,28 @@ Reintroduced the proven volume-mute approach from the former `SineWaveNotePlayer
 
 ### Completion Notes
 
-- Added `stopPropagationDelay` constant (25ms) to `SoundFontNotePlayer`
-- Modified `SoundFontPlaybackHandle.stop()` with fade-out before `stopNote()` — idempotent guard unchanged
-- Modified `SoundFontNotePlayer.stopAll()` with fade-out before CC#123
-- Added test `stopFadesOutAndRestoresVolume` verifying volume restoration after handle stop
-- Added test `stopAllFadesOutAndRestoresVolume` verifying volume restoration after player stopAll
-- Full test suite passes — no regressions (all existing tests unaffected by the 25ms delay)
-- No API changes — `PlaybackHandle.stop()` and `NotePlayer.stopAll()` signatures unchanged
-- No changes needed outside the audio layer
+- Added injectable `stopPropagationDelay` parameter to `SoundFontNotePlayer` init (default 25ms)
+- `SoundFontPlaybackHandle` receives `stopPropagationDelay` from its parent player
+- Fade-out is skipped when `stopPropagationDelay == .zero` — production uses `.zero` in `PeachApp.swift` while investigating
+- Modified `SoundFontPlaybackHandle.stop()` with conditional fade-out before `stopNote()` — idempotent guard unchanged
+- Modified `SoundFontNotePlayer.stopAll()` with conditional fade-out before CC#123
+- Added test `stopWithFadeOutRestoresVolume` verifying volume restoration after handle stop (exercises fade-out via default 25ms)
+- Added test `stopAllWithFadeOutRestoresVolume` verifying volume restoration after player stopAll (exercises fade-out via default 25ms)
+- Full test suite passes — no regressions
+- No protocol API changes — `PlaybackHandle.stop()` and `NotePlayer.stopAll()` signatures unchanged
+- No changes needed outside the audio layer (except `PeachApp.swift` init)
 
 ## File List
 
-- `Peach/Core/Audio/SoundFontNotePlayer.swift` — Added `stopPropagationDelay` constant; modified `stopAll()` with fade-out
-- `Peach/Core/Audio/SoundFontPlaybackHandle.swift` — Modified `stop()` with fade-out
-- `PeachTests/Core/Audio/SoundFontNotePlayerTests.swift` — Added `stopAllFadesOutAndRestoresVolume` test
-- `PeachTests/Core/Audio/SoundFontPlaybackHandleTests.swift` — Added `stopFadesOutAndRestoresVolume` test
+- `Peach/Core/Audio/SoundFontNotePlayer.swift` — Injectable `stopPropagationDelay`; conditional fade-out in `stopAll()`
+- `Peach/Core/Audio/SoundFontPlaybackHandle.swift` — Receives `stopPropagationDelay`; conditional fade-out in `stop()`
+- `Peach/App/PeachApp.swift` — Passes `stopPropagationDelay: .zero` to disable fade-out in production
+- `PeachTests/Core/Audio/SoundFontNotePlayerTests.swift` — Added `stopAllWithFadeOutRestoresVolume` test
+- `PeachTests/Core/Audio/SoundFontPlaybackHandleTests.swift` — Added `stopWithFadeOutRestoresVolume` test
 - `docs/implementation-artifacts/fix-soundfont-click-on-note-stop.md` — Story file updated
 - `docs/implementation-artifacts/sprint-status.yaml` — Status updated to review
 
 ## Change Log
 
 - 2026-02-28: Implemented fade-out on note stop to eliminate click artifacts — all 4 tasks completed, full test suite passes
+- 2026-02-28: Code review fix — replaced `fadeOutOnStop` boolean with injectable `stopPropagationDelay`; production disabled via `.zero` in PeachApp; tests exercise fade-out path via default 25ms

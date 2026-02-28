@@ -8,14 +8,16 @@ final class SoundFontPlaybackHandle: PlaybackHandle {
     private let sampler: AVAudioUnitSampler
     private let midiNote: UInt8
     private let channel: UInt8
+    private let stopPropagationDelay: Duration
     private var hasStopped = false
 
     // MARK: - Initialization
 
-    init(sampler: AVAudioUnitSampler, midiNote: UInt8, channel: UInt8) {
+    init(sampler: AVAudioUnitSampler, midiNote: UInt8, channel: UInt8, stopPropagationDelay: Duration) {
         self.sampler = sampler
         self.midiNote = midiNote
         self.channel = channel
+        self.stopPropagationDelay = stopPropagationDelay
     }
 
     // MARK: - PlaybackHandle Protocol
@@ -23,13 +25,13 @@ final class SoundFontPlaybackHandle: PlaybackHandle {
     func stop() async throws {
         guard !hasStopped else { return }
         hasStopped = true
-        if SoundFontNotePlayer.fadeOutOnStop {
+        if stopPropagationDelay > .zero {
             sampler.volume = 0
-            try? await Task.sleep(for: SoundFontNotePlayer.stopPropagationDelay)
+            try? await Task.sleep(for: stopPropagationDelay)
         }
         sampler.stopNote(midiNote, onChannel: channel)
         sampler.sendPitchBend(SoundFontNotePlayer.pitchBendCenter, onChannel: channel)
-        if SoundFontNotePlayer.fadeOutOnStop {
+        if stopPropagationDelay > .zero {
             sampler.volume = 1.0
         }
     }

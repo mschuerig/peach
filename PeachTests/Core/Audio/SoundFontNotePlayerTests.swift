@@ -264,13 +264,13 @@ struct SoundFontNotePlayerTests {
         try await player.stopAll()
     }
 
-    @Test("stopAll fades out before silencing — subsequent play works (volume restored)")
-    func stopAllFadesOutAndRestoresVolume() async throws {
+    @Test("stopAll with fade-out restores volume — subsequent play works")
+    func stopAllWithFadeOutRestoresVolume() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         _ = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await player.stopAll()
-        // If volume were stuck at 0 after stopAll, this play would produce no sound
-        // The test verifies stopAll() restores volume to 1.0 after the fade-out
+        // Default stopPropagationDelay (25ms) exercises the fade-out path.
+        // If volume were stuck at 0 after stopAll, this play would produce no sound.
         let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
         try await handle.stop()
     }
