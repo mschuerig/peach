@@ -196,9 +196,14 @@ development_status:
   epic-21-retrospective: optional
 
   # Epic 22: Clean Slate — Prerequisite Refactorings
+  # Note: Original 22.2 (Domain Type Documentation and API Cleanup) was completed
+  # and is tracked by commit d6f3a93. Stories renumbered after architectural revision
+  # introducing the two-world model (logical vs. physical, bridged by TuningSystem).
+  # Original 22.3 (NotePlayer Protocol Takes Pitch) was dropped — NotePlayer stays
+  # with Frequency; Pitch struct is dissolved in favor of DetunedMIDINote.
   epic-22: in-progress
   22-1-migrate-frequencycalculation-to-domain-types: done
-  22-2-unified-reference-target-naming: backlog
-  22-3-noteplayer-protocol-takes-pitch: backlog
+  22-2-introduce-detunedmidinote-and-two-world-architecture: backlog
+  22-3-unified-reference-target-naming: backlog
   22-4-extract-soundsourceprovider-protocol: backlog
   epic-22-retrospective: optional
