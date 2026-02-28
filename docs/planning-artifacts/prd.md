@@ -429,7 +429,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 - **FR53:** System represents musical intervals as a value object spanning Prime (unison) through Octave
 - **FR54:** System computes the target frequency for an interval using a Tuning System; 12-tone equal temperament (12-TET) is the initial tuning system
-- **FR55:** System supports extensible tuning systems beyond 12-TET (e.g., Just Intonation) — architecture must not hard-code 12-TET assumptions
+- **FR55:** System supports multiple tuning systems beyond 12-TET (e.g., Just Intonation); adding a new tuning system requires no changes to interval or training logic
 
 ### Interval Comparison
 
@@ -449,7 +449,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 ### Start Screen Integration
 
 - **FR65:** Start Screen shows four training buttons: "Comparison", "Pitch Matching", "Interval Comparison", "Interval Pitch Matching"
-- **FR66:** "Comparison" and "Pitch Matching" buttons use the same underlying training session as interval variants, fixed to prime (unison) interval
+- **FR66:** Unison comparison and unison pitch matching behave identically to their interval variants with the interval fixed to prime (unison)
 
 ### Initial Scope Constraint
 
@@ -460,7 +460,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 ### Performance
 
 - Audio latency: time from triggering a note to audible output must be imperceptible to the user (target < 10ms)
-- Transition between comparisons: next comparison must begin immediately after the user answers — no perceptible loading or delay
+- Transition between comparisons: next comparison must begin within 100ms after the user answers
 - Frequency precision: generated tones must be accurate to within 0.1 cent of the target frequency
 - App launch to training-ready: Start Screen must be interactive within 2 seconds of app launch
 - Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
@@ -469,7 +469,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 ### Accessibility
 
 - All interactive controls labeled for VoiceOver
-- Sufficient color contrast ratios for all text and UI elements
+- Color contrast ratios meet WCAG 2.1 AA (4.5:1 for normal text, 3:1 for large text)
 - Tap targets meet minimum size guidelines (44x44 points per Apple HIG)
 - Feedback Indicator provides non-visual feedback (haptic) in addition to visual
 
