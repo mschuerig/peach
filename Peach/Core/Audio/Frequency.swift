@@ -1,5 +1,9 @@
 import Foundation
 
+/// A physical frequency in Hz — the final output of pitch-to-sound conversion.
+///
+/// Frequency is what `NotePlayer` receives. Produced by `Pitch.frequency(referencePitch:)`
+/// and reconstructed from audio via `Pitch.init(frequency:referencePitch:)`.
 struct Frequency: Hashable, Comparable, Sendable {
     let rawValue: Double
 

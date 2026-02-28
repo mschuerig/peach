@@ -216,7 +216,7 @@ struct ComparisonSessionIntegrationTests {
 
         let comparison = strategy.nextComparison(
             profile: profile,
-            settings: TrainingSettings(),
+            settings: TrainingSettings(referencePitch: .concert440),
             lastComparison: nil
         )
 

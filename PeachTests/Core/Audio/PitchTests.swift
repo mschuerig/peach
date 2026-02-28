@@ -46,10 +46,10 @@ struct PitchTests {
         #expect(abs(freq.rawValue - 427.474) < 0.01)
     }
 
-    @Test("pitch frequency uses default referencePitch of concert440")
-    func defaultReferencePitch() async {
+    @Test("pitch frequency with explicit concert440 reference")
+    func explicitConcert440() async {
         let pitch = Pitch(note: MIDINote(69), cents: Cents(0))
-        let freq = pitch.frequency()
+        let freq = pitch.frequency(referencePitch: .concert440)
         #expect(freq.rawValue == 440.0)
     }
 
@@ -372,9 +372,9 @@ struct PitchTests {
         }
     }
 
-    @Test("Pitch.init(frequency:) uses concert440 as default reference")
-    func inverseDefaultReference() async {
-        let pitch = Pitch(frequency: Frequency(440.0))
+    @Test("Pitch.init(frequency:referencePitch:) with explicit concert440")
+    func inverseExplicitReference() async {
+        let pitch = Pitch(frequency: Frequency(440.0), referencePitch: .concert440)
         #expect(pitch.note == MIDINote(69))
         #expect(abs(pitch.cents.rawValue) < 0.01)
     }

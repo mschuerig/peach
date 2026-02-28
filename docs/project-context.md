@@ -78,7 +78,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **`SoundFontLibrary`** — `@MainActor` service created once at startup; discovers SF2 files in bundle, parses presets via `SF2PresetParser`, filters unpitched (bank >= 120, program >= 120), sorts alphabetically; injected via `@Environment(\.soundFontLibrary)`. Read-only at runtime
 - **`soundSource` tag format** — `@AppStorage` stores `"sf2:{bank}:{program}"` (SF2 bank and MIDI program number, e.g., `"sf2:0:0"` = Grand Piano, `"sf2:0:42"` = Cello, `"sf2:8:80"` = Sine Wave). Default: `"sf2:8:80"`
 - **Protocol boundary: `NotePlayer`** — knows only frequencies (Hz), durations, envelopes; no concept of MIDI notes, comparisons, or training
-- **MIDI-to-Hz conversion** — use `Pitch.frequency(referencePitch:)` for forward conversion (Pitch/MIDINote → Hz) and `Pitch(frequency:referencePitch:)` for inverse (Hz → Pitch). `MIDINote.frequency()` delegates to Pitch. All methods are pure math, non-throwing
+- **MIDI-to-Hz conversion** — use `MIDINote.pitch(at:in:)` to apply a tuning system, then `Pitch.frequency(referencePitch:)` for forward conversion (Pitch → Hz) and `Pitch(frequency:referencePitch:)` for inverse (Hz → Pitch). All parameters are explicit (no defaults). All methods are pure math, non-throwing
 
 **State Management:**
 - **`ComparisonSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)

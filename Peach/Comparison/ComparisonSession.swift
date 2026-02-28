@@ -40,7 +40,7 @@ final class ComparisonSession: TrainingSession {
         TrainingSettings(
             noteRangeMin: userSettings.noteRangeMin,
             noteRangeMax: userSettings.noteRangeMax,
-            referencePitch: userSettings.referencePitch.rawValue
+            referencePitch: userSettings.referencePitch
         )
     }
 

@@ -10,11 +10,11 @@ struct SettingsTests {
 
     @Test("Algorithm defaults match TrainingSettings defaults")
     func algorithmDefaultsMatchTrainingSettings() {
-        let trainingDefaults = TrainingSettings()
+        let trainingDefaults = TrainingSettings(referencePitch: .concert440)
 
         #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRangeMin.rawValue)
         #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRangeMax.rawValue)
-        #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch)
+        #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch.rawValue)
     }
 
     @Test("Audio defaults use expected standalone values")
