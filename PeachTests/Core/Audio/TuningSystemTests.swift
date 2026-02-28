@@ -226,7 +226,7 @@ struct TuningSystemTests {
 
     @Test("MIDINote overload requires explicit referencePitch (no defaults)")
     func frequencyMIDINoteExplicitParams() async {
-        // This test verifies both parameters must be passed — compile-time check
+        // Both parameters are explicitly supplied — no defaults exist on the method signature
         let freq = TuningSystem.equalTemperament.frequency(
             for: MIDINote(69),
             referencePitch: Frequency(442.0)
