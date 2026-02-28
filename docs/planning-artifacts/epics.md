@@ -1,5 +1,5 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation', 'v0.3-step-01-validate-prerequisites', 'v0.3-step-02-design-epics', 'v0.3-step-03-create-stories', 'v0.3-step-04-final-validation']
 inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md']
 ---
 
@@ -67,6 +67,21 @@ FR50: System discards incomplete pitch matching attempts on interruption (naviga
 FR50a: System returns to the Start Screen when foregrounded after being backgrounded during pitch matching
 FR51: System supports indefinite note playback (no fixed duration) with explicit stop trigger
 FR52: System supports real-time frequency adjustment of an actively playing note without audible artifacts
+FR53: System represents musical intervals as a value object spanning Prime (unison) through Octave
+FR54: System computes the target frequency for an interval using a Tuning System; 12-tone equal temperament (12-TET) is the initial tuning system
+FR55: System supports multiple tuning systems beyond 12-TET (e.g., Just Intonation); adding a new tuning system requires no changes to interval or training logic
+FR56: User can start interval comparison training from the Start Screen via a dedicated button
+FR57: Generalizes FR2: system plays a reference note followed by a second note at the target interval +/- a signed cent deviation
+FR58: Generalizes FR3: user answers whether the second note was higher or lower than the correct interval pitch
+FR59: FR4, FR5, FR7, FR7a, and FR8 apply to interval comparison identically as to unison comparison
+FR60: User can start interval pitch matching training from the Start Screen via a dedicated button
+FR61: Generalizes FR45: system plays a reference note for the configured duration, then plays a tunable note indefinitely; the user's target is the correct interval pitch, not unison
+FR62: Generalizes FR46: user adjusts the pitch of the tunable note via slider to match the target interval
+FR63: FR47, FR49, FR50, and FR50a apply to interval pitch matching identically as to unison pitch matching
+FR64: System records interval pitch matching results: reference note, target interval, user's final pitch, error in cents relative to the correct interval pitch, timestamp
+FR65: Start Screen shows four training buttons: "Comparison", "Pitch Matching", "Interval Comparison", "Interval Pitch Matching"
+FR66: Unison comparison and unison pitch matching behave identically to their interval variants with the interval fixed to prime (unison)
+FR67: Initial interval training implementation uses a single fixed interval: perfect fifth up (700 cents in 12-TET)
 
 ### NonFunctional Requirements
 
@@ -83,6 +98,7 @@ NFR10: Training data must survive app crashes, force quits, and unexpected termi
 NFR11: Data writes must be atomic — no partial comparison records
 NFR12: App updates must preserve all existing training data (no migration data loss)
 NFR13: Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
+NFR14: Tuning system precision — interval frequency computations must be accurate to within 0.1 cent of the theoretical value for any supported tuning system
 
 ### Additional Requirements
 
@@ -147,6 +163,28 @@ NFR13: Real-time pitch adjustment: slider input must produce audible frequency c
 **From Glossary (v0.2):**
 - Domain terminology confirmed: ComparisonSession, ComparisonSessionState, PlaybackHandle, PitchMatchingSession, PitchMatchingSessionState, PitchMatchingChallenge, CompletedPitchMatching, PitchDiscriminationProfile, PitchMatchingProfile
 
+**From Architecture (v0.3 Amendment — Prerequisite Refactorings):**
+- Arch-A: New domain types — `Interval` enum (Prime through Octave, Int raw value), `TuningSystem` enum (equalTemperament initially, extensible via new cases), `Pitch` struct (MIDINote + Cents with frequency computation). `MIDINote` extensions: `transposed(by:)`, `pitch(at:in:)`. `Frequency` gains `.concert440` constant.
+- Arch-B: NotePlayer protocol change — takes `Pitch` instead of `Frequency`. `SoundFontNotePlayer` receives Pitch and maps to MIDI + pitch bend. `PlaybackHandle.adjustFrequency` stays as Frequency.
+- Arch-C: FrequencyCalculation migration — logic moves to `Pitch.frequency(referencePitch:)` and `MIDINote.frequency(referencePitch:)`; `FrequencyCalculation.swift` deleted after all call sites migrated.
+- Arch-D: Unified reference/target naming — `note1`→`referenceNote`, `note2`→`targetNote`, `note2CentOffset`→`centOffset`, `centDifference`→`centOffset` across value types, records, sessions, strategies, observers, data store, tests, and docs.
+- Arch-E: SoundSourceProvider protocol — extracts protocol from `SoundFontLibrary`, decouples `SettingsScreen` from concrete implementation.
+
+**From Architecture (v0.3 Amendment — Session & Data):**
+- Session parameterization: `startTraining(intervals:tuningSystem:)` and `startPitchMatching(intervals:tuningSystem:)` with `currentInterval` observable state and `isIntervalMode` computed property
+- NextComparisonStrategy update: gains `interval` + `tuningSystem` parameters, computes targetNote from interval; MIDI range boundary enforcement (upper bound shrinks by interval semitones)
+- Data model updates: `ComparisonRecord` gains `tuningSystem`, renamed fields; `PitchMatchingRecord` gains `targetNote` and `tuningSystem`; value types gain target/tuning fields
+- NavigationDestination: `.training`→`.comparison(intervals:)`, `.pitchMatching(intervals:)` — parameterized with interval sets
+- Profile impact: record everything, defer computation changes; interval data flows through existing observer paths; no changes to profile protocols
+
+**From UX Design (v0.3 Amendment):**
+- Target interval label: conditional `Text` view at top of both training screens, visible in interval mode (`isIntervalMode`), hidden in unison mode; `.headline`/`.title3` styling; VoiceOver accessible ("Target interval: Perfect Fifth Up")
+- Start Screen: four buttons in vertical stack with visual separator between unison and interval groups; Comparison remains `.borderedProminent`, all others `.bordered`
+- Screen reuse: Comparison Screen and Pitch Matching Screen extended with conditional interval indicator, not duplicated
+- Feedback indicators: no change — same patterns for interval and unison modes
+- Interruption patterns: identical to unison modes — no interval-specific handling
+- No interval settings UI for v0.3 (fixed perfect fifth)
+
 ### FR Coverage Map
 
 | FR | Epic | Description |
@@ -205,6 +243,21 @@ NFR13: Real-time pitch adjustment: slider input must produce audible frequency c
 | FR50a | Epic 15 | Return to Start Screen on foreground after backgrounding |
 | FR51 | Epic 12 | Indefinite note playback with explicit stop |
 | FR52 | Epic 12 | Real-time frequency adjustment of playing note |
+| FR53 | Epic 21 | Interval value object (Prime through Octave) |
+| FR54 | Epic 21 | Target frequency computation via TuningSystem |
+| FR55 | Epic 21 | Extensible tuning systems (no training logic changes) |
+| FR56 | Epic 24 | Start interval comparison from Start Screen |
+| FR57 | Epic 23 | Reference note + second note at target interval ± deviation |
+| FR58 | Epic 23 | User judges higher/lower relative to correct interval pitch |
+| FR59 | Epic 23 | Feedback, haptic, interruption apply identically |
+| FR60 | Epic 24 | Start interval pitch matching from Start Screen |
+| FR61 | Epic 23 | Interval pitch matching: target is interval pitch, not unison |
+| FR62 | Epic 23 | Slider adjustment to match target interval |
+| FR63 | Epic 23 | PM feedback, interruption apply identically |
+| FR64 | Epic 23 | Interval PM result recording with interval context |
+| FR65 | Epic 24 | Four training buttons on Start Screen |
+| FR66 | Epic 23 | Unison = prime case of interval variants |
+| FR67 | Epic 24 | Fixed interval: perfect fifth up (700 cents) |
 
 ## Epic List
 
@@ -281,6 +334,26 @@ Address all code review findings from the initial implementation: replace magic 
 ### Epic 20: Right Direction — Dependency Inversion Cleanup
 Resolve all dependency direction violations: move shared domain types from feature modules to Core/, remove SwiftUI and UIKit imports from domain code, consolidate @Entry environment keys, inject services instead of creating them in views, and use protocols at module boundaries.
 **FRs covered:** None (refactoring only)
+
+### Epic 21: Speak the Language — Interval Domain Foundation
+The system can represent musical intervals and compute precise interval frequencies using tuning systems — the domain foundation for all interval training features.
+**FRs covered:** FR53, FR54, FR55
+**NFRs covered:** NFR14
+
+### Epic 22: Clean Slate — Prerequisite Refactorings
+Codebase uses unified reference/target naming, domain-native Pitch type throughout NotePlayer, and decoupled sound source dependency — so that interval generalization proceeds cleanly without conflating new features with refactoring.
+**FRs covered:** None (refactoring only, enables FR56–FR67)
+**Depends on:** Epic 21
+
+### Epic 23: Intervals Everywhere — Generalize Training for Intervals
+Both comparison and pitch matching sessions accept interval parameters, data models record full interval context, the adaptive algorithm computes interval-aware targets, and training screens show the target interval — generalizing the training experience from unison-only to any musical interval.
+**FRs covered:** FR57, FR58, FR59, FR61, FR62, FR63, FR64, FR66
+**Depends on:** Epic 22
+
+### Epic 24: Four Modes, One App — Start Screen Integration
+Users see four training modes on the Start Screen and can launch interval comparison or interval pitch matching with a single tap, starting with the perfect fifth interval.
+**FRs covered:** FR56, FR60, FR65, FR67
+**Depends on:** Epic 23
 
 ## Epic 1: Remember Every Note — Data Foundation
 
@@ -2051,3 +2124,414 @@ So that the docs accurately describe the current codebase, new conventions are c
 **And** `project-context.md` includes new file placement rules and framework import restrictions
 **And** `epics.md` includes Epic 20 with all stories
 **And** `sprint-status.yaml` includes Epic 20 entries
+
+## Epic 21: Speak the Language — Interval Domain Foundation
+
+The system can represent musical intervals and compute precise interval frequencies using tuning systems — the domain foundation for all interval training features. All types are pure value types with no dependencies on existing code.
+
+### Story 21.1: Implement Interval Enum and MIDINote Transposition
+
+As a **developer building interval training**,
+I want an `Interval` enum representing musical intervals from Prime through Octave, with a `MIDINote.transposed(by:)` extension and an `Interval.between(_:_:)` factory,
+So that intervals are first-class domain concepts with compile-time safety and the system can compute transposed notes.
+
+**Acceptance Criteria:**
+
+**Given** the `Interval` enum exists with cases Prime through Octave
+**When** accessing `Interval.perfectFifth.semitones`
+**Then** it returns `7`
+**And** all 13 cases (Prime through Octave) have correct semitone values (0–12)
+
+**Given** a MIDINote within valid range
+**When** calling `MIDINote(60).transposed(by: .perfectFifth)`
+**Then** it returns `MIDINote(67)`
+
+**Given** two MIDINote values 7 semitones apart
+**When** calling `Interval.between(MIDINote(60), MIDINote(67))`
+**Then** it returns `.perfectFifth`
+
+**Given** two MIDINote values more than 12 semitones apart
+**When** calling `Interval.between(_:_:)`
+**Then** it throws an error (distance outside Prime–Octave range)
+
+**Given** `Interval` conforms to `Hashable`, `Sendable`, `CaseIterable`, `Codable`
+**When** encoding and decoding an `Interval` value
+**Then** round-trip produces the same value
+
+### Story 21.2: Implement TuningSystem Enum
+
+As a **developer building interval training**,
+I want a `TuningSystem` enum that computes the cent offset for any interval,
+So that interval frequencies are derived from a pluggable tuning system with 0.1-cent precision (NFR14).
+
+**Acceptance Criteria:**
+
+**Given** `TuningSystem.equalTemperament`
+**When** calling `centOffset(for: .perfectFifth)`
+**Then** it returns `700.0` (exactly 7 × 100)
+
+**Given** `TuningSystem.equalTemperament`
+**When** calling `centOffset(for: .prime)`
+**Then** it returns `0.0`
+
+**Given** `TuningSystem.equalTemperament`
+**When** calling `centOffset(for: .octave)`
+**Then** it returns `1200.0`
+
+**Given** `TuningSystem` conforms to `Hashable`, `Sendable`, `CaseIterable`, `Codable`
+**When** encoding and decoding a `TuningSystem` value
+**Then** round-trip produces the same value
+
+**Given** the requirement that adding a new tuning system requires no changes to interval or training logic (FR55)
+**When** a hypothetical new case is added to `TuningSystem`
+**Then** only `centOffset(for:)` needs a new switch case — no other files change
+
+### Story 21.3: Implement Pitch Value Type and MIDINote Integration
+
+As a **developer building interval training**,
+I want a `Pitch` struct (MIDINote + Cents) that computes its frequency, with `MIDINote.pitch(at:in:)` composing Interval + TuningSystem into a Pitch, and `Frequency.concert440`,
+So that interval frequency computation flows through domain types with 0.1-cent precision.
+
+**Acceptance Criteria:**
+
+**Given** `Pitch(note: MIDINote(69), cents: 0)`
+**When** calling `frequency(referencePitch: .concert440)`
+**Then** it returns 440.0 Hz (A4 in 12-TET)
+
+**Given** `Pitch(note: MIDINote(60), cents: 0)` (middle C)
+**When** calling `frequency(referencePitch: .concert440)`
+**Then** the result is accurate to within 0.1 cent of the theoretical value
+
+**Given** `MIDINote(60)` and interval `.perfectFifth` in `.equalTemperament`
+**When** calling `MIDINote(60).pitch(at: .perfectFifth, in: .equalTemperament)`
+**Then** it returns `Pitch(note: MIDINote(67), cents: 0)` (G4 in 12-TET, cents = 0)
+
+**Given** `MIDINote(60)` with default parameters
+**When** calling `MIDINote(60).pitch()` (defaults: `.prime`, `.equalTemperament`)
+**Then** it returns `Pitch(note: MIDINote(60), cents: 0)` (unison case)
+
+**Given** `Frequency.concert440`
+**When** accessed as a static constant
+**Then** its value is `Frequency(440.0)`
+
+**Given** `Pitch` conforms to `Hashable` and `Sendable`
+**When** used as a dictionary key or passed across concurrency boundaries
+**Then** it works correctly
+
+## Epic 22: Clean Slate — Prerequisite Refactorings
+
+Codebase uses unified reference/target naming, domain-native Pitch type throughout NotePlayer, and decoupled sound source dependency — so that interval generalization proceeds cleanly without conflating new features with refactoring. All stories are pure refactoring with no functional changes.
+
+### Story 22.1: Migrate FrequencyCalculation to Domain Types
+
+As a **developer building interval training**,
+I want the standalone `FrequencyCalculation.swift` utility replaced by `Pitch.frequency(referencePitch:)` and `MIDINote.frequency(referencePitch:)` domain methods,
+So that frequency computation lives on the domain types that own the data, and the redundant utility is deleted.
+
+**Acceptance Criteria:**
+
+**Given** `FrequencyCalculation.frequency(midiNote:cents:referencePitch:)` exists
+**When** all call sites are migrated to `Pitch.frequency(referencePitch:)` or `MIDINote.frequency(referencePitch:)`
+**Then** `FrequencyCalculation.swift` is deleted
+**And** no file imports or references `FrequencyCalculation`
+**And** NFR3 (0.1-cent frequency precision) is preserved — existing frequency precision tests pass against the new domain methods
+**And** the full test suite passes
+
+### Story 22.2: Unified Reference/Target Naming
+
+As a **developer building interval training**,
+I want `note1`/`note2` renamed to `referenceNote`/`targetNote` and `note2CentOffset`/`centDifference` renamed to `centOffset` across all value types, records, sessions, strategies, observers, data store, tests, and docs,
+So that naming is consistent with the reference/target mental model shared by all training modes.
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonRecord` has fields `note1`, `note2`, `note2CentOffset`
+**When** they are renamed to `referenceNote`, `targetNote`, `centOffset`
+**Then** all references across code, tests, and docs use the new names
+**And** no occurrence of `note1`, `note2`, `note2CentOffset`, or `centDifference` remains in Swift source files (except comments explaining the rename if needed)
+
+**Given** `Comparison` has fields `note1`, `note2`, `centDifference`
+**When** they are renamed to `referenceNote`, `targetNote`, `centOffset`
+**Then** `ComparisonSession`, `NextComparisonStrategy`, `KazezNoteStrategy`, `ComparisonObserver` conformances, and all tests use the new names
+
+**Given** `CompletedComparison` has fields `comparison.note1`, `comparison.note2`
+**When** accessed through the renamed `Comparison` struct
+**Then** all code paths use `comparison.referenceNote`, `comparison.targetNote`
+
+**Given** `PitchMatchingRecord.referenceNote`, `PitchMatchingChallenge.referenceNote`, `CompletedPitchMatching.referenceNote` already use correct naming
+**When** the rename is complete
+**Then** these names remain unchanged
+
+**Given** this is a pure rename with no functional changes
+**When** the full test suite is run
+**Then** all tests pass with no behavioral changes
+
+### Story 22.3: NotePlayer Protocol Takes Pitch
+
+As a **developer building interval training**,
+I want the `NotePlayer` protocol to accept `Pitch` instead of `Frequency` in its `play()` methods,
+So that the audio interface works with domain types and MIDI-based implementations receive their natural input.
+
+**Acceptance Criteria:**
+
+**Given** `NotePlayer.play(frequency:velocity:amplitudeDB:)` exists
+**When** the signature is changed to `play(pitch:velocity:amplitudeDB:)`
+**Then** all call sites pass `Pitch` instead of `Frequency`
+**And** the default extension for fixed-duration playback uses `pitch:` instead of `frequency:`
+
+**Given** `SoundFontNotePlayer` receives a `Pitch`
+**When** playing a note
+**Then** it maps `Pitch` (MIDINote + Cents) directly to MIDI noteOn + pitch bend
+**And** no intermediate Hz→MIDI conversion is needed
+
+**Given** `PlaybackHandle.adjustFrequency` stays as `Frequency`
+**When** sessions need to adjust a playing note's pitch
+**Then** they compute `pitch.frequency(referencePitch:)` and pass the result to the handle
+
+**Given** `MockNotePlayer` in tests
+**When** updated to accept `Pitch`
+**Then** all test assertions use `Pitch` values
+**And** the full test suite passes
+
+### Story 22.4: Extract SoundSourceProvider Protocol
+
+As a **developer building interval training**,
+I want a `SoundSourceProvider` protocol extracted from `SoundFontLibrary` so that `SettingsScreen` depends on the protocol via `@Environment`, not the concrete library,
+So that the Settings feature is decoupled from the audio implementation.
+
+**Acceptance Criteria:**
+
+**Given** `SettingsScreen` directly depends on `SoundFontLibrary`
+**When** `SoundSourceProvider` protocol is created with `availableSources` and `displayName(for:)`
+**Then** `SoundFontLibrary` conforms to `SoundSourceProvider`
+**And** `SettingsScreen` depends on `SoundSourceProvider` via `@Environment`
+
+**Given** `SoundSourceProvider.swift` is created in `Core/Audio/`
+**When** the protocol is used
+**Then** `SettingsScreen` has no import of or reference to `SoundFontLibrary`
+
+**Given** the sound source picker in Settings
+**When** it renders available sources
+**Then** behavior is identical to before the refactoring
+**And** the full test suite passes
+
+## Epic 23: Intervals Everywhere — Generalize Training for Intervals
+
+Both comparison and pitch matching sessions accept interval parameters, data models record full interval context, the adaptive algorithm computes interval-aware targets, and training screens show the target interval — generalizing the training experience from unison-only to any musical interval.
+
+### Story 23.1: Data Model and Value Type Updates for Interval Context
+
+As a **developer building interval training**,
+I want `ComparisonRecord` and `PitchMatchingRecord` to carry `tuningSystem`, and `PitchMatchingRecord` to carry `targetNote`, and all value types (`Comparison`, `CompletedComparison`, `PitchMatchingChallenge`, `CompletedPitchMatching`) updated with target/tuning fields,
+So that every training result records full interval context for data integrity and future analysis.
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonRecord` has `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `timestamp`
+**When** `tuningSystem` field is added with default `.equalTemperament`
+**Then** the SwiftData schema accepts the new field
+**And** `TrainingDataStore` saves and loads the `tuningSystem` field
+
+**Given** `PitchMatchingRecord` has `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp`
+**When** `targetNote` and `tuningSystem` fields are added
+**Then** `TrainingDataStore` saves and loads both new fields
+**And** `targetNote` represents the note the user was trying to match (equals `referenceNote` for unison)
+
+**Given** `Comparison` value type
+**When** no changes are needed (fields already renamed in Epic 22)
+**Then** `referenceNote`, `targetNote`, `centOffset` are confirmed correct
+
+**Given** `CompletedComparison` value type
+**When** `tuningSystem: TuningSystem` field is added
+**Then** `ComparisonSession` populates it from its session-level parameter
+**And** `TrainingDataStore` (as `ComparisonObserver`) persists it to `ComparisonRecord`
+
+**Given** `PitchMatchingChallenge` value type
+**When** `targetNote: MIDINote` field is added
+**Then** it represents the note the user should tune toward (equals `referenceNote` for unison)
+
+**Given** `CompletedPitchMatching` value type
+**When** `targetNote: MIDINote` and `tuningSystem: TuningSystem` fields are added
+**Then** `PitchMatchingSession` populates them from session-level parameters
+**And** `TrainingDataStore` (as `PitchMatchingObserver`) persists them to `PitchMatchingRecord`
+
+**Given** no production user base exists
+**When** SwiftData schema changes are applied
+**Then** no `SchemaMigrationPlan` is needed — fresh schema version is acceptable
+
+### Story 23.2: ComparisonSession and Strategy Interval Parameterization
+
+As a **developer building interval training**,
+I want `ComparisonSession.startTraining(intervals:tuningSystem:)` to accept an interval set, `NextComparisonStrategy` to compute interval-aware targets, and `currentInterval`/`isIntervalMode` observable state,
+So that comparison training works with any musical interval while unison (`[.prime]`) behaves identically to current behavior (FR66).
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonSession` has a `startTraining()` method
+**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem = .equalTemperament`
+**Then** the interval set must be non-empty (enforced by precondition)
+**And** the session stores the set and tuning system for the training run
+
+**Given** a training session with `intervals: [.prime]`
+**When** comparisons are generated
+**Then** behavior is identical to pre-interval implementation — `targetNote` equals `referenceNote`
+
+**Given** a training session with `intervals: [.perfectFifth]`
+**When** a comparison is generated
+**Then** `targetNote` = `referenceNote.transposed(by: .perfectFifth)`
+**And** the cent offset is applied relative to the correct interval pitch
+
+**Given** `NextComparisonStrategy` protocol
+**When** it gains `interval: Interval` and `tuningSystem: TuningSystem` parameters
+**Then** `KazezNoteStrategy` computes `targetNote` from the interval
+**And** reference note selection constrains the upper bound by `interval.semitones` to keep target within valid MIDI range (0–127)
+
+**Given** `ComparisonSession` has `currentInterval` and `isIntervalMode` properties
+**When** `currentInterval` is `.prime`
+**Then** `isIntervalMode` returns `false`
+**When** `currentInterval` is `.perfectFifth`
+**Then** `isIntervalMode` returns `true`
+
+**Given** `CompletedComparison` now carries `tuningSystem`
+**When** `ComparisonObserver` (TrainingDataStore) receives it
+**Then** `tuningSystem` is persisted to `ComparisonRecord`
+
+### Story 23.3: PitchMatchingSession Interval Parameterization
+
+As a **developer building interval training**,
+I want `PitchMatchingSession.startPitchMatching(intervals:tuningSystem:)` to accept an interval set and generate interval-aware challenges,
+So that pitch matching training works with any musical interval while unison (`[.prime]`) behaves identically to current behavior (FR66).
+
+**Acceptance Criteria:**
+
+**Given** `PitchMatchingSession` has a `startPitchMatching()` method
+**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem = .equalTemperament`
+**Then** the interval set must be non-empty (enforced by precondition)
+**And** the session stores the set and tuning system for the training run
+
+**Given** a pitch matching session with `intervals: [.prime]`
+**When** a challenge is generated
+**Then** `targetNote` equals `referenceNote` — identical to pre-interval behavior
+
+**Given** a pitch matching session with `intervals: [.perfectFifth]`
+**When** a challenge is generated
+**Then** `targetNote` = `referenceNote.transposed(by: .perfectFifth)`
+**And** `initialCentOffset` is relative to the correct interval pitch
+**And** reference note selection constrains the upper bound by `interval.semitones`
+
+**Given** `PitchMatchingSession` has `currentInterval` and `isIntervalMode` properties
+**When** `currentInterval` is `.perfectFifth`
+**Then** `isIntervalMode` returns `true`
+
+**Given** `CompletedPitchMatching` now carries `targetNote` and `tuningSystem`
+**When** `PitchMatchingObserver` (TrainingDataStore) receives it
+**Then** both fields are persisted to `PitchMatchingRecord`
+**And** `userCentError` represents deviation from the correct interval pitch (FR64)
+
+**Given** the tunable note's frequency target
+**When** the session computes it for slider interaction
+**Then** it uses `targetNote.pitch(in: tuningSystem).frequency(referencePitch:)` — the interval pitch, not the reference pitch
+
+### Story 23.4: Training Screen Interval Label and Observer Verification
+
+As a **developer building interval training**,
+I want both `ComparisonScreen` and `PitchMatchingScreen` to show a conditional target interval label when in interval mode, and verify that observers/profiles handle the updated value types,
+So that users see what interval they're training and all data flows correctly through the system.
+
+**Acceptance Criteria:**
+
+**Given** `ComparisonScreen` receives an `intervals` parameter
+**When** `session.isIntervalMode` is `true`
+**Then** a `Text` label showing the current interval name (e.g., "Perfect Fifth Up") is visible at the top of the screen, below navigation buttons and above the training interaction area
+**And** the label uses `.headline` or `.title3` styling
+
+**Given** `ComparisonScreen` is entered in unison mode (`intervals: [.prime]`)
+**When** `session.isIntervalMode` is `false`
+**Then** no interval label is visible — the screen looks exactly as pre-v0.3
+
+**Given** `PitchMatchingScreen` receives an `intervals` parameter
+**When** `session.isIntervalMode` is `true`
+**Then** a `Text` label showing the current interval name is visible at the top
+**When** `session.isIntervalMode` is `false`
+**Then** no interval label is visible
+
+**Given** the target interval label
+**When** VoiceOver is active
+**Then** it reads "Target interval: Perfect Fifth Up" (or equivalent accessible label)
+
+**Given** `ComparisonObserver` and `PitchMatchingObserver` receive updated value types with `tuningSystem` and `targetNote`
+**When** interval training results flow through the observer path
+**Then** profiles receive all data regardless of interval — no filtering, no interval-aware aggregation
+**And** no changes to `PitchDiscriminationProfile` or `PitchMatchingProfile` protocols
+
+## Epic 24: Four Modes, One App — Start Screen Integration
+
+Users see four training modes on the Start Screen and can launch interval comparison or interval pitch matching with a single tap, starting with the perfect fifth interval.
+
+### Story 24.1: NavigationDestination Parameterization and Routing
+
+As a **musician using Peach**,
+I want the navigation system to route interval training modes to the existing training screens with the correct interval parameters,
+So that tapping an interval button launches the same screen with the interval context passed through.
+
+**Acceptance Criteria:**
+
+**Given** `NavigationDestination` has a `.training` case
+**When** it is renamed to `.comparison(intervals: Set<Interval>)`
+**Then** all existing navigation to comparison training uses `.comparison(intervals: [.prime])`
+
+**Given** `NavigationDestination` has a `.pitchMatching` case
+**When** it gains an `intervals` parameter as `.pitchMatching(intervals: Set<Interval>)`
+**Then** all existing navigation to pitch matching uses `.pitchMatching(intervals: [.prime])`
+
+**Given** the destination handler in `ContentView`
+**When** routing `.comparison(let intervals)`
+**Then** `ComparisonScreen(intervals: intervals)` is created
+**And** the screen passes `intervals` to `session.startTraining(intervals:)`
+
+**Given** the destination handler routing `.pitchMatching(let intervals)`
+**When** navigating
+**Then** `PitchMatchingScreen(intervals: intervals)` is created
+**And** the screen passes `intervals` to `session.startPitchMatching(intervals:)`
+
+**Given** `NavigationDestination` conforms to `Hashable`
+**When** `Set<Interval>` is a parameter
+**Then** the enum remains `Hashable` (since `Interval` is `Hashable`)
+
+### Story 24.2: Start Screen Four Training Buttons
+
+As a **musician using Peach**,
+I want to see four training buttons on the Start Screen — Comparison, Pitch Matching, Interval Comparison, and Interval Pitch Matching — with a visual separator between unison and interval groups,
+So that I can launch any training mode with a single tap (FR65).
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen
+**When** it loads
+**Then** four training buttons are visible in a vertical stack:
+1. "Comparison" — `.borderedProminent` style (hero action, unchanged position)
+2. "Pitch Matching" — `.bordered` style
+3. A subtle visual separator (spacing or divider)
+4. "Interval Comparison" — `.bordered` style
+5. "Interval Pitch Matching" — `.bordered` style
+
+**Given** the "Interval Comparison" button
+**When** tapped
+**Then** it navigates to `.comparison(intervals: [.perfectFifth])` (FR56, FR67)
+
+**Given** the "Interval Pitch Matching" button
+**When** tapped
+**Then** it navigates to `.pitchMatching(intervals: [.perfectFifth])` (FR60, FR67)
+
+**Given** the "Comparison" button
+**When** tapped
+**Then** it navigates to `.comparison(intervals: [.prime])` — unchanged behavior
+
+**Given** the "Pitch Matching" button
+**When** tapped
+**Then** it navigates to `.pitchMatching(intervals: [.prime])` — unchanged behavior
+
+**Given** the Start Screen layout
+**When** viewed in portrait and landscape on iPhone and iPad
+**Then** all four buttons are accessible and the visual separator is visible
+**And** the one-handed, thumb-friendly layout is preserved
