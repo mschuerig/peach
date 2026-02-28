@@ -28,7 +28,7 @@ struct PeachApp: App {
             _soundFontLibrary = State(wrappedValue: soundFontLibrary)
 
             let userSettings = AppUserSettings()
-            let notePlayer = try SoundFontNotePlayer(userSettings: userSettings)
+            let notePlayer = try SoundFontNotePlayer(userSettings: userSettings, stopPropagationDelay: .zero)
 
             let existingRecords = try dataStore.fetchAllComparisons()
             let pitchMatchingRecords = try dataStore.fetchAllPitchMatchings()
