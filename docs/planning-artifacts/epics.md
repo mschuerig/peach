@@ -2237,7 +2237,32 @@ So that frequency computation lives on the domain types that own the data, and t
 **And** NFR3 (0.1-cent frequency precision) is preserved — existing frequency precision tests pass against the new domain methods
 **And** the full test suite passes
 
-### Story 22.2: Introduce DetunedMIDINote and Two-World Architecture
+### Story 22.2: Domain Type Documentation and API Cleanup ✅
+
+As a **developer maintaining the audio domain layer**,
+I want class-level documentation on all 6 audio domain types and explicit parameters on all frequency conversion methods,
+So that the API is self-documenting, tuning assumptions are visible at every call site, and there is exactly one path from MIDI note to Hz.
+
+**Acceptance Criteria:**
+
+**Given** the 6 audio domain types (`MIDINote`, `Interval`, `Frequency`, `Pitch`, `TuningSystem`, `Cents`)
+**When** documentation is added
+**Then** all 6 types have `///` doc comments explaining role, relationships, and design decisions
+
+**Given** `MIDINote.frequency()` convenience method exists
+**When** it is removed
+**Then** all callers use `Pitch(note:cents:).frequency(referencePitch:)` explicitly
+
+**Given** frequency methods have implicit default parameters
+**When** defaults are removed from `Pitch.frequency(referencePitch:)`, `Pitch.init(frequency:referencePitch:)`, `Comparison.note1Frequency(referencePitch:)`, `Comparison.note2Frequency(referencePitch:)`, and `TrainingSettings.init(referencePitch:)`
+**Then** all call sites pass explicit parameters
+**And** the full test suite passes with no behavioral changes
+
+**Given** `project-context.md` documents MIDI-to-Hz conversion guidance
+**When** it is updated
+**Then** it reflects the new explicit-parameter API
+
+### Story 22.3: Introduce DetunedMIDINote and Two-World Architecture
 
 As a **developer building interval training**,
 I want a `DetunedMIDINote(note:offset:)` value type representing a MIDI note with a cent offset in the logical world, `TuningSystem.frequency(for:referencePitch:)` bridge methods for converting to the physical world, and the `Pitch` struct dissolved,
@@ -2286,7 +2311,7 @@ So that the codebase has a clear two-world architecture: logical (MIDINote, Detu
 **Then** it documents the two-world model: logical world (MIDINote, DetunedMIDINote, Interval, Cents) and physical world (Frequency), bridged by `TuningSystem.frequency(for:referencePitch:)`
 **And** the full test suite passes
 
-### Story 22.3: Unified Reference/Target Naming
+### Story 22.4: Unified Reference/Target Naming
 
 As a **developer building interval training**,
 I want `note1`/`note2` renamed to `referenceNote`/`targetNote` and `Comparison.targetNote` changed to `DetunedMIDINote` (absorbing the separate `centDifference` field) across all value types, records, sessions, strategies, observers, data store, tests, and docs,
@@ -2323,7 +2348,7 @@ So that naming is consistent with the reference/target mental model shared by al
 **When** the full test suite is run
 **Then** all tests pass with no behavioral changes
 
-### Story 22.4: Extract SoundSourceProvider Protocol
+### Story 22.5: Extract SoundSourceProvider Protocol
 
 As a **developer building interval training**,
 I want a `SoundSourceProvider` protocol extracted from `SoundFontLibrary` so that `SettingsScreen` depends on the protocol via `@Environment`, not the concrete library,
@@ -2368,7 +2393,7 @@ So that every training result records full interval context for data integrity a
 **Then** `TrainingDataStore` saves and loads all new fields
 **And** `targetNote` represents the note the user was trying to match (equals `referenceNote` for unison)
 
-**Given** `Comparison` already has `referenceNote: MIDINote` and `targetNote: DetunedMIDINote` (from Story 22.3)
+**Given** `Comparison` already has `referenceNote: MIDINote` and `targetNote: DetunedMIDINote` (from Story 22.4)
 **When** no structural changes are needed to `Comparison`
 **Then** its shape is confirmed correct for interval training — `targetNote.note` is the transposed note, `targetNote.offset` is the training cent offset
 
