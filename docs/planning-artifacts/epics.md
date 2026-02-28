@@ -2220,7 +2220,7 @@ So that interval frequency computation flows through domain types with 0.1-cent 
 
 ## Epic 22: Clean Slate — Prerequisite Refactorings
 
-Codebase uses unified reference/target naming, domain-native Pitch type throughout NotePlayer, and decoupled sound source dependency — so that interval generalization proceeds cleanly without conflating new features with refactoring. All stories are pure refactoring with no functional changes.
+Codebase establishes the two-world architecture (logical MIDINote/DetunedMIDINote/Interval/Cents vs. physical Frequency, bridged by TuningSystem + ReferencePitch), uses unified reference/target naming, and decouples the sound source dependency — so that interval generalization proceeds cleanly without conflating new features with refactoring. All stories are pure refactoring with no functional changes.
 
 ### Story 22.1: Migrate FrequencyCalculation to Domain Types
 
@@ -2237,11 +2237,60 @@ So that frequency computation lives on the domain types that own the data, and t
 **And** NFR3 (0.1-cent frequency precision) is preserved — existing frequency precision tests pass against the new domain methods
 **And** the full test suite passes
 
-### Story 22.2: Unified Reference/Target Naming
+### Story 22.2: Introduce DetunedMIDINote and Two-World Architecture
 
 As a **developer building interval training**,
-I want `note1`/`note2` renamed to `referenceNote`/`targetNote` and `note2CentOffset`/`centDifference` renamed to `centOffset` across all value types, records, sessions, strategies, observers, data store, tests, and docs,
-So that naming is consistent with the reference/target mental model shared by all training modes.
+I want a `DetunedMIDINote(note:offset:)` value type representing a MIDI note with a cent offset in the logical world, `TuningSystem.frequency(for:referencePitch:)` bridge methods for converting to the physical world, and the `Pitch` struct dissolved,
+So that the codebase has a clear two-world architecture: logical (MIDINote, DetunedMIDINote, Interval, Cents) and physical (Frequency), bridged explicitly by TuningSystem + ReferencePitch.
+
+**Acceptance Criteria:**
+
+**Given** a new `DetunedMIDINote` struct
+**When** constructed as `DetunedMIDINote(note: MIDINote, offset: Cents)`
+**Then** it conforms to `Hashable` and `Sendable`
+**And** it represents a MIDI note with a microtonal offset, with no frequency or tuning knowledge
+
+**Given** a plain `MIDINote`
+**When** converted to `DetunedMIDINote` via `DetunedMIDINote(note)` convenience init
+**Then** it creates a `DetunedMIDINote` with `offset: Cents(0)`
+
+**Given** `TuningSystem`
+**When** `frequency(for: DetunedMIDINote, referencePitch: Frequency)` is called
+**Then** it returns the correct frequency for that note+offset combination
+**And** NFR3 (0.1-cent frequency precision) is preserved
+
+**Given** `TuningSystem`
+**When** `frequency(for: MIDINote, referencePitch: Frequency)` convenience overload is called
+**Then** it delegates to the `DetunedMIDINote` overload with zero offset
+
+**Given** no bridge method has a default value for `tuningSystem`
+**When** any call site computes a frequency
+**Then** it must explicitly pass both `tuningSystem` and `referencePitch`
+
+**Given** the `Pitch` struct currently used at 5 production call sites
+**When** all call sites are migrated to `DetunedMIDINote` + `TuningSystem.frequency(for:referencePitch:)`
+**Then** `Pitch.swift` is deleted
+**And** no file references `Pitch` as a type
+
+**Given** `MIDINote.pitch(at:in:)` has zero production callers
+**When** the method is removed from `Interval.swift`
+**Then** no file references `pitch(at:` or `pitch(in:`
+
+**Given** `SoundFontNotePlayer` and `SoundFontPlaybackHandle` use `Pitch(frequency:referencePitch:)` to decompose Hz into MIDI note + pitch bend
+**When** this inverse conversion is moved to a private helper within the SoundFont layer
+**Then** the conversion remains a 12-TET implementation detail behind the `NotePlayer` protocol boundary
+**And** no code outside the SoundFont layer performs Hz→MIDINote decomposition
+
+**Given** `project-context.md` documents the frequency conversion guidance
+**When** it is updated
+**Then** it documents the two-world model: logical world (MIDINote, DetunedMIDINote, Interval, Cents) and physical world (Frequency), bridged by `TuningSystem.frequency(for:referencePitch:)`
+**And** the full test suite passes
+
+### Story 22.3: Unified Reference/Target Naming
+
+As a **developer building interval training**,
+I want `note1`/`note2` renamed to `referenceNote`/`targetNote` and `Comparison.targetNote` changed to `DetunedMIDINote` (absorbing the separate `centDifference` field) across all value types, records, sessions, strategies, observers, data store, tests, and docs,
+So that naming is consistent with the reference/target mental model shared by all training modes, and `Comparison` naturally expresses its target as a detuned note.
 
 **Acceptance Criteria:**
 
@@ -2250,48 +2299,29 @@ So that naming is consistent with the reference/target mental model shared by al
 **Then** all references across code, tests, and docs use the new names
 **And** no occurrence of `note1`, `note2`, `note2CentOffset`, or `centDifference` remains in Swift source files (except comments explaining the rename if needed)
 
-**Given** `Comparison` has fields `note1`, `note2`, `centDifference`
-**When** they are renamed to `referenceNote`, `targetNote`, `centOffset`
-**Then** `ComparisonSession`, `NextComparisonStrategy`, `KazezNoteStrategy`, `ComparisonObserver` conformances, and all tests use the new names
+**Given** `Comparison` has fields `note1: MIDINote`, `note2: MIDINote`, `centDifference: Cents`
+**When** refactored
+**Then** it becomes `referenceNote: MIDINote`, `targetNote: DetunedMIDINote`
+**And** `targetNote.note` replaces the old `note2` and `targetNote.offset` replaces `centDifference`
+**And** `ComparisonSession`, `NextComparisonStrategy`, `KazezNoteStrategy`, `ComparisonObserver` conformances, and all tests use the new shape
+
+**Given** `Comparison` frequency methods currently construct `Pitch` inline
+**When** refactored
+**Then** `note1Frequency` becomes `referenceFrequency` using `tuningSystem.frequency(for: referenceNote, referencePitch:)`
+**And** `note2Frequency` becomes `targetFrequency` using `tuningSystem.frequency(for: targetNote, referencePitch:)`
+**And** both methods require explicit `tuningSystem` and `referencePitch` parameters
 
 **Given** `CompletedComparison` has fields `comparison.note1`, `comparison.note2`
-**When** accessed through the renamed `Comparison` struct
+**When** accessed through the refactored `Comparison` struct
 **Then** all code paths use `comparison.referenceNote`, `comparison.targetNote`
 
 **Given** `PitchMatchingRecord.referenceNote`, `PitchMatchingChallenge.referenceNote`, `CompletedPitchMatching.referenceNote` already use correct naming
 **When** the rename is complete
 **Then** these names remain unchanged
 
-**Given** this is a pure rename with no functional changes
+**Given** this is a rename and type change with no functional changes
 **When** the full test suite is run
 **Then** all tests pass with no behavioral changes
-
-### Story 22.3: NotePlayer Protocol Takes Pitch
-
-As a **developer building interval training**,
-I want the `NotePlayer` protocol to accept `Pitch` instead of `Frequency` in its `play()` methods,
-So that the audio interface works with domain types and MIDI-based implementations receive their natural input.
-
-**Acceptance Criteria:**
-
-**Given** `NotePlayer.play(frequency:velocity:amplitudeDB:)` exists
-**When** the signature is changed to `play(pitch:velocity:amplitudeDB:)`
-**Then** all call sites pass `Pitch` instead of `Frequency`
-**And** the default extension for fixed-duration playback uses `pitch:` instead of `frequency:`
-
-**Given** `SoundFontNotePlayer` receives a `Pitch`
-**When** playing a note
-**Then** it maps `Pitch` (MIDINote + Cents) directly to MIDI noteOn + pitch bend
-**And** no intermediate Hz→MIDI conversion is needed
-
-**Given** `PlaybackHandle.adjustFrequency` stays as `Frequency`
-**When** sessions need to adjust a playing note's pitch
-**Then** they compute `pitch.frequency(referencePitch:)` and pass the result to the handle
-
-**Given** `MockNotePlayer` in tests
-**When** updated to accept `Pitch`
-**Then** all test assertions use `Pitch` values
-**And** the full test suite passes
 
 ### Story 22.4: Extract SoundSourceProvider Protocol
 
@@ -2317,29 +2347,30 @@ So that the Settings feature is decoupled from the audio implementation.
 
 ## Epic 23: Intervals Everywhere — Generalize Training for Intervals
 
-Both comparison and pitch matching sessions accept interval parameters, data models record full interval context, the adaptive algorithm computes interval-aware targets, and training screens show the target interval — generalizing the training experience from unison-only to any musical interval.
+Both comparison and pitch matching sessions accept interval parameters, data models record full interval context, the adaptive algorithm computes interval-aware targets, and training screens show the target interval — generalizing the training experience from unison-only to any musical interval. All frequency computations flow through the two-world bridge: `TuningSystem.frequency(for:referencePitch:)`. No tuning system parameter has a default value.
 
 ### Story 23.1: Data Model and Value Type Updates for Interval Context
 
 As a **developer building interval training**,
-I want `ComparisonRecord` and `PitchMatchingRecord` to carry `tuningSystem`, and `PitchMatchingRecord` to carry `targetNote`, and all value types (`Comparison`, `CompletedComparison`, `PitchMatchingChallenge`, `CompletedPitchMatching`) updated with target/tuning fields,
+I want `ComparisonRecord` and `PitchMatchingRecord` to carry `interval` and `tuningSystem` fields, `PitchMatchingChallenge` and `CompletedPitchMatching` to carry `targetNote`, and all value types confirmed compatible with the two-world architecture,
 So that every training result records full interval context for data integrity and future analysis.
 
 **Acceptance Criteria:**
 
 **Given** `ComparisonRecord` has `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `timestamp`
-**When** `tuningSystem` field is added with default `.equalTemperament`
-**Then** the SwiftData schema accepts the new field
-**And** `TrainingDataStore` saves and loads the `tuningSystem` field
+**When** `interval: Interval` and `tuningSystem: TuningSystem` fields are added
+**Then** the SwiftData schema accepts the new fields
+**And** `TrainingDataStore` saves and loads both
+**And** `interval` is stored explicitly for efficient querying (even though it is derivable from `referenceNote` and `targetNote`)
 
 **Given** `PitchMatchingRecord` has `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp`
-**When** `targetNote` and `tuningSystem` fields are added
-**Then** `TrainingDataStore` saves and loads both new fields
+**When** `targetNote: MIDINote`, `interval: Interval`, and `tuningSystem: TuningSystem` fields are added
+**Then** `TrainingDataStore` saves and loads all new fields
 **And** `targetNote` represents the note the user was trying to match (equals `referenceNote` for unison)
 
-**Given** `Comparison` value type
-**When** no changes are needed (fields already renamed in Epic 22)
-**Then** `referenceNote`, `targetNote`, `centOffset` are confirmed correct
+**Given** `Comparison` already has `referenceNote: MIDINote` and `targetNote: DetunedMIDINote` (from Story 22.3)
+**When** no structural changes are needed to `Comparison`
+**Then** its shape is confirmed correct for interval training — `targetNote.note` is the transposed note, `targetNote.offset` is the training cent offset
 
 **Given** `CompletedComparison` value type
 **When** `tuningSystem: TuningSystem` field is added
@@ -2348,7 +2379,9 @@ So that every training result records full interval context for data integrity a
 
 **Given** `PitchMatchingChallenge` value type
 **When** `targetNote: MIDINote` field is added
-**Then** it represents the note the user should tune toward (equals `referenceNote` for unison)
+**Then** it represents the correct interval note the user should tune toward
+**And** for unison: `targetNote == referenceNote`
+**And** for intervals: `targetNote == referenceNote.transposed(by: interval)`
 
 **Given** `CompletedPitchMatching` value type
 **When** `targetNote: MIDINote` and `tuningSystem: TuningSystem` fields are added
@@ -2362,29 +2395,34 @@ So that every training result records full interval context for data integrity a
 ### Story 23.2: ComparisonSession and Strategy Interval Parameterization
 
 As a **developer building interval training**,
-I want `ComparisonSession.startTraining(intervals:tuningSystem:)` to accept an interval set, `NextComparisonStrategy` to compute interval-aware targets, and `currentInterval`/`isIntervalMode` observable state,
+I want `ComparisonSession.startTraining(intervals:tuningSystem:)` to accept an interval set and tuning system (no defaults), `NextComparisonStrategy` to compute interval-aware targets using `MIDINote.transposed(by:)`, and `currentInterval`/`isIntervalMode` observable state,
 So that comparison training works with any musical interval while unison (`[.prime]`) behaves identically to current behavior (FR66).
 
 **Acceptance Criteria:**
 
 **Given** `ComparisonSession` has a `startTraining()` method
-**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem = .equalTemperament`
+**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem` (no default value)
 **Then** the interval set must be non-empty (enforced by precondition)
-**And** the session stores the set and tuning system for the training run
+**And** both parameters are stored for the training run
 
 **Given** a training session with `intervals: [.prime]`
 **When** comparisons are generated
-**Then** behavior is identical to pre-interval implementation — `targetNote` equals `referenceNote`
+**Then** behavior is identical to pre-interval implementation — `targetNote.note == referenceNote`
 
 **Given** a training session with `intervals: [.perfectFifth]`
 **When** a comparison is generated
-**Then** `targetNote` = `referenceNote.transposed(by: .perfectFifth)`
-**And** the cent offset is applied relative to the correct interval pitch
+**Then** the strategy picks a reference note, then `targetNote.note = referenceNote.transposed(by: .perfectFifth)`
+**And** `targetNote` is a `DetunedMIDINote` with the training cent offset applied
+**And** reference note selection constrains the upper bound by `interval.semitones` to keep `targetNote.note` within MIDI range (0–127)
 
 **Given** `NextComparisonStrategy` protocol
-**When** it gains `interval: Interval` and `tuningSystem: TuningSystem` parameters
-**Then** `KazezNoteStrategy` computes `targetNote` from the interval
-**And** reference note selection constrains the upper bound by `interval.semitones` to keep target within valid MIDI range (0–127)
+**When** it gains `interval: Interval` and `tuningSystem: TuningSystem` parameters (no defaults)
+**Then** `KazezNoteStrategy` computes `targetNote.note` from the interval via `transposed(by:)`
+
+**Given** the frequency computation for playback
+**When** the session needs to play the reference and target notes
+**Then** reference frequency uses `tuningSystem.frequency(for: referenceNote, referencePitch:)`
+**And** target frequency uses `tuningSystem.frequency(for: targetNote, referencePitch:)` where `targetNote` is the `DetunedMIDINote`
 
 **Given** `ComparisonSession` has `currentInterval` and `isIntervalMode` properties
 **When** `currentInterval` is `.prime`
@@ -2399,38 +2437,50 @@ So that comparison training works with any musical interval while unison (`[.pri
 ### Story 23.3: PitchMatchingSession Interval Parameterization
 
 As a **developer building interval training**,
-I want `PitchMatchingSession.startPitchMatching(intervals:tuningSystem:)` to accept an interval set and generate interval-aware challenges,
+I want `PitchMatchingSession.startPitchMatching(intervals:tuningSystem:)` to accept an interval set and tuning system (no defaults) and generate interval-aware challenges,
 So that pitch matching training works with any musical interval while unison (`[.prime]`) behaves identically to current behavior (FR66).
 
 **Acceptance Criteria:**
 
 **Given** `PitchMatchingSession` has a `startPitchMatching()` method
-**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem = .equalTemperament`
+**When** it gains parameters `intervals: Set<Interval>` and `tuningSystem: TuningSystem` (no default value)
 **Then** the interval set must be non-empty (enforced by precondition)
-**And** the session stores the set and tuning system for the training run
+**And** both parameters are stored for the training run
 
 **Given** a pitch matching session with `intervals: [.prime]`
 **When** a challenge is generated
-**Then** `targetNote` equals `referenceNote` — identical to pre-interval behavior
+**Then** `targetNote == referenceNote` — identical to pre-interval behavior
 
 **Given** a pitch matching session with `intervals: [.perfectFifth]`
 **When** a challenge is generated
-**Then** `targetNote` = `referenceNote.transposed(by: .perfectFifth)`
-**And** `initialCentOffset` is relative to the correct interval pitch
+**Then** `targetNote = referenceNote.transposed(by: .perfectFifth)`
+**And** `initialCentOffset` is applied relative to the target note
 **And** reference note selection constrains the upper bound by `interval.semitones`
+
+**Given** the reference note frequency for playback
+**When** the session computes it
+**Then** it uses `tuningSystem.frequency(for: referenceNote, referencePitch:)`
+
+**Given** the detuned starting frequency for the tunable note
+**When** the session computes it
+**Then** it uses `tuningSystem.frequency(for: DetunedMIDINote(note: targetNote, offset: Cents(initialCentOffset)), referencePitch:)`
+
+**Given** the slider adjusts the tunable note in real time
+**When** `adjustPitch` and `commitPitch` are called
+**Then** they apply cent-based frequency arithmetic relative to the already-computed reference frequency
+**And** this remains physical-world arithmetic (no bridge crossing needed)
+
+**Given** `userCentError` represents deviation from the correct interval pitch
+**When** the session computes it
+**Then** it measures cents between user's final frequency and the correct target frequency (FR64)
+
+**Given** `CompletedPitchMatching` carries `targetNote` and `tuningSystem`
+**When** `PitchMatchingObserver` (TrainingDataStore) receives it
+**Then** both fields are persisted to `PitchMatchingRecord`
 
 **Given** `PitchMatchingSession` has `currentInterval` and `isIntervalMode` properties
 **When** `currentInterval` is `.perfectFifth`
 **Then** `isIntervalMode` returns `true`
-
-**Given** `CompletedPitchMatching` now carries `targetNote` and `tuningSystem`
-**When** `PitchMatchingObserver` (TrainingDataStore) receives it
-**Then** both fields are persisted to `PitchMatchingRecord`
-**And** `userCentError` represents deviation from the correct interval pitch (FR64)
-
-**Given** the tunable note's frequency target
-**When** the session computes it for slider interaction
-**Then** it uses `targetNote.pitch(in: tuningSystem).frequency(referencePitch:)` — the interval pitch, not the reference pitch
 
 ### Story 23.4: Training Screen Interval Label and Observer Verification
 
@@ -2462,7 +2512,7 @@ So that users see what interval they're training and all data flows correctly th
 **Given** `ComparisonObserver` and `PitchMatchingObserver` receive updated value types with `tuningSystem` and `targetNote`
 **When** interval training results flow through the observer path
 **Then** profiles receive all data regardless of interval — no filtering, no interval-aware aggregation
-**And** no changes to `PitchDiscriminationProfile` or `PitchMatchingProfile` protocols
+**And** all frequency computations in screens flow through `TuningSystem.frequency(for:referencePitch:)`
 
 ## Epic 24: Four Modes, One App — Start Screen Integration
 
