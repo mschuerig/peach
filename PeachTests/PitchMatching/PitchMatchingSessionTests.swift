@@ -117,7 +117,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -142,7 +142,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -177,7 +177,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -195,7 +195,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -282,7 +282,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -404,7 +404,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -425,7 +425,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -444,7 +444,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)
@@ -462,7 +462,7 @@ struct PitchMatchingSessionTests {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
         mockSettings.noteRangeMax = MIDINote(69)
-        mockSettings.referencePitch = 440.0
+        mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
         session.startPitchMatching()
         try await waitForState(session, .playingTunable)

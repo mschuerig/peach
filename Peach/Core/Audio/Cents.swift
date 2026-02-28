@@ -1,5 +1,10 @@
 import Foundation
 
+/// A microtonal offset measured in cents (1/1200 of an octave).
+///
+/// Cents is a universal unit — not specific to 12-TET. It appears in `Pitch`
+/// (baked-in tuning deviation), `Comparison` (cent difference between notes),
+/// and `TrainingSettings` (difficulty bounds).
 struct Cents: Hashable, Comparable, Sendable {
     let rawValue: Double
 

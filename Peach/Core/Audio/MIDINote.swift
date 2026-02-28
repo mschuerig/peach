@@ -1,5 +1,10 @@
 import Foundation
 
+/// A discrete position on the 128-note MIDI grid (0–127).
+///
+/// MIDINote is a pure index — it carries no tuning or frequency information.
+/// To convert to a sounding frequency, go through `pitch(at:in:)` to apply a
+/// tuning system, then call `Pitch.frequency(referencePitch:)`.
 struct MIDINote: Hashable, Comparable, Codable, Sendable {
     static let validRange = 0...127
 
@@ -17,10 +22,6 @@ struct MIDINote: Hashable, Comparable, Codable, Sendable {
         let pitchClass = rawValue % 12
         let octave = (rawValue / 12) - 1
         return "\(noteNames[pitchClass])\(octave)"
-    }
-
-    func frequency(referencePitch: Double = 440.0) -> Frequency {
-        Pitch(note: self, cents: Cents(0)).frequency(referencePitch: Frequency(referencePitch))
     }
 
     // MARK: - Factory Methods

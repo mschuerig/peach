@@ -58,7 +58,7 @@ struct ComparisonSessionResetTests {
         // Cold start: nil lastComparison with reset profile → should return 100.0
         let comparison = strategy.nextComparison(
             profile: profile,
-            settings: TrainingSettings(),
+            settings: TrainingSettings(referencePitch: .concert440),
             lastComparison: nil
         )
         #expect(comparison.centDifference.magnitude == 100.0)
@@ -87,7 +87,7 @@ struct ComparisonSessionResetTests {
         // With all stats cleared, bootstrap should find no trained neighbors → 100.0
         let comparison = strategy.nextComparison(
             profile: profile,
-            settings: TrainingSettings(),
+            settings: TrainingSettings(referencePitch: .concert440),
             lastComparison: nil
         )
         #expect(comparison.centDifference.magnitude == 100.0)

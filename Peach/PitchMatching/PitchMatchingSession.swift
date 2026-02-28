@@ -157,7 +157,7 @@ final class PitchMatchingSession: TrainingSession {
         TrainingSettings(
             noteRangeMin: userSettings.noteRangeMin,
             noteRangeMax: userSettings.noteRangeMax,
-            referencePitch: userSettings.referencePitch.rawValue
+            referencePitch: userSettings.referencePitch
         )
     }
 
@@ -183,7 +183,7 @@ final class PitchMatchingSession: TrainingSession {
 
         do {
             let refFreq = Pitch(note: challenge.referenceNote, cents: Cents(0))
-                .frequency(referencePitch: Frequency(settings.referencePitch))
+                .frequency(referencePitch: settings.referencePitch)
             self.referenceFrequency = refFreq.rawValue
 
             state = .playingReference
@@ -197,7 +197,7 @@ final class PitchMatchingSession: TrainingSession {
             guard state != .idle && !Task.isCancelled else { return }
 
             let tunableFrequency = Pitch(note: challenge.referenceNote, cents: Cents(challenge.initialCentOffset))
-                .frequency(referencePitch: Frequency(settings.referencePitch))
+                .frequency(referencePitch: settings.referencePitch)
 
             state = .playingTunable
             let handle = try await notePlayer.play(

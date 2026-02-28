@@ -52,14 +52,14 @@ protocol NextComparisonStrategy {
 struct TrainingSettings {
     var noteRangeMin: MIDINote
     var noteRangeMax: MIDINote
-    var referencePitch: Double
+    var referencePitch: Frequency
     var minCentDifference: Cents
     var maxCentDifference: Cents
 
     init(
         noteRangeMin: MIDINote = 36,
         noteRangeMax: MIDINote = 84,
-        referencePitch: Double = 440.0,
+        referencePitch: Frequency,
         minCentDifference: Cents = 0.1,
         maxCentDifference: Cents = 100.0
     ) {
