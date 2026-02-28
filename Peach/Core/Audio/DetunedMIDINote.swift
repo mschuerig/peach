@@ -1,5 +1,3 @@
-import Foundation
-
 /// A MIDI note with a microtonal cent offset — a logical pitch identity.
 ///
 /// DetunedMIDINote lives in the logical world alongside MIDINote, Interval,

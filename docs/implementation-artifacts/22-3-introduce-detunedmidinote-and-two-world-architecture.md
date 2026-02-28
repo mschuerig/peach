@@ -1,6 +1,6 @@
 # Story 22.3: Introduce DetunedMIDINote and Two-World Architecture
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -316,3 +316,4 @@ Claude Opus 4.6
 ### Change Log
 
 - 2026-02-28: Implemented story 22.3 — Introduced DetunedMIDINote and two-world architecture. Created DetunedMIDINote value type, added TuningSystem frequency bridge methods, migrated all production call sites, privatized inverse conversion to SoundFont layer, dissolved Pitch struct, updated project documentation.
+- 2026-03-01: Code review fixes — Updated stale "Last Updated" in project-context.md, fixed "private" → accurate description for decompose(), removed unnecessary Foundation import from DetunedMIDINote.swift, fixed misleading test comment, used clamped(to:) in decompose().

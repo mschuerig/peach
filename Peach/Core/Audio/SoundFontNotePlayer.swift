@@ -205,7 +205,7 @@ final class SoundFontNotePlayer: NotePlayer {
             + semitonesPerOctave * log2(frequency.rawValue / concert440)
         let roundedMidi = Int(exactMidi.rounded())
         let centsRemainder = (exactMidi - Double(roundedMidi)) * centsPerSemitone
-        let clampedMidi = min(max(roundedMidi, midiRange.lowerBound), midiRange.upperBound)
+        let clampedMidi = roundedMidi.clamped(to: midiRange)
         return (note: UInt8(clampedMidi), cents: centsRemainder)
     }
 
