@@ -1,6 +1,6 @@
 # Story 26.1: Delay targetNote Until Slider Touch
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -63,52 +63,52 @@ so that I have a moment of silence to internalize the reference pitch before the
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `awaitingSliderTouch` state to `PitchMatchingSessionState` (AC: 1)
-  - [ ] Add `case awaitingSliderTouch` to the enum
-  - [ ] Add `pendingTunableFrequency: Frequency?` stored property to `PitchMatchingSession`
-  - [ ] Write tests: session transitions to `awaitingSliderTouch` (not `playingTunable`) after reference note
+- [x] Task 1: Add `awaitingSliderTouch` state to `PitchMatchingSessionState` (AC: 1)
+  - [x] Add `case awaitingSliderTouch` to the enum
+  - [x] Add `pendingTunableFrequency: Frequency?` stored property to `PitchMatchingSession`
+  - [x] Write tests: session transitions to `awaitingSliderTouch` (not `playingTunable`) after reference note
 
-- [ ] Task 2: Modify `playNextChallenge()` to stop at `awaitingSliderTouch` (AC: 1)
-  - [ ] After reference note finishes: compute tunable frequency, store as `pendingTunableFrequency`
-  - [ ] Set state to `.awaitingSliderTouch` instead of `.playingTunable`
-  - [ ] Do NOT call `notePlayer.play(frequency:velocity:amplitudeDB:)` for the tunable note yet
-  - [ ] Write tests: no tunable note play call while in `awaitingSliderTouch`
+- [x] Task 2: Modify `playNextChallenge()` to stop at `awaitingSliderTouch` (AC: 1)
+  - [x] After reference note finishes: compute tunable frequency, store as `pendingTunableFrequency`
+  - [x] Set state to `.awaitingSliderTouch` instead of `.playingTunable`
+  - [x] Do NOT call `notePlayer.play(frequency:velocity:amplitudeDB:)` for the tunable note yet
+  - [x] Write tests: no tunable note play call while in `awaitingSliderTouch`
 
-- [ ] Task 3: Add `startTunableNote()` private method (AC: 3)
-  - [ ] Guard: only proceed if `pendingTunableFrequency` is set
-  - [ ] Play tunable note using stored frequency, store returned `PlaybackHandle`
-  - [ ] Clear `pendingTunableFrequency` after starting
-  - [ ] Handle errors (CancellationError, AudioError) same as existing pattern
+- [x] Task 3: Add `startTunableNote()` private method (AC: 3)
+  - [x] Guard: only proceed if `pendingTunableFrequency` is set
+  - [x] Play tunable note using stored frequency, store returned `PlaybackHandle`
+  - [x] Clear `pendingTunableFrequency` after starting
+  - [x] Handle errors (CancellationError, AudioError) same as existing pattern
 
-- [ ] Task 4: Modify `adjustPitch()` to trigger note start from `awaitingSliderTouch` (AC: 3, 4)
-  - [ ] If `state == .awaitingSliderTouch`: transition to `.playingTunable`, call `startTunableNote()`
-  - [ ] Existing `guard state == .playingTunable` continues to work for subsequent calls
-  - [ ] Write tests: `adjustPitch` from `awaitingSliderTouch` starts tunable note and transitions state
+- [x] Task 4: Modify `adjustPitch()` to trigger note start from `awaitingSliderTouch` (AC: 3, 4)
+  - [x] If `state == .awaitingSliderTouch`: transition to `.playingTunable`, call `startTunableNote()`
+  - [x] Existing `guard state == .playingTunable` continues to work for subsequent calls
+  - [x] Write tests: `adjustPitch` from `awaitingSliderTouch` starts tunable note and transitions state
 
-- [ ] Task 5: Modify `commitPitch()` to handle edge case from `awaitingSliderTouch` (AC: 4)
-  - [ ] If `state == .awaitingSliderTouch`: transition to `.playingTunable`, call `startTunableNote()`
-  - [ ] The `commitResult` call proceeds to compute cent error and show feedback
-  - [ ] Write test: quick tap from `awaitingSliderTouch` produces valid result
+- [x] Task 5: Modify `commitPitch()` to handle edge case from `awaitingSliderTouch` (AC: 4)
+  - [x] If `state == .awaitingSliderTouch`: transition to `.playingTunable`, call `startTunableNote()`
+  - [x] The `commitResult` call proceeds to compute cent error and show feedback
+  - [x] Write test: quick tap from `awaitingSliderTouch` produces valid result
 
-- [ ] Task 6: Update `stop()` to handle `awaitingSliderTouch` (AC: 5)
-  - [ ] Clear `pendingTunableFrequency` in `stop()`
-  - [ ] Existing stop logic already handles all other cleanup
-  - [ ] Write tests: stop from `awaitingSliderTouch` transitions to idle, no note played
+- [x] Task 6: Update `stop()` to handle `awaitingSliderTouch` (AC: 5)
+  - [x] Clear `pendingTunableFrequency` in `stop()`
+  - [x] Existing stop logic already handles all other cleanup
+  - [x] Write tests: stop from `awaitingSliderTouch` transitions to idle, no note played
 
-- [ ] Task 7: Update `PitchMatchingScreen` slider activation (AC: 2)
-  - [ ] Change `isActive` from `state == .playingTunable` to `state == .awaitingSliderTouch || state == .playingTunable`
-  - [ ] No changes needed to `VerticalPitchSlider` itself (it receives `isActive` boolean)
-  - [ ] Feedback overlay condition (`state == .showingFeedback`) is unchanged
+- [x] Task 7: Update `PitchMatchingScreen` slider activation (AC: 2)
+  - [x] Change `isActive` from `state == .playingTunable` to `state == .awaitingSliderTouch || state == .playingTunable`
+  - [x] No changes needed to `VerticalPitchSlider` itself (it receives `isActive` boolean)
+  - [x] Feedback overlay condition (`state == .showingFeedback`) is unchanged
 
-- [ ] Task 8: Update existing tests for new state flow (AC: 6, 7)
-  - [ ] Tests that `waitForState(.playingTunable)`: change to wait for `.awaitingSliderTouch`, then call `adjustPitch(0.0)` to trigger transition
-  - [ ] State transition tests: update expected sequence to include `awaitingSliderTouch`
-  - [ ] Audio interruption tests: add stop from `awaitingSliderTouch` coverage
-  - [ ] Full cycle test: update sequence
+- [x] Task 8: Update existing tests for new state flow (AC: 6, 7)
+  - [x] Tests that `waitForState(.playingTunable)`: change to wait for `.awaitingSliderTouch`, then call `adjustPitch(0.0)` to trigger transition
+  - [x] State transition tests: update expected sequence to include `awaitingSliderTouch`
+  - [x] Audio interruption tests: add stop from `awaitingSliderTouch` coverage
+  - [x] Full cycle test: update sequence
 
-- [ ] Task 9: Run full test suite (AC: 7)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass with zero regressions
+- [x] Task 9: Run full test suite (AC: 7)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass with zero regressions
 
 ## Dev Notes
 
@@ -369,10 +369,40 @@ b12314f Fix code review findings for story 25.1 and mark done
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- adjustPitch tests initially failed: the `transitionToPlayingTunable` helper calls `adjustPitch(0.0)` which spawns an async Task for `currentHandle?.adjustFrequency()`. When this Task runs after the handle is assigned, it counts as an extra adjust call. Fixed by using `adjustCountBefore` delta pattern.
+- `noTunableNoteInAwaitingSliderTouch` test initially failed: MockNotePlayer's fire-and-forget `play` internally calls the handle-returning `play`, so `lastHandle` is set even for the reference note. Fixed by asserting `handleHistory.count == 1` instead of `lastHandle == nil`.
+- `TrainingSessionTests` (4 tests) also needed updating: they used `waitForState(session, .playingTunable)` for PitchMatchingSession which now stops at `.awaitingSliderTouch`.
+
 ### Completion Notes List
 
+- Added `case awaitingSliderTouch` to `PitchMatchingSessionState` enum (5 states total)
+- Added `pendingTunableFrequency: Frequency?` stored property for deferred tunable note playback
+- Modified `playNextChallenge()` to store tunable frequency and transition to `.awaitingSliderTouch` instead of playing the tunable note immediately
+- Added `startTunableNote()` private method with async Task that plays the tunable note, assigns handle, and handles errors
+- Modified `adjustPitch()` to detect `.awaitingSliderTouch` and trigger transition to `.playingTunable` + note start
+- Modified `commitPitch()` to handle quick-tap from `.awaitingSliderTouch` (AC 4)
+- Modified `stop()` to clear `pendingTunableFrequency`
+- Updated `PitchMatchingScreen` slider `isActive` condition to include `.awaitingSliderTouch`
+- Added `transitionToPlayingTunable()` test helper for tests needing playingTunable state
+- Added 5 new tests: `transitionsToAwaitingSliderTouchAfterReference`, `noTunableNoteInAwaitingSliderTouch`, `adjustPitchFromAwaitingSliderTouchStartsNote`, `commitPitchFromAwaitingSliderTouchProducesResult`, `stopFromAwaitingSliderTouch`
+- Added 2 new interruption/lifecycle tests: `audioInterruptionBeganStopsFromAwaitingSliderTouch`, `backgroundNotificationStopsFromAwaitingSliderTouch`
+- Updated ~40 existing tests for new state flow (Pattern A: awaitingSliderTouch, Pattern B: transitionToPlayingTunable helper)
+- Updated 4 TrainingSessionTests for new PitchMatchingSession state flow
+- Full test suite passes with zero regressions
+
+### Change Log
+
+- 2026-03-01: Implemented story 26.1 — Added `awaitingSliderTouch` state to PitchMatchingSession state machine. Target note now plays only when user first touches the pitch slider, giving time to internalize the reference pitch.
+
 ### File List
+
+- Peach/PitchMatching/PitchMatchingSession.swift (modified)
+- Peach/PitchMatching/PitchMatchingScreen.swift (modified)
+- PeachTests/PitchMatching/PitchMatchingSessionTests.swift (modified)
+- PeachTests/Core/TrainingSessionTests.swift (modified)
+- docs/implementation-artifacts/26-1-delay-targetnote-until-slider-touch.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)

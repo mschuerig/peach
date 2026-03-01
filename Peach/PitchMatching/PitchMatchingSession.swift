@@ -5,6 +5,7 @@ import os
 enum PitchMatchingSessionState {
     case idle
     case playingReference
+    case awaitingSliderTouch
     case playingTunable
     case showingFeedback
 }
@@ -44,6 +45,7 @@ final class PitchMatchingSession: TrainingSession {
 
     private var currentHandle: PlaybackHandle?
     private(set) var referenceFrequency: Double?
+    private var pendingTunableFrequency: Frequency?
     private var trainingTask: Task<Void, Never>?
     private var feedbackTask: Task<Void, Never>?
 
@@ -97,6 +99,10 @@ final class PitchMatchingSession: TrainingSession {
     }
 
     func adjustPitch(_ value: Double) {
+        if state == .awaitingSliderTouch {
+            state = .playingTunable
+            startTunableNote()
+        }
         guard state == .playingTunable, let referenceFrequency else { return }
         let centOffset = value * Self.initialCentOffsetRange.upperBound
         let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
@@ -106,6 +112,10 @@ final class PitchMatchingSession: TrainingSession {
     }
 
     func commitPitch(_ value: Double) {
+        if state == .awaitingSliderTouch {
+            state = .playingTunable
+            startTunableNote()
+        }
         guard state == .playingTunable, let referenceFrequency else { return }
         let centOffset = value * Self.initialCentOffsetRange.upperBound
         let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
@@ -160,6 +170,7 @@ final class PitchMatchingSession: TrainingSession {
         feedbackTask = nil
         let handleToStop = currentHandle
         currentHandle = nil
+        pendingTunableFrequency = nil
         referenceFrequency = nil
         currentChallenge = nil
         lastResult = nil
@@ -170,6 +181,33 @@ final class PitchMatchingSession: TrainingSession {
             try? await handleToStop?.stop()
         }
         state = .idle
+    }
+
+    private func startTunableNote() {
+        guard let frequency = pendingTunableFrequency else { return }
+        pendingTunableFrequency = nil
+        Task {
+            do {
+                let handle = try await notePlayer.play(
+                    frequency: frequency,
+                    velocity: velocity,
+                    amplitudeDB: AmplitudeDB(0.0)
+                )
+                guard state != .idle && !Task.isCancelled else {
+                    Task { try? await handle.stop() }
+                    return
+                }
+                currentHandle = handle
+            } catch is CancellationError {
+                logger.info("Tunable note start cancelled")
+            } catch let error as AudioError {
+                logger.error("Audio error starting tunable note: \(error.localizedDescription)")
+                stop()
+            } catch {
+                logger.error("Unexpected error starting tunable note: \(error.localizedDescription)")
+                stop()
+            }
+        }
     }
 
     // MARK: - Configuration
@@ -235,19 +273,8 @@ final class PitchMatchingSession: TrainingSession {
                 for: DetunedMIDINote(note: challenge.targetNote, offset: Cents(challenge.initialCentOffset)),
                 referencePitch: settings.referencePitch)
 
-            state = .playingTunable
-            let handle = try await notePlayer.play(
-                frequency: tunableFrequency,
-                velocity: velocity,
-                amplitudeDB: AmplitudeDB(0.0)
-            )
-
-            guard state != .idle && !Task.isCancelled else {
-                Task { try? await handle.stop() }
-                return
-            }
-
-            currentHandle = handle
+            self.pendingTunableFrequency = tunableFrequency
+            state = .awaitingSliderTouch
         } catch is CancellationError {
             logger.info("Training cancelled")
         } catch let error as AudioError {
