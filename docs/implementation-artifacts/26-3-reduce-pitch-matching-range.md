@@ -1,6 +1,6 @@
 # Story 26.3: Reduce Pitch Matching Range
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -217,6 +217,12 @@ None — clean implementation with no issues.
 - TDD approach: tests updated first (RED), then constant changed (GREEN), no refactoring needed
 - Full test suite passes with zero regressions
 
+**Code Review Fixes (2026-03-01):**
+- Fixed 3 `commitPitch` test assertions still using old ±100 range values (50 cents → 10 cents for 0.5 slider value): `commitPitchSharpCentError`, `commitPitchFlatCentError`, `commitPitchHalfPositive`
+- Fixed test description: "adjustPitch with +1.0 produces frequency 100 cents above reference" → "20 cents"
+- Fixed test description: "commitPitch with +0.5 produces 50 cent sharp error" → "10 cent"
+- Fixed 2 stale comments: "Value 0.5 = 50 cents sharp/flat" → "10 cents"
+
 ### File List
 
 - `Peach/PitchMatching/PitchMatchingSession.swift` (modified) — changed `initialCentOffsetRange` constant
@@ -225,3 +231,4 @@ None — clean implementation with no issues.
 ### Change Log
 
 - 2026-03-01: Reduced pitch matching range from ±100 to ±20 cents for finer pitch discrimination training granularity
+- 2026-03-01: Code review — fixed 3 broken commitPitch test assertions (50→10 cents), 2 stale test descriptions, 2 stale comments
