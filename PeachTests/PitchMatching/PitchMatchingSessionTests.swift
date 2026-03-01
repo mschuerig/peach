@@ -95,15 +95,15 @@ struct PitchMatchingSessionTests {
         #expect(challenge.referenceNote <= 72)
     }
 
-    @Test("challenge has offset within ±100 cents")
+    @Test("challenge has offset within ±20 cents")
     func challengeOffsetWithinRange() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         session.start(intervals: [.prime])
         try await waitForState(session, .awaitingSliderTouch)
 
         let challenge = try #require(session.currentChallenge)
-        #expect(challenge.initialCentOffset >= -100)
-        #expect(challenge.initialCentOffset <= 100)
+        #expect(challenge.initialCentOffset >= -20)
+        #expect(challenge.initialCentOffset <= 20)
     }
 
     // MARK: - Task 3: State Transition Tests
@@ -502,7 +502,7 @@ struct PitchMatchingSessionTests {
         session.adjustPitch(1.0)
         try await Task.sleep(for: .milliseconds(50))
 
-        let expectedFreq = 440.0 * pow(2.0, 100.0 / 1200.0)
+        let expectedFreq = 440.0 * pow(2.0, 20.0 / 1200.0)
         #expect(handle.adjustFrequencyCallCount == adjustCountBefore + 1)
         #expect(abs(handle.lastAdjustedFrequency! - expectedFreq) < 0.01)
     }
