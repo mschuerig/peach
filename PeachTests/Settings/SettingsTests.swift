@@ -102,7 +102,9 @@ struct SettingsTests {
                 referenceNote: 60,
                 targetNote: 61,
                 centOffset: Double(i) + 1.0,
-                isCorrect: true
+                isCorrect: true,
+                interval: 1,
+                tuningSystem: "equalTemperament"
             )
             records.append(record)
         }
@@ -127,13 +129,17 @@ struct SettingsTests {
             referenceNote: 60,
             targetNote: 61,
             centOffset: 2.0,
-            isCorrect: true
+            isCorrect: true,
+            interval: 1,
+            tuningSystem: "equalTemperament"
         )
         let comparison2 = ComparisonRecord(
             referenceNote: 72,
             targetNote: 73,
             centOffset: 2.5,
-            isCorrect: false
+            isCorrect: false,
+            interval: 1,
+            tuningSystem: "equalTemperament"
         )
         context.insert(comparison1)
         context.insert(comparison2)
@@ -141,8 +147,11 @@ struct SettingsTests {
         // Insert pitch matching records
         let pitchMatching1 = PitchMatchingRecord(
             referenceNote: 69,
+            targetNote: 69,
             initialCentOffset: 42.5,
-            userCentError: -12.3
+            userCentError: -12.3,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
         context.insert(pitchMatching1)
         try context.save()

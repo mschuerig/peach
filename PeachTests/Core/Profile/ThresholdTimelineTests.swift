@@ -21,6 +21,8 @@ struct ThresholdTimelineTests {
                 targetNote: 60,
                 centOffset: offset,
                 isCorrect: isCorrect,
+                interval: 0,
+                tuningSystem: "equalTemperament",
                 timestamp: Date(timeIntervalSince1970: daySeconds)
             )
         }
@@ -39,6 +41,8 @@ struct ThresholdTimelineTests {
                 targetNote: 60,
                 centOffset: offset,
                 isCorrect: correctness?[index] ?? true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
                 timestamp: Date(timeIntervalSince1970: baseSeconds + Double(index) * 60)
             )
         }
@@ -185,11 +189,11 @@ struct ThresholdTimelineTests {
         let hour1Base = 86400 * 2 + 43200.0 // day 2, noon
         let hour2Base = hour1Base + 3600     // day 2, 1pm
         let records = [
-            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10, isCorrect: true,
+            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10, isCorrect: true, interval: 0, tuningSystem: "equalTemperament",
                            timestamp: Date(timeIntervalSince1970: hour1Base)),
-            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 20, isCorrect: true,
+            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 20, isCorrect: true, interval: 0, tuningSystem: "equalTemperament",
                            timestamp: Date(timeIntervalSince1970: hour1Base + 60)),
-            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 30, isCorrect: true,
+            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 30, isCorrect: true, interval: 0, tuningSystem: "equalTemperament",
                            timestamp: Date(timeIntervalSince1970: hour2Base)),
         ]
         let timeline = ThresholdTimeline(records: records, aggregationComponent: .hour)
@@ -328,6 +332,7 @@ struct ThresholdTimelineTests {
         let completed = CompletedComparison(
             comparison: comparison,
             userAnsweredHigher: true,
+            tuningSystem: .equalTemperament,
             timestamp: Date()
         )
         timeline.comparisonCompleted(completed)
@@ -352,6 +357,7 @@ struct ThresholdTimelineTests {
         let completed = CompletedComparison(
             comparison: comparison,
             userAnsweredHigher: false,
+            tuningSystem: .equalTemperament,
             timestamp: Date()
         )
         timeline.comparisonCompleted(completed)

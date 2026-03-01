@@ -23,8 +23,11 @@ struct PitchMatchingRecordTests {
         let timestamp = Date()
         let record = PitchMatchingRecord(
             referenceNote: 69,
+            targetNote: 69,
             initialCentOffset: 42.5,
             userCentError: -12.3,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: timestamp
         )
 
@@ -36,8 +39,11 @@ struct PitchMatchingRecordTests {
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
+        #expect(fetched[0].targetNote == 69)
         #expect(fetched[0].initialCentOffset == 42.5)
         #expect(fetched[0].userCentError == -12.3)
+        #expect(fetched[0].interval == 0)
+        #expect(fetched[0].tuningSystem == "equalTemperament")
         #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
@@ -46,8 +52,11 @@ struct PitchMatchingRecordTests {
         let before = Date()
         let record = PitchMatchingRecord(
             referenceNote: 60,
+            targetNote: 60,
             initialCentOffset: 10.0,
-            userCentError: 5.0
+            userCentError: 5.0,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
         let after = Date()
 
@@ -63,8 +72,11 @@ struct PitchMatchingRecordTests {
         let timestamp = Date()
         let record = PitchMatchingRecord(
             referenceNote: 127,
+            targetNote: 127,
             initialCentOffset: -99.9,
             userCentError: 88.7,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: timestamp
         )
 
@@ -89,13 +101,19 @@ struct PitchMatchingRecordTests {
 
         let sharpRecord = PitchMatchingRecord(
             referenceNote: 60,
+            targetNote: 60,
             initialCentOffset: 50.0,
-            userCentError: 15.2
+            userCentError: 15.2,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
         let flatRecord = PitchMatchingRecord(
             referenceNote: 60,
+            targetNote: 60,
             initialCentOffset: -50.0,
-            userCentError: -15.2
+            userCentError: -15.2,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
 
         context.insert(sharpRecord)

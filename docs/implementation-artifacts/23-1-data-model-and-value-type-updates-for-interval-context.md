@@ -1,6 +1,6 @@
 # Story 23.1: Data Model and Value Type Updates for Interval Context
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -54,45 +54,45 @@ So that every training result records full interval context for data integrity a
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `interval` and `tuningSystem` to `ComparisonRecord` (AC: #1)
-  - [ ] Add `var interval: Int` property (stores `Interval.rawValue`)
-  - [ ] Add `var tuningSystem: String` property (stores coded `TuningSystem` identifier)
-  - [ ] Update `init` to accept new parameters
-  - [ ] Write tests for record creation with new fields
-- [ ] Task 2: Add `targetNote`, `interval`, and `tuningSystem` to `PitchMatchingRecord` (AC: #2)
-  - [ ] Add `var targetNote: Int` property (stores `MIDINote.rawValue`)
-  - [ ] Add `var interval: Int` property
-  - [ ] Add `var tuningSystem: String` property
-  - [ ] Update `init` to accept new parameters
-  - [ ] Write tests for record creation with new fields
-- [ ] Task 3: Add `tuningSystem` to `CompletedComparison` (AC: #4)
-  - [ ] Add `let tuningSystem: TuningSystem` property
-  - [ ] Update `init` to accept `tuningSystem` parameter
-  - [ ] Write tests
-- [ ] Task 4: Add `targetNote` to `PitchMatchingChallenge` (AC: #5)
-  - [ ] Add `let targetNote: MIDINote` property
-  - [ ] Write tests verifying unison: `targetNote == referenceNote`
-- [ ] Task 5: Add `targetNote` and `tuningSystem` to `CompletedPitchMatching` (AC: #6)
-  - [ ] Add `let targetNote: MIDINote` property
-  - [ ] Add `let tuningSystem: TuningSystem` property
-  - [ ] Update `init` to accept new parameters
-  - [ ] Write tests
-- [ ] Task 6: Update `TrainingDataStore` observer conformances (AC: #1, #2, #4, #6)
-  - [ ] Update `ComparisonObserver` conformance to map `tuningSystem` to record
-  - [ ] Update `PitchMatchingObserver` conformance to map `targetNote`, `interval`, `tuningSystem` to record
-  - [ ] Write tests with in-memory `ModelContainer`
-- [ ] Task 7: Update all call sites that create these types (AC: #3, #4, #5, #6)
-  - [ ] Update `ComparisonSession` where it creates `CompletedComparison` — pass `tuningSystem`
-  - [ ] Update `PitchMatchingSession` where it creates `PitchMatchingChallenge` — pass `targetNote`
-  - [ ] Update `PitchMatchingSession` where it creates `CompletedPitchMatching` — pass `targetNote` and `tuningSystem`
-  - [ ] For now, all call sites use `.prime` and `.equalTemperament` (existing unison behavior)
-- [ ] Task 8: Update mocks and test fixtures (AC: all)
-  - [ ] Update `MockTrainingDataStore` or any test helpers
-  - [ ] Ensure all existing tests pass with new required parameters
-- [ ] Task 9: Confirm `Comparison` shape is already correct (AC: #3)
-  - [ ] Verify `Comparison` has `referenceNote: MIDINote` and `targetNote: DetunedMIDINote`
-  - [ ] No code changes needed — just explicit confirmation in commit message
-- [ ] Task 10: Run full test suite and commit (AC: all)
+- [x] Task 1: Add `interval` and `tuningSystem` to `ComparisonRecord` (AC: #1)
+  - [x] Add `var interval: Int` property (stores `Interval.rawValue`)
+  - [x] Add `var tuningSystem: String` property (stores coded `TuningSystem` identifier)
+  - [x] Update `init` to accept new parameters
+  - [x] Write tests for record creation with new fields
+- [x] Task 2: Add `targetNote`, `interval`, and `tuningSystem` to `PitchMatchingRecord` (AC: #2)
+  - [x] Add `var targetNote: Int` property (stores `MIDINote.rawValue`)
+  - [x] Add `var interval: Int` property
+  - [x] Add `var tuningSystem: String` property
+  - [x] Update `init` to accept new parameters
+  - [x] Write tests for record creation with new fields
+- [x] Task 3: Add `tuningSystem` to `CompletedComparison` (AC: #4)
+  - [x] Add `let tuningSystem: TuningSystem` property
+  - [x] Update `init` to accept `tuningSystem` parameter
+  - [x] Write tests
+- [x] Task 4: Add `targetNote` to `PitchMatchingChallenge` (AC: #5)
+  - [x] Add `let targetNote: MIDINote` property
+  - [x] Write tests verifying unison: `targetNote == referenceNote`
+- [x] Task 5: Add `targetNote` and `tuningSystem` to `CompletedPitchMatching` (AC: #6)
+  - [x] Add `let targetNote: MIDINote` property
+  - [x] Add `let tuningSystem: TuningSystem` property
+  - [x] Update `init` to accept new parameters
+  - [x] Write tests
+- [x] Task 6: Update `TrainingDataStore` observer conformances (AC: #1, #2, #4, #6)
+  - [x] Update `ComparisonObserver` conformance to map `tuningSystem` to record
+  - [x] Update `PitchMatchingObserver` conformance to map `targetNote`, `interval`, `tuningSystem` to record
+  - [x] Write tests with in-memory `ModelContainer`
+- [x] Task 7: Update all call sites that create these types (AC: #3, #4, #5, #6)
+  - [x] Update `ComparisonSession` where it creates `CompletedComparison` — pass `tuningSystem`
+  - [x] Update `PitchMatchingSession` where it creates `PitchMatchingChallenge` — pass `targetNote`
+  - [x] Update `PitchMatchingSession` where it creates `CompletedPitchMatching` — pass `targetNote` and `tuningSystem`
+  - [x] For now, all call sites use `.prime` and `.equalTemperament` (existing unison behavior)
+- [x] Task 8: Update mocks and test fixtures (AC: all)
+  - [x] Update `MockTrainingDataStore` or any test helpers
+  - [x] Ensure all existing tests pass with new required parameters
+- [x] Task 9: Confirm `Comparison` shape is already correct (AC: #3)
+  - [x] Verify `Comparison` has `referenceNote: MIDINote` and `targetNote: DetunedMIDINote`
+  - [x] No code changes needed — just explicit confirmation in commit message
+- [x] Task 10: Run full test suite and commit (AC: all)
 
 ## Dev Notes
 
@@ -246,8 +246,61 @@ No new files needed. No new directories. No cross-feature coupling introduced.
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+No debug issues encountered. All tasks completed cleanly.
 
 ### Completion Notes List
 
+- Added `interval: Int` and `tuningSystem: String` fields to `ComparisonRecord` SwiftData model
+- Added `targetNote: Int`, `interval: Int`, and `tuningSystem: String` fields to `PitchMatchingRecord` SwiftData model
+- Added `tuningSystem: TuningSystem` to `CompletedComparison` value type
+- Added `targetNote: MIDINote` to `PitchMatchingChallenge` value type
+- Added `targetNote: MIDINote` and `tuningSystem: TuningSystem` to `CompletedPitchMatching` value type
+- Added `storageIdentifier` and `fromStorageIdentifier` to `TuningSystem` for SwiftData storage conversion
+- Updated `TrainingDataStore` observer conformances to derive interval via `Interval.between()` and map tuningSystem via `storageIdentifier`
+- Updated `ComparisonSession` to pass `.equalTemperament` when creating `CompletedComparison`
+- Updated `PitchMatchingSession` to pass `targetNote: note` (unison) and `.equalTemperament` for challenge and completion types
+- Updated `MockTrainingDataStore` with new field mappings
+- Updated all test fixtures (20+ files) with new required parameters using unison defaults
+- Confirmed `Comparison` shape is already correct (`referenceNote: MIDINote`, `targetNote: DetunedMIDINote`)
+- No migration plan needed (no production user base)
+- All tests pass, dependency checks pass
+
 ### File List
+
+- Peach/Core/Data/ComparisonRecord.swift (modified: added `interval`, `tuningSystem` fields)
+- Peach/Core/Data/PitchMatchingRecord.swift (modified: added `targetNote`, `interval`, `tuningSystem` fields)
+- Peach/Core/Training/Comparison.swift (modified: added `tuningSystem` to `CompletedComparison`)
+- Peach/Core/Training/CompletedPitchMatching.swift (modified: added `targetNote`, `tuningSystem`)
+- Peach/PitchMatching/PitchMatchingChallenge.swift (modified: added `targetNote`)
+- Peach/Core/Audio/TuningSystem.swift (modified: added `storageIdentifier`, `fromStorageIdentifier`)
+- Peach/Core/Data/TrainingDataStore.swift (modified: updated observer conformances for new fields)
+- Peach/Comparison/ComparisonSession.swift (modified: pass `tuningSystem: .equalTemperament`)
+- Peach/PitchMatching/PitchMatchingSession.swift (modified: pass `targetNote`, `tuningSystem`)
+- Peach/Profile/ThresholdTimelineView.swift (modified: preview ComparisonRecord updated)
+- Peach/Profile/ProfileScreen.swift (modified: preview ComparisonRecord updated)
+- Peach/Profile/SummaryStatisticsView.swift (modified: preview ComparisonRecord updated)
+- Peach/Start/ProfilePreviewView.swift (modified: preview ComparisonRecord updated)
+- PeachTests/Comparison/MockTrainingDataStore.swift (modified: updated observer methods)
+- PeachTests/Core/Data/TrainingDataStoreTests.swift (modified: updated all record calls)
+- PeachTests/Core/Data/TrainingDataStoreEdgeCaseTests.swift (modified: updated all record calls)
+- PeachTests/Core/Data/PitchMatchingRecordTests.swift (modified: updated all record calls)
+- PeachTests/Core/Training/ComparisonTests.swift (modified: added `tuningSystem` to CompletedComparison)
+- PeachTests/Core/Profile/ThresholdTimelineTests.swift (modified: updated record and completed calls)
+- PeachTests/Core/Profile/PitchMatchingProfileTests.swift (modified: updated CompletedPitchMatching call)
+- PeachTests/Core/Algorithm/KazezNoteStrategyTests.swift (modified: added `tuningSystem` to CompletedComparison)
+- PeachTests/Profile/TrendAnalyzerTests.swift (modified: updated record and completed calls)
+- PeachTests/Profile/ProfileScreenLayoutTests.swift (modified: updated ComparisonRecord calls)
+- PeachTests/Start/ProfilePreviewViewTests.swift (modified: updated ComparisonRecord calls)
+- PeachTests/Comparison/ComparisonSessionResetTests.swift (modified: updated ComparisonRecord calls)
+- PeachTests/Comparison/ComparisonSessionIntegrationTests.swift (modified: updated ComparisonRecord calls)
+- PeachTests/Settings/SettingsTests.swift (modified: updated record calls)
+- docs/implementation-artifacts/23-1-data-model-and-value-type-updates-for-interval-context.md (modified: status, tasks, dev record)
+- docs/implementation-artifacts/sprint-status.yaml (modified: story status)
+
+## Change Log
+
+- 2026-03-01: Implemented story 23.1 — added interval and tuning system context fields to all data models and value types for interval training support

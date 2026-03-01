@@ -112,8 +112,10 @@ final class PitchMatchingSession: TrainingSession {
 
         let result = CompletedPitchMatching(
             referenceNote: challenge.referenceNote,
+            targetNote: challenge.targetNote,
             initialCentOffset: challenge.initialCentOffset,
-            userCentError: userCentError
+            userCentError: userCentError,
+            tuningSystem: .equalTemperament
         )
         lastResult = result
 
@@ -170,7 +172,7 @@ final class PitchMatchingSession: TrainingSession {
     private func generateChallenge(settings: TrainingSettings) -> PitchMatchingChallenge {
         let note = MIDINote.random(in: settings.noteRangeMin...settings.noteRangeMax)
         let offset = Double.random(in: Self.initialCentOffsetRange)
-        return PitchMatchingChallenge(referenceNote: note, initialCentOffset: offset)
+        return PitchMatchingChallenge(referenceNote: note, targetNote: note, initialCentOffset: offset)
     }
 
     // MARK: - Training Loop

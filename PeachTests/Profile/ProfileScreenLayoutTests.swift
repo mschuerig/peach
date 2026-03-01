@@ -16,6 +16,8 @@ struct ProfileScreenLayoutTests {
                 targetNote: 60,
                 centOffset: Double(30 + i),
                 isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
                 timestamp: Date().addingTimeInterval(Double(i - 30) * 86400)
             )
         }

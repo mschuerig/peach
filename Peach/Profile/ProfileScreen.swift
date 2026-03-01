@@ -70,6 +70,8 @@ struct ProfileScreen: View {
                         targetNote: 60,
                         centOffset: baseOffset + noise,
                         isCorrect: Bool.random(),
+                        interval: 0,
+                        tuningSystem: "equalTemperament",
                         timestamp: Date().addingTimeInterval(Double(i - 50) * 86400)
                     )
                 }
@@ -91,6 +93,8 @@ struct ProfileScreen: View {
                         referenceNote: 60, targetNote: 60,
                         centOffset: i < 10 ? 50.0 : 30.0,
                         isCorrect: true,
+                        interval: 0,
+                        tuningSystem: "equalTemperament",
                         timestamp: Date(timeIntervalSince1970: Double(i) * 60)
                     )
                 }

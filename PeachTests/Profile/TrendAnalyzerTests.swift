@@ -16,6 +16,8 @@ struct TrendAnalyzerTests {
                 targetNote: 60,
                 centOffset: offset,
                 isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
                 timestamp: Date(timeIntervalSince1970: Double(index) * 60)
             )
         }
@@ -135,6 +137,7 @@ struct TrendAnalyzerTests {
         let completed = CompletedComparison(
             comparison: comparison,
             userAnsweredHigher: true,
+            tuningSystem: .equalTemperament,
             timestamp: Date(timeIntervalSince1970: 19 * 60)
         )
         analyzer.comparisonCompleted(completed)

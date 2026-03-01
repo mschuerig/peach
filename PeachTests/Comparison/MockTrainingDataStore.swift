@@ -72,11 +72,14 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
 
     func comparisonCompleted(_ completed: CompletedComparison) {
         let comparison = completed.comparison
+        let interval = (try? Interval.between(comparison.referenceNote, comparison.targetNote.note))?.rawValue ?? 0
         let record = ComparisonRecord(
             referenceNote: comparison.referenceNote.rawValue,
             targetNote: comparison.targetNote.note.rawValue,
             centOffset: comparison.targetNote.offset.rawValue,
             isCorrect: completed.isCorrect,
+            interval: interval,
+            tuningSystem: completed.tuningSystem.storageIdentifier,
             timestamp: completed.timestamp
         )
         try? save(record)
@@ -85,10 +88,14 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
     // MARK: - PitchMatchingObserver Protocol
 
     func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+        let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
         let record = PitchMatchingRecord(
             referenceNote: result.referenceNote.rawValue,
+            targetNote: result.targetNote.rawValue,
             initialCentOffset: result.initialCentOffset,
             userCentError: result.userCentError,
+            interval: interval,
+            tuningSystem: result.tuningSystem.storageIdentifier,
             timestamp: result.timestamp
         )
         try? save(record)

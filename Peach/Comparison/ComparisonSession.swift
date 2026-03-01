@@ -123,7 +123,7 @@ final class ComparisonSession: TrainingSession {
 
         stopTargetNoteIfPlaying()
 
-        let completed = CompletedComparison(comparison: comparison, userAnsweredHigher: isHigher)
+        let completed = CompletedComparison(comparison: comparison, userAnsweredHigher: isHigher, tuningSystem: .equalTemperament)
         logger.info("Answer was \(completed.isCorrect ? "✓ CORRECT" : "✗ WRONG") (target was \(comparison.isTargetHigher ? "higher" : "lower"))")
 
         lastCompletedComparison = completed

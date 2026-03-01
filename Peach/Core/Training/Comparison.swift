@@ -24,6 +24,7 @@ struct Comparison {
 struct CompletedComparison {
     let comparison: Comparison
     let userAnsweredHigher: Bool
+    let tuningSystem: TuningSystem
 
     var isCorrect: Bool {
         comparison.isCorrect(userAnswerHigher: userAnsweredHigher)
@@ -31,9 +32,10 @@ struct CompletedComparison {
 
     let timestamp: Date
 
-    init(comparison: Comparison, userAnsweredHigher: Bool, timestamp: Date = Date()) {
+    init(comparison: Comparison, userAnsweredHigher: Bool, tuningSystem: TuningSystem, timestamp: Date = Date()) {
         self.comparison = comparison
         self.userAnsweredHigher = userAnsweredHigher
+        self.tuningSystem = tuningSystem
         self.timestamp = timestamp
     }
 }

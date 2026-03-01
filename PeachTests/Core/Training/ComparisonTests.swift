@@ -68,8 +68,8 @@ struct CompletedComparisonTests {
     func isCorrectDelegatesToComparison() {
         let comparison = Comparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
 
-        let correct = CompletedComparison(comparison: comparison, userAnsweredHigher: true)
-        let incorrect = CompletedComparison(comparison: comparison, userAnsweredHigher: false)
+        let correct = CompletedComparison(comparison: comparison, userAnsweredHigher: true, tuningSystem: .equalTemperament)
+        let incorrect = CompletedComparison(comparison: comparison, userAnsweredHigher: false, tuningSystem: .equalTemperament)
 
         #expect(correct.isCorrect == true)
         #expect(incorrect.isCorrect == false)
@@ -80,7 +80,8 @@ struct CompletedComparisonTests {
         let before = Date()
         let completed = CompletedComparison(
             comparison: Comparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
-            userAnsweredHigher: true
+            userAnsweredHigher: true,
+            tuningSystem: .equalTemperament
         )
         let after = Date()
 

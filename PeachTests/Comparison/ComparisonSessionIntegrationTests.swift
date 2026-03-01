@@ -188,9 +188,9 @@ struct ComparisonSessionIntegrationTests {
     func profileLoadedFromDataStore() async {
         let profile = PerceptualProfile()
         let records = [
-            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, timestamp: Date()),
-            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 30.0, isCorrect: true, timestamp: Date()),
-            ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: -40.0, isCorrect: false, timestamp: Date())
+            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
+            ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
+            ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: -40.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: Date())
         ]
 
         // Loading uses abs() on stored signed centOffset for unsigned threshold

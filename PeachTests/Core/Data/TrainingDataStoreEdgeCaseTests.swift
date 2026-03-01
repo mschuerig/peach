@@ -22,8 +22,8 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true)
-        let record2 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true)
+        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record2 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(record1)
         try store.save(record2)
@@ -38,8 +38,8 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let minRecord = ComparisonRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true)
-        let maxRecord = ComparisonRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false)
+        let minRecord = ComparisonRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let maxRecord = ComparisonRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(minRecord)
         try store.save(maxRecord)
@@ -60,7 +60,9 @@ struct TrainingDataStoreEdgeCaseTests {
             referenceNote: 60,
             targetNote: 60,
             centOffset: 12.3,
-            isCorrect: true
+            isCorrect: true,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
 
         try store.save(record)
@@ -78,7 +80,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {
@@ -99,7 +101,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         do {
             try store.save(record)
@@ -119,7 +121,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {
