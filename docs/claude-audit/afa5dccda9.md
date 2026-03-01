@@ -1,0 +1,212 @@
+---
+commit: "afa5dccda9eed0db17ce107b277a6b8d288bc1f1"
+date: "2026-02-17T09:43:50+01:00"
+author: "Michael Schürig <michael@schuerig.de>"
+subject: "Chain-based Kazez convergence: use last comparison's cent difference"
+sessions: ["f43bf0a1-015b-4d56-836b-dda1d374479c"]
+prev: "4f4e10c795.md"
+next: "a00f6dac87.md"
+---
+
+[← Previous (4f4e10c795)](4f4e10c795.md) | [Index](index.md) | [Next (a00f6dac87) →](a00f6dac87.md)
+
+# Commit afa5dccda9
+
+**Date:** 2026-02-17 09:43:50 UTC+01:00  
+**Author:** Michael Schürig <michael@schuerig.de>
+
+## Commit message
+
+Chain-based Kazez convergence: use last comparison's cent difference
+
+Use the previous comparison's actual cent difference as the Kazez
+formula input instead of per-note stored difficulty. This creates a
+single smooth convergence chain (100→20→12.8→9.1→6.9→5.5→...) regardless
+of which note is selected, eliminating the jumps that occurred when the
+algorithm switched between notes with different stored difficulties.
+
+Per-note difficulty is still updated for profile tracking and weak spots.
+Bootstrap path (nil lastComparison) unchanged.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+## Changed files
+
+```
+Peach/Core/Algorithm/AdaptiveNoteStrategy.swift | 27 +++++++++++++------------
+ 1 file changed, 14 insertions(+), 13 deletions(-)
+```
+
+## Session `f43bf0a1…`
+
+*2026-02-17 08:28:22 UTC → 2026-02-17 08:44:02 UTC*
+
+### 🧑 Human (08:28:22)
+
+<command-message>bmad-party-mode</command-message>
+<command-name>/bmad-party-mode</command-name>
+<command-args>The last changes have been an improvement, but they are still far from perfect. Now the algorithm quickly increases the difficulty, but even though I only give correct answers, the cent difference jumps around in the range from 9 to 22 cents. It never goes below 9 cents. For my personal training at my current level, the interesting training range is from 3 to 10 cents. So, with the algorithm as it is, I never get there.</command-args>
+
+### 🤖 Assistant (08:29:58)
+
+Let me read the key algorithm files to give the agents informed context.
+
+### 🤖 Assistant (08:31:01)
+
+🎉 **PARTY MODE ACTIVATED!** 🎉
+
+Welcome Michael! All BMAD agents are here and ready for a dynamic group discussion. I've brought together our complete team of experts, each bringing their unique perspectives and capabilities.
+
+For your algorithm convergence challenge, I've invited the most relevant minds to the table:
+
+- 🏗️ **Winston** (Architect) — Calm, pragmatic system design thinker
+- 💻 **Amelia** (Developer) — Ultra-precise, code-level analysis
+- 🔬 **Dr. Quinn** (Creative Problem Solver) — Root cause detective
+
+Let's dive right in with your topic — the difficulty algorithm converging too slowly and never reaching the 3-10 cent range.
+
+---
+
+🔬 **Dr. Quinn**: AHA! I've examined the crime scene — your `AdaptiveNoteStrategy.swift` — and the root cause is beautifully clear. You don't have *one* convergence problem. You have *two* conspiring together.
+
+**Root Cause #1: Note scattering defeats per-note convergence.** The algorithm randomly selects notes from a 25-note range (±12 semitones). Each MIDI note tracks its *own* difficulty. So while note 60 might converge to 9 cents after 3 correct answers, the algorithm then picks note 65 — untrained, bootstrapped at maybe 20 cents from neighbors — and you're back up. You keep getting served *different* notes that haven't individually converged yet.
+
+**Root Cause #2: The Kazez formula has diminishing returns at low values.** Look at the math: `N = P × (1 - 0.08 × √P)`. At P=9 cents, the reduction factor is `0.08 × √9 = 0.24`, so N = `9 × 0.76 = 6.84`. That's a single step from 9 to 6.8. But you only get that step if the *same note* is picked again — and with 25+ notes in rotation, that could take many rounds.
+
+The real culprit? You're watching a *portfolio* of 25 independent convergence curves, each advancing one step at a time, while only one note gets picked per round.
+
+---
+
+🏗️ **Winston**: Dr. Quinn has identified the structural issue precisely. Let me frame what this means architecturally.
+
+The current design couples two independent concerns:
+1. **Note selection** (which note to train next)
+2. **Difficulty tracking** (how hard that note's comparison should be)
+
+These two systems are fighting each other. Note selection wants variety — it spreads training across the range to build broad perception. But difficulty tracking needs *repetition on the same note* to converge. The result: the user perceives a system that "jumps around" because they're seeing the difficulty of *whichever note happens to be drawn*, not a steady convergence curve.
+
+The question is: should we decouple these? Or change how one feeds the other? I see three architectural approaches:
+
+1. **Global difficulty with per-note refinement** — track a *global* difficulty that converges consistently, and use per-note data only for fine adjustments
+2. **Sticky note selection** — once a note starts converging, keep training it until it reaches a threshold before moving on
+3. **Shared convergence propagation** — when one note converges, immediately propagate that difficulty to untrained neighbors
+
+Each has trade-offs. As Winston says: what ships matters more than what's theoretically elegant.
+
+---
+
+💻 **Amelia**: `AdaptiveNoteStrategy.swift:210-213`. The issue is right here:
+
+```swift
+let p = stats.currentDifficulty != DifficultyParameters.defaultDifficulty
+    ? stats.currentDifficulty
+    : weightedEffectiveDifficulty(...)
+```
+
+New note → `weightedEffectiveDifficulty` → neighbors at 9-20 cents → weighted average ~15 → Kazez step → 10.6. Stored. Next visit: 10.6 → 7.8. But that's 2 visits to *one* note out of 25+.
+
+Winston's option 1 — global difficulty — is simplest. One variable tracks convergence. All notes use it. Per-note offsets optional. `TrainingSession` already has state access. Minimal diff.
+
+---
+
+🔬 **Dr. Quinn**: I want to build on what Winston and Amelia are pointing at. The *simplest* fix that preserves the existing architecture: **use the last comparison's actual cent difference as `p` instead of the target note's stored difficulty**. This is actually closer to what `KazezNoteStrategy` does at line 58:
+
+```swift
+let p = last.comparison.centDifference
+```
+
+The *original* Kazez strategy uses the previous comparison's cent difference — a single chain of values that converges smoothly regardless of which note is picked. The `AdaptiveNoteStrategy` replaced this with per-note stored difficulty, which introduced the scattering problem.
+
+A hybrid approach: maintain per-note tracking for weak spot identification, but for the *actual difficulty presented to the user*, track a **single converging chain** — the Kazez value from the last comparison. This preserves the adaptive note selection while giving the user a smooth, continuously narrowing experience.
+
+---
+
+🏗️ **Winston**: That's the elegant middle ground. Let me be specific about what this looks like:
+
+- **Keep** per-note `currentDifficulty` for weak spot analysis and profile data
+- **Add** a single `sessionDifficulty` that follows the Kazez chain from `lastComparison.centDifference`
+- **Use** `sessionDifficulty` as the actual cent difference presented to the user
+- **Update** the per-note `currentDifficulty` to match, so the profile data stays useful
+
+This means: correct answer → difficulty drops from whatever it was → next comparison (regardless of note) uses the lower value. The user sees a smooth convergence curve: 100 → 20 → 12.8 → 9.1 → 6.9 → 5.5 → 4.5 → 3.8. You'd hit the 3-10 cent range within about 5-7 correct answers.
+
+---
+
+💻 **Amelia**: Clean approach. `determineCentDifference` change is ~5 lines. Still update per-note difficulty for profile tracking. `lastComparison?.comparison.centDifference` is already available at call site. AC met: smooth convergence, 3-10 cent range reachable.
+
+---
+
+**Michael, the team converges on a clear diagnosis and solution.** The core issue: per-note difficulty tracking causes the cent difference to scatter as the algorithm jumps between notes. The fix: use the previous comparison's actual cent difference as the Kazez input (like the original `KazezNoteStrategy` does), so the user sees a single smooth convergence chain regardless of which note is selected.
+
+**Dr. Quinn asks: Does this diagnosis match what you're experiencing — seeing the difficulty bounce when the algorithm switches notes? And does the "single converging chain" approach sound right for your training goals?**
+
+_[Awaiting your response...]_
+
+`[E] Exit Party Mode - End the collaborative session`
+
+### 🧑 Human (08:38:02)
+
+Ok, let's give it a try.
+
+### 🤖 Assistant (08:38:12)
+
+Clean working tree. Let me read the test file to understand the existing test expectations before making the change.
+
+### 🤖 Assistant (08:39:42)
+
+The change is straightforward — use the last comparison's actual cent difference as the Kazez input instead of per-note stored difficulty. This creates a single smooth convergence chain.
+
+### 🤖 Assistant (08:40:27)
+
+Also update the class-level doc comment to reflect the new design.
+
+### 🤖 Assistant (08:40:34)
+
+Those are just SourceKit indexing warnings, not real errors. Now let me run the full test suite as required.
+
+### 🤖 Assistant (08:43:41)
+
+**TEST SUCCEEDED** — all tests pass. Now let me commit this change.
+
+### 🤖 Assistant (08:44:02)
+
+Done. Let me bring the agents back to wrap up.
+
+---
+
+🔬 **Dr. Quinn**: AHA! The fix is in. Let me summarize what changed and what you should experience now:
+
+**The diagnosis was confirmed:** per-note difficulty tracking caused the algorithm to "reset" whenever it picked a different MIDI note, bouncing you between 9-22 cents endlessly.
+
+**The fix:** `AdaptiveNoteStrategy.swift:210` — the Kazez formula now uses the *previous comparison's actual cent difference* as input, not the per-note stored difficulty. This creates a single converging chain:
+
+| Correct answers | Cent difference |
+|:-:|:-:|
+| 0 | 100.0 |
+| 1 | 20.0 |
+| 2 | 12.8 |
+| 3 | 9.1 |
+| 4 | **6.9** |
+| 5 | **5.5** |
+| 6 | **4.5** |
+| 7 | **3.8** |
+
+You should now reach your 3-10 cent training range within 4-7 correct answers, regardless of which notes the algorithm selects.
+
+---
+
+🏗️ **Winston**: Clean architectural change. Per-note difficulty is still updated for profile tracking and weak spot analysis — that data isn't lost. The bootstrap path (first comparison in a session) is unchanged. All 90+ tests pass. Minimal diff, maximum impact.
+
+---
+
+💻 **Amelia**: 1 file changed. 14 insertions, 13 deletions. All tests green. Ship it.
+
+---
+
+Give it a try and let me know how the convergence feels now!
+
+`[E] Exit Party Mode - End the collaborative session`
+
+---
+
+[← Previous (4f4e10c795)](4f4e10c795.md) | [Index](index.md) | [Next (a00f6dac87) →](a00f6dac87.md)
