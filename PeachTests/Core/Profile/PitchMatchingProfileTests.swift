@@ -72,7 +72,7 @@ struct PitchMatchingProfileTests {
     @Test("pitchMatchingCompleted updates matching statistics")
     func observerUpdatesStats() async {
         let profile = PerceptualProfile()
-        let result = CompletedPitchMatching(referenceNote: 60, initialCentOffset: 50.0, userCentError: 15.0)
+        let result = CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: 15.0, tuningSystem: .equalTemperament)
         profile.pitchMatchingCompleted(result)
         #expect(profile.matchingSampleCount == 1)
         #expect(profile.matchingMean == 15.0)

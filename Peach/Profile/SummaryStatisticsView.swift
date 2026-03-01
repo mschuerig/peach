@@ -154,6 +154,8 @@ struct SummaryStatisticsView: View {
                     referenceNote: 60, targetNote: 60,
                     centOffset: i < 10 ? 50.0 : 30.0,
                     isCorrect: true,
+                    interval: 0,
+                    tuningSystem: "equalTemperament",
                     timestamp: Date(timeIntervalSince1970: Double(i) * 60)
                 )
             }

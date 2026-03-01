@@ -269,7 +269,8 @@ struct KazezNoteStrategyTests {
         for _ in 0..<10 {
             let completed = CompletedComparison(
                 comparison: comparison,
-                userAnsweredHigher: comparison.isTargetHigher // correct
+                userAnsweredHigher: comparison.isTargetHigher, // correct
+                tuningSystem: .equalTemperament
             )
             comparison = strategy.nextComparison(
                 profile: PerceptualProfile(),
@@ -332,7 +333,8 @@ struct KazezNoteStrategyTests {
         )
         return CompletedComparison(
             comparison: comp,
-            userAnsweredHigher: correct // isTargetHigher is true (positive cents), so correct = higher
+            userAnsweredHigher: correct, // isTargetHigher is true (positive cents), so correct = higher
+            tuningSystem: .equalTemperament
         )
     }
 }

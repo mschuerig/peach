@@ -31,4 +31,19 @@ enum TuningSystem: Hashable, Sendable, CaseIterable, Codable {
     func frequency(for note: MIDINote, referencePitch: Frequency) -> Frequency {
         frequency(for: DetunedMIDINote(note), referencePitch: referencePitch)
     }
+
+    // MARK: - Storage Identifiers
+
+    var storageIdentifier: String {
+        switch self {
+        case .equalTemperament: return "equalTemperament"
+        }
+    }
+
+    static func fromStorageIdentifier(_ id: String) -> TuningSystem? {
+        switch id {
+        case "equalTemperament": return .equalTemperament
+        default: return nil
+        }
+    }
 }

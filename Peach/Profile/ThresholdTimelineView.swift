@@ -205,6 +205,8 @@ struct ThresholdTimelineView: View {
                     targetNote: 60,
                     centOffset: baseOffset + noise,
                     isCorrect: Bool.random(),
+                    interval: 0,
+                    tuningSystem: "equalTemperament",
                     timestamp: Date().addingTimeInterval(Double(i - 50) * 86400)
                 )
             }

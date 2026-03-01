@@ -14,6 +14,8 @@ struct ProfilePreviewViewTests {
                 targetNote: 60,
                 centOffset: offset,
                 isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
                 timestamp: Date().addingTimeInterval(Double(index - dailyOffsets.count) * 86400)
             )
         }

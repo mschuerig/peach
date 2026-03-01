@@ -19,18 +19,19 @@ final class ComparisonRecord {
     /// When the comparison was answered
     var timestamp: Date
 
-    /// Creates a new comparison record
-    /// - Parameters:
-    ///   - referenceNote: Reference MIDI note (0-127)
-    ///   - targetNote: Target MIDI note (0-127)
-    ///   - centOffset: Cent offset applied to target note (fractional precision)
-    ///   - isCorrect: Whether the user's answer was correct
-    ///   - timestamp: When the comparison occurred (defaults to now)
-    init(referenceNote: Int, targetNote: Int, centOffset: Double, isCorrect: Bool, timestamp: Date = Date()) {
+    /// Interval between reference and target notes (stored as semitone count)
+    var interval: Int
+
+    /// Tuning system used for the comparison (stored as string identifier)
+    var tuningSystem: String
+
+    init(referenceNote: Int, targetNote: Int, centOffset: Double, isCorrect: Bool, interval: Int, tuningSystem: String, timestamp: Date = Date()) {
         self.referenceNote = referenceNote
         self.targetNote = targetNote
         self.centOffset = centOffset
         self.isCorrect = isCorrect
+        self.interval = interval
+        self.tuningSystem = tuningSystem
         self.timestamp = timestamp
     }
 }

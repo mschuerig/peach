@@ -33,6 +33,8 @@ struct TrainingDataStoreTests {
             targetNote: 60,
             centOffset: 50.0,
             isCorrect: true,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: Date()
         )
 
@@ -54,9 +56,9 @@ struct TrainingDataStoreTests {
         let store = TrainingDataStore(modelContext: context)
 
         let now = Date()
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, timestamp: now.addingTimeInterval(-60))
-        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, timestamp: now.addingTimeInterval(-30))
-        let record3 = ComparisonRecord(referenceNote: 64, targetNote: 64, centOffset: 30.0, isCorrect: true, timestamp: now)
+        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-60))
+        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-30))
+        let record3 = ComparisonRecord(referenceNote: 64, targetNote: 64, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now)
 
         try store.save(record1)
         try store.save(record2)
@@ -82,6 +84,8 @@ struct TrainingDataStoreTests {
             targetNote: 72,
             centOffset: 123.45,
             isCorrect: false,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: timestamp
         )
 
@@ -106,7 +110,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         var fetched = try store.fetchAllComparisons()
@@ -124,8 +128,8 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
-        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false)
+        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record1)
         try store.save(record2)
 
@@ -150,7 +154,9 @@ struct TrainingDataStoreTests {
                 referenceNote: 69,
                 targetNote: 69,
                 centOffset: 75.0,
-                isCorrect: true
+                isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament"
             )
             try store1.save(record)
         }
@@ -173,7 +179,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         let fetched = try store.fetchAllComparisons()
@@ -207,8 +213,11 @@ struct TrainingDataStoreTests {
 
         let record = PitchMatchingRecord(
             referenceNote: 69,
+            targetNote: 69,
             initialCentOffset: 42.5,
-            userCentError: -12.3
+            userCentError: -12.3,
+            interval: 0,
+            tuningSystem: "equalTemperament"
         )
 
         try store.save(record)
@@ -217,6 +226,7 @@ struct TrainingDataStoreTests {
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
+        #expect(fetched[0].targetNote == 69)
         #expect(fetched[0].initialCentOffset == 42.5)
         #expect(fetched[0].userCentError == -12.3)
     }
@@ -228,9 +238,9 @@ struct TrainingDataStoreTests {
         let store = TrainingDataStore(modelContext: context)
 
         let now = Date()
-        let record1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0, timestamp: now.addingTimeInterval(-60))
-        let record2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0, timestamp: now.addingTimeInterval(-30))
-        let record3 = PitchMatchingRecord(referenceNote: 72, initialCentOffset: 30.0, userCentError: 1.5, timestamp: now)
+        let record1 = PitchMatchingRecord(referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-60))
+        let record2 = PitchMatchingRecord(referenceNote: 64, targetNote: 64, initialCentOffset: 20.0, userCentError: -3.0, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-30))
+        let record3 = PitchMatchingRecord(referenceNote: 72, targetNote: 72, initialCentOffset: 30.0, userCentError: 1.5, interval: 0, tuningSystem: "equalTemperament", timestamp: now)
 
         try store.save(record1)
         try store.save(record2)
@@ -263,11 +273,11 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let comparisonRecord = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true)
+        let comparisonRecord = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(comparisonRecord)
 
-        let pitchRecord1 = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
-        let pitchRecord2 = PitchMatchingRecord(referenceNote: 64, initialCentOffset: 20.0, userCentError: -3.0)
+        let pitchRecord1 = PitchMatchingRecord(referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
+        let pitchRecord2 = PitchMatchingRecord(referenceNote: 64, targetNote: 64, initialCentOffset: 20.0, userCentError: -3.0, interval: 0, tuningSystem: "equalTemperament")
         try store.save(pitchRecord1)
         try store.save(pitchRecord2)
 
@@ -291,8 +301,10 @@ struct TrainingDataStoreTests {
         let timestamp = Date()
         let completed = CompletedPitchMatching(
             referenceNote: 69,
+            targetNote: 69,
             initialCentOffset: 42.5,
             userCentError: -12.3,
+            tuningSystem: .equalTemperament,
             timestamp: timestamp
         )
 
@@ -302,8 +314,11 @@ struct TrainingDataStoreTests {
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
+        #expect(fetched[0].targetNote == 69)
         #expect(fetched[0].initialCentOffset == 42.5)
         #expect(fetched[0].userCentError == -12.3)
+        #expect(fetched[0].interval == 0)
+        #expect(fetched[0].tuningSystem == "equalTemperament")
         #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
@@ -315,8 +330,10 @@ struct TrainingDataStoreTests {
 
         let completed = CompletedPitchMatching(
             referenceNote: 69,
+            targetNote: 69,
             initialCentOffset: 42.5,
-            userCentError: -12.3
+            userCentError: -12.3,
+            tuningSystem: .equalTemperament
         )
 
         store.pitchMatchingCompleted(completed)
@@ -334,12 +351,13 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = PitchMatchingRecord(referenceNote: 60, initialCentOffset: 10.0, userCentError: 5.0)
+        let record = PitchMatchingRecord(referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         let fetched = try store.fetchAllPitchMatchings()
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
+        #expect(fetched[0].targetNote == 60)
         #expect(fetched[0].initialCentOffset == 10.0)
         #expect(fetched[0].userCentError == 5.0)
     }

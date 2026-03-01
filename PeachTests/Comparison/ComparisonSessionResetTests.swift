@@ -104,7 +104,9 @@ struct ComparisonSessionResetTests {
                 referenceNote: 60,
                 targetNote: 61,
                 centOffset: Double(i) + 1.0,
-                isCorrect: true
+                isCorrect: true,
+                interval: 1,
+                tuningSystem: "equalTemperament"
             ))
         }
         let trendAnalyzer = TrendAnalyzer(records: records)
@@ -136,7 +138,9 @@ struct ComparisonSessionResetTests {
                 referenceNote: 60,
                 targetNote: 61,
                 centOffset: Double(i) + 1.0,
-                isCorrect: true
+                isCorrect: true,
+                interval: 1,
+                tuningSystem: "equalTemperament"
             ))
         }
         let timeline = ThresholdTimeline(records: records)
