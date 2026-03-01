@@ -219,8 +219,8 @@ development_status:
 
   # Epic 25: Directed Intervals — Full Interval Training
   # Work order: top to bottom
-  epic-25: backlog
-  25-1-direction-enum-and-directedinterval: backlog # Direction enum (.up/.down), DirectedInterval type, replace Interval with DirectedInterval throughout
+  epic-25: in-progress
+  25-1-direction-enum-and-directedinterval: ready-for-dev # Direction enum (.up/.down), DirectedInterval type, replace Interval with DirectedInterval throughout
   25-2-interval-selector-on-settings-screen: backlog # Two-row grid (up/down × 13 intervals P1–P8), toggle active, localized help texts
   epic-25-retrospective: optional
 
