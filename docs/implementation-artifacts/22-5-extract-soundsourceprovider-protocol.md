@@ -1,6 +1,6 @@
 # Story 22.5: Extract SoundSourceProvider Protocol
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -227,6 +227,7 @@ None — clean implementation with no issues.
 ### Change Log
 
 - 2026-03-01: Implemented story 22.5 — extracted `SoundSourceProvider` protocol, decoupled `SettingsScreen` from `SoundFontLibrary`
+- 2026-03-01: Code review fixes — removed dead `\.soundFontLibrary` environment key/injection, removed legacy tag migration (redundant with `availableSources.contains` validation), cached `availableSources` as stored property, added `SoundSourceProvider` conformance tests, fixed `project-context.md` docs
 
 ### File List
 
@@ -235,6 +236,7 @@ None — clean implementation with no issues.
 - `Peach/App/EnvironmentKeys.swift` (MODIFIED)
 - `Peach/App/PeachApp.swift` (MODIFIED)
 - `Peach/Settings/SettingsScreen.swift` (MODIFIED)
+- `PeachTests/Core/Audio/SoundFontLibraryTests.swift` (MODIFIED)
 - `docs/project-context.md` (MODIFIED)
 - `docs/implementation-artifacts/sprint-status.yaml` (MODIFIED)
 - `docs/implementation-artifacts/22-5-extract-soundsourceprovider-protocol.md` (MODIFIED)

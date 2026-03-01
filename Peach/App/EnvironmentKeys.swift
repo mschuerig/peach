@@ -3,7 +3,6 @@ import SwiftUI
 // MARK: - Core Environment Keys
 
 extension EnvironmentValues {
-    @Entry var soundFontLibrary = SoundFontLibrary()
     @Entry var soundSourceProvider: any SoundSourceProvider = SoundFontLibrary()
     @Entry var trendAnalyzer = TrendAnalyzer()
     @Entry var thresholdTimeline = ThresholdTimeline()

@@ -76,7 +76,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **`SoundFontNotePlayer`** — sole `NotePlayer` implementation; owns one `AVAudioEngine` with `AVAudioUnitSampler`; reads `userSettings.soundSource` (via `UserSettings` protocol) on each `play()` call to select the correct SF2 preset via `loadPreset(program:bank:)`
 - **`SF2PresetParser`** — lightweight `enum` with static `parsePresets(from:)` that reads PHDR metadata from an SF2 RIFF file; returns `[SF2Preset]` (name, program, bank); pure function, no state
 - **`SoundSourceProvider`** — protocol abstracting sound source discovery (`availableSources: [SoundSourceID]`, `displayName(for:) -> String`); defined in `Core/Audio/`; `SettingsScreen` depends on this protocol via `@Environment(\.soundSourceProvider)` instead of the concrete `SoundFontLibrary`
-- **`SoundFontLibrary`** — `@MainActor` service created once at startup; discovers SF2 files in bundle, parses presets via `SF2PresetParser`, filters unpitched (bank >= 120, program >= 120), sorts alphabetically; conforms to `SoundSourceProvider`; injected via `@Environment(\.soundFontLibrary)` for `SoundFontNotePlayer` and via `@Environment(\.soundSourceProvider)` for `SettingsScreen`. Read-only at runtime
+- **`SoundFontLibrary`** — `@MainActor` service created once at startup; discovers SF2 files in bundle, parses presets via `SF2PresetParser`, filters unpitched (bank >= 120, program >= 120), sorts alphabetically; conforms to `SoundSourceProvider`; injected via `@Environment(\.soundSourceProvider)` for `SettingsScreen`. Read-only at runtime
 - **`soundSource` tag format** — `@AppStorage` stores `"sf2:{bank}:{program}"` (SF2 bank and MIDI program number, e.g., `"sf2:0:0"` = Grand Piano, `"sf2:0:42"` = Cello, `"sf2:8:80"` = Sine Wave). Default: `"sf2:8:80"`
 - **Protocol boundary: `NotePlayer`** — knows only frequencies (Hz), durations, envelopes; no concept of MIDI notes, comparisons, or training
 - **Two-world architecture** — logical world (`MIDINote`, `DetunedMIDINote`, `Interval`, `Cents`) and physical world (`Frequency`), bridged by `TuningSystem.frequency(for:referencePitch:)`. Forward conversion (logical → physical) always goes through `TuningSystem`; inverse (Hz → MIDI note + cents) is `SoundFontNotePlayer.decompose(frequency:)` (internal for testability, used only within the SoundFont layer). All bridge parameters are explicit (no defaults)
@@ -262,4 +262,4 @@ Never run only specific test files — always the complete suite.
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-02-28 (Two-world architecture documentation)
+Last Updated: 2026-03-01 (SoundSourceProvider protocol extraction)

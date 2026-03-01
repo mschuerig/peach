@@ -6,6 +6,7 @@ final class SoundFontLibrary {
     private let logger = Logger(subsystem: "com.peach.app", category: "SoundFontLibrary")
 
     let availablePresets: [SF2Preset]
+    private let _availableSources: [SoundSourceID]
 
     init(bundle: Bundle = .main) {
         var presets: [SF2Preset] = []
@@ -25,6 +26,7 @@ final class SoundFontLibrary {
 
         presets.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         self.availablePresets = presets
+        self._availableSources = presets.map { SoundSourceID($0.tag) }
 
         logger.info("SoundFontLibrary initialized with \(presets.count) pitched presets")
     }
@@ -43,7 +45,7 @@ final class SoundFontLibrary {
 
 extension SoundFontLibrary: SoundSourceProvider {
     var availableSources: [SoundSourceID] {
-        availablePresets.map { SoundSourceID($0.tag) }
+        _availableSources
     }
 
     func displayName(for source: SoundSourceID) -> String {

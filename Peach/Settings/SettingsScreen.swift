@@ -35,12 +35,7 @@ struct SettingsScreen: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // Migrate legacy tags to SF2 format
-            if soundSource == "sine" {
-                soundSource = "sf2:8:80"
-            } else if soundSource == "cello" {
-                soundSource = "sf2:0:42"
-            } else if !soundSourceProvider.availableSources.contains(where: { $0.rawValue == soundSource }) {
+            if !soundSourceProvider.availableSources.contains(where: { $0.rawValue == soundSource }) {
                 soundSource = SettingsKeys.defaultSoundSource
             }
         }
@@ -111,14 +106,6 @@ struct SettingsScreen: View {
         Binding(
             get: {
                 let current = soundSource
-                // Migrate legacy tags
-                if current == "sine" {
-                    return SettingsKeys.defaultSoundSource
-                }
-                if current == "cello" {
-                    return "sf2:0:42"
-                }
-                // Validate tags exist in available sources
                 if !soundSourceProvider.availableSources.contains(where: { $0.rawValue == current }) {
                     return SettingsKeys.defaultSoundSource
                 }
