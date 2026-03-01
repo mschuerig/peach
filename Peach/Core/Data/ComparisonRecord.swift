@@ -6,7 +6,7 @@ final class ComparisonRecord {
     /// Reference note - always an exact MIDI note (0-127)
     var referenceNote: Int
 
-    /// Target note - same MIDI note as referenceNote
+    /// Target MIDI note (equals referenceNote for unison, different for intervals)
     var targetNote: Int
 
     /// Signed cent offset applied to target note (positive = higher, negative = lower)

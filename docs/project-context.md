@@ -69,7 +69,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftData:**
 - **`TrainingDataStore` is the sole data accessor** — all CRUD goes through this single service
-- **`ComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `ComparisonRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `initialCentOffset`, `userCentError`, `timestamp`
+- **`ComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `ComparisonRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `interval`, `tuningSystem`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `targetNote`, `initialCentOffset`, `userCentError`, `interval`, `tuningSystem`, `timestamp`
 - **`ModelContainer` initialized once in `PeachApp.swift`** — passed via SwiftUI environment; new models must be registered in the schema there
 
 **AVAudioEngine:**
@@ -262,4 +262,4 @@ Never run only specific test files — always the complete suite.
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-03-01 (SoundSourceProvider protocol extraction)
+Last Updated: 2026-03-01 (Story 23.1 data model updates)

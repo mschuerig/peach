@@ -47,6 +47,8 @@ struct TrainingDataStoreTests {
         #expect(fetched[0].targetNote == 60)
         #expect(fetched[0].centOffset == 50.0)
         #expect(fetched[0].isCorrect == true)
+        #expect(fetched[0].interval == 0)
+        #expect(fetched[0].tuningSystem == "equalTemperament")
     }
 
     @Test("FetchAll returns multiple records in timestamp order")
@@ -99,6 +101,8 @@ struct TrainingDataStoreTests {
         #expect(retrieved.targetNote == 72)
         #expect(retrieved.centOffset == 123.45)
         #expect(retrieved.isCorrect == false)
+        #expect(retrieved.interval == 0)
+        #expect(retrieved.tuningSystem == "equalTemperament")
         #expect(abs(retrieved.timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
@@ -341,6 +345,40 @@ struct TrainingDataStoreTests {
 
         let fetched = try store.fetchAllPitchMatchings()
         #expect(fetched.count == 2)
+    }
+
+    // MARK: - ComparisonObserver Conformance Tests
+
+    @Test("ComparisonObserver conformance saves record with derived interval and tuningSystem")
+    func comparisonObserverSaves() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let timestamp = Date()
+        let comparison = Comparison(
+            referenceNote: 60,
+            targetNote: DetunedMIDINote(note: 60, offset: Cents(25.0))
+        )
+        let completed = CompletedComparison(
+            comparison: comparison,
+            userAnsweredHigher: true,
+            tuningSystem: .equalTemperament,
+            timestamp: timestamp
+        )
+
+        store.comparisonCompleted(completed)
+
+        let fetched = try store.fetchAllComparisons()
+
+        #expect(fetched.count == 1)
+        #expect(fetched[0].referenceNote == 60)
+        #expect(fetched[0].targetNote == 60)
+        #expect(fetched[0].centOffset == 25.0)
+        #expect(fetched[0].isCorrect == true)
+        #expect(fetched[0].interval == 0)
+        #expect(fetched[0].tuningSystem == "equalTemperament")
+        #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
     // MARK: - Pitch Matching Atomic Write Tests
