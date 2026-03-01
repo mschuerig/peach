@@ -1,6 +1,6 @@
 # Story 24.2: Start Screen Four Training Buttons
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -271,9 +271,11 @@ None — clean implementation with no issues.
 ### Change Log
 
 - 2026-03-01: Implemented story 24.2 — four training buttons on Start Screen with visual separator and localization
+- 2026-03-01: Code review fixes — removed stale "Start Training" localization entry, made new test functions async, reduced compact VStack spacing from 16pt to 12pt for 4-button layout
 
 ### File List
 
 - Peach/Start/StartScreen.swift (modified)
 - Peach/Resources/Localizable.xcstrings (modified)
 - PeachTests/Start/StartScreenTests.swift (modified)
+- PeachTests/Start/StartScreenLayoutTests.swift (modified)

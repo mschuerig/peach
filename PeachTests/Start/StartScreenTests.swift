@@ -31,12 +31,12 @@ struct StartScreenTests {
     }
 
     @Test("Comparison Screen can be instantiated with perfectFifth intervals")
-    func comparisonScreenCanBeInstantiatedWithPerfectFifth() {
+    func comparisonScreenCanBeInstantiatedWithPerfectFifth() async {
         _ = ComparisonScreen(intervals: [.perfectFifth])
     }
 
     @Test("Pitch Matching Screen can be instantiated with perfectFifth intervals")
-    func pitchMatchingScreenCanBeInstantiatedWithPerfectFifth() {
+    func pitchMatchingScreenCanBeInstantiatedWithPerfectFifth() async {
         _ = PitchMatchingScreen(intervals: [.perfectFifth])
     }
 
