@@ -150,19 +150,23 @@ struct IntervalTests {
 
     // MARK: - Display Name (Story 23.4)
 
-    @Test("prime displayName uses correct localization key")
-    func primeDisplayName() async {
-        #expect(Interval.prime.displayName == String(localized: "Prime"))
-    }
-
-    @Test("perfectFifth displayName uses correct localization key")
-    func perfectFifthDisplayName() async {
-        #expect(Interval.perfectFifth.displayName == String(localized: "Perfect Fifth Up"))
-    }
-
-    @Test("octave displayName uses correct localization key")
-    func octaveDisplayName() async {
-        #expect(Interval.octave.displayName == String(localized: "Octave Up"))
+    @Test("each interval maps to its expected localization key", arguments: [
+        (Interval.prime, "Prime"),
+        (.minorSecond, "Minor Second Up"),
+        (.majorSecond, "Major Second Up"),
+        (.minorThird, "Minor Third Up"),
+        (.majorThird, "Major Third Up"),
+        (.perfectFourth, "Perfect Fourth Up"),
+        (.tritone, "Tritone Up"),
+        (.perfectFifth, "Perfect Fifth Up"),
+        (.minorSixth, "Minor Sixth Up"),
+        (.majorSixth, "Major Sixth Up"),
+        (.minorSeventh, "Minor Seventh Up"),
+        (.majorSeventh, "Major Seventh Up"),
+        (.octave, "Octave Up"),
+    ])
+    func displayNameLocalizationKey(interval: Interval, expectedKey: String) async {
+        #expect(interval.displayName == String(localized: String.LocalizationValue(expectedKey)))
     }
 
     @Test("all intervals have non-empty displayName")

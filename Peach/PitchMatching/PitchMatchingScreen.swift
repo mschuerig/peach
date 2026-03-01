@@ -12,6 +12,7 @@ struct PitchMatchingScreen: View {
             if pitchMatchingSession.isIntervalMode, let interval = pitchMatchingSession.currentInterval {
                 Text(interval.displayName)
                     .font(.title3)
+                    .padding(.horizontal)
                     .accessibilityLabel(String(localized: "Target interval: \(interval.displayName)"))
             }
 

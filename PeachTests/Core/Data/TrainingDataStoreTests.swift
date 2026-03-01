@@ -381,8 +381,6 @@ struct TrainingDataStoreTests {
         #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
 
-    // MARK: - Pitch Matching Atomic Write Tests
-
     // MARK: - Interval Context Verification (Story 23.4)
 
     @Test("ComparisonObserver persists correct interval and tuningSystem for non-prime interval")

@@ -202,8 +202,6 @@ struct PerceptualProfileTests {
         #expect(profile.overallStdDev == 0.0)
     }
 
-    // MARK: - Task 6 Tests: Standard Deviation Calculation
-
     // MARK: - Interval Context Verification (Story 23.4)
 
     @Test("ComparisonObserver uses referenceNote as profile key when interval is non-prime")
@@ -231,8 +229,8 @@ struct PerceptualProfileTests {
         #expect(targetStats.sampleCount == 0)
     }
 
-    @Test("PitchMatchingObserver uses referenceNote as profile key when interval is non-prime")
-    func pitchMatchingObserverUsesReferenceNoteWithInterval() async throws {
+    @Test("PitchMatchingObserver records centError correctly for non-prime interval")
+    func pitchMatchingObserverRecordsCentErrorWithInterval() async throws {
         let profile = PerceptualProfile()
 
         let completed = CompletedPitchMatching(
@@ -245,9 +243,10 @@ struct PerceptualProfileTests {
 
         profile.pitchMatchingCompleted(completed)
 
-        // Matching stats should be updated (indexed by referenceNote)
         #expect(profile.matchingSampleCount == 1)
-        #expect(profile.matchingMean != nil)
+        // Matching mean is abs(centError), verifying the actual value was recorded
+        let mean = try #require(profile.matchingMean)
+        #expect(abs(mean - 12.3) < 0.01)
     }
 
     // MARK: - Task 6 Tests: Standard Deviation Calculation
