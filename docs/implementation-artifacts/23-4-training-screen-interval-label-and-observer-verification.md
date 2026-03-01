@@ -1,6 +1,6 @@
 # Story 23.4: Training Screen Interval Label and Observer Verification
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -318,3 +318,4 @@ Claude Opus 4.6
 ### Change Log
 
 - 2026-03-01: Implemented story 23.4 — Added interval display names to Interval enum, conditional interval labels to ComparisonScreen and PitchMatchingScreen, verification tests for observer/profile data flows, and German localization for all interval names.
+- 2026-03-01: Code review — Fixed 6 issues (1 HIGH, 3 MEDIUM, 2 LOW): replaced misleading pitchMatchingObserver profile test with meaningful centError assertion, replaced 3 individual displayName tests with parameterized test covering all 13 intervals, added `.padding(.horizontal)` to PitchMatchingScreen interval label for consistency with ComparisonScreen, removed 2 duplicate MARK comments in test files.
