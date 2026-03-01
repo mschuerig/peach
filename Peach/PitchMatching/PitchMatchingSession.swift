@@ -30,6 +30,13 @@ final class PitchMatchingSession: TrainingSession {
     private let userSettings: UserSettings
     private var interruptionMonitor: AudioSessionInterruptionMonitor?
 
+    // MARK: - Interval State
+
+    private var sessionIntervals: Set<Interval> = []
+    private var sessionTuningSystem: TuningSystem = .equalTemperament
+    private(set) var currentInterval: Interval? = nil
+    var isIntervalMode: Bool { currentInterval != nil && currentInterval != .prime }
+
     // MARK: - Internal State
 
     private var currentHandle: PlaybackHandle?
@@ -71,11 +78,16 @@ final class PitchMatchingSession: TrainingSession {
 
     var isIdle: Bool { state == .idle }
 
-    func startPitchMatching() {
+    func start() {
         guard state == .idle else {
-            logger.warning("startPitchMatching() called but state is \(String(describing: self.state)), not idle")
+            logger.warning("start() called but state is \(String(describing: self.state)), not idle")
             return
         }
+
+        precondition(!userSettings.intervals.isEmpty, "intervals must not be empty")
+        sessionIntervals = userSettings.intervals
+        sessionTuningSystem = userSettings.tuningSystem
+
         trainingTask = Task {
             await playNextChallenge()
         }
@@ -115,7 +127,7 @@ final class PitchMatchingSession: TrainingSession {
             targetNote: challenge.targetNote,
             initialCentOffset: challenge.initialCentOffset,
             userCentError: userCentError,
-            tuningSystem: .equalTemperament
+            tuningSystem: sessionTuningSystem
         )
         lastResult = result
 
@@ -147,6 +159,9 @@ final class PitchMatchingSession: TrainingSession {
         currentHandle = nil
         referenceFrequency = nil
         currentChallenge = nil
+        currentInterval = nil
+        sessionIntervals = []
+        sessionTuningSystem = .equalTemperament
         Task {
             try? await handleToStop?.stop()
         }
@@ -169,10 +184,12 @@ final class PitchMatchingSession: TrainingSession {
 
     // MARK: - Challenge Generation
 
-    private func generateChallenge(settings: TrainingSettings) -> PitchMatchingChallenge {
-        let note = MIDINote.random(in: settings.noteRangeMin...settings.noteRangeMax)
+    private func generateChallenge(settings: TrainingSettings, interval: Interval) -> PitchMatchingChallenge {
+        let maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.semitones))
+        let note = MIDINote.random(in: settings.noteRangeMin...maxNote)
+        let targetNote = note.transposed(by: interval)
         let offset = Double.random(in: Self.initialCentOffsetRange)
-        return PitchMatchingChallenge(referenceNote: note, targetNote: note, initialCentOffset: offset)
+        return PitchMatchingChallenge(referenceNote: note, targetNote: targetNote, initialCentOffset: offset)
     }
 
     // MARK: - Training Loop
@@ -180,13 +197,17 @@ final class PitchMatchingSession: TrainingSession {
     private func playNextChallenge() async {
         let settings = currentSettings
         let noteDuration = currentNoteDuration
-        let challenge = generateChallenge(settings: settings)
+        let interval = sessionIntervals.randomElement()!
+        currentInterval = interval
+        let challenge = generateChallenge(settings: settings, interval: interval)
         currentChallenge = challenge
 
         do {
-            let refFreq = TuningSystem.equalTemperament.frequency(
+            let refFreq = sessionTuningSystem.frequency(
                 for: challenge.referenceNote, referencePitch: settings.referencePitch)
-            self.referenceFrequency = refFreq.rawValue
+            let targetFreq = sessionTuningSystem.frequency(
+                for: challenge.targetNote, referencePitch: settings.referencePitch)
+            self.referenceFrequency = targetFreq.rawValue
 
             state = .playingReference
             try await notePlayer.play(
@@ -198,8 +219,8 @@ final class PitchMatchingSession: TrainingSession {
 
             guard state != .idle && !Task.isCancelled else { return }
 
-            let tunableFrequency = TuningSystem.equalTemperament.frequency(
-                for: DetunedMIDINote(note: challenge.referenceNote, offset: Cents(challenge.initialCentOffset)),
+            let tunableFrequency = sessionTuningSystem.frequency(
+                for: DetunedMIDINote(note: challenge.targetNote, offset: Cents(challenge.initialCentOffset)),
                 referencePitch: settings.referencePitch)
 
             state = .playingTunable

@@ -80,7 +80,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMin = MIDINote(48)
         mockSettings.noteRangeMax = MIDINote(72)
         let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -91,7 +91,7 @@ struct PitchMatchingSessionTests {
     @Test("challenge has offset within ±100 cents")
     func challengeOffsetWithinRange() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -101,12 +101,12 @@ struct PitchMatchingSessionTests {
 
     // MARK: - Task 3: State Transition Tests
 
-    @Test("startPitchMatching transitions to playingReference")
+    @Test("start transitions to playingReference")
     func startTransitionsToPlayingReference() async throws {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
         notePlayer.instantPlayback = false
         notePlayer.simulatedPlaybackDuration = 5.0
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingReference)
 
         #expect(session.state == .playingReference)
@@ -119,7 +119,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         // A4 at 440 Hz reference = 440.0 Hz (independently verified, not using Pitch.frequency())
@@ -131,7 +131,7 @@ struct PitchMatchingSessionTests {
     @Test("auto-transitions to playingTunable after reference")
     func autoTransitionsToPlayingTunable() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         #expect(session.state == .playingTunable)
@@ -144,7 +144,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -162,7 +162,7 @@ struct PitchMatchingSessionTests {
     @Test("commitPitch stops handle")
     func commitPitchStopsHandle() async throws {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
@@ -179,7 +179,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         // Value 0.0 = reference frequency → 0 cent error
@@ -197,7 +197,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         // Value 0.5 = 50 cents sharp
@@ -212,7 +212,7 @@ struct PitchMatchingSessionTests {
     @Test("commitPitch notifies observers")
     func commitPitchNotifiesObservers() async throws {
         let (session, _, _, observer, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -225,7 +225,7 @@ struct PitchMatchingSessionTests {
     @Test("transitions to showingFeedback after commitPitch")
     func transitionsToShowingFeedback() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -237,7 +237,7 @@ struct PitchMatchingSessionTests {
     @Test("auto-advances from showingFeedback to playingReference")
     func autoAdvancesFromFeedback() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -251,14 +251,14 @@ struct PitchMatchingSessionTests {
 
     // MARK: - Guard Condition Tests
 
-    @Test("startPitchMatching is no-op when not idle")
-    func startPitchMatchingNoOpWhenNotIdle() async throws {
+    @Test("start is no-op when not idle")
+    func startNoOpWhenNotIdle() async throws {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let playCountBefore = notePlayer.playCallCount
-        session.startPitchMatching()
+        session.start()
         try await Task.sleep(for: .milliseconds(50))
 
         #expect(notePlayer.playCallCount == playCountBefore)
@@ -284,7 +284,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         // Value -0.5 = 50 cents flat
@@ -301,7 +301,7 @@ struct PitchMatchingSessionTests {
     @Test("stop transitions to idle from playingTunable")
     func stopTransitionsToIdle() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.stop()
@@ -315,7 +315,7 @@ struct PitchMatchingSessionTests {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
         notePlayer.instantPlayback = false
         notePlayer.simulatedPlaybackDuration = 5.0
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingReference)
 
         session.stop()
@@ -327,7 +327,7 @@ struct PitchMatchingSessionTests {
     @Test("stop from playingTunable stops handle and transitions to idle")
     func stopFromPlayingTunable() async throws {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
@@ -341,7 +341,7 @@ struct PitchMatchingSessionTests {
     @Test("stop from showingFeedback cancels feedback timer and transitions to idle")
     func stopFromShowingFeedback() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -368,7 +368,7 @@ struct PitchMatchingSessionTests {
     @Test("stop does not notify observers")
     func stopDoesNotNotifyObservers() async throws {
         let (session, _, _, observer, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.stop()
@@ -378,7 +378,7 @@ struct PitchMatchingSessionTests {
     @Test("stop clears currentChallenge")
     func stopClearsCurrentChallenge() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         #expect(session.currentChallenge != nil)
 
@@ -389,7 +389,7 @@ struct PitchMatchingSessionTests {
     @Test("double stop is safe")
     func doubleStopIsSafe() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.stop()
@@ -406,7 +406,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
@@ -427,7 +427,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
@@ -446,7 +446,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         // Value 0.0 = reference frequency = 0 cent error
@@ -464,7 +464,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(69)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.5)
@@ -486,6 +486,173 @@ struct PitchMatchingSessionTests {
         #expect(adjustCount == 0)
     }
 
+    // MARK: - Interval State Tests (Task 1)
+
+    @Test("currentInterval is nil initially")
+    func currentIntervalNilInitially() async {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        #expect(session.currentInterval == nil)
+    }
+
+    @Test("isIntervalMode is false initially")
+    func isIntervalModeFalseInitially() async {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        #expect(session.isIntervalMode == false)
+    }
+
+    @Test("currentInterval is prime with unison intervals")
+    func currentIntervalPrimeWithUnison() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.prime]
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        #expect(session.currentInterval == .prime)
+        #expect(session.isIntervalMode == false)
+    }
+
+    @Test("currentInterval is perfectFifth with interval set")
+    func currentIntervalPerfectFifth() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        #expect(session.currentInterval == .perfectFifth)
+        #expect(session.isIntervalMode == true)
+    }
+
+    @Test("stop clears interval state")
+    func stopClearsIntervalState() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+        #expect(session.currentInterval != nil)
+
+        session.stop()
+        #expect(session.currentInterval == nil)
+        #expect(session.isIntervalMode == false)
+    }
+
+    // MARK: - Interval Challenge Generation Tests (Task 3)
+
+    @Test("generateChallenge with prime produces targetNote equal to referenceNote")
+    func generateChallengePrimeTargetEqualsReference() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.prime]
+        mockSettings.noteRangeMin = MIDINote(60)
+        mockSettings.noteRangeMax = MIDINote(60)
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        let challenge = try #require(session.currentChallenge)
+        #expect(challenge.targetNote == challenge.referenceNote)
+    }
+
+    @Test("generateChallenge with perfectFifth produces target 7 semitones above reference")
+    func generateChallengePerfectFifthTarget() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        mockSettings.noteRangeMin = MIDINote(60)
+        mockSettings.noteRangeMax = MIDINote(60)
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        let challenge = try #require(session.currentChallenge)
+        #expect(challenge.targetNote.rawValue == challenge.referenceNote.rawValue + 7)
+    }
+
+    @Test("generateChallenge constrains reference note range for interval")
+    func generateChallengeConstrainsRangeForInterval() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        mockSettings.noteRangeMin = MIDINote(60)
+        mockSettings.noteRangeMax = MIDINote(125)
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        let challenge = try #require(session.currentChallenge)
+        // Reference note must be <= 120 (127 - 7) to allow perfect fifth transposition
+        #expect(challenge.referenceNote.rawValue <= 120)
+        #expect(challenge.targetNote.rawValue <= 127)
+    }
+
+    // MARK: - Tuning System and Anchor Tests (Task 4)
+
+    @Test("referenceFrequency anchor is target note frequency for intervals")
+    func referenceFrequencyAnchorIsTargetFrequency() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        mockSettings.noteRangeMin = MIDINote(60)
+        mockSettings.noteRangeMax = MIDINote(60)
+        mockSettings.referencePitch = .concert440
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        let challenge = try #require(session.currentChallenge)
+        // Target note is C4 + perfect fifth = G4 = MIDI 67
+        #expect(challenge.targetNote.rawValue == 67)
+        // referenceFrequency should be the target note frequency, not the reference note frequency
+        let expectedTargetFreq = TuningSystem.equalTemperament.frequency(
+            for: challenge.targetNote, referencePitch: .concert440)
+        let refFreq = try #require(session.referenceFrequency)
+        #expect(abs(refFreq - expectedTargetFreq.rawValue) < 0.01)
+    }
+
+    @Test("commitPitch at center produces zero cent error for interval")
+    func commitPitchAtCenterZeroCentErrorForInterval() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.perfectFifth]
+        mockSettings.noteRangeMin = MIDINote(60)
+        mockSettings.noteRangeMax = MIDINote(60)
+        mockSettings.referencePitch = .concert440
+        let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        // Value 0.0 = anchor frequency = target note frequency → 0 cent error
+        session.commitPitch(0.0)
+        try await waitForState(session, .showingFeedback)
+
+        let result = try #require(observer.lastResult)
+        #expect(abs(result.userCentError) < 0.01)
+    }
+
+    @Test("CompletedPitchMatching carries session tuningSystem")
+    func completedPitchMatchingCarriesTuningSystem() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.prime]
+        let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        session.commitPitch(0.0)
+        try await waitForState(session, .showingFeedback)
+
+        let result = try #require(observer.lastResult)
+        #expect(result.tuningSystem == .equalTemperament)
+    }
+
+    @Test("start reads intervals from userSettings")
+    func startReadsIntervalsFromUserSettings() async throws {
+        let mockSettings = MockUserSettings()
+        mockSettings.intervals = [.majorThird, .perfectFifth]
+        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        session.start()
+        try await waitForState(session, .playingTunable)
+
+        let interval = try #require(session.currentInterval)
+        #expect(interval == .majorThird || interval == .perfectFifth)
+    }
+
     // MARK: - Full Cycle Tests
 
     @Test("full cycle: idle → playingReference → playingTunable → showingFeedback → loop")
@@ -494,7 +661,7 @@ struct PitchMatchingSessionTests {
 
         #expect(session.state == .idle)
 
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -521,7 +688,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func audioInterruptionBeganStopsFromPlayingTunable() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -538,7 +705,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func audioInterruptionEndedDoesNotRestart() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -563,7 +730,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func nilInterruptionTypeHandledGracefully() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -600,7 +767,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
         notePlayer.instantPlayback = false
         notePlayer.simulatedPlaybackDuration = 5.0
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingReference)
 
         nc.post(
@@ -617,7 +784,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func audioInterruptionBeganStopsFromShowingFeedback() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         session.commitPitch(0.0)
@@ -639,7 +806,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func routeChangeOldDeviceUnavailableStops() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -663,7 +830,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         for reason in nonStopReasons {
             let nc = NotificationCenter()
             let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-            session.startPitchMatching()
+            session.start()
             try await waitForState(session, .playingTunable)
 
             let userInfo: [AnyHashable: Any]? = reason.map { [AVAudioSessionRouteChangeReasonKey: $0] }
@@ -703,7 +870,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func backgroundNotificationStopsFromPlayingTunable() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -731,7 +898,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func canRestartAfterInterruptionStop() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -741,7 +908,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         )
         try await waitForState(session, .idle)
 
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         #expect(session.state == .playingTunable)
     }
@@ -750,7 +917,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func canRestartAfterRouteChangeStop() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(
@@ -760,7 +927,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         )
         try await waitForState(session, .idle)
 
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         #expect(session.state == .playingTunable)
     }
@@ -769,13 +936,13 @@ struct PitchMatchingSessionAudioInterruptionTests {
     func canRestartAfterBackgroundStop() async throws {
         let nc = NotificationCenter()
         let (session, _, _, _, _) = makePitchMatchingSession(notificationCenter: nc)
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
 
         nc.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
         try await waitForState(session, .idle)
 
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         #expect(session.state == .playingTunable)
     }
