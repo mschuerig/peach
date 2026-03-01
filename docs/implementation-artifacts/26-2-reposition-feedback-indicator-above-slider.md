@@ -1,6 +1,6 @@
 # Story 26.2: Reposition Feedback Indicator Above Slider
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -238,6 +238,7 @@ f8bf487 Add story 26.1: Delay targetNote Until Slider Touch
 ## Change Log
 
 - 2026-03-01: Implemented layout restructuring — moved PitchMatchingFeedbackIndicator from `.overlay` on VerticalPitchSlider to dedicated fixed-height area above slider. Used always-render approach with `.opacity(0/1)` to prevent layout jumps. All existing tests pass.
+- 2026-03-01: Code review fixes — (M1) Added `.accessibilityHidden` to feedback indicator when not showing feedback, preventing VoiceOver from reading stale content at opacity 0. (M2) Added `PitchMatchingScreenTests.swift` with tests for `feedbackAnimation` static method, matching ComparisonScreen test pattern. All tests pass.
 
 ## Dev Agent Record
 
@@ -261,4 +262,5 @@ No debug issues encountered. Pure layout change compiled and all tests passed on
 
 ### File List
 
-- `Peach/PitchMatching/PitchMatchingScreen.swift` — modified (layout restructuring)
+- `Peach/PitchMatching/PitchMatchingScreen.swift` — modified (layout restructuring, added `.accessibilityHidden`)
+- `PeachTests/PitchMatching/PitchMatchingScreenTests.swift` — added (feedbackAnimation tests)
