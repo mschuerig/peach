@@ -107,6 +107,35 @@ struct SoundFontLibraryTests {
         #expect(preset == nil)
     }
 
+    // MARK: - SoundSourceProvider Conformance
+
+    @Test("availableSources count matches availablePresets count")
+    func availableSourcesMatchesPresetCount() async {
+        let library = SoundFontLibrary()
+        #expect(library.availableSources.count == library.availablePresets.count)
+    }
+
+    @Test("availableSources contains SoundSourceID for Cello")
+    func availableSourcesContainsCello() async {
+        let library = SoundFontLibrary()
+        let celloID = SoundSourceID("sf2:0:42")
+        #expect(library.availableSources.contains(celloID))
+    }
+
+    @Test("displayName returns preset name for known source")
+    func displayNameForKnownSource() async {
+        let library = SoundFontLibrary()
+        let celloID = SoundSourceID("sf2:0:42")
+        #expect(library.displayName(for: celloID) == "Cello")
+    }
+
+    @Test("displayName returns rawValue for unknown source")
+    func displayNameForUnknownSource() async {
+        let library = SoundFontLibrary()
+        let unknownID = SoundSourceID("sf2:99:99")
+        #expect(library.displayName(for: unknownID) == "sf2:99:99")
+    }
+
     // MARK: - No Duplicate Tags
 
     @Test("All preset tags are unique")
