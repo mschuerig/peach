@@ -23,6 +23,7 @@ struct PitchMatchingScreen: View {
             )
             .frame(height: Self.feedbackIndicatorHeight)
             .opacity(pitchMatchingSession.state == .showingFeedback ? 1 : 0)
+            .accessibilityHidden(pitchMatchingSession.state != .showingFeedback)
             .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: pitchMatchingSession.state == .showingFeedback)
 
             VerticalPitchSlider(
