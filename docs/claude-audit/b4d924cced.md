@@ -1,0 +1,261 @@
+---
+commit: "b4d924cced7b5bc2b3c589617c4c13e5dc3c2490"
+date: "2026-03-01T16:38:47+01:00"
+author: "Michael Schürig <michael@schuerig.de>"
+subject: "Fix code review findings for story 24.1 and mark done"
+sessions: ["e2802b32-acee-4487-aaa9-6fe9f20f5ff9"]
+prev: "3275c94e65.md"
+next: "94b8672f4f.md"
+---
+
+[← Previous (3275c94e65)](3275c94e65.md) | [Index](index.md) | [Next (94b8672f4f) →](94b8672f4f.md)
+
+# Commit b4d924cced
+
+**Date:** 2026-03-01 16:38:47 UTC+01:00  
+**Author:** Michael Schürig <michael@schuerig.de>
+
+## Commit message
+
+Fix code review findings for story 24.1 and mark done
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+## Changed files
+
+```
+PeachTests/Comparison/ComparisonSessionTests.swift | 11 ++---
+ .../PitchMatching/PitchMatchingSessionTests.swift  | 53 ++++++++++------------
+ PeachTests/Start/StartScreenTests.swift            |  6 +++
+ ...tiondestination-parameterization-and-routing.md |  5 +-
+ docs/implementation-artifacts/sprint-status.yaml   |  2 +-
+ 5 files changed, 39 insertions(+), 38 deletions(-)
+```
+
+## Session `e2802b32…`
+
+*2026-03-01 15:15:08 UTC → 2026-03-01 15:38:53 UTC*
+
+### 🧑 Human (15:15:08)
+
+<command-message>bmad-bmm-code-review</command-message>
+<command-name>/bmad-bmm-code-review</command-name>
+<command-args>24.1</command-args>
+
+### 🤖 Assistant (15:15:16)
+
+Now let me load the config source, instructions, checklist, and project context.
+
+### 🤖 Assistant (15:15:28)
+
+Now let me resolve the story file for 24.1 and load all required context files.
+
+### 🤖 Assistant (15:15:36)
+
+Now let me load the story file, architecture, and the epic context (selective load for epic 24).
+
+### 🤖 Assistant (15:15:43)
+
+Now let me read the epic 24 context and start reading all changed implementation files for the adversarial review.
+
+### 🤖 Assistant (15:15:51)
+
+Now let me read the key test files and sprint status to complete the review.
+
+### 🤖 Assistant (15:15:58)
+
+Now let me check some of the remaining test files for completeness and the git diff to see what actually changed.
+
+### 🤖 Assistant (15:18:22)
+
+Let me search for any remaining `.training` references and verify completeness.
+
+### 🤖 Assistant (15:19:07)
+
+Now let me check for dead `userSettings.intervals` writes in tests that are now meaningless.
+
+### 🤖 Assistant (15:19:39)
+
+I've now completed a thorough adversarial review of all 21 source/test files. Let me present my findings.
+
+---
+
+## Step 2: Review Attack Plan
+
+**Acceptance Criteria extracted:** 5 ACs (rename `.training`, parameterize `.pitchMatching`, ComparisonScreen routing, PitchMatchingScreen routing, Hashable conformance)
+
+**Tasks marked [x]:** 7 tasks, all subtasks complete (Task 1-7)
+
+**Git vs Story File List:** 21 source/test files in story File List, 23 files in git (extra 2 are the story file itself and sprint-status.yaml — expected meta-files). **No discrepancies.**
+
+---
+
+## Step 3: Adversarial Review Execution
+
+### AC Validation — All IMPLEMENTED
+
+| AC | Status | Evidence |
+|-----|--------|----------|
+| AC 1 | IMPLEMENTED | `NavigationDestination.swift:6` — `.comparison(intervals: Set<Interval>)`, StartScreen uses `.comparison(intervals: [.prime])` |
+| AC 2 | IMPLEMENTED | `NavigationDestination.swift:7` — `.pitchMatching(intervals: Set<Interval>)`, StartScreen uses `.pitchMatching(intervals: [.prime])` |
+| AC 3 | IMPLEMENTED | `StartScreen.swift:74-75` routes to `ComparisonScreen(intervals:)`, `ComparisonScreen.swift:85` calls `session.start(intervals: intervals)` |
+| AC 4 | IMPLEMENTED | `StartScreen.swift:76-77` routes to `PitchMatchingScreen(intervals:)`, `PitchMatchingScreen.swift:62` calls `session.start(intervals: intervals)` |
+| AC 5 | IMPLEMENTED | Enum compiles as `Hashable`, `StartScreenTests` verify equality/inequality for different intervals |
+
+### Task Audit — All [x] verified as truly done
+
+All 7 tasks and all subtasks verified against actual code changes. No false claims.
+
+### Codebase-wide verification
+- **Zero remaining `.training` references** in `Peach/` source directory
+- **Zero remaining `.start()` (parameterless)** calls in `PeachTests/`
+- **`ContentView.swift`** correctly has no destination handler (it's in `StartScreen.swift` as the code notes)
+
+---
+
+**CODE REVIEW FINDINGS, Michael!**
+
+**Story:** 24-1-navigationdestination-parameterization-and-routing.md
+**Git vs Story Discrepancies:** 0 (clean match)
+**Issues Found:** 0 High, 2 Medium, 3 Low
+
+## MEDIUM ISSUES
+
+### M1: Dead `mockSettings.intervals` writes in tests
+Five test functions still set `mockSettings.intervals = [.prime]` before calling `start(intervals: [.prime])`. Since `start()` now accepts intervals as a parameter and **no longer reads from `userSettings.intervals`**, these writes are dead code that misleadingly suggests the setting is still consumed by the session.
+
+**Files:**
+- `PeachTests/Comparison/ComparisonSessionTests.swift:174` — `currentIntervalSetAfterStartPrime`
+- `PeachTests/Comparison/ComparisonSessionTests.swift:200` — `isIntervalModeFalseForPrime`
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift:527` — `currentIntervalPrimeWithUnison`
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift:563` — `generateChallengePrimeTargetEqualsReference`
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift:668` — `completedPitchMatchingCarriesTuningSystem`
+
+**Fix:** Remove the `mockSettings.intervals = [.prime]` lines — they have no effect on test behavior.
+
+### M2: Interval tests misplaced in Audio Interruption test suite
+`startWithPerfectFifthSetsCurrentInterval` and `startWithMultipleIntervals` (PitchMatchingSessionTests.swift:984-1003) are inside `PitchMatchingSessionAudioInterruptionTests` but they test interval parameterization, not audio interruption behavior.
+
+**Fix:** Move these two tests into the main `PitchMatchingSessionTests` suite (near the existing interval state tests around line 510).
+
+## LOW ISSUES
+
+### L1: Asymmetric NavigationDestination test coverage
+`StartScreenTests` has `navigationDestinationHasComparison` (line 59) but no equivalent `navigationDestinationHasPitchMatching`. The pitchMatching case is covered indirectly via inequality tests, but the asymmetry breaks the test pattern.
+
+**Fix:** Add a `navigationDestinationHasPitchMatching` test mirroring line 59-63.
+
+### L2: Story Dev Notes table lists ContentView.swift
+The `File Structure — Files to Modify` table (story line 183) still lists `Peach/App/ContentView.swift` as a file to modify, even though the dev note at line 210 correctly overrides this. The Dev Agent Record File List is accurate, but the stale planning table is confusing.
+
+**Fix:** Remove or strike through the ContentView.swift row in the table, or add a note marking it as "N/A — handler is in StartScreen.swift."
+
+### L3: Force-unwrap in multi-interval tests
+`ComparisonSessionTests.swift:297` and `PitchMatchingSessionTests.swift:1002` use `session.currentInterval!` (force-unwrap) instead of `try #require(session.currentInterval)`, which is the pattern used elsewhere in these same test files.
+
+**Fix:** Replace `f.session.currentInterval!` / `session.currentInterval!` with `try #require(...)`.
+
+---
+
+What should I do with these issues?
+
+1. **Fix them automatically** - I'll update the code and tests
+2. **Create action items** - Add to story Tasks/Subtasks for later
+3. **Show me details** - Deep dive into specific issues
+
+Choose [1], [2], or specify which issue to examine:
+
+### 🧑 Human (15:23:08)
+
+1
+
+### 🤖 Assistant (15:23:14)
+
+Fixing all issues now. Let me start with the parallel edits.
+
+### 🤖 Assistant (15:23:26)
+
+Now fix the PitchMatchingSessionTests — dead writes and misplaced tests.
+
+### 🤖 Assistant (15:23:42)
+
+Now fix M2: Move the two misplaced tests from `PitchMatchingSessionAudioInterruptionTests` to `PitchMatchingSessionTests`, and fix L3 (force-unwrap) in the same edit.
+
+### 🤖 Assistant (15:23:51)
+
+Now remove the duplicates from the Audio Interruption suite.
+
+### 🤖 Assistant (15:23:57)
+
+Now fix L1: Add the missing `navigationDestinationHasPitchMatching` test.
+
+### 🤖 Assistant (15:24:04)
+
+Now fix L2: Update the story's stale ContentView.swift reference in the Dev Notes table.
+
+### 🤖 Assistant (15:24:11)
+
+Now update the story's Change Log and Dev Agent Record with the review fixes.
+
+### 🤖 Assistant (15:24:18)
+
+Now let me run the full test suite to verify everything passes.
+
+### 🤖 Assistant (15:36:27)
+
+All 702 tests pass (701 original + 1 new `navigationDestinationHasPitchMatching` test). Now let me update the story status and sprint status.
+
+### 🤖 Assistant (15:36:42)
+
+Sprint status synced: 24-1-navigationdestination-parameterization-and-routing → done
+
+---
+
+**Review Complete!**
+
+**Story Status:** done
+**Issues Fixed:** 5 (2 Medium, 3 Low)
+**Action Items Created:** 0
+
+### Summary of fixes applied:
+
+| Issue | Fix |
+|-------|-----|
+| **M1** Dead `mockSettings.intervals` writes | Removed 5 dead writes across ComparisonSessionTests and PitchMatchingSessionTests |
+| **M2** Misplaced interval tests | Moved `startWithPerfectFifthSetsCurrentInterval` and `startWithMultipleIntervals` from `PitchMatchingSessionAudioInterruptionTests` to `PitchMatchingSessionTests` |
+| **L1** Missing pitchMatching existence test | Added `navigationDestinationHasPitchMatching` test to StartScreenTests |
+| **L2** Stale ContentView.swift table entry | Struck through the row with correction note |
+| **L3** Force-unwraps in multi-interval tests | Replaced `currentInterval!` with `try #require(session.currentInterval)` in both test files |
+
+**Test results:** 702 tests passed, 0 failures. Code review complete!
+
+### 🧑 Human (15:38:24)
+
+commit
+
+### 🤖 Assistant (15:38:27)
+
+Let me gather the information needed for the commit.
+
+### 🤖 Assistant (15:38:33)
+
+There are two groups of changes here: the original implementation (staged) and the code review fixes (unstaged). I need to make two commits following the project's pattern. Let me first commit the implementation, then the review fixes.
+
+### 🤖 Assistant (15:38:37)
+
+The implementation is already staged. Let me commit it first, then stage and commit the review fixes.
+
+### 🤖 Assistant (15:38:42)
+
+Now stage and commit the code review fixes.
+
+### 🤖 Assistant (15:38:53)
+
+Clean working tree. Two commits created:
+
+- `94b8672` Implement story 24.1: NavigationDestination Parameterization and Routing
+- `b4d924c` Fix code review findings for story 24.1 and mark done
+
+---
+
+[← Previous (3275c94e65)](3275c94e65.md) | [Index](index.md) | [Next (94b8672f4f) →](94b8672f4f.md)

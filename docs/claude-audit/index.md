@@ -1,18 +1,54 @@
 ---
 repo: "/Users/michael/Projekte/peach"
-total_commits: 303
-audited_commits: 299
-generated: "2026-03-01T09:53:49.687406+00:00"
+total_commits: 340
+audited_commits: 335
+generated: "2026-03-01T23:26:11.683331+00:00"
 ---
 
 # Claude Code Audit Log
 
 Repository: `/Users/michael/Projekte/peach`  
-Total commits: 303  
-Commits with Claude Code sessions: 299
+Total commits: 340  
+Commits with Claude Code sessions: 335
 
 ## Commits
 
+- [2428f1d4bb](2428f1d4bb.md) — 2026-03-02 00:24 — Mark epic 27 done and add stress test instructions to README (1 session, 34 messages)
+- [31e65d9120](31e65d9120.md) — 2026-03-01 23:59 — Implement story 27.2: Preset Crash Investigation Tests (1 session, 22 messages)
+- [6ee09781b8](6ee09781b8.md) — 2026-03-01 23:35 — Add story 27.2: Preset Crash Investigation Tests (1 session, 24 messages)
+- [9afe10e27f](9afe10e27f.md) — 2026-03-01 23:15 — Implement story 27.1: Decompose Play Method (1 session, 19 messages)
+- [c11027ea74](c11027ea74.md) — 2026-03-01 23:06 — Add story 27.1: Decompose Play Method (1 session, 15 messages)
+- [3d32b0bde7](3d32b0bde7.md) — 2026-03-01 22:58 — Fix code review findings for story 26.3 and mark done (1 session, 22 messages)
+- [62ce0c4dbc](62ce0c4dbc.md) — 2026-03-01 22:43 — Implement story 26.3: Reduce Pitch Matching Range (2 sessions, 22 messages)
+- [e69f7b6cb1](e69f7b6cb1.md) — 2026-03-01 22:27 — Add story 26.3: Reduce Pitch Matching Range (2 sessions, 20 messages)
+- [f021146d1e](f021146d1e.md) — 2026-03-01 22:19 — Fix code review findings for story 26.2 and mark done (2 sessions, 29 messages)
+- [c96bdeea19](c96bdeea19.md) — 2026-03-01 22:09 — Implement story 26.2: Reposition Feedback Indicator Above Slider (2 sessions, 27 messages)
+- [64187d650c](64187d650c.md) — 2026-03-01 21:57 — Add story 26.2: Reposition Feedback Indicator Above Slider (2 sessions, 22 messages)
+- [f40ce4104e](f40ce4104e.md) — 2026-03-01 21:40 — Fix code review findings for story 26.1 and mark done (1 session, 24 messages)
+- [c1c8cf8317](c1c8cf8317.md) — 2026-03-01 21:19 — Implement story 26.1: Delay targetNote Until Slider Touch (1 session, 34 messages)
+- [f8bf487ebd](f8bf487ebd.md) — 2026-03-01 20:58 — Add story 26.1: Delay targetNote Until Slider Touch (1 session, 19 messages)
+- [8d429a5048](8d429a5048.md) — 2026-03-01 20:45 — Fix code review findings for story 25.2 and mark done (1 session, 24 messages)
+- [82cb129463](82cb129463.md) — 2026-03-01 20:32 — Implement story 25.2: Interval Selector on Settings Screen (1 session, 40 messages)
+- [84801ef728](84801ef728.md) — 2026-03-01 20:08 — Add story 25.2: Interval Selector on Settings Screen (1 session, 21 messages)
+- [b12314fcbf](b12314fcbf.md) — 2026-03-01 19:51 — Fix code review findings for story 25.1 and mark done (1 session, 30 messages)
+- [45ccd14d05](45ccd14d05.md) — 2026-03-01 19:35 — Implement story 25.1: Direction Enum and DirectedInterval (1 session, 69 messages)
+- [337ef50447](337ef50447.md) — 2026-03-01 19:08 — Add story 25.1: Direction Enum and DirectedInterval (1 session, 18 messages)
+- [eec3fc00ca](eec3fc00ca.md) — 2026-03-01 18:52 — Update sprint status: close epics 21–24, add epics 25–27 (1 session, 15 messages)
+- [2f8f96806b](2f8f96806b.md) — 2026-03-01 17:24 — Fix code review findings for story 24.2 and mark done (1 session, 22 messages)
+- [96572c1714](96572c1714.md) — 2026-03-01 17:05 — Implement story 24.2: Start Screen Four Training Buttons (1 session, 20 messages)
+- [3275c94e65](3275c94e65.md) — 2026-03-01 16:53 — Add story 24.2: Start Screen Four Training Buttons (1 session, 16 messages)
+- [b4d924cced](b4d924cced.md) — 2026-03-01 16:38 — Fix code review findings for story 24.1 and mark done (1 session, 27 messages)
+- [94b8672f4f](94b8672f4f.md) — 2026-03-01 16:38 — Implement story 24.1: NavigationDestination Parameterization and Routing (1 session, 27 messages)
+- [46a85ac1ae](46a85ac1ae.md) — 2026-03-01 15:40 — Add story 24.1: NavigationDestination Parameterization and Routing (1 session, 21 messages)
+- [c233a519a2](c233a519a2.md) — 2026-03-01 15:25 — Fix code review findings for story 23.4 and mark done (2 sessions, 24 messages)
+- [c2661fcb58](c2661fcb58.md) — 2026-03-01 14:00 — Implement story 23.4: Training Screen Interval Label and Observer Verification (2 sessions, 46 messages)
+- [c893812b46](c893812b46.md) — 2026-03-01 13:30 — Add story 23.4: Training Screen Interval Label and Observer Verification (1 session, 18 messages)
+- [df1f03fd7c](df1f03fd7c.md) — 2026-03-01 13:16 — Fix code review findings for story 23.3 and mark done (2 sessions, 29 messages)
+- [6c3d8445fb](6c3d8445fb.md) — 2026-03-01 12:37 — Implement story 23.3: PitchMatchingSession Start Rename, Interval Support, and Protocol Update (1 session, 39 messages)
+- [1ae2e83e6e](1ae2e83e6e.md) — 2026-03-01 12:28 — Add story 23.3: PitchMatchingSession Start Rename, Interval Support, and Protocol Update (2 sessions, 26 messages)
+- [782e38afce](782e38afce.md) — 2026-03-01 12:16 — Fix code review findings for story 23.2 and mark done (2 sessions, 35 messages)
+- [e5cd4315d7](e5cd4315d7.md) — 2026-03-01 11:57 — Implement story 23.2: ComparisonSession Start Rename and Strategy Interval Support (2 sessions, 83 messages)
+- [940c837d41](940c837d41.md) — 2026-03-01 11:27 — Add story 23.2: ComparisonSession Start Rename and Strategy Interval Support (2 sessions, 26 messages)
 - [3c2588deda](3c2588deda.md) — 2026-03-01 02:11 — Update stories 23.2/23.3: rename start methods, read from userSettings (1 session, 19 messages)
 - [6cb70bc10c](6cb70bc10c.md) — 2026-03-01 01:53 — Fix code review findings for story 23.1 and mark done (1 session, 27 messages)
 - [e6e015812f](e6e015812f.md) — 2026-03-01 01:40 — Implement story 23.1: Data Model and Value Type Updates for Interval Context (2 sessions, 64 messages)
