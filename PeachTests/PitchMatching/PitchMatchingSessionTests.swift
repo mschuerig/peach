@@ -267,13 +267,13 @@ struct PitchMatchingSessionTests {
         session.start(intervals: [.prime])
         try await transitionToPlayingTunable(session)
 
-        // Value 0.5 = 50 cents sharp
+        // Value 0.5 = 10 cents sharp (0.5 × ±20 range)
         session.commitPitch(0.5)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
         #expect(result.userCentError > 0)
-        #expect(abs(result.userCentError - 50.0) < 0.1)
+        #expect(abs(result.userCentError - 10.0) < 0.1)
     }
 
     @Test("commitPitch notifies observers")
@@ -353,13 +353,13 @@ struct PitchMatchingSessionTests {
         session.start(intervals: [.prime])
         try await transitionToPlayingTunable(session)
 
-        // Value -0.5 = 50 cents flat
+        // Value -0.5 = 10 cents flat (0.5 × ±20 range)
         session.commitPitch(-0.5)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
         #expect(result.userCentError < 0)
-        #expect(abs(result.userCentError + 50.0) < 0.1)
+        #expect(abs(result.userCentError + 10.0) < 0.1)
     }
 
     // MARK: - stop() Tests
@@ -487,7 +487,7 @@ struct PitchMatchingSessionTests {
         #expect(abs(handle.lastAdjustedFrequency! - 440.0) < 0.01)
     }
 
-    @Test("adjustPitch with +1.0 produces frequency 100 cents above reference")
+    @Test("adjustPitch with +1.0 produces frequency 20 cents above reference")
     func adjustPitchPositiveOne() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
@@ -547,7 +547,7 @@ struct PitchMatchingSessionTests {
         #expect(abs(result.userCentError) < 0.01)
     }
 
-    @Test("commitPitch with +0.5 produces 50 cent sharp error")
+    @Test("commitPitch with +0.5 produces 10 cent sharp error")
     func commitPitchHalfPositive() async throws {
         let mockSettings = MockUserSettings()
         mockSettings.noteRangeMin = MIDINote(69)
@@ -562,7 +562,7 @@ struct PitchMatchingSessionTests {
 
         let result = try #require(observer.lastResult)
         #expect(result.userCentError > 0)
-        #expect(abs(result.userCentError - 50.0) < 0.1)
+        #expect(abs(result.userCentError - 10.0) < 0.1)
     }
 
     @Test("adjustPitch is no-op when idle")

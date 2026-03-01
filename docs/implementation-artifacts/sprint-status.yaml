@@ -219,16 +219,16 @@ development_status:
 
   # Epic 25: Directed Intervals — Full Interval Training
   # Work order: top to bottom
-  epic-25: in-progress
+  epic-25: done
   25-1-direction-enum-and-directedinterval: done # Direction enum (.up/.down), DirectedInterval type, replace Interval with DirectedInterval throughout
   25-2-interval-selector-on-settings-screen: done # Two-row grid (up/down × 13 intervals P1–P8), toggle active, localized help texts
   epic-25-retrospective: optional
 
   # Epic 26: Pitch Matching UX Refinements
-  epic-26: in-progress
+  epic-26: done
   26-1-delay-targetnote-until-slider-touch: done # targetNote plays only when user first touches slider, not auto after referenceNote
   26-2-reposition-feedback-indicator-above-slider: done # Move feedback indicator closer to top of screen so dragging finger doesn't obscure it
-  26-3-reduce-pitch-matching-range: review # Reduce cent range from ±100 to ±20
+  26-3-reduce-pitch-matching-range: done # Reduce cent range from ±100 to ±20
   epic-26-retrospective: optional
 
   # Epic 27: SoundFontNotePlayer Quality
