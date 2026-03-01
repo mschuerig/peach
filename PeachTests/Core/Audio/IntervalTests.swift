@@ -148,37 +148,37 @@ struct IntervalTests {
         }
     }
 
-    // MARK: - Display Name (Story 23.4)
+    // MARK: - Name (direction-agnostic)
 
     @Test("each interval maps to its expected localization key", arguments: [
         (Interval.prime, "Prime"),
-        (.minorSecond, "Minor Second Up"),
-        (.majorSecond, "Major Second Up"),
-        (.minorThird, "Minor Third Up"),
-        (.majorThird, "Major Third Up"),
-        (.perfectFourth, "Perfect Fourth Up"),
-        (.tritone, "Tritone Up"),
-        (.perfectFifth, "Perfect Fifth Up"),
-        (.minorSixth, "Minor Sixth Up"),
-        (.majorSixth, "Major Sixth Up"),
-        (.minorSeventh, "Minor Seventh Up"),
-        (.majorSeventh, "Major Seventh Up"),
-        (.octave, "Octave Up"),
+        (.minorSecond, "Minor Second"),
+        (.majorSecond, "Major Second"),
+        (.minorThird, "Minor Third"),
+        (.majorThird, "Major Third"),
+        (.perfectFourth, "Perfect Fourth"),
+        (.tritone, "Tritone"),
+        (.perfectFifth, "Perfect Fifth"),
+        (.minorSixth, "Minor Sixth"),
+        (.majorSixth, "Major Sixth"),
+        (.minorSeventh, "Minor Seventh"),
+        (.majorSeventh, "Major Seventh"),
+        (.octave, "Octave"),
     ])
-    func displayNameLocalizationKey(interval: Interval, expectedKey: String) async {
-        #expect(interval.displayName == String(localized: String.LocalizationValue(expectedKey)))
+    func nameLocalizationKey(interval: Interval, expectedKey: String) async {
+        #expect(interval.name == String(localized: String.LocalizationValue(expectedKey)))
     }
 
-    @Test("all intervals have non-empty displayName")
-    func allIntervalsHaveDisplayName() async {
+    @Test("all intervals have non-empty name")
+    func allIntervalsHaveName() async {
         for interval in Interval.allCases {
-            #expect(!interval.displayName.isEmpty)
+            #expect(!interval.name.isEmpty)
         }
     }
 
-    @Test("each interval has a unique displayName")
-    func uniqueDisplayNames() async {
-        let names = Set(Interval.allCases.map(\.displayName))
+    @Test("each interval has a unique name")
+    func uniqueNames() async {
+        let names = Set(Interval.allCases.map(\.name))
         #expect(names.count == Interval.allCases.count)
     }
 }

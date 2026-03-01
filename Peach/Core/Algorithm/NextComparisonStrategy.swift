@@ -31,15 +31,15 @@ protocol NextComparisonStrategy {
     ///   - profile: User's perceptual profile with training statistics
     ///   - settings: Training configuration (note range, difficulty bounds, reference pitch)
     ///   - lastComparison: The most recently completed comparison (nil on first comparison)
-    ///   - interval: The musical interval to apply between reference and target note.
+    ///   - interval: The directed musical interval to apply between reference and target note.
     ///     `.prime` produces unison (target == reference); other intervals transpose the target
-    ///     upward by the interval's semitone count via `MIDINote.transposed(by:)`.
+    ///     by the interval's semitone count via `MIDINote.transposed(by:)`.
     /// - Returns: A Comparison ready to be played by NotePlayer
     func nextComparison(
         profile: PitchDiscriminationProfile,
         settings: TrainingSettings,
         lastComparison: CompletedComparison?,
-        interval: Interval
+        interval: DirectedInterval
     ) -> Comparison
 }
 

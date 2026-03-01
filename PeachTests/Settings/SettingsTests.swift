@@ -37,7 +37,7 @@ struct SettingsTests {
     @Test("AppUserSettings returns hardcoded perfectFifth interval")
     func appUserSettingsIntervalsHardcoded() {
         let settings = AppUserSettings()
-        #expect(settings.intervals == Set<Interval>([.perfectFifth]))
+        #expect(settings.intervals == Set<DirectedInterval>([.up(.perfectFifth)]))
     }
 
     @Test("AppUserSettings returns hardcoded equalTemperament tuning system")
@@ -49,9 +49,9 @@ struct SettingsTests {
     @Test("MockUserSettings allows interval test injection")
     func mockUserSettingsIntervalInjection() {
         let mock = MockUserSettings()
-        #expect(mock.intervals == Set<Interval>([.prime]))
-        mock.intervals = [.perfectFifth, .majorThird]
-        #expect(mock.intervals == Set<Interval>([.perfectFifth, .majorThird]))
+        #expect(mock.intervals == Set<DirectedInterval>([.prime]))
+        mock.intervals = [.up(.perfectFifth), .up(.majorThird)]
+        #expect(mock.intervals == Set<DirectedInterval>([.up(.perfectFifth), .up(.majorThird)]))
     }
 
     @Test("MockUserSettings allows tuningSystem test injection")

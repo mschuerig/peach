@@ -32,10 +32,13 @@ final class PitchMatchingSession: TrainingSession {
 
     // MARK: - Interval State
 
-    private var sessionIntervals: Set<Interval> = []
+    private var sessionIntervals: Set<DirectedInterval> = []
     private var sessionTuningSystem: TuningSystem = .equalTemperament
-    private(set) var currentInterval: Interval? = nil
-    var isIntervalMode: Bool { currentInterval != nil && currentInterval != .prime }
+    private(set) var currentInterval: DirectedInterval? = nil
+    var isIntervalMode: Bool {
+        guard let current = currentInterval else { return false }
+        return current.interval != .prime
+    }
 
     // MARK: - Internal State
 
@@ -78,7 +81,7 @@ final class PitchMatchingSession: TrainingSession {
 
     var isIdle: Bool { state == .idle }
 
-    func start(intervals: Set<Interval>) {
+    func start(intervals: Set<DirectedInterval>) {
         guard state == .idle else {
             logger.warning("start() called but state is \(String(describing: self.state)), not idle")
             return
@@ -185,9 +188,17 @@ final class PitchMatchingSession: TrainingSession {
 
     // MARK: - Challenge Generation
 
-    private func generateChallenge(settings: TrainingSettings, interval: Interval) -> PitchMatchingChallenge {
-        let maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.semitones))
-        let note = MIDINote.random(in: settings.noteRangeMin...maxNote)
+    private func generateChallenge(settings: TrainingSettings, interval: DirectedInterval) -> PitchMatchingChallenge {
+        let minNote: MIDINote
+        let maxNote: MIDINote
+        if interval.direction == .up {
+            minNote = settings.noteRangeMin
+            maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.interval.semitones))
+        } else {
+            minNote = MIDINote(max(settings.noteRangeMin.rawValue, interval.interval.semitones))
+            maxNote = settings.noteRangeMax
+        }
+        let note = MIDINote.random(in: minNote...maxNote)
         let targetNote = note.transposed(by: interval)
         let offset = Double.random(in: Self.initialCentOffsetRange)
         return PitchMatchingChallenge(referenceNote: note, targetNote: targetNote, initialCentOffset: offset)

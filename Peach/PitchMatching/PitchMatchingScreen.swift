@@ -2,7 +2,7 @@ import SwiftUI
 import os
 
 struct PitchMatchingScreen: View {
-    let intervals: Set<Interval>
+    let intervals: Set<DirectedInterval>
 
     @Environment(\.pitchMatchingSession) private var pitchMatchingSession
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -78,6 +78,6 @@ struct PitchMatchingScreen: View {
 
 #Preview {
     NavigationStack {
-        PitchMatchingScreen(intervals: [.prime])
+        PitchMatchingScreen(intervals: [DirectedInterval.prime])
     }
 }

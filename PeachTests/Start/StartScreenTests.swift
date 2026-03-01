@@ -32,12 +32,12 @@ struct StartScreenTests {
 
     @Test("Comparison Screen can be instantiated with perfectFifth intervals")
     func comparisonScreenCanBeInstantiatedWithPerfectFifth() async {
-        _ = ComparisonScreen(intervals: [.perfectFifth])
+        _ = ComparisonScreen(intervals: [.up(.perfectFifth)])
     }
 
     @Test("Pitch Matching Screen can be instantiated with perfectFifth intervals")
     func pitchMatchingScreenCanBeInstantiatedWithPerfectFifth() async {
-        _ = PitchMatchingScreen(intervals: [.perfectFifth])
+        _ = PitchMatchingScreen(intervals: [.up(.perfectFifth)])
     }
 
     @Test("Settings Screen can be instantiated")
@@ -103,14 +103,14 @@ struct StartScreenTests {
     @Test("NavigationDestination comparison cases with different intervals are not equal")
     func navigationDestinationComparisonDifferentIntervals() {
         let unison = NavigationDestination.comparison(intervals: [.prime])
-        let fifth = NavigationDestination.comparison(intervals: [.perfectFifth])
+        let fifth = NavigationDestination.comparison(intervals: [.up(.perfectFifth)])
         #expect(unison != fifth)
     }
 
     @Test("NavigationDestination pitchMatching cases with different intervals are not equal")
     func navigationDestinationPitchMatchingDifferentIntervals() {
         let unison = NavigationDestination.pitchMatching(intervals: [.prime])
-        let fifth = NavigationDestination.pitchMatching(intervals: [.perfectFifth])
+        let fifth = NavigationDestination.pitchMatching(intervals: [.up(.perfectFifth)])
         #expect(unison != fifth)
     }
 
@@ -174,9 +174,9 @@ struct StartScreenTests {
         // This ensures the hub-and-spoke pattern has all spokes available
 
         let comparison = ComparisonScreen(intervals: [.prime])
-        let intervalComparison = ComparisonScreen(intervals: [.perfectFifth])
+        let intervalComparison = ComparisonScreen(intervals: [.up(.perfectFifth)])
         let pitchMatching = PitchMatchingScreen(intervals: [.prime])
-        let intervalPitchMatching = PitchMatchingScreen(intervals: [.perfectFifth])
+        let intervalPitchMatching = PitchMatchingScreen(intervals: [.up(.perfectFifth)])
         let settings = SettingsScreen()
         let profile = ProfileScreen()
         let info = InfoScreen()
