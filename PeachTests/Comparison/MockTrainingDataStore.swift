@@ -10,6 +10,11 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
     var shouldThrowError = false
     var errorToThrow: DataStoreError = .saveFailed("Mock error")
 
+    // MARK: - Observer Domain Object Tracking
+
+    var completedComparisons: [CompletedComparison] = []
+    var completedPitchMatchings: [CompletedPitchMatching] = []
+
     // MARK: - Pitch Matching Test State Tracking
 
     var savePitchMatchingCallCount = 0
@@ -62,6 +67,8 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
         saveCallCount = 0
         lastSavedRecord = nil
         savedRecords = []
+        completedComparisons = []
+        completedPitchMatchings = []
         savePitchMatchingCallCount = 0
         lastSavedPitchMatchingRecord = nil
         savedPitchMatchingRecords = []
@@ -71,15 +78,16 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
     // MARK: - ComparisonObserver Protocol
 
     func comparisonCompleted(_ completed: CompletedComparison) {
+        completedComparisons.append(completed)
+        // Create record for backward compatibility with tests that check savedRecords
         let comparison = completed.comparison
-        let interval = (try? Interval.between(comparison.referenceNote, comparison.targetNote.note))?.rawValue ?? 0
         let record = ComparisonRecord(
             referenceNote: comparison.referenceNote.rawValue,
             targetNote: comparison.targetNote.note.rawValue,
             centOffset: comparison.targetNote.offset.rawValue,
             isCorrect: completed.isCorrect,
-            interval: interval,
-            tuningSystem: completed.tuningSystem.storageIdentifier,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: completed.timestamp
         )
         try? save(record)
@@ -88,14 +96,15 @@ final class MockTrainingDataStore: ComparisonRecordStoring, ComparisonObserver, 
     // MARK: - PitchMatchingObserver Protocol
 
     func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
-        let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
+        completedPitchMatchings.append(result)
+        // Create record for backward compatibility with tests that check savedPitchMatchingRecords
         let record = PitchMatchingRecord(
             referenceNote: result.referenceNote.rawValue,
             targetNote: result.targetNote.rawValue,
             initialCentOffset: result.initialCentOffset,
             userCentError: result.userCentError,
-            interval: interval,
-            tuningSystem: result.tuningSystem.storageIdentifier,
+            interval: 0,
+            tuningSystem: "equalTemperament",
             timestamp: result.timestamp
         )
         try? save(record)

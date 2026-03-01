@@ -200,6 +200,28 @@ struct TuningSystemTests {
         #expect(abs(c4_442.rawValue - expected442) < 0.01)
     }
 
+    // MARK: - Storage Identifiers (Story 23.1)
+
+    @Test("storageIdentifier returns stable string for equalTemperament")
+    func storageIdentifierEqualTemperament() async {
+        #expect(TuningSystem.equalTemperament.storageIdentifier == "equalTemperament")
+    }
+
+    @Test("fromStorageIdentifier round-trips equalTemperament")
+    func fromStorageIdentifierRoundTrip() async {
+        let original = TuningSystem.equalTemperament
+        let identifier = original.storageIdentifier
+        let restored = TuningSystem.fromStorageIdentifier(identifier)
+        #expect(restored == original)
+    }
+
+    @Test("fromStorageIdentifier returns nil for unknown identifier")
+    func fromStorageIdentifierUnknown() async {
+        #expect(TuningSystem.fromStorageIdentifier("justIntonation") == nil)
+        #expect(TuningSystem.fromStorageIdentifier("") == nil)
+        #expect(TuningSystem.fromStorageIdentifier("EqualTemperament") == nil)
+    }
+
     // MARK: - frequency(for: MIDINote) Convenience (Story 22.3 AC #4)
 
     @Test("MIDINote overload returns same result as DetunedMIDINote with zero offset")

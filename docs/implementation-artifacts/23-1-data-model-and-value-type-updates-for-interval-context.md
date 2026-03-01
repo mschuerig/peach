@@ -1,6 +1,6 @@
 # Story 23.1: Data Model and Value Type Updates for Interval Context
 
-Status: review
+Status: done
 
 ## Story
 
@@ -285,7 +285,8 @@ No debug issues encountered. All tasks completed cleanly.
 - Peach/Profile/SummaryStatisticsView.swift (modified: preview ComparisonRecord updated)
 - Peach/Start/ProfilePreviewView.swift (modified: preview ComparisonRecord updated)
 - PeachTests/Comparison/MockTrainingDataStore.swift (modified: updated observer methods)
-- PeachTests/Core/Data/TrainingDataStoreTests.swift (modified: updated all record calls)
+- PeachTests/Core/Audio/TuningSystemTests.swift (modified: added storage identifier tests)
+- PeachTests/Core/Data/TrainingDataStoreTests.swift (modified: updated all record calls, added ComparisonObserver test, added field assertions)
 - PeachTests/Core/Data/TrainingDataStoreEdgeCaseTests.swift (modified: updated all record calls)
 - PeachTests/Core/Data/PitchMatchingRecordTests.swift (modified: updated all record calls)
 - PeachTests/Core/Training/ComparisonTests.swift (modified: added `tuningSystem` to CompletedComparison)
@@ -304,3 +305,4 @@ No debug issues encountered. All tasks completed cleanly.
 ## Change Log
 
 - 2026-03-01: Implemented story 23.1 — added interval and tuning system context fields to all data models and value types for interval training support
+- 2026-03-01: Code review fixes — added missing ComparisonObserver conformance test, TuningSystem storage identifier tests, missing field assertions in allFieldsIntact/saveAndRetrieve tests, updated project-context.md SwiftData field listing, simplified MockTrainingDataStore observer logic, fixed misleading ComparisonRecord comment
