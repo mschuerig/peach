@@ -2,6 +2,8 @@ import SwiftUI
 import os
 
 struct ComparisonScreen: View {
+    let intervals: Set<Interval>
+
     /// Training session injected via environment
     @Environment(\.comparisonSession) private var comparisonSession
 
@@ -80,7 +82,7 @@ struct ComparisonScreen: View {
         }
         .onAppear {
             logger.info("ComparisonScreen appeared - starting training")
-            comparisonSession.start()
+            comparisonSession.start(intervals: intervals)
         }
         .onDisappear {
             logger.info("ComparisonScreen disappeared - stopping training")
@@ -167,6 +169,6 @@ struct ComparisonScreen: View {
 
 #Preview {
     NavigationStack {
-        ComparisonScreen()
+        ComparisonScreen(intervals: [.prime])
     }
 }

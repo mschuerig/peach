@@ -22,7 +22,7 @@ struct TrainingSessionTests {
     @Test("ComparisonSession.isIdle returns false when active")
     func comparisonSessionIsIdleFalseWhenActive() async throws {
         let fixture = makeComparisonSession()
-        fixture.session.start()
+        fixture.session.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session
         #expect(!trainingSession.isIdle)
@@ -32,7 +32,7 @@ struct TrainingSessionTests {
     @Test("PitchMatchingSession.isIdle returns false when active")
     func pitchMatchingSessionIsIdleFalseWhenActive() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start()
+        session.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
         let trainingSession: TrainingSession = session
         #expect(!trainingSession.isIdle)
@@ -42,7 +42,7 @@ struct TrainingSessionTests {
     @Test("stop() through TrainingSession protocol stops ComparisonSession")
     func stopThroughProtocolStopsComparisonSession() async throws {
         let fixture = makeComparisonSession()
-        fixture.session.start()
+        fixture.session.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session
         trainingSession.stop()
@@ -52,7 +52,7 @@ struct TrainingSessionTests {
     @Test("stop() through TrainingSession protocol stops PitchMatchingSession")
     func stopThroughProtocolStopsPitchMatchingSession() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start()
+        session.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
         let trainingSession: TrainingSession = session
         trainingSession.stop()
@@ -63,7 +63,7 @@ struct TrainingSessionTests {
     func startThroughProtocolStartsComparisonSession() async throws {
         let fixture = makeComparisonSession()
         let trainingSession: TrainingSession = fixture.session
-        trainingSession.start()
+        trainingSession.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)
         #expect(!trainingSession.isIdle)
         trainingSession.stop()
@@ -73,7 +73,7 @@ struct TrainingSessionTests {
     func startThroughProtocolStartsPitchMatchingSession() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         let trainingSession: TrainingSession = session
-        trainingSession.start()
+        trainingSession.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
         #expect(!trainingSession.isIdle)
         trainingSession.stop()
@@ -83,7 +83,7 @@ struct TrainingSessionTests {
     func startStopCycleThroughProtocol() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         let trainingSession: TrainingSession = session
-        trainingSession.start()
+        trainingSession.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
         #expect(!trainingSession.isIdle)
         trainingSession.stop()

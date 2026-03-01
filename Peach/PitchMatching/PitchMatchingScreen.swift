@@ -2,6 +2,8 @@ import SwiftUI
 import os
 
 struct PitchMatchingScreen: View {
+    let intervals: Set<Interval>
+
     @Environment(\.pitchMatchingSession) private var pitchMatchingSession
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -57,7 +59,7 @@ struct PitchMatchingScreen: View {
         }
         .onAppear {
             logger.info("PitchMatchingScreen appeared - starting pitch matching")
-            pitchMatchingSession.start()
+            pitchMatchingSession.start(intervals: intervals)
         }
         .onDisappear {
             logger.info("PitchMatchingScreen disappeared - stopping pitch matching")
@@ -76,6 +78,6 @@ struct PitchMatchingScreen: View {
 
 #Preview {
     NavigationStack {
-        PitchMatchingScreen()
+        PitchMatchingScreen(intervals: [.prime])
     }
 }

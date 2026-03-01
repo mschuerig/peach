@@ -1,5 +1,5 @@
 protocol TrainingSession: AnyObject {
-    func start()
+    func start(intervals: Set<Interval>)
     func stop()
     var isIdle: Bool { get }
 }

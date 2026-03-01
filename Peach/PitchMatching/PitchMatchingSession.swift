@@ -78,14 +78,14 @@ final class PitchMatchingSession: TrainingSession {
 
     var isIdle: Bool { state == .idle }
 
-    func start() {
+    func start(intervals: Set<Interval>) {
         guard state == .idle else {
             logger.warning("start() called but state is \(String(describing: self.state)), not idle")
             return
         }
 
-        precondition(!userSettings.intervals.isEmpty, "intervals must not be empty")
-        sessionIntervals = userSettings.intervals
+        precondition(!intervals.isEmpty, "intervals must not be empty")
+        sessionIntervals = intervals
         sessionTuningSystem = userSettings.tuningSystem
 
         trainingTask = Task {

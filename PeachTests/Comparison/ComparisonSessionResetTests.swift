@@ -177,7 +177,7 @@ struct ComparisonSessionResetTests {
         )
 
         // Start training and wait for non-idle state
-        session.start()
+        session.start(intervals: [.prime])
         try await waitForPlayCallCount(mockPlayer, 1)
         #expect(session.state != .idle)
 

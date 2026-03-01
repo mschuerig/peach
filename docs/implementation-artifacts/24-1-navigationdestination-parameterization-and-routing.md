@@ -1,6 +1,6 @@
 # Story 24.1: NavigationDestination Parameterization and Routing
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -41,36 +41,36 @@ So that tapping an interval button launches the same screen with the interval co
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Parameterize `NavigationDestination` enum (AC: 1, 2, 5)
-  - [ ] Rename `.training` to `.comparison(intervals: Set<Interval>)`
-  - [ ] Add `intervals: Set<Interval>` parameter to `.pitchMatching`
-  - [ ] Verify `Hashable` conformance compiles (Interval is already Hashable)
-- [ ] Task 2: Update session `start()` to accept intervals parameter (AC: 3, 4)
-  - [ ] Add `intervals: Set<Interval>` parameter to `ComparisonSession.start(intervals:)`
-  - [ ] Add `intervals: Set<Interval>` parameter to `PitchMatchingSession.start(intervals:)`
-  - [ ] Update `TrainingSession` protocol if `start()` is defined there
-  - [ ] Sessions use passed intervals instead of reading from `userSettings.intervals`
-- [ ] Task 3: Update `ComparisonScreen` to accept and pass intervals (AC: 3)
-  - [ ] Add `intervals: Set<Interval>` init parameter to `ComparisonScreen`
-  - [ ] Pass intervals to `comparisonSession.start(intervals: intervals)` in `.onAppear`
-- [ ] Task 4: Update `PitchMatchingScreen` to accept and pass intervals (AC: 4)
-  - [ ] Add `intervals: Set<Interval>` init parameter to `PitchMatchingScreen`
-  - [ ] Pass intervals to `pitchMatchingSession.start(intervals: intervals)` in `.onAppear`
-- [ ] Task 5: Update destination handler routing (AC: 3, 4)
-  - [ ] Update `ContentView` or `StartScreen` `.navigationDestination` handler
-  - [ ] Route `.comparison(let intervals)` → `ComparisonScreen(intervals: intervals)`
-  - [ ] Route `.pitchMatching(let intervals)` → `PitchMatchingScreen(intervals: intervals)`
-- [ ] Task 6: Update all existing NavigationLink call sites (AC: 1, 2)
-  - [ ] Replace `.training` → `.comparison(intervals: [.prime])` in StartScreen
-  - [ ] Replace `.pitchMatching` → `.pitchMatching(intervals: [.prime])` in StartScreen
-- [ ] Task 7: Update all tests — 146 `.start()` call sites across 13 test files (AC: 1-5)
-  - [ ] Update ComparisonSession tests (8 files, ~80 calls): `start()` → `start(intervals: [.prime])`
-  - [ ] Update PitchMatchingSession tests (1 file, ~53 calls): `start()` → `start(intervals: [.prime])`
-  - [ ] Update TrainingSession protocol tests (1 file, ~7 calls)
-  - [ ] Update ComparisonScreenFeedbackTests (1 file, ~5 calls)
-  - [ ] Add new test: `start(intervals: [.perfectFifth])` verifies sessionIntervals
-  - [ ] Add new test: `start(intervals: [.prime, .perfectFifth])` with multiple intervals
-  - [ ] Run full test suite
+- [x] Task 1: Parameterize `NavigationDestination` enum (AC: 1, 2, 5)
+  - [x] Rename `.training` to `.comparison(intervals: Set<Interval>)`
+  - [x] Add `intervals: Set<Interval>` parameter to `.pitchMatching`
+  - [x] Verify `Hashable` conformance compiles (Interval is already Hashable)
+- [x] Task 2: Update session `start()` to accept intervals parameter (AC: 3, 4)
+  - [x] Add `intervals: Set<Interval>` parameter to `ComparisonSession.start(intervals:)`
+  - [x] Add `intervals: Set<Interval>` parameter to `PitchMatchingSession.start(intervals:)`
+  - [x] Update `TrainingSession` protocol if `start()` is defined there
+  - [x] Sessions use passed intervals instead of reading from `userSettings.intervals`
+- [x] Task 3: Update `ComparisonScreen` to accept and pass intervals (AC: 3)
+  - [x] Add `intervals: Set<Interval>` init parameter to `ComparisonScreen`
+  - [x] Pass intervals to `comparisonSession.start(intervals: intervals)` in `.onAppear`
+- [x] Task 4: Update `PitchMatchingScreen` to accept and pass intervals (AC: 4)
+  - [x] Add `intervals: Set<Interval>` init parameter to `PitchMatchingScreen`
+  - [x] Pass intervals to `pitchMatchingSession.start(intervals: intervals)` in `.onAppear`
+- [x] Task 5: Update destination handler routing (AC: 3, 4)
+  - [x] Update `ContentView` or `StartScreen` `.navigationDestination` handler
+  - [x] Route `.comparison(let intervals)` → `ComparisonScreen(intervals: intervals)`
+  - [x] Route `.pitchMatching(let intervals)` → `PitchMatchingScreen(intervals: intervals)`
+- [x] Task 6: Update all existing NavigationLink call sites (AC: 1, 2)
+  - [x] Replace `.training` → `.comparison(intervals: [.prime])` in StartScreen
+  - [x] Replace `.pitchMatching` → `.pitchMatching(intervals: [.prime])` in StartScreen
+- [x] Task 7: Update all tests — 146 `.start()` call sites across 13 test files (AC: 1-5)
+  - [x] Update ComparisonSession tests (8 files, ~80 calls): `start()` → `start(intervals: [.prime])`
+  - [x] Update PitchMatchingSession tests (1 file, ~53 calls): `start()` → `start(intervals: [.prime])`
+  - [x] Update TrainingSession protocol tests (1 file, ~7 calls)
+  - [x] Update ComparisonScreenFeedbackTests (1 file, ~5 calls)
+  - [x] Add new test: `start(intervals: [.perfectFifth])` verifies sessionIntervals
+  - [x] Add new test: `start(intervals: [.prime, .perfectFifth])` with multiple intervals
+  - [x] Run full test suite
 
 ## Dev Notes
 
@@ -293,10 +293,51 @@ e5cd431 Implement story 23.2: ComparisonSession Start Rename and Strategy Interv
 
 ### Agent Model Used
 
-<!-- filled by dev agent -->
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no blockers.
+
 ### Completion Notes List
 
+- Renamed `NavigationDestination.training` to `.comparison(intervals: Set<Interval>)` and added `intervals` parameter to `.pitchMatching`
+- Updated `TrainingSession` protocol: `start()` → `start(intervals: Set<Interval>)`
+- Updated `ComparisonSession.start()` and `PitchMatchingSession.start()` to accept intervals parameter directly instead of reading from `userSettings.intervals`
+- Added `intervals: Set<Interval>` init parameter to both `ComparisonScreen` and `PitchMatchingScreen`
+- Updated destination handler in `StartScreen.swift` to pass intervals through routing
+- Updated all NavigationLink call sites to pass `[.prime]` preserving existing unison behavior
+- Updated 146 `.start()` calls across 13 test files to use `start(intervals: [.prime])`
+- Fixed 9 interval-specific tests that needed `start(intervals: [.perfectFifth])` instead of `[.prime]`
+- Added new NavigationDestination Hashable tests for different intervals
+- Added new `start(intervals: [.perfectFifth])` and `start(intervals: [.prime, .perfectFifth])` tests for both sessions
+- All 701 tests pass, 0 failures
+- Dependency check passes
+
 ### File List
+
+- `Peach/App/NavigationDestination.swift` — Renamed `.training` → `.comparison(intervals:)`, added `intervals` to `.pitchMatching`
+- `Peach/Core/TrainingSession.swift` — Updated `start()` → `start(intervals: Set<Interval>)` in protocol
+- `Peach/Comparison/ComparisonSession.swift` — Updated `start()` → `start(intervals: Set<Interval>)`
+- `Peach/PitchMatching/PitchMatchingSession.swift` — Updated `start()` → `start(intervals: Set<Interval>)`
+- `Peach/Comparison/ComparisonScreen.swift` — Added `intervals: Set<Interval>` init parameter, pass to session
+- `Peach/PitchMatching/PitchMatchingScreen.swift` — Added `intervals: Set<Interval>` init parameter, pass to session
+- `Peach/Start/StartScreen.swift` — Updated destination handler and NavigationLink call sites
+- `PeachTests/Start/StartScreenTests.swift` — Updated NavigationDestination tests, added interval equality tests
+- `PeachTests/Comparison/ComparisonSessionTests.swift` — Updated start() calls, fixed interval tests, added new tests
+- `PeachTests/Comparison/ComparisonSessionLifecycleTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionIntegrationTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionAudioInterruptionTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionDifficultyTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionFeedbackTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionLoudnessTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonScreenFeedbackTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionUserDefaultsTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionSettingsTests.swift` — Updated start() calls
+- `PeachTests/Comparison/ComparisonSessionResetTests.swift` — Updated start() call
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` — Updated start() calls, fixed interval tests, added new tests
+- `PeachTests/Core/TrainingSessionTests.swift` — Updated start() calls for protocol tests
+
+### Change Log
+
+- 2026-03-01: Implemented story 24.1 — parameterized NavigationDestination and session start() with intervals
