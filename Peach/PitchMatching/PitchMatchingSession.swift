@@ -50,7 +50,7 @@ final class PitchMatchingSession: TrainingSession {
     private var trainingTask: Task<Void, Never>?
     private var feedbackTask: Task<Void, Never>?
 
-    private static let initialCentOffsetRange: ClosedRange<Double> = -100.0...100.0
+    private static let initialCentOffsetRange: ClosedRange<Double> = -20.0...20.0
 
     private let velocity: MIDIVelocity = 63
     private let feedbackDuration: TimeInterval = 0.4

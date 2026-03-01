@@ -1,6 +1,6 @@
 # Story 26.3: Reduce Pitch Matching Range
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -45,17 +45,17 @@ so that the slider provides finer granularity for precise pitch discrimination t
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update `initialCentOffsetRange` constant (AC: 1, 2, 3)
-  - [ ] Change `PitchMatchingSession.initialCentOffsetRange` from `-100.0...100.0` to `-20.0...20.0`
-  - [ ] Verify `adjustPitch`, `commitPitch`, and `generateChallenge` all derive from this single constant (no other changes needed in session)
+- [x] Task 1: Update `initialCentOffsetRange` constant (AC: 1, 2, 3)
+  - [x] Change `PitchMatchingSession.initialCentOffsetRange` from `-100.0...100.0` to `-20.0...20.0`
+  - [x] Verify `adjustPitch`, `commitPitch`, and `generateChallenge` all derive from this single constant (no other changes needed in session)
 
-- [ ] Task 2: Update tests to reflect new range (AC: 5)
-  - [ ] Update `PitchMatchingSessionTests.swift` line 105-106: change `#expect(challenge.initialCentOffset >= -100)` to `-20` and `<= 100` to `20`
-  - [ ] Update `PitchMatchingSessionTests.swift` line 505: change `100.0 / 1200.0` to `20.0 / 1200.0` in expected frequency calculation
+- [x] Task 2: Update tests to reflect new range (AC: 5)
+  - [x] Update `PitchMatchingSessionTests.swift` line 105-106: change `#expect(challenge.initialCentOffset >= -100)` to `-20` and `<= 100` to `20`
+  - [x] Update `PitchMatchingSessionTests.swift` line 505: change `100.0 / 1200.0` to `20.0 / 1200.0` in expected frequency calculation
 
-- [ ] Task 3: Run full test suite (AC: 5)
-  - [ ] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] All tests pass with zero regressions
+- [x] Task 3: Run full test suite (AC: 5)
+  - [x] `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] All tests pass with zero regressions
 
 ## Dev Notes
 
@@ -204,10 +204,24 @@ c1c8cf8 Implement story 26.1: Delay targetNote Until Slider Touch
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no issues.
+
 ### Completion Notes List
 
+- Changed `PitchMatchingSession.initialCentOffsetRange` from `-100.0...100.0` to `-20.0...20.0` (single constant, all 3 usages auto-propagate)
+- Updated 3 test assertions in `PitchMatchingSessionTests.swift`: boundary checks from ±100 to ±20, frequency calculation from `100.0/1200.0` to `20.0/1200.0`
+- TDD approach: tests updated first (RED), then constant changed (GREEN), no refactoring needed
+- Full test suite passes with zero regressions
+
 ### File List
+
+- `Peach/PitchMatching/PitchMatchingSession.swift` (modified) — changed `initialCentOffsetRange` constant
+- `PeachTests/PitchMatching/PitchMatchingSessionTests.swift` (modified) — updated 3 assertions for ±20 range
+
+### Change Log
+
+- 2026-03-01: Reduced pitch matching range from ±100 to ±20 cents for finer pitch discrimination training granularity
