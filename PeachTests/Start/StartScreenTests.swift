@@ -27,7 +27,7 @@ struct StartScreenTests {
 
     @Test("Comparison Screen can be instantiated")
     func comparisonScreenCanBeInstantiated() {
-        _ = ComparisonScreen()
+        _ = ComparisonScreen(intervals: [.prime])
     }
 
     @Test("Settings Screen can be instantiated")
@@ -56,10 +56,10 @@ struct StartScreenTests {
 
     // MARK: - Navigation Destination Tests
 
-    @Test("NavigationDestination enum has training case")
-    func navigationDestinationHasTraining() {
-        let destination = NavigationDestination.training
-        #expect(destination == NavigationDestination.training)
+    @Test("NavigationDestination enum has comparison case with intervals")
+    func navigationDestinationHasComparison() {
+        let destination = NavigationDestination.comparison(intervals: [.prime])
+        #expect(destination == NavigationDestination.comparison(intervals: [.prime]))
     }
 
     @Test("NavigationDestination enum has settings case")
@@ -76,19 +76,34 @@ struct StartScreenTests {
 
     @Test("NavigationDestination enum is Hashable")
     func navigationDestinationIsHashable() {
-        let destination1 = NavigationDestination.training
-        let destination2 = NavigationDestination.training
+        let destination1 = NavigationDestination.comparison(intervals: [.prime])
+        let destination2 = NavigationDestination.comparison(intervals: [.prime])
         let destination3 = NavigationDestination.settings
 
         #expect(destination1.hashValue == destination2.hashValue)
         #expect(destination1.hashValue != destination3.hashValue)
     }
 
+    @Test("NavigationDestination comparison cases with different intervals are not equal")
+    func navigationDestinationComparisonDifferentIntervals() {
+        let unison = NavigationDestination.comparison(intervals: [.prime])
+        let fifth = NavigationDestination.comparison(intervals: [.perfectFifth])
+        #expect(unison != fifth)
+    }
+
+    @Test("NavigationDestination pitchMatching cases with different intervals are not equal")
+    func navigationDestinationPitchMatchingDifferentIntervals() {
+        let unison = NavigationDestination.pitchMatching(intervals: [.prime])
+        let fifth = NavigationDestination.pitchMatching(intervals: [.perfectFifth])
+        #expect(unison != fifth)
+    }
+
     @Test("NavigationDestination cases are not equal when different")
     func navigationDestinationCasesAreDistinct() {
-        #expect(NavigationDestination.training != NavigationDestination.settings)
+        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.settings)
         #expect(NavigationDestination.settings != NavigationDestination.profile)
-        #expect(NavigationDestination.training != NavigationDestination.profile)
+        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.profile)
+        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.pitchMatching(intervals: [.prime]))
     }
 
     // MARK: - Info Screen Content Tests
@@ -142,7 +157,7 @@ struct StartScreenTests {
         // Verify that all destination screens can be instantiated
         // This ensures the hub-and-spoke pattern has all spokes available
 
-        let comparison = ComparisonScreen()
+        let comparison = ComparisonScreen(intervals: [.prime])
         let settings = SettingsScreen()
         let profile = ProfileScreen()
         let info = InfoScreen()

@@ -24,7 +24,7 @@ struct ComparisonSessionTests {
             }
         }
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         await Task.yield()
 
         #expect(capturedState == .playingNote1)
@@ -35,7 +35,7 @@ struct ComparisonSessionTests {
     func transitionsFromNote1ToNote2() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForPlayCallCount(f.mockPlayer, 2)
 
         #expect(f.mockPlayer.playCallCount >= 2)
@@ -46,7 +46,7 @@ struct ComparisonSessionTests {
     func transitionsFromNote2ToAwaitingAnswer() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.state == .awaitingAnswer)
@@ -56,7 +56,7 @@ struct ComparisonSessionTests {
     func handleAnswerTransitionsToShowingFeedback() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.handleAnswer(isHigher: true)
@@ -68,7 +68,7 @@ struct ComparisonSessionTests {
     func loopsBackAfterFeedback() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.handleAnswer(isHigher: true)
@@ -83,7 +83,7 @@ struct ComparisonSessionTests {
     func stopTransitionsToIdle() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForPlayCallCount(f.mockPlayer, 1)
 
         f.session.stop()
@@ -97,7 +97,7 @@ struct ComparisonSessionTests {
         f.mockPlayer.shouldThrowError = true
         f.mockPlayer.errorToThrow = .engineStartFailed("Test error")
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .idle)
 
         #expect(f.session.state == .idle)
@@ -116,7 +116,7 @@ struct ComparisonSessionTests {
             }
         }
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         await Task.yield()
 
         #expect(capturedState == .playingNote1)
@@ -126,7 +126,7 @@ struct ComparisonSessionTests {
     func buttonsEnabledDuringAwaitingAnswer() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.state == .awaitingAnswer)
@@ -136,7 +136,7 @@ struct ComparisonSessionTests {
     func completesFullLoop() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.handleAnswer(isHigher: true)
@@ -148,18 +148,15 @@ struct ComparisonSessionTests {
 
     // MARK: - Interval Context Tests (Story 23.2)
 
-    @Test("start reads intervals from userSettings")
-    func startReadsIntervalsFromSettings() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.perfectFifth]
+    @Test("start passes intervals to strategy")
+    func startPassesIntervalsToStrategy() async throws {
         let f = makeComparisonSession(
             comparisons: [
                 Comparison(referenceNote: 60, targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(50.0)))
-            ],
-            userSettings: settings
+            ]
         )
 
-        f.session.start()
+        f.session.start(intervals: [.perfectFifth])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.mockStrategy.lastReceivedInterval == .perfectFifth)
@@ -177,7 +174,7 @@ struct ComparisonSessionTests {
         settings.intervals = [.prime]
         let f = makeComparisonSession(userSettings: settings)
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.currentInterval == .prime)
@@ -185,16 +182,13 @@ struct ComparisonSessionTests {
 
     @Test("currentInterval is set after starting with perfectFifth")
     func currentIntervalSetAfterStartFifth() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.perfectFifth]
         let f = makeComparisonSession(
             comparisons: [
                 Comparison(referenceNote: 60, targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(50.0)))
-            ],
-            userSettings: settings
+            ]
         )
 
-        f.session.start()
+        f.session.start(intervals: [.perfectFifth])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.currentInterval == .perfectFifth)
@@ -206,7 +200,7 @@ struct ComparisonSessionTests {
         settings.intervals = [.prime]
         let f = makeComparisonSession(userSettings: settings)
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(!f.session.isIntervalMode)
@@ -214,16 +208,13 @@ struct ComparisonSessionTests {
 
     @Test("isIntervalMode is true for perfectFifth")
     func isIntervalModeTrueForFifth() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.perfectFifth]
         let f = makeComparisonSession(
             comparisons: [
                 Comparison(referenceNote: 60, targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(50.0)))
-            ],
-            userSettings: settings
+            ]
         )
 
-        f.session.start()
+        f.session.start(intervals: [.perfectFifth])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.isIntervalMode)
@@ -233,7 +224,7 @@ struct ComparisonSessionTests {
     func currentIntervalClearedAfterStop() async throws {
         let f = makeComparisonSession()
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.stop()
@@ -249,7 +240,7 @@ struct ComparisonSessionTests {
         settings.tuningSystem = .equalTemperament
         let f = makeComparisonSession(userSettings: settings)
 
-        f.session.start()
+        f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.handleAnswer(isHigher: true)
@@ -261,8 +252,6 @@ struct ComparisonSessionTests {
 
     @Test("interval comparison with perfectFifth produces correct target")
     func intervalComparisonPerfectFifth() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.perfectFifth]
         let strategy = KazezNoteStrategy()
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
@@ -272,11 +261,11 @@ struct ComparisonSessionTests {
             notePlayer: mockPlayer,
             strategy: strategy,
             profile: profile,
-            userSettings: settings,
+            userSettings: MockUserSettings(),
             observers: [mockDataStore, profile]
         )
 
-        session.start()
+        session.start(intervals: [.perfectFifth])
         try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
@@ -285,5 +274,27 @@ struct ComparisonSessionTests {
         #expect(record != nil)
         // Target note should be 7 semitones above reference note
         #expect(record!.targetNote == record!.referenceNote + 7)
+    }
+
+    @Test("start with perfectFifth sets currentInterval to perfectFifth")
+    func startWithPerfectFifthSetsCurrentInterval() async throws {
+        let f = makeComparisonSession()
+        f.session.start(intervals: [.perfectFifth])
+        try await waitForState(f.session, .awaitingAnswer)
+
+        #expect(f.session.currentInterval == .perfectFifth)
+        #expect(f.session.isIntervalMode)
+        f.session.stop()
+    }
+
+    @Test("start with multiple intervals picks from the provided set")
+    func startWithMultipleIntervals() async throws {
+        let f = makeComparisonSession()
+        let intervals: Set<Interval> = [.prime, .perfectFifth]
+        f.session.start(intervals: intervals)
+        try await waitForState(f.session, .awaitingAnswer)
+
+        #expect(intervals.contains(f.session.currentInterval!))
+        f.session.stop()
     }
 }

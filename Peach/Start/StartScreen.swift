@@ -27,7 +27,7 @@ struct StartScreen: View {
             Spacer()
 
             // Start Training Button (Primary Action)
-            NavigationLink(value: NavigationDestination.training) {
+            NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
                 Text("Start Training")
                     .frame(maxWidth: .infinity)
             }
@@ -35,7 +35,7 @@ struct StartScreen: View {
             .controlSize(.large)
 
             // Pitch Matching Button (Secondary Action)
-            NavigationLink(value: NavigationDestination.pitchMatching) {
+            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
                 Label("Pitch Matching", systemImage: "waveform")
                     .frame(maxWidth: .infinity)
             }
@@ -71,10 +71,10 @@ struct StartScreen: View {
         .navigationTitle("Peach")
         .navigationDestination(for: NavigationDestination.self) { destination in
             switch destination {
-            case .training:
-                ComparisonScreen()
-            case .pitchMatching:
-                PitchMatchingScreen()
+            case .comparison(let intervals):
+                ComparisonScreen(intervals: intervals)
+            case .pitchMatching(let intervals):
+                PitchMatchingScreen(intervals: intervals)
             case .settings:
                 SettingsScreen()
             case .profile:
