@@ -1,6 +1,6 @@
 # Story 23.2: ComparisonSession Start Rename and Strategy Interval Support
 
-Status: review
+Status: done
 
 ## Story
 
@@ -67,13 +67,13 @@ So that comparison training works with any musical interval while unison (`[.pri
   - [x] Write tests verifying `AppUserSettings` returns expected hardcoded values
   - [x] Write tests verifying `MockUserSettings` allows test injection
 
-- [x] Task 2: Add `interval` and `tuningSystem` parameters to `NextComparisonStrategy` (AC: #5)
-  - [x] Update protocol signature: `nextComparison(profile:settings:lastComparison:interval:tuningSystem:) -> Comparison`
-  - [x] Update `KazezNoteStrategy.nextComparison()` to accept `interval: Interval` and `tuningSystem: TuningSystem`
+- [x] Task 2: Add `interval` parameter to `NextComparisonStrategy` (AC: #5)
+  - [x] Update protocol signature: `nextComparison(profile:settings:lastComparison:interval:) -> Comparison` (`tuningSystem` intentionally omitted — strategy operates in logical world, doesn't need physical-world bridge parameter)
+  - [x] Update `KazezNoteStrategy.nextComparison()` to accept `interval: Interval`
   - [x] When `interval == .prime`: behavior unchanged — `targetNote = DetunedMIDINote(note: referenceNote, offset: Cents(signed))`
   - [x] When `interval != .prime`: `targetNote = DetunedMIDINote(note: referenceNote.transposed(by: interval), offset: Cents(signed))`
   - [x] Constrain reference note upper bound: `noteRangeMax - interval.semitones` to prevent MIDI overflow on transposition
-  - [x] Update `MockNextComparisonStrategy` to accept and track the new parameters
+  - [x] Update `MockNextComparisonStrategy` to accept and track the `interval` parameter
   - [x] Write tests for unison path (`.prime`), interval path (`.perfectFifth`), and MIDI range constraint
 
 - [x] Task 3: Rename `startTraining()` to `start()` and read interval context from `userSettings` (AC: #2)
@@ -216,20 +216,19 @@ sessionIntervals = []
 
 ### MockNextComparisonStrategy Update
 
-The mock must accept the new parameters:
+The mock must accept the new `interval` parameter (`tuningSystem` intentionally omitted from strategy protocol — see Task 2):
 ```swift
 func nextComparison(
     profile: PitchDiscriminationProfile,
     settings: TrainingSettings,
     lastComparison: CompletedComparison?,
-    interval: Interval,
-    tuningSystem: TuningSystem
+    interval: Interval
 ) -> Comparison
 ```
 
-Add tracking properties: `var lastReceivedInterval: Interval?` and `var lastReceivedTuningSystem: TuningSystem?`.
+Add tracking property: `var lastReceivedInterval: Interval?`.
 
-The mock's pre-loaded comparisons array already provides complete `Comparison` objects, so the interval/tuningSystem parameters only need to be recorded for test verification.
+The mock's pre-loaded comparisons array already provides complete `Comparison` objects, so the interval parameter only needs to be recorded for test verification.
 
 ### MockUserSettings Defaults for Tests
 
@@ -329,7 +328,7 @@ None — clean implementation, no debugging required.
 ### Completion Notes List
 
 - Added `intervals: Set<Interval>` and `tuningSystem: TuningSystem` to `UserSettings` protocol with hardcoded values in `AppUserSettings` and mutable defaults in `MockUserSettings`
-- Updated `NextComparisonStrategy` protocol with `interval` and `tuningSystem` parameters; `KazezNoteStrategy` now computes interval-aware target notes via `MIDINote.transposed(by:)` with MIDI range constraint
+- Updated `NextComparisonStrategy` protocol with `interval` parameter (`tuningSystem` intentionally omitted — strategy operates in logical world only); `KazezNoteStrategy` now computes interval-aware target notes via `MIDINote.transposed(by:)` with MIDI range constraint
 - Renamed `startTraining()` to `start()` across production and ~80 test call sites; `start()` now reads `intervals` and `tuningSystem` from `userSettings` with non-empty precondition
 - Added `currentInterval` (observable) and `isIntervalMode` (computed) properties to `ComparisonSession`; cleared on `stop()`
 - Replaced all 3 hardcoded `.equalTemperament` references in `ComparisonSession` with session-level `sessionTuningSystem`
@@ -341,6 +340,7 @@ None — clean implementation, no debugging required.
 ### Change Log
 
 - 2026-03-01: Implemented story 23.2 — ComparisonSession interval parameterization with start() rename, strategy interval support, observable interval state, and session tuningSystem
+- 2026-03-01: Code review — fixed story docs (tuningSystem correctly omitted from strategy protocol), strengthened tuningSystem flow-through test, added sessionTuningSystem cleanup to stop(), fixed PreviewComparisonStrategy to use interval parameter, updated architecture.md and arc42 docs for start() rename
 
 ### File List
 

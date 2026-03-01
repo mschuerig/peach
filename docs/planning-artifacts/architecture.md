@@ -1116,23 +1116,20 @@ protocol SoundSourceProvider {
 
 Both `ComparisonSession` and `PitchMatchingSession` are parameterized with an interval set — not duplicated into separate interval session classes.
 
-**Start methods gain interval parameters:**
+**Start methods renamed — intervals read from `userSettings`:**
 
 ```swift
-// ComparisonSession
-func startTraining(intervals: Set<Interval>, tuningSystem: TuningSystem = .equalTemperament)
-
-// PitchMatchingSession
-func startPitchMatching(intervals: Set<Interval>, tuningSystem: TuningSystem = .equalTemperament)
+// ComparisonSession + PitchMatchingSession (both conform to TrainingSession)
+func start()  // reads intervals and tuningSystem from injected userSettings
 ```
 
-The interval set must be non-empty (enforced by precondition). The session stores the set and tuning system for the duration of the training run. On each exercise, the session randomly selects one interval from the set.
+`start()` reads `userSettings.intervals` (must be non-empty, enforced by precondition) and `userSettings.tuningSystem`, storing both for the duration of the training run. On each exercise, the session randomly selects one interval from the set.
 
 **Start Screen usage:**
-- "Comparison" → `startTraining(intervals: [.prime])`
-- "Pitch Matching" → `startPitchMatching(intervals: [.prime])`
-- "Interval Comparison" → `startTraining(intervals: [.perfectFifth])`
-- "Interval Pitch Matching" → `startPitchMatching(intervals: [.perfectFifth])`
+- "Comparison" → `session.start()` (userSettings has `[.prime]`)
+- "Pitch Matching" → `session.start()` (userSettings has `[.prime]`)
+- "Interval Comparison" → `session.start()` (userSettings has `[.perfectFifth]`)
+- "Interval Pitch Matching" → `session.start()` (userSettings has `[.perfectFifth]`)
 
 **Observable state for UI:**
 
@@ -1487,8 +1484,8 @@ PeachTests/
 6. **SoundSourceProvider protocol** — extract from `SoundFontLibrary`, update `SettingsScreen`
 7. **Data model updates** — add `targetNote` and `tuningSystem` fields to records, SwiftData migration
 8. **Value type updates** — `Comparison`, `CompletedComparison`, `PitchMatchingChallenge`, `CompletedPitchMatching` gain target/tuning fields
-9. **Session parameterization** — `startTraining(intervals:tuningSystem:)` and `startPitchMatching(intervals:tuningSystem:)`, `currentInterval` observable state
-10. **NextComparisonStrategy update** — receives `interval` + `tuningSystem`, computes `targetNote`
+9. **Session parameterization** — `start()` reads `intervals` and `tuningSystem` from `userSettings`; `currentInterval` observable state
+10. **NextComparisonStrategy update** — receives `interval`, computes `targetNote`
 11. **NavigationDestination update** — parameterized with `intervals: Set<Interval>`
 12. **Start Screen update** — four buttons with visual separator, interval sets
 13. **Training screen updates** — conditional target interval label on `ComparisonScreen` and `PitchMatchingScreen`

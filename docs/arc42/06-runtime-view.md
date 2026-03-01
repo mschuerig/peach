@@ -40,7 +40,7 @@ This is the central runtime behavior — everything else serves this loop.
 User taps "Start Training"
     │
     ▼
-TrainingSession.startTraining()
+TrainingSession.start()
     │  guard state == .idle
     │  spawn Task { runTrainingLoop() }
     │

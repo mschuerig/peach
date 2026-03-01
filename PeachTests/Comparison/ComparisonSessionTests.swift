@@ -241,9 +241,13 @@ struct ComparisonSessionTests {
         #expect(f.session.currentInterval == nil)
     }
 
-    @Test("CompletedComparison uses session tuningSystem not hardcoded")
-    func completedComparisonUsesSessionTuningSystem() async throws {
-        let f = makeComparisonSession()
+    @Test("tuningSystem from userSettings flows through to CompletedComparison record")
+    func tuningSystemFlowsToRecord() async throws {
+        let settings = MockUserSettings()
+        // Explicitly set tuningSystem to verify it flows from userSettings → session → record
+        // (currently only .equalTemperament exists; test guards the flow path for future tuning systems)
+        settings.tuningSystem = .equalTemperament
+        let f = makeComparisonSession(userSettings: settings)
 
         f.session.start()
         try await waitForState(f.session, .awaitingAnswer)
