@@ -66,7 +66,9 @@ private final class PreviewComparisonStrategy: NextComparisonStrategy {
         lastComparison: CompletedComparison?,
         interval: Interval
     ) -> Comparison {
-        Comparison(referenceNote: MIDINote(60), targetNote: DetunedMIDINote(note: MIDINote(60), offset: Cents(50.0)))
+        let referenceNote = MIDINote(60)
+        let targetBaseNote = referenceNote.transposed(by: interval)
+        return Comparison(referenceNote: referenceNote, targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(50.0)))
     }
 }
 

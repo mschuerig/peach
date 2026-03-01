@@ -114,7 +114,7 @@ ComparisonSession(notePlayer: MockNotePlayer(), strategy: MockNextComparisonStra
 @Test("plays note 1 after starting")
 func playsNote1AfterStarting() async {
     let (session, notePlayer, _) = makeComparisonSession()
-    session.startTraining()
+    session.start()
     try await waitForState(session, expected: .playingNote1)
     #expect(notePlayer.playCallCount == 1)
 }

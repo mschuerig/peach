@@ -180,6 +180,7 @@ final class ComparisonSession: TrainingSession {
         sessionBestCentDifference = nil
         currentInterval = nil
         sessionIntervals = []
+        sessionTuningSystem = .equalTemperament
 
         showFeedback = false
         isLastAnswerCorrect = nil
