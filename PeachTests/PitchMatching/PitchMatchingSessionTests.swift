@@ -446,7 +446,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(60)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let handle = try #require(notePlayer.lastHandle)
@@ -534,17 +534,17 @@ struct PitchMatchingSessionTests {
     @Test("currentInterval is perfectFifth with interval set")
     func currentIntervalPerfectFifth() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
-        #expect(session.currentInterval == .perfectFifth)
+        #expect(session.currentInterval == .up(.perfectFifth))
         #expect(session.isIntervalMode == true)
     }
 
     @Test("stop clears interval state")
     func stopClearsIntervalState() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
         #expect(session.currentInterval != nil)
 
@@ -574,7 +574,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMin = MIDINote(60)
         mockSettings.noteRangeMax = MIDINote(60)
         let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -587,7 +587,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMin = MIDINote(60)
         mockSettings.noteRangeMax = MIDINote(125)
         let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -605,7 +605,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(60)
         mockSettings.referencePitch = .concert440
         let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -625,7 +625,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(60)
         mockSettings.referencePitch = .concert440
         let (session, notePlayer, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let challenge = try #require(session.currentChallenge)
@@ -648,7 +648,7 @@ struct PitchMatchingSessionTests {
         mockSettings.noteRangeMax = MIDINote(60)
         mockSettings.referencePitch = .concert440
         let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         // Value 0.0 = anchor frequency = target note frequency → 0 cent error
@@ -675,20 +675,20 @@ struct PitchMatchingSessionTests {
     @Test("start uses intervals parameter for session")
     func startUsesIntervalsParameter() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start(intervals: [.majorThird, .perfectFifth])
+        session.start(intervals: [.up(.majorThird), .up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
         let interval = try #require(session.currentInterval)
-        #expect(interval == .majorThird || interval == .perfectFifth)
+        #expect(interval == .up(.majorThird) || interval == .up(.perfectFifth))
     }
 
     @Test("start with perfectFifth sets currentInterval to perfectFifth")
     func startWithPerfectFifthSetsCurrentInterval() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .playingTunable)
 
-        #expect(session.currentInterval == .perfectFifth)
+        #expect(session.currentInterval == .up(.perfectFifth))
         #expect(session.isIntervalMode)
         session.stop()
     }
@@ -696,7 +696,7 @@ struct PitchMatchingSessionTests {
     @Test("start with multiple intervals picks from the provided set")
     func startWithMultipleIntervals() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        let intervals: Set<Interval> = [.prime, .perfectFifth]
+        let intervals: Set<DirectedInterval> = [.prime, .up(.perfectFifth)]
         session.start(intervals: intervals)
         try await waitForState(session, .playingTunable)
 

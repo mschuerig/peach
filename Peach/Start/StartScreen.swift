@@ -27,7 +27,7 @@ struct StartScreen: View {
             Spacer()
 
             // Comparison Button (Primary Action)
-            NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
+            NavigationLink(value: NavigationDestination.comparison(intervals: [DirectedInterval.prime])) {
                 Text("Comparison")
                     .frame(maxWidth: .infinity)
             }
@@ -35,7 +35,7 @@ struct StartScreen: View {
             .controlSize(.large)
 
             // Pitch Matching Button (Secondary Action)
-            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
+            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [DirectedInterval.prime])) {
                 Text("Pitch Matching")
                     .frame(maxWidth: .infinity)
             }
@@ -46,7 +46,7 @@ struct StartScreen: View {
             Divider()
 
             // Interval Comparison Button
-            NavigationLink(value: NavigationDestination.comparison(intervals: [.perfectFifth])) {
+            NavigationLink(value: NavigationDestination.comparison(intervals: [.up(.perfectFifth)])) {
                 Text("Interval Comparison")
                     .frame(maxWidth: .infinity)
             }
@@ -54,7 +54,7 @@ struct StartScreen: View {
             .controlSize(.large)
 
             // Interval Pitch Matching Button
-            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.perfectFifth])) {
+            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.up(.perfectFifth)])) {
                 Text("Interval Pitch Matching")
                     .frame(maxWidth: .infinity)
             }

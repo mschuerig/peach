@@ -19,7 +19,7 @@ final class KazezNoteStrategy: NextComparisonStrategy {
         profile: PitchDiscriminationProfile,
         settings: TrainingSettings,
         lastComparison: CompletedComparison?,
-        interval: Interval
+        interval: DirectedInterval
     ) -> Comparison {
         let magnitude: Double
 
@@ -37,11 +37,20 @@ final class KazezNoteStrategy: NextComparisonStrategy {
         }
 
         let signed = Bool.random() ? magnitude : -magnitude
-        let maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.semitones))
-        let note = MIDINote.random(in: settings.noteRangeMin...maxNote)
+
+        let minNote: MIDINote
+        let maxNote: MIDINote
+        if interval.direction == .up {
+            minNote = settings.noteRangeMin
+            maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.interval.semitones))
+        } else {
+            minNote = MIDINote(max(settings.noteRangeMin.rawValue, interval.interval.semitones))
+            maxNote = settings.noteRangeMax
+        }
+        let note = MIDINote.random(in: minNote...maxNote)
         let targetBaseNote = note.transposed(by: interval)
 
-        logger.info("note=\(note.rawValue), interval=\(interval.semitones), target=\(targetBaseNote.rawValue), offset=\(magnitude, format: .fixed(precision: 1))")
+        logger.info("note=\(note.rawValue), interval=\(interval.interval.semitones), target=\(targetBaseNote.rawValue), offset=\(magnitude, format: .fixed(precision: 1))")
 
         return Comparison(
             referenceNote: note,

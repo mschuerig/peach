@@ -418,7 +418,7 @@ struct TrainingDataStoreTests {
 
         let completed = CompletedPitchMatching(
             referenceNote: MIDINote(60),
-            targetNote: MIDINote(60).transposed(by: .perfectFifth),
+            targetNote: MIDINote(60).transposed(by: .up(.perfectFifth)),
             initialCentOffset: 30.0,
             userCentError: -5.0,
             tuningSystem: .equalTemperament

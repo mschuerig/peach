@@ -7,6 +7,6 @@ protocol UserSettings {
     var referencePitch: Frequency { get }
     var soundSource: SoundSourceID { get }
     var varyLoudness: UnitInterval { get }
-    var intervals: Set<Interval> { get }
+    var intervals: Set<DirectedInterval> { get }
     var tuningSystem: TuningSystem { get }
 }

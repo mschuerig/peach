@@ -1101,7 +1101,148 @@
         }
       }
     },
+    "Down": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "abwärts"
+          }
+        }
+      }
+    },
+    "Up": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aufwärts"
+          }
+        }
+      }
+    },
+    "Minor Second": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kleine Sekunde"
+          }
+        }
+      }
+    },
+    "Major Second": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Große Sekunde"
+          }
+        }
+      }
+    },
+    "Minor Third": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kleine Terz"
+          }
+        }
+      }
+    },
+    "Major Third": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Große Terz"
+          }
+        }
+      }
+    },
+    "Perfect Fourth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reine Quarte"
+          }
+        }
+      }
+    },
+    "Tritone": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tritonus"
+          }
+        }
+      }
+    },
+    "Perfect Fifth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reine Quinte"
+          }
+        }
+      }
+    },
+    "Minor Sixth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kleine Sexte"
+          }
+        }
+      }
+    },
+    "Major Sixth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Große Sexte"
+          }
+        }
+      }
+    },
+    "Minor Seventh": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kleine Septime"
+          }
+        }
+      }
+    },
+    "Major Seventh": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Große Septime"
+          }
+        }
+      }
+    },
+    "Octave": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oktave"
+          }
+        }
+      }
+    },
     "Minor Second Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1112,6 +1253,7 @@
       }
     },
     "Major Second Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1122,6 +1264,7 @@
       }
     },
     "Minor Third Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1132,6 +1275,7 @@
       }
     },
     "Major Third Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1142,6 +1286,7 @@
       }
     },
     "Perfect Fourth Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1152,6 +1297,7 @@
       }
     },
     "Tritone Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1162,6 +1308,7 @@
       }
     },
     "Perfect Fifth Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1172,6 +1319,7 @@
       }
     },
     "Minor Sixth Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1182,6 +1330,7 @@
       }
     },
     "Major Sixth Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1192,6 +1341,7 @@
       }
     },
     "Minor Seventh Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1202,6 +1352,7 @@
       }
     },
     "Major Seventh Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -1212,6 +1363,7 @@
       }
     },
     "Octave Up": {
+      "extractionState": "stale",
       "localizations": {
         "de": {
           "stringUnit": {

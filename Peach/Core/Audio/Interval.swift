@@ -21,21 +21,21 @@ enum Interval: Int, Hashable, Comparable, Sendable, CaseIterable, Codable {
 
     var semitones: Int { rawValue }
 
-    var displayName: String {
+    var name: String {
         switch self {
         case .prime: String(localized: "Prime")
-        case .minorSecond: String(localized: "Minor Second Up")
-        case .majorSecond: String(localized: "Major Second Up")
-        case .minorThird: String(localized: "Minor Third Up")
-        case .majorThird: String(localized: "Major Third Up")
-        case .perfectFourth: String(localized: "Perfect Fourth Up")
-        case .tritone: String(localized: "Tritone Up")
-        case .perfectFifth: String(localized: "Perfect Fifth Up")
-        case .minorSixth: String(localized: "Minor Sixth Up")
-        case .majorSixth: String(localized: "Major Sixth Up")
-        case .minorSeventh: String(localized: "Minor Seventh Up")
-        case .majorSeventh: String(localized: "Major Seventh Up")
-        case .octave: String(localized: "Octave Up")
+        case .minorSecond: String(localized: "Minor Second")
+        case .majorSecond: String(localized: "Major Second")
+        case .minorThird: String(localized: "Minor Third")
+        case .majorThird: String(localized: "Major Third")
+        case .perfectFourth: String(localized: "Perfect Fourth")
+        case .tritone: String(localized: "Tritone")
+        case .perfectFifth: String(localized: "Perfect Fifth")
+        case .minorSixth: String(localized: "Minor Sixth")
+        case .majorSixth: String(localized: "Major Sixth")
+        case .minorSeventh: String(localized: "Minor Seventh")
+        case .majorSeventh: String(localized: "Major Seventh")
+        case .octave: String(localized: "Octave")
         }
     }
 
@@ -52,12 +52,3 @@ enum Interval: Int, Hashable, Comparable, Sendable, CaseIterable, Codable {
     }
 }
 
-// MARK: - MIDINote Transposition
-
-extension MIDINote {
-    func transposed(by interval: Interval) -> MIDINote {
-        let newValue = rawValue + interval.semitones
-        precondition(Self.validRange.contains(newValue), "Transposed note \(newValue) out of MIDI range 0-127")
-        return MIDINote(newValue)
-    }
-}

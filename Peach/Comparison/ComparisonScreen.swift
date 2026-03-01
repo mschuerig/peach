@@ -2,7 +2,7 @@ import SwiftUI
 import os
 
 struct ComparisonScreen: View {
-    let intervals: Set<Interval>
+    let intervals: Set<DirectedInterval>
 
     /// Training session injected via environment
     @Environment(\.comparisonSession) private var comparisonSession
@@ -169,6 +169,6 @@ struct ComparisonScreen: View {
 
 #Preview {
     NavigationStack {
-        ComparisonScreen(intervals: [.prime])
+        ComparisonScreen(intervals: [DirectedInterval.prime])
     }
 }

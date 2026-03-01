@@ -344,7 +344,7 @@ struct KazezNoteStrategyTests {
                 profile: PerceptualProfile(),
                 settings: settings,
                 lastComparison: nil,
-                interval: .perfectFifth,
+                interval: .up(.perfectFifth),
             )
             #expect(comparison.targetNote.note.rawValue == comparison.referenceNote.rawValue + 7)
         }
@@ -360,7 +360,7 @@ struct KazezNoteStrategyTests {
                 profile: PerceptualProfile(),
                 settings: settings,
                 lastComparison: nil,
-                interval: .perfectFifth,
+                interval: .up(.perfectFifth),
             )
             #expect(comparison.referenceNote.rawValue <= 120)
             #expect(comparison.targetNote.note.rawValue <= 127)
@@ -377,7 +377,7 @@ struct KazezNoteStrategyTests {
                 profile: PerceptualProfile(),
                 settings: settings,
                 lastComparison: nil,
-                interval: .octave,
+                interval: .up(.octave),
             )
             #expect(comparison.targetNote.note.rawValue == comparison.referenceNote.rawValue + 12)
             #expect(comparison.targetNote.note.rawValue <= 127)

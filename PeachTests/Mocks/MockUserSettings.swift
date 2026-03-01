@@ -8,6 +8,6 @@ final class MockUserSettings: UserSettings {
     var referencePitch: Frequency = Frequency(SettingsKeys.defaultReferencePitch)
     var soundSource: SoundSourceID = SoundSourceID(SettingsKeys.defaultSoundSource)
     var varyLoudness: UnitInterval = UnitInterval(SettingsKeys.defaultVaryLoudness)
-    var intervals: Set<Interval> = [.prime]
+    var intervals: Set<DirectedInterval> = [DirectedInterval.prime]
     var tuningSystem: TuningSystem = .equalTemperament
 }

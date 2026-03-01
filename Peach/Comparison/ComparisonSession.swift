@@ -22,7 +22,7 @@ final class ComparisonSession: TrainingSession {
     private(set) var showFeedback: Bool = false
     private(set) var isLastAnswerCorrect: Bool? = nil
     private(set) var sessionBestCentDifference: Double? = nil
-    private(set) var currentInterval: Interval? = nil
+    private(set) var currentInterval: DirectedInterval? = nil
 
     // MARK: - Dependencies
 
@@ -65,7 +65,7 @@ final class ComparisonSession: TrainingSession {
     private var lastCompletedComparison: CompletedComparison?
     private var trainingTask: Task<Void, Never>?
     private var feedbackTask: Task<Void, Never>?
-    private var sessionIntervals: Set<Interval> = []
+    private var sessionIntervals: Set<DirectedInterval> = []
     private var sessionTuningSystem: TuningSystem = .equalTemperament
 
     // MARK: - Initialization
@@ -96,13 +96,16 @@ final class ComparisonSession: TrainingSession {
 
     var isIdle: Bool { state == .idle }
 
-    var isIntervalMode: Bool { currentInterval != nil && currentInterval != .prime }
+    var isIntervalMode: Bool {
+        guard let current = currentInterval else { return false }
+        return current.interval != .prime
+    }
 
     var currentDifficulty: Double? {
         currentComparison?.targetNote.offset.magnitude
     }
 
-    func start(intervals: Set<Interval>) {
+    func start(intervals: Set<DirectedInterval>) {
         guard state == .idle else {
             logger.warning("start() called but state is \(String(describing: self.state)), not idle")
             return

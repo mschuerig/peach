@@ -156,10 +156,10 @@ struct ComparisonSessionTests {
             ]
         )
 
-        f.session.start(intervals: [.perfectFifth])
+        f.session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(f.mockStrategy.lastReceivedInterval == .perfectFifth)
+        #expect(f.mockStrategy.lastReceivedInterval == .up(.perfectFifth))
     }
 
     @Test("currentInterval is nil when idle")
@@ -186,10 +186,10 @@ struct ComparisonSessionTests {
             ]
         )
 
-        f.session.start(intervals: [.perfectFifth])
+        f.session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(f.session.currentInterval == .perfectFifth)
+        #expect(f.session.currentInterval == .up(.perfectFifth))
     }
 
     @Test("isIntervalMode is false for prime")
@@ -210,7 +210,7 @@ struct ComparisonSessionTests {
             ]
         )
 
-        f.session.start(intervals: [.perfectFifth])
+        f.session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(f.session, .awaitingAnswer)
 
         #expect(f.session.isIntervalMode)
@@ -261,7 +261,7 @@ struct ComparisonSessionTests {
             observers: [mockDataStore, profile]
         )
 
-        session.start(intervals: [.perfectFifth])
+        session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(session, .awaitingAnswer)
 
         session.handleAnswer(isHigher: true)
@@ -275,10 +275,10 @@ struct ComparisonSessionTests {
     @Test("start with perfectFifth sets currentInterval to perfectFifth")
     func startWithPerfectFifthSetsCurrentInterval() async throws {
         let f = makeComparisonSession()
-        f.session.start(intervals: [.perfectFifth])
+        f.session.start(intervals: [.up(.perfectFifth)])
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(f.session.currentInterval == .perfectFifth)
+        #expect(f.session.currentInterval == .up(.perfectFifth))
         #expect(f.session.isIntervalMode)
         f.session.stop()
     }
@@ -286,7 +286,7 @@ struct ComparisonSessionTests {
     @Test("start with multiple intervals picks from the provided set")
     func startWithMultipleIntervals() async throws {
         let f = makeComparisonSession()
-        let intervals: Set<Interval> = [.prime, .perfectFifth]
+        let intervals: Set<DirectedInterval> = [.prime, .up(.perfectFifth)]
         f.session.start(intervals: intervals)
         try await waitForState(f.session, .awaitingAnswer)
 

@@ -10,7 +10,7 @@ final class MockNextComparisonStrategy: NextComparisonStrategy {
     var lastReceivedProfile: PitchDiscriminationProfile?
     var lastReceivedSettings: TrainingSettings?
     var lastReceivedLastComparison: CompletedComparison?
-    var lastReceivedInterval: Interval?
+    var lastReceivedInterval: DirectedInterval?
 
     // MARK: - Initialization
 
@@ -26,7 +26,7 @@ final class MockNextComparisonStrategy: NextComparisonStrategy {
         profile: PitchDiscriminationProfile,
         settings: TrainingSettings,
         lastComparison: CompletedComparison?,
-        interval: Interval
+        interval: DirectedInterval
     ) -> Comparison {
         callCount += 1
         lastReceivedProfile = profile

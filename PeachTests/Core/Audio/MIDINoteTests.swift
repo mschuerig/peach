@@ -107,10 +107,10 @@ struct MIDINoteTests {
 
     // MARK: - Transposition
 
-    @Test("C4 transposed by perfect fifth gives G4")
-    func transposedByPerfectFifth() async {
+    @Test("C4 transposed by perfect fifth up gives G4")
+    func transposedByPerfectFifthUp() async {
         let c4 = MIDINote(60)
-        let g4 = c4.transposed(by: .perfectFifth)
+        let g4 = c4.transposed(by: .up(.perfectFifth))
         #expect(g4.rawValue == 67)
     }
 
@@ -124,7 +124,7 @@ struct MIDINoteTests {
     @Test("Transposition at top of MIDI range succeeds when within bounds")
     func transposedAtTopBoundary() async {
         let note = MIDINote(120)
-        let result = note.transposed(by: .perfectFifth)
+        let result = note.transposed(by: .up(.perfectFifth))
         #expect(result.rawValue == 127)
     }
 }
