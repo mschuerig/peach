@@ -1,6 +1,6 @@
 # Story 24.1: NavigationDestination Parameterization and Routing
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -180,7 +180,7 @@ Same pattern for `PitchMatchingSession.start()` (line ~81).
 | File | Change | Why |
 |------|--------|-----|
 | `Peach/App/NavigationDestination.swift` | Rename `.training` → `.comparison(intervals:)`, add `intervals` to `.pitchMatching` | Core enum change |
-| `Peach/App/ContentView.swift` | Update destination handler switch cases | Routing |
+| `Peach/App/ContentView.swift` | ~~N/A — destination handler is in StartScreen.swift, not ContentView~~ | ~~Routing~~ |
 | `Peach/Start/StartScreen.swift` | Update `NavigationLink` values from `.training` → `.comparison(intervals: [.prime])` and `.pitchMatching` → `.pitchMatching(intervals: [.prime])` | Call site update |
 | `Peach/Comparison/ComparisonScreen.swift` | Add `intervals: Set<Interval>` init parameter, pass to `session.start(intervals:)` | Screen parameterization |
 | `Peach/PitchMatching/PitchMatchingScreen.swift` | Add `intervals: Set<Interval>` init parameter, pass to `session.start(intervals:)` | Screen parameterization |
@@ -341,3 +341,4 @@ None — clean implementation with no blockers.
 ### Change Log
 
 - 2026-03-01: Implemented story 24.1 — parameterized NavigationDestination and session start() with intervals
+- 2026-03-01: Code review fixes — removed 5 dead `mockSettings.intervals` writes, moved 2 misplaced interval tests from AudioInterruption to main suite, added missing pitchMatching existence test, fixed force-unwraps in multi-interval tests, corrected stale ContentView.swift reference in Dev Notes table
