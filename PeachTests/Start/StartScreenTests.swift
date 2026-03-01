@@ -62,6 +62,12 @@ struct StartScreenTests {
         #expect(destination == NavigationDestination.comparison(intervals: [.prime]))
     }
 
+    @Test("NavigationDestination enum has pitchMatching case with intervals")
+    func navigationDestinationHasPitchMatching() {
+        let destination = NavigationDestination.pitchMatching(intervals: [.prime])
+        #expect(destination == NavigationDestination.pitchMatching(intervals: [.prime]))
+    }
+
     @Test("NavigationDestination enum has settings case")
     func navigationDestinationHasSettings() {
         let destination = NavigationDestination.settings

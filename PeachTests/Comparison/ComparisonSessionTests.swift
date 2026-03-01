@@ -170,9 +170,7 @@ struct ComparisonSessionTests {
 
     @Test("currentInterval is set after starting with prime")
     func currentIntervalSetAfterStartPrime() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.prime]
-        let f = makeComparisonSession(userSettings: settings)
+        let f = makeComparisonSession()
 
         f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
@@ -196,9 +194,7 @@ struct ComparisonSessionTests {
 
     @Test("isIntervalMode is false for prime")
     func isIntervalModeFalseForPrime() async throws {
-        let settings = MockUserSettings()
-        settings.intervals = [.prime]
-        let f = makeComparisonSession(userSettings: settings)
+        let f = makeComparisonSession()
 
         f.session.start(intervals: [.prime])
         try await waitForState(f.session, .awaitingAnswer)
@@ -294,7 +290,8 @@ struct ComparisonSessionTests {
         f.session.start(intervals: intervals)
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(intervals.contains(f.session.currentInterval!))
+        let interval = try #require(f.session.currentInterval)
+        #expect(intervals.contains(interval))
         f.session.stop()
     }
 }

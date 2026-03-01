@@ -523,9 +523,7 @@ struct PitchMatchingSessionTests {
 
     @Test("currentInterval is prime with unison intervals")
     func currentIntervalPrimeWithUnison() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.intervals = [.prime]
-        let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
+        let (session, _, _, _, _) = makePitchMatchingSession()
         session.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
 
@@ -560,7 +558,6 @@ struct PitchMatchingSessionTests {
     @Test("generateChallenge with prime produces targetNote equal to referenceNote")
     func generateChallengePrimeTargetEqualsReference() async throws {
         let mockSettings = MockUserSettings()
-        mockSettings.intervals = [.prime]
         mockSettings.noteRangeMin = MIDINote(60)
         mockSettings.noteRangeMax = MIDINote(60)
         let (session, _, _, _, _) = makePitchMatchingSession(userSettings: mockSettings)
@@ -664,9 +661,7 @@ struct PitchMatchingSessionTests {
 
     @Test("CompletedPitchMatching carries session tuningSystem")
     func completedPitchMatchingCarriesTuningSystem() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.intervals = [.prime]
-        let (session, _, _, observer, _) = makePitchMatchingSession(userSettings: mockSettings)
+        let (session, _, _, observer, _) = makePitchMatchingSession()
         session.start(intervals: [.prime])
         try await waitForState(session, .playingTunable)
 
@@ -685,6 +680,29 @@ struct PitchMatchingSessionTests {
 
         let interval = try #require(session.currentInterval)
         #expect(interval == .majorThird || interval == .perfectFifth)
+    }
+
+    @Test("start with perfectFifth sets currentInterval to perfectFifth")
+    func startWithPerfectFifthSetsCurrentInterval() async throws {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        session.start(intervals: [.perfectFifth])
+        try await waitForState(session, .playingTunable)
+
+        #expect(session.currentInterval == .perfectFifth)
+        #expect(session.isIntervalMode)
+        session.stop()
+    }
+
+    @Test("start with multiple intervals picks from the provided set")
+    func startWithMultipleIntervals() async throws {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        let intervals: Set<Interval> = [.prime, .perfectFifth]
+        session.start(intervals: intervals)
+        try await waitForState(session, .playingTunable)
+
+        let interval = try #require(session.currentInterval)
+        #expect(intervals.contains(interval))
+        session.stop()
     }
 
     // MARK: - Full Cycle Tests
@@ -981,25 +999,4 @@ struct PitchMatchingSessionAudioInterruptionTests {
         #expect(session.state == .playingTunable)
     }
 
-    @Test("start with perfectFifth sets currentInterval to perfectFifth")
-    func startWithPerfectFifthSetsCurrentInterval() async throws {
-        let (session, _, _, _, _) = makePitchMatchingSession()
-        session.start(intervals: [.perfectFifth])
-        try await waitForState(session, .playingTunable)
-
-        #expect(session.currentInterval == .perfectFifth)
-        #expect(session.isIntervalMode)
-        session.stop()
-    }
-
-    @Test("start with multiple intervals picks from the provided set")
-    func startWithMultipleIntervals() async throws {
-        let (session, _, _, _, _) = makePitchMatchingSession()
-        let intervals: Set<Interval> = [.prime, .perfectFifth]
-        session.start(intervals: intervals)
-        try await waitForState(session, .playingTunable)
-
-        #expect(intervals.contains(session.currentInterval!))
-        session.stop()
-    }
 }
