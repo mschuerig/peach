@@ -19,7 +19,7 @@ struct PitchMatchingScreen: View {
             }
 
             VerticalPitchSlider(
-                isActive: pitchMatchingSession.state == .playingTunable,
+                isActive: pitchMatchingSession.state == .awaitingSliderTouch || pitchMatchingSession.state == .playingTunable,
                 onValueChange: { value in
                     pitchMatchingSession.adjustPitch(value)
                 },

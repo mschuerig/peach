@@ -33,7 +33,7 @@ struct TrainingSessionTests {
     func pitchMatchingSessionIsIdleFalseWhenActive() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         session.start(intervals: [.prime])
-        try await waitForState(session, .playingTunable)
+        try await waitForState(session, .awaitingSliderTouch)
         let trainingSession: TrainingSession = session
         #expect(!trainingSession.isIdle)
         trainingSession.stop()
@@ -53,7 +53,7 @@ struct TrainingSessionTests {
     func stopThroughProtocolStopsPitchMatchingSession() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
         session.start(intervals: [.prime])
-        try await waitForState(session, .playingTunable)
+        try await waitForState(session, .awaitingSliderTouch)
         let trainingSession: TrainingSession = session
         trainingSession.stop()
         #expect(session.state == .idle)
@@ -74,7 +74,7 @@ struct TrainingSessionTests {
         let (session, _, _, _, _) = makePitchMatchingSession()
         let trainingSession: TrainingSession = session
         trainingSession.start(intervals: [.prime])
-        try await waitForState(session, .playingTunable)
+        try await waitForState(session, .awaitingSliderTouch)
         #expect(!trainingSession.isIdle)
         trainingSession.stop()
     }
@@ -84,7 +84,7 @@ struct TrainingSessionTests {
         let (session, _, _, _, _) = makePitchMatchingSession()
         let trainingSession: TrainingSession = session
         trainingSession.start(intervals: [.prime])
-        try await waitForState(session, .playingTunable)
+        try await waitForState(session, .awaitingSliderTouch)
         #expect(!trainingSession.isIdle)
         trainingSession.stop()
         #expect(trainingSession.isIdle)
