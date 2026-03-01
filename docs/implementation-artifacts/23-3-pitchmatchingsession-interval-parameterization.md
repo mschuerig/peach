@@ -1,6 +1,6 @@
 # Story 23.3: PitchMatchingSession Start Rename, Interval Support, and Protocol Update
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -66,61 +66,61 @@ So that pitch matching training works with any musical interval while unison (`[
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add session-level interval state and observable properties (AC: #8)
-  - [ ] Add `private var sessionIntervals: Set<Interval> = []` to internal state
-  - [ ] Add `private var sessionTuningSystem: TuningSystem = .equalTemperament` to internal state
-  - [ ] Add `private(set) var currentInterval: Interval? = nil` observable property
-  - [ ] Add computed `var isIntervalMode: Bool { currentInterval != nil && currentInterval != .prime }`
-  - [ ] Clear all interval state in `stop()`: `currentInterval = nil`, `sessionIntervals = []`, `sessionTuningSystem = .equalTemperament`
-  - [ ] Write tests for `currentInterval` and `isIntervalMode` with `.prime` vs `.perfectFifth`
+- [x] Task 1: Add session-level interval state and observable properties (AC: #8)
+  - [x] Add `private var sessionIntervals: Set<Interval> = []` to internal state
+  - [x] Add `private var sessionTuningSystem: TuningSystem = .equalTemperament` to internal state
+  - [x] Add `private(set) var currentInterval: Interval? = nil` observable property
+  - [x] Add computed `var isIntervalMode: Bool { currentInterval != nil && currentInterval != .prime }`
+  - [x] Clear all interval state in `stop()`: `currentInterval = nil`, `sessionIntervals = []`, `sessionTuningSystem = .equalTemperament`
+  - [x] Write tests for `currentInterval` and `isIntervalMode` with `.prime` vs `.perfectFifth`
 
-- [ ] Task 2: Rename `startPitchMatching()` to `start()` and read interval context (AC: #1)
-  - [ ] Rename `func startPitchMatching()` to `func start()` in `PitchMatchingSession.swift`
-  - [ ] Update logger warning message from `"startPitchMatching() called..."` to `"start() called..."`
-  - [ ] At start of `start()`, read `userSettings.intervals` and `userSettings.tuningSystem`, store as session-level state
-  - [ ] Add precondition: `precondition(!userSettings.intervals.isEmpty, "intervals must not be empty")`
-  - [ ] Select a random interval from the set on each challenge: `let interval = sessionIntervals.randomElement()!`
-  - [ ] Store as `currentInterval` (observable, for UI in Story 23.4)
-  - [ ] Pass selected interval to `generateChallenge(settings:interval:)`
-  - [ ] Update `PitchMatchingScreen.swift` line 51: change `.startPitchMatching()` to `.start()`
-  - [ ] Write tests verifying `start()` reads intervals from userSettings
+- [x] Task 2: Rename `startPitchMatching()` to `start()` and read interval context (AC: #1)
+  - [x] Rename `func startPitchMatching()` to `func start()` in `PitchMatchingSession.swift`
+  - [x] Update logger warning message from `"startPitchMatching() called..."` to `"start() called..."`
+  - [x] At start of `start()`, read `userSettings.intervals` and `userSettings.tuningSystem`, store as session-level state
+  - [x] Add precondition: `precondition(!userSettings.intervals.isEmpty, "intervals must not be empty")`
+  - [x] Select a random interval from the set on each challenge: `let interval = sessionIntervals.randomElement()!`
+  - [x] Store as `currentInterval` (observable, for UI in Story 23.4)
+  - [x] Pass selected interval to `generateChallenge(settings:interval:)`
+  - [x] Update `PitchMatchingScreen.swift` line 51: change `.startPitchMatching()` to `.start()`
+  - [x] Write tests verifying `start()` reads intervals from userSettings
 
-- [ ] Task 3: Update `generateChallenge()` for interval-aware challenge generation (AC: #2, #3)
-  - [ ] Add `interval: Interval` parameter to `generateChallenge(settings:interval:)`
-  - [ ] Constrain reference note upper bound: `let maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.semitones))`
-  - [ ] Compute target note: `let targetNote = note.transposed(by: interval)`
-  - [ ] Return `PitchMatchingChallenge(referenceNote: note, targetNote: targetNote, initialCentOffset: offset)`
-  - [ ] When `interval == .prime`: `transposed(by: .prime)` returns same note — behavior identical to current
-  - [ ] Write tests for unison path (`.prime`), interval path (`.perfectFifth`), and MIDI range constraint
+- [x] Task 3: Update `generateChallenge()` for interval-aware challenge generation (AC: #2, #3)
+  - [x] Add `interval: Interval` parameter to `generateChallenge(settings:interval:)`
+  - [x] Constrain reference note upper bound: `let maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.semitones))`
+  - [x] Compute target note: `let targetNote = note.transposed(by: interval)`
+  - [x] Return `PitchMatchingChallenge(referenceNote: note, targetNote: targetNote, initialCentOffset: offset)`
+  - [x] When `interval == .prime`: `transposed(by: .prime)` returns same note — behavior identical to current
+  - [x] Write tests for unison path (`.prime`), interval path (`.perfectFifth`), and MIDI range constraint
 
-- [ ] Task 4: Replace hardcoded `.equalTemperament` with session tuningSystem and fix target note anchor (AC: #4, #5, #6, #7)
-  - [ ] In `playNextChallenge()` line 187: `TuningSystem.equalTemperament.frequency(for: challenge.referenceNote, ...)` → `sessionTuningSystem.frequency(for: challenge.referenceNote, ...)`
-  - [ ] Store TARGET note frequency (not reference note frequency) as `referenceFrequency` anchor:
+- [x] Task 4: Replace hardcoded `.equalTemperament` with session tuningSystem and fix target note anchor (AC: #4, #5, #6, #7)
+  - [x] In `playNextChallenge()` line 187: `TuningSystem.equalTemperament.frequency(for: challenge.referenceNote, ...)` → `sessionTuningSystem.frequency(for: challenge.referenceNote, ...)`
+  - [x] Store TARGET note frequency (not reference note frequency) as `referenceFrequency` anchor:
     - Compute: `let targetFreq = sessionTuningSystem.frequency(for: challenge.targetNote, referencePitch: settings.referencePitch)`
     - Store: `self.referenceFrequency = targetFreq.rawValue`
     - For unison: targetNote == referenceNote, so value unchanged
-  - [ ] In `playNextChallenge()` line 201-202: use `challenge.targetNote` instead of `challenge.referenceNote` for the detuned tunable note:
+  - [x] In `playNextChallenge()` line 201-202: use `challenge.targetNote` instead of `challenge.referenceNote` for the detuned tunable note:
     - `sessionTuningSystem.frequency(for: DetunedMIDINote(note: challenge.targetNote, offset: Cents(challenge.initialCentOffset)), referencePitch: settings.referencePitch)`
-  - [ ] In `commitResult()` line 118: `tuningSystem: .equalTemperament` → `tuningSystem: sessionTuningSystem`
-  - [ ] `userCentError` formula `1200.0 * log2(userFrequency / referenceFrequency)` now correctly measures error relative to target frequency because `referenceFrequency` stores the target note frequency
-  - [ ] Write tests verifying tuningSystem flows through to `CompletedPitchMatching` and frequency computation
+  - [x] In `commitResult()` line 118: `tuningSystem: .equalTemperament` → `tuningSystem: sessionTuningSystem`
+  - [x] `userCentError` formula `1200.0 * log2(userFrequency / referenceFrequency)` now correctly measures error relative to target frequency because `referenceFrequency` stores the target note frequency
+  - [x] Write tests verifying tuningSystem flows through to `CompletedPitchMatching` and frequency computation
 
-- [ ] Task 5: Add `start()` to `TrainingSession` protocol (AC: #9)
-  - [ ] Add `func start()` to `TrainingSession` protocol in `Peach/Core/TrainingSession.swift`
-  - [ ] Both `ComparisonSession.start()` and `PitchMatchingSession.start()` already satisfy this
-  - [ ] Write test: call `start()` through `TrainingSession` protocol reference for both session types
-  - [ ] Write test: call `start()` + verify session is not idle, then `stop()` through protocol
+- [x] Task 5: Add `start()` to `TrainingSession` protocol (AC: #9)
+  - [x] Add `func start()` to `TrainingSession` protocol in `Peach/Core/TrainingSession.swift`
+  - [x] Both `ComparisonSession.start()` and `PitchMatchingSession.start()` already satisfy this
+  - [x] Write test: call `start()` through `TrainingSession` protocol reference for both session types
+  - [x] Write test: call `start()` + verify session is not idle, then `stop()` through protocol
 
-- [ ] Task 6: Rename all `startPitchMatching()` call sites in tests (AC: #1)
-  - [ ] `PitchMatchingSessionTests.swift` — 44 occurrences of `startPitchMatching` → `start`
-  - [ ] `TrainingSessionTests.swift` — 2 occurrences: lines 35, 56 → `session.start()`
-  - [ ] Update test descriptions that reference `startPitchMatching` (e.g., `@Test("startPitchMatching transitions...")` → `@Test("start transitions...")`)
-  - [ ] Set `mockSettings.intervals = [.prime]` in test helper default (already set from Story 23.2)
+- [x] Task 6: Rename all `startPitchMatching()` call sites in tests (AC: #1)
+  - [x] `PitchMatchingSessionTests.swift` — 44 occurrences of `startPitchMatching` → `start`
+  - [x] `TrainingSessionTests.swift` — 2 occurrences: lines 35, 56 → `session.start()`
+  - [x] Update test descriptions that reference `startPitchMatching` (e.g., `@Test("startPitchMatching transitions...")` → `@Test("start transitions...")`)
+  - [x] Set `mockSettings.intervals = [.prime]` in test helper default (already set from Story 23.2)
 
-- [ ] Task 7: Run full test suite and commit (AC: all)
-  - [ ] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
-  - [ ] Run: `tools/check-dependencies.sh`
-  - [ ] All tests pass, no dependency violations
+- [x] Task 7: Run full test suite and commit (AC: all)
+  - [x] Run: `xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'`
+  - [x] Run: `tools/check-dependencies.sh`
+  - [x] All tests pass, no dependency violations
 
 ## Dev Notes
 
@@ -329,10 +329,30 @@ No new files. No new directories. No cross-feature coupling. No changes to `Envi
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation, no debugging needed.
+
 ### Completion Notes List
 
+- ✅ Task 1: Added `sessionIntervals`, `sessionTuningSystem`, `currentInterval`, `isIntervalMode` to PitchMatchingSession. All interval state cleared in `stop()`. Tests verify `.prime` → `isIntervalMode == false`, `.perfectFifth` → `isIntervalMode == true`, and cleanup on stop.
+- ✅ Task 2: Renamed `startPitchMatching()` to `start()` in PitchMatchingSession. Updated logger message. `start()` now reads `userSettings.intervals` and `userSettings.tuningSystem`, stores as session state, with precondition for non-empty intervals. Random interval selected per challenge. PitchMatchingScreen call site updated.
+- ✅ Task 3: Updated `generateChallenge(settings:interval:)` to accept `Interval` parameter. Constrains reference note upper bound by `127 - interval.semitones` to prevent MIDI overflow. Computes `targetNote` via `transposed(by:)`. Unison (`.prime`) produces identical `targetNote == referenceNote`.
+- ✅ Task 4: Replaced all 3 hardcoded `.equalTemperament` with `sessionTuningSystem`. Anchor (`referenceFrequency`) now stores target note frequency, not reference note frequency. Tunable note uses `challenge.targetNote` for detuning. `CompletedPitchMatching` carries `sessionTuningSystem`. For unison, all behavior is identical to previous.
+- ✅ Task 5: Added `func start()` to `TrainingSession` protocol. Both `ComparisonSession` and `PitchMatchingSession` satisfy. Added 3 new protocol-level tests: start via protocol for both types, and start+stop cycle.
+- ✅ Task 6: Renamed 44 occurrences in PitchMatchingSessionTests.swift, 2 in TrainingSessionTests.swift. Updated test descriptions. MockUserSettings defaults already set from Story 23.2.
+- ✅ Task 7: Full test suite passed. Dependency check passed. No regressions.
+
+### Change Log
+
+- 2026-03-01: Implemented story 23.3 — PitchMatchingSession start rename, interval support, and TrainingSession protocol update
+
 ### File List
+
+- Peach/PitchMatching/PitchMatchingSession.swift (modified)
+- Peach/PitchMatching/PitchMatchingScreen.swift (modified)
+- Peach/Core/TrainingSession.swift (modified)
+- PeachTests/PitchMatching/PitchMatchingSessionTests.swift (modified)
+- PeachTests/Core/TrainingSessionTests.swift (modified)

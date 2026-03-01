@@ -48,7 +48,7 @@ struct PitchMatchingScreen: View {
         }
         .onAppear {
             logger.info("PitchMatchingScreen appeared - starting pitch matching")
-            pitchMatchingSession.startPitchMatching()
+            pitchMatchingSession.start()
         }
         .onDisappear {
             logger.info("PitchMatchingScreen disappeared - stopping pitch matching")

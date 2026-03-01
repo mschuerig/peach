@@ -32,7 +32,7 @@ struct TrainingSessionTests {
     @Test("PitchMatchingSession.isIdle returns false when active")
     func pitchMatchingSessionIsIdleFalseWhenActive() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         let trainingSession: TrainingSession = session
         #expect(!trainingSession.isIdle)
@@ -52,10 +52,41 @@ struct TrainingSessionTests {
     @Test("stop() through TrainingSession protocol stops PitchMatchingSession")
     func stopThroughProtocolStopsPitchMatchingSession() async throws {
         let (session, _, _, _, _) = makePitchMatchingSession()
-        session.startPitchMatching()
+        session.start()
         try await waitForState(session, .playingTunable)
         let trainingSession: TrainingSession = session
         trainingSession.stop()
         #expect(session.state == .idle)
+    }
+
+    @Test("start() through TrainingSession protocol starts ComparisonSession")
+    func startThroughProtocolStartsComparisonSession() async throws {
+        let fixture = makeComparisonSession()
+        let trainingSession: TrainingSession = fixture.session
+        trainingSession.start()
+        try await waitForState(fixture.session, .awaitingAnswer)
+        #expect(!trainingSession.isIdle)
+        trainingSession.stop()
+    }
+
+    @Test("start() through TrainingSession protocol starts PitchMatchingSession")
+    func startThroughProtocolStartsPitchMatchingSession() async throws {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        let trainingSession: TrainingSession = session
+        trainingSession.start()
+        try await waitForState(session, .playingTunable)
+        #expect(!trainingSession.isIdle)
+        trainingSession.stop()
+    }
+
+    @Test("start() + stop() cycle through TrainingSession protocol")
+    func startStopCycleThroughProtocol() async throws {
+        let (session, _, _, _, _) = makePitchMatchingSession()
+        let trainingSession: TrainingSession = session
+        trainingSession.start()
+        try await waitForState(session, .playingTunable)
+        #expect(!trainingSession.isIdle)
+        trainingSession.stop()
+        #expect(trainingSession.isIdle)
     }
 }
