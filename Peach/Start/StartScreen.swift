@@ -11,7 +11,7 @@ struct StartScreen: View {
     // MARK: - Layout Parameters (extracted for testability)
 
     static func vstackSpacing(isCompact: Bool) -> CGFloat {
-        isCompact ? 16 : 40
+        isCompact ? 12 : 40
     }
 
     var body: some View {

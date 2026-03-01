@@ -8,9 +8,9 @@ struct StartScreenLayoutTests {
 
     // MARK: - VStack Spacing
 
-    @Test("VStack spacing is 16pt in compact mode")
+    @Test("VStack spacing is 12pt in compact mode")
     func vstackSpacingCompact() {
-        #expect(StartScreen.vstackSpacing(isCompact: true) == 16)
+        #expect(StartScreen.vstackSpacing(isCompact: true) == 12)
     }
 
     @Test("VStack spacing is 40pt in regular mode")
