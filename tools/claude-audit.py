@@ -336,6 +336,7 @@ def generate_commit_markdown(
     diff_stat: str,
     prev_commit: dict | None = None,
     next_commit: dict | None = None,
+    include_nav: bool = True,
 ) -> str:
     """Generate the markdown audit file for a single commit."""
     lines = []
@@ -355,10 +356,11 @@ def generate_commit_markdown(
     lines.append("---")
     lines.append("")
 
-    # Navigation
-    nav = _format_nav(prev_commit, next_commit)
-    lines.append(nav)
-    lines.append("")
+    # Navigation (top)
+    if include_nav:
+        nav = _format_nav(prev_commit, next_commit)
+        lines.append(nav)
+        lines.append("")
 
     # Human-readable header
     lines.append(f"# Commit {commit['short_hash']}")
@@ -403,10 +405,11 @@ def generate_commit_markdown(
             lines.append("")
 
     # Bottom navigation
-    lines.append("---")
-    lines.append("")
-    lines.append(nav)
-    lines.append("")
+    if include_nav:
+        lines.append("---")
+        lines.append("")
+        lines.append(nav)
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -503,13 +506,28 @@ def main():
         action="store_true",
         help="Regenerate all audit files (default: only create files for new commits)",
     )
+    parser.add_argument(
+        "--single-file",
+        nargs="?",
+        const="-",
+        default=None,
+        metavar="FILE",
+        help="Write all audited commits to a single file (oldest first). "
+             "Use without a value or with '-' for stdout.",
+    )
     args = parser.parse_args()
+
+    # When stdout is used for content output, route progress to stderr
+    _stdout_is_content = args.single_file == "-"
+
+    def info(msg=""):
+        print(msg, file=sys.stderr if _stdout_is_content else sys.stdout)
 
     # Resolve paths
     repo_root = get_repo_root(args.repo_path)
     output_dir = Path(args.output_dir) if args.output_dir else repo_root / ".claude-audit"
 
-    print(f"Repository: {repo_root}")
+    info(f"Repository: {repo_root}")
 
     # Find session directory
     if args.session_dir:
@@ -528,35 +546,66 @@ def main():
         print(f"Then re-run with --session-dir <path>", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Session dir: {session_dir}")
+    info(f"Session dir: {session_dir}")
 
     # Load sessions
-    print("Loading sessions...")
+    info("Loading sessions...")
     sessions = load_all_sessions(session_dir)
     if not sessions:
-        print("No sessions found (or all sessions contained only tool calls).")
+        info("No sessions found (or all sessions contained only tool calls).")
         sys.exit(0)
 
     total_messages = sum(len(msgs) for msgs in sessions.values())
-    print(f"  Found {len(sessions)} session(s) with {total_messages} human/assistant message(s)")
+    info(f"  Found {len(sessions)} session(s) with {total_messages} human/assistant message(s)")
 
     # Get commits
-    print("Reading git history...")
+    info("Reading git history...")
     commits = get_git_commits(repo_root, author=args.author)
     if not commits:
-        print("No commits found.")
+        info("No commits found.")
         sys.exit(0)
-    print(f"  Found {len(commits)} commit(s)")
+    info(f"  Found {len(commits)} commit(s)")
 
     # Match
-    print("Matching commits to sessions...")
+    info("Matching commits to sessions...")
     commit_sessions = match_commits_to_sessions(commits, sessions)
-    print(f"  {len(commit_sessions)} commit(s) matched to session(s)")
+    info(f"  {len(commit_sessions)} commit(s) matched to session(s)")
 
     if not commit_sessions:
-        print("\nNo commits could be matched to any Claude Code sessions.")
-        print("This can happen if session timestamps don't overlap with commit times.")
+        info("\nNo commits could be matched to any Claude Code sessions.")
+        info("This can happen if session timestamps don't overlap with commit times.")
         sys.exit(0)
+
+    # Single-file output mode
+    if args.single_file is not None:
+        # Build list oldest-first (git log returns newest-first)
+        audited = [c for c in reversed(commits) if c["hash"] in commit_sessions]
+        parts = []
+
+        # Header
+        parts.append(generate_index(
+            [(c, commit_sessions[c["hash"]]) for c in audited],
+            len(commits), repo_root,
+        ))
+
+        # Each commit, oldest first, no nav links
+        for commit in audited:
+            matched = commit_sessions[commit["hash"]]
+            diff_stat = get_commit_diff_stat(repo_root, commit["hash"])
+            md = generate_commit_markdown(commit, matched, diff_stat, include_nav=False)
+            parts.append(md)
+
+        combined = "\n---\n\n".join(parts) + "\n"
+
+        if args.single_file == "-":
+            sys.stdout.write(combined)
+        else:
+            outpath = Path(args.single_file)
+            outpath.parent.mkdir(parents=True, exist_ok=True)
+            outpath.write_text(combined, encoding="utf-8")
+            print(f"Written {len(audited)} audited commit(s) to {outpath}",
+                  file=sys.stderr)
+        return
 
     if args.dry_run:
         new_count = 0
@@ -573,13 +622,13 @@ def main():
                 matched = commit_sessions[commit["hash"]]
                 n_msgs = sum(len(msgs) for _, msgs in matched)
                 label = " (rebuild)" if exists else ""
-                print(f"  {filename} — {commit['subject'][:60]} ({n_msgs} msgs){label}")
+                info(f"  {filename} — {commit['subject'][:60]} ({n_msgs} msgs){label}")
         if not args.rebuild and existing_count:
-            print(f"  ({existing_count} existing file(s) skipped; use --rebuild to regenerate)")
+            info(f"  ({existing_count} existing file(s) skipped; use --rebuild to regenerate)")
         if new_count == 0:
-            print(f"\nDry run — no new files to generate in {output_dir}/")
+            info(f"\nDry run — no new files to generate in {output_dir}/")
         else:
-            print(f"\nDry run — would generate {new_count} file(s) in {output_dir}/")
+            info(f"\nDry run — would generate {new_count} file(s) in {output_dir}/")
         return
 
     # Generate output
@@ -610,20 +659,20 @@ def main():
     write_indices = new_indices | neighbor_indices
 
     if not new_indices:
-        print("\nNo new commits to audit.")
+        info("\nNo new commits to audit.")
         # Still regenerate index in case it was deleted
         commits_with_sessions = [(c, commit_sessions[c["hash"]]) for c in audited]
         index_md = generate_index(commits_with_sessions, len(commits), repo_root)
         index_path = output_dir / "index.md"
         index_path.write_text(index_md, encoding="utf-8")
-        print(f"  index.md refreshed — {len(commits_with_sessions)} audited commits")
+        info(f"  index.md refreshed — {len(commits_with_sessions)} audited commits")
         return
 
     n_new = len(new_indices)
     n_updated = len(neighbor_indices - new_indices)
-    print(f"\nWriting audit files to {output_dir}/")
+    info(f"\nWriting audit files to {output_dir}/")
     if not args.rebuild:
-        print(f"  {n_new} new, {n_updated} updated (nav links), "
+        info(f"  {n_new} new, {n_updated} updated (nav links), "
               f"{len(audited) - len(write_indices)} unchanged")
 
     for i, commit in enumerate(audited):
@@ -644,7 +693,7 @@ def main():
 
         n_msgs = sum(len(msgs) for _, msgs in matched)
         tag = "" if i in new_indices else " (nav update)"
-        print(f"  {filename} — {commit['subject'][:60]} ({n_msgs} msgs){tag}")
+        info(f"  {filename} — {commit['subject'][:60]} ({n_msgs} msgs){tag}")
 
     commits_with_sessions = [(c, commit_sessions[c["hash"]]) for c in audited]
 
@@ -652,9 +701,9 @@ def main():
     index_md = generate_index(commits_with_sessions, len(commits), repo_root)
     index_path = output_dir / "index.md"
     index_path.write_text(index_md, encoding="utf-8")
-    print(f"  index.md — {len(commits_with_sessions)} audited commits")
+    info(f"  index.md — {len(commits_with_sessions)} audited commits")
 
-    print(f"\nDone. {len(write_indices)} file(s) written, "
+    info(f"\nDone. {len(write_indices)} file(s) written, "
           f"{len(commits_with_sessions)} total audited commits.")
 
 
