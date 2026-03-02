@@ -104,7 +104,7 @@ exactMidi = 69 + 12 × log₂(ref × 2^((midi-69+c/100)/12) / 440)
           = midi + c/100
 ```
 
-So `decompose` recovers the exact MIDI value (note + cents/100) that was used to generate the frequency. The round-trip is mathematically exact.
+So `decompose` recovers the exact MIDI value (note + cents/100) that was used to generate the frequency **when `referencePitch` is 440 Hz**. When the user configures a different reference pitch (e.g., 442 Hz), decompose returns a shifted MIDI+cents that differs from the `TuningSystem.frequency()` input — but this does not affect pipeline correctness because the pitch bend compensates for the offset. The decompose function always correctly maps any frequency to the MIDI note and cents needed to reproduce it on a MIDI sampler with A4=440 Hz.
 
 #### Rounding Analysis
 
@@ -194,6 +194,7 @@ This configures pitch bend sensitivity to exactly ±2 semitones (±200 cents). T
 | Called in `loadPreset()` after instrument change | **Correct** | Preset changes may reset pitch bend sensitivity; re-sending ensures it's correct. |
 | No "null RPN" terminator | **Acceptable** | Best practice recommends sending CC#101=127, CC#100=127 after setting an RPN to prevent accidental changes. `AVAudioUnitSampler` does not require this — the sampler processes the RPN synchronously and no other code sends CC#6/38. |
 | Race condition with `startNote()` | **None** | `sendPitchBendRange()` is called synchronously within `loadPreset()`, which is `async` and awaited by callers. By the time `startNote()` executes, the RPN has been processed. |
+| 20ms settle delay after `loadSoundBankInstrument` | **Not assessed** | `loadPreset()` includes a 20ms `Task.sleep` after loading a new instrument to allow the audio graph to settle. This delay was introduced empirically (without it, the first note after a preset switch produces no sound). The delay is outside the frequency computation scope but is part of the play() pipeline. |
 
 **Assessment: Correct.** Fully MIDI-spec-compliant RPN sequence with no race conditions.
 
@@ -482,14 +483,14 @@ MIDI best practice recommends sending a "null" RPN (CC#101=127, CC#100=127) afte
 
 ## Recommendations Catalogue
 
-These are catalogued for future implementation stories. **No code changes should be made in story 28.2.**
+These are catalogued for future implementation stories. **No code changes should be made in story 28.2.** Listed in recommended implementation order — R-3 and R-4 clarify non-obvious coupling and correctness properties; R-1, R-2, R-5 are purely defensive.
 
 | # | Finding | Recommendation | Priority | Effort |
 |---|---|---|---|---|
-| R-1 | `decompose()` clamping (F-1) | Add a comment documenting that clamping loses precision outside MIDI 0–127, and that this is acceptable given `validFrequencyRange` | Low | Trivial |
-| R-2 | Null RPN terminator (F-3) | Consider adding CC#101=127, CC#100=127 after `sendPitchBendRange()` for defensive MIDI hygiene | Low | Trivial |
 | R-3 | Pitch bend range documentation | Add a comment linking `pitchBendValue()` range (200) to `sendPitchBendRange()` configuration (2 semitones) so the coupling is explicit | Low | Trivial |
 | R-4 | `adjustFrequency()` algebraic identity | Add a comment explaining why the decompose-reconstruct does not lose precision — future developers may question the "double decompose" | Low | Trivial |
+| R-1 | `decompose()` clamping (F-1) | Add a comment documenting that clamping loses precision outside MIDI 0–127, and that this is acceptable given `validFrequencyRange` | Low | Trivial |
+| R-2 | Null RPN terminator (F-3) | Consider adding CC#101=127, CC#100=127 after `sendPitchBendRange()` for defensive MIDI hygiene | Low | Trivial |
 | R-5 | Cross-reference 28.1 recommendations | R-2 and R-3 from the 28.1 report (add doc comments to `centOffset(for:)` and `frequency()`) remain open | Low | Trivial |
 
 ---

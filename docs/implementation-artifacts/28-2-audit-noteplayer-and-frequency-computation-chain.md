@@ -1,6 +1,6 @@
 # Story 28.2: Audit NotePlayer and Frequency Computation Chain
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -217,8 +217,10 @@ None — research/audit story, no code changes or debugging.
 ### Change Log
 
 - 2026-03-02: Completed audit of NotePlayer and frequency computation chain (story 28.2)
+- 2026-03-02: Code review — 0 HIGH, 1 MEDIUM, 3 LOW findings. Fixed: added sprint-status.yaml to File List, qualified "exact inverse" claim for non-440 reference pitches, noted 20ms preset delay as not-assessed, reordered recommendations by relative importance.
 
 ### File List
 
 - `docs/implementation-artifacts/28-2-audit-report-noteplayer-and-frequency-computation-chain.md` (new) — Comprehensive audit report
 - `docs/implementation-artifacts/28-2-audit-noteplayer-and-frequency-computation-chain.md` (modified) — Story file updated with task completion, Dev Agent Record, File List, Change Log, Status
+- `docs/implementation-artifacts/sprint-status.yaml` (modified) — Updated story 28-2 status to review
