@@ -256,37 +256,40 @@ struct TuningSystemTests {
     @Test("justIntonation frequency for just major third is accurate to 0.1 cent")
     func justIntonationFrequencyMajorThird() async {
         // Just M3 ratio = 5/4, so expected Hz = 440.0 × 5/4 = 550.0
-        // MIDI 73 (E5) with offset 386.314 - 400.0 = -13.686 cents
+        // MIDI 73 (C#5) with offset 386.314 - 400.0 = -13.686 cents
         let freq = TuningSystem.justIntonation.frequency(
             for: DetunedMIDINote(note: MIDINote(73), offset: Cents(-13.686)),
             referencePitch: .concert440
         )
         let expectedHz = 440.0 * (5.0 / 4.0) // 550.0 Hz exactly
-        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
     }
 
     @Test("justIntonation frequency for just perfect fifth is accurate to 0.1 cent")
     func justIntonationFrequencyPerfectFifth() async {
         // Just P5 ratio = 3/2, so expected Hz = 440.0 × 3/2 = 660.0
-        // MIDI 76 (E5+3) with offset 701.955 - 700.0 = +1.955 cents
+        // MIDI 76 (E5) with offset 701.955 - 700.0 = +1.955 cents
         let freq = TuningSystem.justIntonation.frequency(
             for: DetunedMIDINote(note: MIDINote(76), offset: Cents(1.955)),
             referencePitch: .concert440
         )
         let expectedHz = 440.0 * (3.0 / 2.0) // 660.0 Hz exactly
-        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
     }
 
     @Test("justIntonation frequency for just minor seventh is accurate to 0.1 cent")
     func justIntonationFrequencyMinorSeventh() async {
         // Just m7 ratio = 9/5, so expected Hz = 440.0 × 9/5 = 792.0
-        // MIDI 79 (G5+1) with offset 1017.596 - 1000.0 = +17.596 cents
+        // MIDI 79 (G5) with offset 1017.596 - 1000.0 = +17.596 cents
         let freq = TuningSystem.justIntonation.frequency(
             for: DetunedMIDINote(note: MIDINote(79), offset: Cents(17.596)),
             referencePitch: .concert440
         )
         let expectedHz = 440.0 * (9.0 / 5.0) // 792.0 Hz exactly
-        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
     }
 
     // MARK: - Storage Identifiers (Story 23.1)
