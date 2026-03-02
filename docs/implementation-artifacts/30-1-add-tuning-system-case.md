@@ -1,6 +1,6 @@
 # Story 30.1: Add Just Intonation Tuning System Case
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -317,10 +317,10 @@ None — clean implementation with no debugging needed.
 - Added `case justIntonation` to `TuningSystem` enum with all 13 hardcoded cent offset values from the 5-limit JI research (story 29.1, Section 5.3)
 - Added `storageIdentifier` and `fromStorageIdentifier` mappings for `"justIntonation"`
 - No changes to `frequency(for:referencePitch:)` — the universal cents-based formula works for any tuning system (FR55 validated)
-- Added 10 new tests: 5 cent offset tests (table-driven + edge cases), 2 storage identifier tests, 1 Codable round-trip test, 3 frequency precision tests
+- Added 11 new tests: 5 cent offset tests (table-driven + edge cases), 2 storage identifier tests, 1 Codable round-trip test, 3 frequency precision tests
 - Updated 2 existing tests: `caseIterableCount` (1→2), `fromStorageIdentifierUnknown` (replaced `"justIntonation"` with `"pythagorean"`)
 - FR55 confirmed: zero changes outside `TuningSystem.swift` and `TuningSystemTests.swift`
-- All 780 tests pass (12 new, 768 existing unchanged)
+- All 780 tests pass (11 new, 2 updated, 767 existing unchanged)
 
 ### File List
 
@@ -329,4 +329,5 @@ None — clean implementation with no debugging needed.
 
 ### Change Log
 
-- 2026-03-02: Implemented `.justIntonation` tuning system case with 13 cent offset constants, storage identifiers, and 12 new/updated tests. FR55 validated — no changes outside TuningSystem files. All 780 tests pass.
+- 2026-03-02: Implemented `.justIntonation` tuning system case with 13 cent offset constants, storage identifiers, and 11 new + 2 updated tests. FR55 validated — no changes outside TuningSystem files. All 780 tests pass.
+- 2026-03-02: Code review — Fixed 4 issues: (M1) converted frequency precision tests from Hz-based to cent-based tolerance to properly verify NFR14, (M2) corrected MIDI 73 note name from E5 to C#5 in test comment, (L1) removed confusing +3/+1 suffixes from note name comments, (L2) corrected test count in completion notes (10→11). All 780 tests pass.
