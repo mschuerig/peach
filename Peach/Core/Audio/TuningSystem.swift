@@ -7,11 +7,28 @@ import Foundation
 /// (e.g. `.justIntonation`) supplies non-zero cent deviations.
 enum TuningSystem: Hashable, Sendable, CaseIterable, Codable {
     case equalTemperament
+    case justIntonation
 
     func centOffset(for interval: Interval) -> Double {
         switch self {
         case .equalTemperament:
             return Double(interval.semitones) * 100.0
+        case .justIntonation:
+            switch interval {
+            case .prime:        return 0.0
+            case .minorSecond:  return 111.731
+            case .majorSecond:  return 203.910
+            case .minorThird:   return 315.641
+            case .majorThird:   return 386.314
+            case .perfectFourth: return 498.045
+            case .tritone:      return 590.224
+            case .perfectFifth: return 701.955
+            case .minorSixth:   return 813.686
+            case .majorSixth:   return 884.359
+            case .minorSeventh: return 1017.596
+            case .majorSeventh: return 1088.269
+            case .octave:       return 1200.0
+            }
         }
     }
 
@@ -37,12 +54,14 @@ enum TuningSystem: Hashable, Sendable, CaseIterable, Codable {
     var storageIdentifier: String {
         switch self {
         case .equalTemperament: return "equalTemperament"
+        case .justIntonation: return "justIntonation"
         }
     }
 
     static func fromStorageIdentifier(_ id: String) -> TuningSystem? {
         switch id {
         case "equalTemperament": return .equalTemperament
+        case "justIntonation": return .justIntonation
         default: return nil
         }
     }

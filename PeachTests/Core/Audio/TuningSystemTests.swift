@@ -42,11 +42,54 @@ struct TuningSystemTests {
         }
     }
 
+    // MARK: - Just Intonation Cent Offsets
+
+    @Test("all 13 intervals have correct just intonation cent values")
+    func allIntervalsJustIntonationCentValues() async {
+        let expectedCents: [Interval: Double] = [
+            .prime: 0.0, .minorSecond: 111.731, .majorSecond: 203.910,
+            .minorThird: 315.641, .majorThird: 386.314, .perfectFourth: 498.045,
+            .tritone: 590.224, .perfectFifth: 701.955, .minorSixth: 813.686,
+            .majorSixth: 884.359, .minorSeventh: 1017.596, .majorSeventh: 1088.269,
+            .octave: 1200.0
+        ]
+        for interval in Interval.allCases {
+            let actual = TuningSystem.justIntonation.centOffset(for: interval)
+            let expected = expectedCents[interval]!
+            #expect(
+                abs(actual - expected) < 0.001,
+                "Unexpected JI cent offset for \(interval): got \(actual), expected \(expected)"
+            )
+        }
+    }
+
+    @Test("justIntonation centOffset for prime returns 0.0")
+    func justIntonationPrimeCentOffset() async {
+        #expect(TuningSystem.justIntonation.centOffset(for: .prime) == 0.0)
+    }
+
+    @Test("justIntonation centOffset for octave returns 1200.0")
+    func justIntonationOctaveCentOffset() async {
+        #expect(TuningSystem.justIntonation.centOffset(for: .octave) == 1200.0)
+    }
+
+    @Test("justIntonation centOffset for majorThird returns 386.314")
+    func justIntonationMajorThirdCentOffset() async {
+        let actual = TuningSystem.justIntonation.centOffset(for: .majorThird)
+        #expect(abs(actual - 386.314) < 0.001)
+    }
+
+    @Test("justIntonation centOffset for perfectFifth returns 701.955")
+    func justIntonationPerfectFifthCentOffset() async {
+        let actual = TuningSystem.justIntonation.centOffset(for: .perfectFifth)
+        #expect(abs(actual - 701.955) < 0.001)
+    }
+
     // MARK: - CaseIterable (AC #4)
 
-    @Test("CaseIterable gives 1 case")
+    @Test("CaseIterable gives 2 cases")
     func caseIterableCount() async {
-        #expect(TuningSystem.allCases.count == 1)
+        #expect(TuningSystem.allCases.count == 2)
     }
 
     // MARK: - Codable (AC #4)
@@ -54,6 +97,14 @@ struct TuningSystemTests {
     @Test("Codable round-trip preserves value")
     func codableRoundTrip() async throws {
         let original = TuningSystem.equalTemperament
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(TuningSystem.self, from: data)
+        #expect(decoded == original)
+    }
+
+    @Test("Codable round-trip preserves justIntonation")
+    func codableRoundTripJustIntonation() async throws {
+        let original = TuningSystem.justIntonation
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(TuningSystem.self, from: data)
         #expect(decoded == original)
@@ -200,6 +251,44 @@ struct TuningSystemTests {
         #expect(abs(c4_442.rawValue - expected442) < 0.01)
     }
 
+    // MARK: - Just Intonation Frequency Precision (NFR14)
+
+    @Test("justIntonation frequency for just major third is accurate to 0.1 cent")
+    func justIntonationFrequencyMajorThird() async {
+        // Just M3 ratio = 5/4, so expected Hz = 440.0 × 5/4 = 550.0
+        // MIDI 73 (E5) with offset 386.314 - 400.0 = -13.686 cents
+        let freq = TuningSystem.justIntonation.frequency(
+            for: DetunedMIDINote(note: MIDINote(73), offset: Cents(-13.686)),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 * (5.0 / 4.0) // 550.0 Hz exactly
+        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+    }
+
+    @Test("justIntonation frequency for just perfect fifth is accurate to 0.1 cent")
+    func justIntonationFrequencyPerfectFifth() async {
+        // Just P5 ratio = 3/2, so expected Hz = 440.0 × 3/2 = 660.0
+        // MIDI 76 (E5+3) with offset 701.955 - 700.0 = +1.955 cents
+        let freq = TuningSystem.justIntonation.frequency(
+            for: DetunedMIDINote(note: MIDINote(76), offset: Cents(1.955)),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 * (3.0 / 2.0) // 660.0 Hz exactly
+        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+    }
+
+    @Test("justIntonation frequency for just minor seventh is accurate to 0.1 cent")
+    func justIntonationFrequencyMinorSeventh() async {
+        // Just m7 ratio = 9/5, so expected Hz = 440.0 × 9/5 = 792.0
+        // MIDI 79 (G5+1) with offset 1017.596 - 1000.0 = +17.596 cents
+        let freq = TuningSystem.justIntonation.frequency(
+            for: DetunedMIDINote(note: MIDINote(79), offset: Cents(17.596)),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 * (9.0 / 5.0) // 792.0 Hz exactly
+        #expect(abs(freq.rawValue - expectedHz) < 0.05)
+    }
+
     // MARK: - Storage Identifiers (Story 23.1)
 
     @Test("storageIdentifier returns stable string for equalTemperament")
@@ -215,11 +304,24 @@ struct TuningSystemTests {
         #expect(restored == original)
     }
 
+    @Test("storageIdentifier returns justIntonation for justIntonation")
+    func storageIdentifierJustIntonation() async {
+        #expect(TuningSystem.justIntonation.storageIdentifier == "justIntonation")
+    }
+
+    @Test("fromStorageIdentifier round-trips justIntonation")
+    func fromStorageIdentifierJustIntonationRoundTrip() async {
+        let original = TuningSystem.justIntonation
+        let identifier = original.storageIdentifier
+        let restored = TuningSystem.fromStorageIdentifier(identifier)
+        #expect(restored == original)
+    }
+
     @Test("fromStorageIdentifier returns nil for unknown identifier")
     func fromStorageIdentifierUnknown() async {
-        #expect(TuningSystem.fromStorageIdentifier("justIntonation") == nil)
         #expect(TuningSystem.fromStorageIdentifier("") == nil)
         #expect(TuningSystem.fromStorageIdentifier("EqualTemperament") == nil)
+        #expect(TuningSystem.fromStorageIdentifier("pythagorean") == nil)
     }
 
     // MARK: - frequency(for: MIDINote) Convenience (Story 22.3 AC #4)
