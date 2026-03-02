@@ -1,187 +1,241 @@
 # 5. Building Block View
 
-## Level 1: System Decomposition
+## Level 1 — Overall System
 
-```
-Peach/
-├── App/              Composition root, navigation shell, EnvironmentKeys
-├── Core/             Shared services (cross-feature)
-│   ├── Audio/        Tone generation, value types, SF2 parsing
-│   ├── Algorithm/    Comparison selection
-│   ├── Data/         Persistence
-│   ├── Profile/      User statistics, timeline
-│   ├── Training/     Shared domain types (Comparison, CompletedPitchMatching, observers, Resettable)
-│   ├── TrainingSession.swift    Protocol shared by ComparisonSession and PitchMatchingSession
-│   ├── Comparable+Clamped.swift Clamping extension
-│   └── UnitInterval.swift       Value type for 0...1 range
-├── Comparison/       Comparison training loop feature
-├── PitchMatching/    Pitch matching training feature
-├── Profile/          Profile visualization feature
-├── Settings/         Configuration feature
-├── Start/            Home screen feature
-├── Info/             About screen feature
-└── Resources/        Localization, assets
-```
+```mermaid
+graph TB
+    subgraph "Peach App"
+        App["App/<br><i>Composition root,<br>navigation shell</i>"]
 
-## Level 2: Core Services
+        subgraph "Feature Modules"
+            Start["Start/<br><i>Home screen,<br>training entry points</i>"]
+            Comparison["Comparison/<br><i>Comparison training<br>screen + UI</i>"]
+            PitchMatching["PitchMatching/<br><i>Pitch matching<br>screen + slider</i>"]
+            Profile["Profile/<br><i>Profile visualization,<br>statistics</i>"]
+            Settings["Settings/<br><i>Configuration UI</i>"]
+            Info["Info/<br><i>About screen</i>"]
+        end
 
-### Service Overview
+        subgraph "Core"
+            Audio["Core/Audio/<br><i>NotePlayer, SoundFont,<br>PlaybackHandle</i>"]
+            Algorithm["Core/Algorithm/<br><i>NextComparisonStrategy,<br>KazezNoteStrategy</i>"]
+            Data["Core/Data/<br><i>TrainingDataStore,<br>SwiftData models</i>"]
+            ProfileCore["Core/Profile/<br><i>PerceptualProfile,<br>TrendAnalyzer</i>"]
+            Training["Core/Training/<br><i>Session protocols,<br>domain value types</i>"]
+        end
+    end
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     ComparisonSession                            │
-│              (state machine, error boundary)                     │
-│                                                                  │
-│    ┌──────────┐  ┌────────────────┐  ┌──────────────────┐       │
-│    │NotePlayer│  │NextComparison  │  │PerceptualProfile │       │
-│    │(protocol)│  │Strategy (prot.)│  │   (@Observable)  │       │
-│    └────┬─────┘  └──────┬─────────┘  └────────┬─────────┘       │
-│         │               │                      │                 │
-│    ┌────▼─────┐  ┌──────▼─────────┐           │                 │
-│    │SoundFont │  │Kazez           │           │                 │
-│    │NotePlayer│  │NoteStrategy    │◀──────────┘                 │
-│    └──────────┘  └────────────────┘  reads profile              │
-│                                                                  │
-│    Observers: [ComparisonObserver]                               │
-│    ┌──────────┬──────────┬──────────┬──────────┬──────────┐     │
-│    │Training  │Perceptual│Haptic    │Trend     │Threshold │     │
-│    │DataStore │Profile   │Feedback  │Analyzer  │Timeline  │     │
-│    │(persist) │(analytic)│Manager   │(trends)  │(history) │     │
-│    └──────────┴──────────┴──────────┴──────────┴──────────┘     │
-└──────────────────────────────────────────────────────────────────┘
+    App --> Start
+    Start --> Comparison
+    Start --> PitchMatching
+    Start --> Profile
+    Start --> Settings
+    Start --> Info
+
+    Comparison --> Training
+    Comparison --> Audio
+    PitchMatching --> Training
+    PitchMatching --> Audio
+
+    Training --> Algorithm
+    Training --> ProfileCore
+    Training --> Data
+    Algorithm --> ProfileCore
+
+    Profile --> ProfileCore
+    Profile --> Data
+    Settings -.->|"@AppStorage<br>(UserDefaults)"| Training
 ```
 
-### ComparisonSession
+### Contained Building Blocks
 
-**File:** `Comparison/ComparisonSession.swift`
-**Role:** Central orchestrator. The only component that understands a "comparison" as two notes played in sequence with a user answer.
+| Building Block | Responsibility |
+|---|---|
+| **App/** | Composition root (`PeachApp.swift`): wires all dependencies, injects services into SwiftUI environment. Navigation shell (`ContentView.swift`): hub-and-spoke `NavigationStack`. |
+| **Start/** | Home screen with four training entry points (Comparison, Pitch Matching, Interval Comparison, Interval Pitch Matching), profile preview sparkline, and navigation to Settings/Profile/Info. |
+| **Comparison/** | Comparison training UI: Higher/Lower buttons, feedback indicator, difficulty display. Reads `ComparisonSession` from environment. |
+| **PitchMatching/** | Pitch matching UI: vertical pitch slider, feedback indicator. Reads `PitchMatchingSession` from environment. |
+| **Profile/** | Perceptual profile visualization: threshold timeline chart (Swift Charts), summary statistics with trend, matching statistics. |
+| **Settings/** | Configuration interface: interval selector, note range, duration, reference pitch, loudness variation, tuning system, sound source picker, reset button. All backed by `@AppStorage`. |
+| **Info/** | Static about screen: app name, developer, copyright, version. |
+| **Core/Audio/** | Audio playback: `NotePlayer` protocol, `SoundFontNotePlayer` (AVAudioEngine + AVAudioUnitSampler), `PlaybackHandle` for note lifecycle, `SoundFontLibrary` for preset discovery, `AudioSessionInterruptionMonitor`. |
+| **Core/Algorithm/** | Comparison selection: `NextComparisonStrategy` protocol, `KazezNoteStrategy` (psychoacoustic staircase algorithm). |
+| **Core/Data/** | Persistence: `TrainingDataStore` (SwiftData CRUD), `ComparisonRecord` and `PitchMatchingRecord` (`@Model` classes). |
+| **Core/Profile/** | User model: `PerceptualProfile` (128-slot per-note statistics via Welford's algorithm), `PitchDiscriminationProfile` and `PitchMatchingProfile` protocols, `TrendAnalyzer`, `ThresholdTimeline`. |
+| **Core/Training/** | Domain types and session protocols: `Comparison`, `CompletedComparison`, `CompletedPitchMatching`, `PitchMatchingChallenge`, `ComparisonObserver`, `PitchMatchingObserver`, `TrainingSession` protocol, `Resettable`. |
 
-- `@MainActor @Observable final class`
-- State machine: `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → loop
-- Coordinates `NotePlayer`, `NextComparisonStrategy`, `PerceptualProfile`
-- Notifies `[ComparisonObserver]` on each completed comparison
-- Catches all service errors — training continues gracefully
-- Reads settings live via `UserSettings` protocol on each comparison
-- Stores `[Resettable]` for reset-capable dependencies (TrendAnalyzer, ThresholdTimeline)
+---
 
-### NotePlayer (protocol) → SoundFontNotePlayer
+## Level 2 — Core/Audio
 
-**Files:** `Core/Audio/NotePlayer.swift`, `Core/Audio/SoundFontNotePlayer.swift`
-**Role:** Plays a tone at a given frequency for a given duration.
+```mermaid
+classDiagram
+    class NotePlayer {
+        <<protocol>>
+        +play(frequency, velocity, amplitudeDB) PlaybackHandle
+        +play(frequency, duration, velocity, amplitudeDB)
+        +stopAll()
+    }
 
-- Knows only frequencies (Hz), durations, amplitudes
-- No concept of MIDI notes, comparisons, or training
-- `AVAudioEngine` + `AVAudioUnitSampler` for SF2 soundfont playback
-- Returns a `PlaybackHandle` for stop/adjust control
-- Reads `userSettings.soundSource` on each `play()` call to select the SF2 preset
+    class PlaybackHandle {
+        <<protocol>>
+        +stop()
+        +adjustFrequency(Frequency)
+    }
 
-### NextComparisonStrategy (protocol) → KazezNoteStrategy
+    class SoundFontNotePlayer {
+        -audioEngine: AVAudioEngine
+        -sampler: AVAudioUnitSampler
+        -userSettings: UserSettings
+        +play(...) SoundFontPlaybackHandle
+        +stopAll()
+        -decompose(frequency) (MIDINote, Cents)
+    }
 
-**Files:** `Core/Algorithm/NextComparisonStrategy.swift`, `Core/Algorithm/KazezNoteStrategy.swift`
-**Role:** Selects the next comparison based on the user's profile and settings.
+    class SoundFontPlaybackHandle {
+        -sampler: AVAudioUnitSampler
+        -midiNote: UInt8
+        -channel: UInt8
+        -hasStopped: Bool
+        +stop()
+        +adjustFrequency(Frequency)
+    }
 
-- Stateless: reads `PitchDiscriminationProfile` and `lastComparison`, returns a `Comparison`
-- **Difficulty:** Kazez convergence formulas — correct answer narrows (`N = P × [1 - 0.08 × √P]`), wrong answer widens (`N = P × [1 + 0.09 × √P]`)
-- **Bootstrap:** when no previous comparison exists, uses neighbor-weighted effective difficulty from up to 5 trained notes in each direction
+    class SoundSourceProvider {
+        <<protocol>>
+        +availableSources: [SoundSourceID]
+        +displayName(for: SoundSourceID) String
+    }
 
-### PerceptualProfile
+    class SoundFontLibrary {
+        -presets: [SoundSourceID]
+        +availableSources: [SoundSourceID]
+        +displayName(for: SoundSourceID) String
+    }
 
-**File:** `Core/Profile/PerceptualProfile.swift`
-**Role:** In-memory aggregate of pitch discrimination ability per MIDI note.
+    class AudioSessionInterruptionMonitor {
+        -onStopRequired: () -> Void
+        +startMonitoring()
+    }
 
-- `@Observable @MainActor final class`
-- 128-slot array (MIDI 0–127), each slot holds `PerceptualNote`: mean, stdDev, m2, sampleCount, currentDifficulty
-- Welford's online algorithm for incremental mean and variance
-- Never persisted — rebuilt from `ComparisonRecord`s on every app launch
-- Weak spot identification: untrained notes prioritized, then highest absolute threshold
-- Also implements `ComparisonObserver` for automatic incremental updates
+    NotePlayer <|.. SoundFontNotePlayer
+    PlaybackHandle <|.. SoundFontPlaybackHandle
+    SoundSourceProvider <|.. SoundFontLibrary
+    SoundFontNotePlayer ..> SoundFontPlaybackHandle : creates
+    SoundFontNotePlayer ..> AudioSessionInterruptionMonitor : uses
+```
 
-### TrainingDataStore
+The audio layer knows only frequencies (Hz), velocities, and amplitudes. It has no concept of MIDI notes, musical intervals, comparisons, or training. The `SoundFontNotePlayer` internally decomposes a frequency into the nearest MIDI note + cent remainder for pitch bend, but this is an implementation detail.
 
-**File:** `Core/Data/TrainingDataStore.swift`
-**Role:** Pure persistence layer for `ComparisonRecord`.
+**Key interface — `PlaybackHandle`:** Every `play()` call returns a handle. The caller owns the handle and is responsible for stopping playback. This makes note ownership explicit and enables both fixed-duration (comparison) and indefinite (pitch matching) playback patterns.
 
-- `@MainActor final class`
-- CRUD operations: `save`, `fetchAll`, `delete`, `deleteAll`
-- Sole accessor of SwiftData `ModelContext`
-- Implements `ComparisonObserver` — automatically persists each completed comparison
-- Errors are logged but don't propagate (observers don't block training)
+---
 
-### ComparisonRecord
+## Level 2 — Core/Training (Sessions)
 
-**File:** `Core/Data/ComparisonRecord.swift`
-**Role:** SwiftData model for comparison training.
+```mermaid
+classDiagram
+    class TrainingSession {
+        <<protocol>>
+        +start(intervals: Set~DirectedInterval~)
+        +stop()
+        +isIdle: Bool
+    }
 
-- Fields: `note1` (Int), `note2` (Int), `note2CentOffset` (Double), `isCorrect` (Bool), `timestamp` (Date)
-- `note1` and `note2` are always the same MIDI note (note2 differs by cents only)
-- Signed `note2CentOffset`: positive = higher, negative = lower
+    class ComparisonSession {
+        -state: ComparisonSessionState
+        -notePlayer: NotePlayer
+        -strategy: NextComparisonStrategy
+        -profile: PitchDiscriminationProfile
+        -userSettings: UserSettings
+        -observers: [ComparisonObserver]
+        +start(intervals)
+        +stop()
+        +handleAnswer(isHigher: Bool)
+    }
 
-### PitchMatchingRecord
+    class PitchMatchingSession {
+        -state: PitchMatchingSessionState
+        -notePlayer: NotePlayer
+        -profile: PitchMatchingProfile
+        -observers: [PitchMatchingObserver]
+        -userSettings: UserSettings
+        +start(intervals)
+        +stop()
+        +adjustPitch(Double)
+        +commitPitch(Double)
+    }
 
-**File:** `Core/Data/PitchMatchingRecord.swift`
-**Role:** SwiftData model for pitch matching training.
+    class ComparisonObserver {
+        <<protocol>>
+        +comparisonCompleted(CompletedComparison)
+    }
 
-- Fields: `referenceNote` (Int), `initialCentOffset` (Double), `userCentError` (Double), `timestamp` (Date)
+    class PitchMatchingObserver {
+        <<protocol>>
+        +pitchMatchingCompleted(CompletedPitchMatching)
+    }
 
-### ThresholdTimeline
+    TrainingSession <|.. ComparisonSession
+    TrainingSession <|.. PitchMatchingSession
+    ComparisonSession ..> ComparisonObserver : notifies
+    PitchMatchingSession ..> PitchMatchingObserver : notifies
+```
 
-**File:** `Core/Profile/ThresholdTimeline.swift`
-**Role:** Tracks threshold history snapshots for timeline visualization.
+Both sessions follow the same patterns: `@Observable` state machines, protocol-based dependency injection, observer fan-out for side effects, and error boundary behavior (audio/persistence failures don't crash the training loop).
 
-- Implements `ComparisonObserver` for incremental updates
-- Implements `Resettable` for data reset support
-- Injected via `@Environment(\.thresholdTimeline)`
+---
 
-### TrendAnalyzer
+## Level 2 — Core/Profile
 
-**File:** `Core/Profile/TrendAnalyzer.swift`
-**Role:** Computes improving/stable/declining trend from historical records.
+```mermaid
+classDiagram
+    class PitchDiscriminationProfile {
+        <<protocol>>
+        +update(note, centOffset, isCorrect)
+        +overallMean: Double?
+        +overallStdDev: Double?
+        +statsForNote(MIDINote) PerceptualNote
+        +weakSpots(count) [MIDINote]
+        +setDifficulty(note, difficulty)
+        +reset()
+    }
 
-- Bisects comparison history to compare recent vs. older performance
-- Implements `ComparisonObserver` for incremental updates
-- Injected via `@Environment(\.trendAnalyzer)`
+    class PitchMatchingProfile {
+        <<protocol>>
+        +updateMatching(note, centError)
+        +matchingMean: Double?
+        +matchingStdDev: Double?
+        +matchingSampleCount: Int
+        +resetMatching()
+    }
 
-### FrequencyCalculation
+    class PerceptualProfile {
+        -notes: [PerceptualNote] // 128 slots
+        -matchingMeanAbs: Double
+        -matchingM2: Double
+        -matchingCount: Int
+        +update(...)
+        +updateMatching(...)
+    }
 
-**File:** `Core/Audio/FrequencyCalculation.swift`
-**Role:** MIDI note + cent offset → frequency in Hz.
+    class TrendAnalyzer {
+        -absOffsets: [Double]
+        +trend: Trend?
+    }
 
-- Static methods, no state
-- 0.1-cent precision required — all frequency conversion must go through this file
-- Standard formula: `f = referencePitch × 2^((midiNote - 69 + cents/100) / 12)`
+    class ThresholdTimeline {
+        -dataPoints: [TimelineDataPoint]
+        +aggregatedPoints: [AggregatedDataPoint]
+        +rollingMean() [Double]
+    }
 
-## Level 2: Features (UI)
+    PitchDiscriminationProfile <|.. PerceptualProfile
+    PitchMatchingProfile <|.. PerceptualProfile
+    ComparisonObserver <|.. PerceptualProfile
+    PitchMatchingObserver <|.. PerceptualProfile
+    ComparisonObserver <|.. TrendAnalyzer
+    ComparisonObserver <|.. ThresholdTimeline
+```
 
-### Screens
-
-| Screen | File | Observes | User Actions |
-|---|---|---|---|
-| **StartScreen** | `Start/StartScreen.swift` | `PerceptualProfile` (preview) | Start Comparison/PitchMatching, navigate to Profile/Settings/Info |
-| **ComparisonScreen** | `Comparison/ComparisonScreen.swift` | `ComparisonSession` | Higher/Lower buttons, navigate to Settings/Profile |
-| **PitchMatchingScreen** | `PitchMatching/PitchMatchingScreen.swift` | `PitchMatchingSession` | Vertical pitch slider, submit answer |
-| **ProfileScreen** | `Profile/ProfileScreen.swift` | `PerceptualProfile`, `TrendAnalyzer` | View threshold timeline, summary stats, matching stats |
-| **SettingsScreen** | `Settings/SettingsScreen.swift` | `@AppStorage` | Adjust slider, range, duration, pitch; reset data |
-| **InfoScreen** | `Info/InfoScreen.swift` | — | View app info |
-
-### Supporting Views
-
-| View | File | Purpose |
-|---|---|---|
-| `ProfilePreviewView` | `Start/ProfilePreviewView.swift` | Miniature profile on Start Screen |
-| `ComparisonFeedbackIndicator` | `Comparison/ComparisonFeedbackIndicator.swift` | Thumbs up/down overlay |
-| `DifficultyDisplayView` | `Comparison/DifficultyDisplayView.swift` | Current difficulty indicator |
-| `HapticFeedbackManager` | `Comparison/HapticFeedbackManager.swift` | Wrong-answer haptic (ComparisonObserver) |
-| `VerticalPitchSlider` | `PitchMatching/VerticalPitchSlider.swift` | Draggable pitch slider for matching |
-| `PitchMatchingFeedbackIndicator` | `PitchMatching/PitchMatchingFeedbackIndicator.swift` | Pitch matching result overlay |
-| `PianoKeyboardView` | `Profile/PianoKeyboardView.swift` | Canvas-rendered keyboard axis |
-| `ThresholdTimelineView` | `Profile/ThresholdTimelineView.swift` | Threshold history chart |
-| `SummaryStatisticsView` | `Profile/SummaryStatisticsView.swift` | Mean, stdDev, trend display |
-| `MatchingStatisticsView` | `Profile/MatchingStatisticsView.swift` | Pitch matching statistics display |
-| `ContentView` | `App/ContentView.swift` | Root navigation shell |
-| `NavigationDestination` | `App/NavigationDestination.swift` | Type-safe routing enum |
-| `EnvironmentKeys` | `App/EnvironmentKeys.swift` | Centralized `@Entry` environment key registry |
-
-## File Counts
-
-- **Source:** 61 Swift files in `Peach/`
-- **Tests:** 65 Swift files in `PeachTests/` (mirrors source structure)
+`PerceptualProfile` is the central user model — a 128-slot array indexed by MIDI note, each slot holding Welford's online statistics (mean, variance, standard deviation, sample count, current difficulty). It is never persisted directly; it is rebuilt from `ComparisonRecord` entries on every app launch and updated incrementally during training.
