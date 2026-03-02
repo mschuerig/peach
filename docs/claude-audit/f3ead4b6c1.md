@@ -12,7 +12,7 @@ next: "8a2a85ea86.md"
 
 # Commit f3ead4b6c1
 
-**Date:** 2026-02-15 13:21:23 UTC+01:00  
+**Date:** 2026-02-15T13:21  
 **Author:** Michael Schürig <michael@schuerig.de>
 
 ## Commit message
@@ -36,9 +36,9 @@ Peach/Core/Algorithm/AdaptiveNoteStrategy.swift    |  73 +++++++-
 
 ## Session `8b40f40e…`
 
-*2026-02-15 11:53:59 UTC → 2026-02-15 12:21:34 UTC*
+*2026-02-15T11:53 → 2026-02-15T12:21*
 
-### 🧑 Human (11:53:59)
+### 🧑 Human (2026-02-15T11:53)
 
 Implement the following plan:
 
@@ -167,27 +167,471 @@ static let maxNeighbors: Int = 5
 
 If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/michael/.claude/projects/-Users-michael-Projekte-peach/2d9ebfd9-b4da-4ba6-b60b-41a13b618cca.jsonl
 
-### 🤖 Assistant (11:54:06)
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>💭 Thinking</summary>
+
+Let me start by reading the relevant files to understand the current implementation.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+1→import Foundation
+     2→import OSLog
+     3→
+     4→/// Adaptive comparison selection strategy for intelligent training
+     5→///
+     6→/// Implements NextNoteStrategy with stateless comparison selection:
+     7→/// - Reads user's PerceptualProfile for difficulty and weak spots
+     8→/// - Uses TrainingSettings for configuration
+… (220 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+1→import Testing
+     2→import Foundation
+     3→@testable import Peach
+     4→
+     5→/// Comprehensive test suite for AdaptiveNoteStrategy
+     6→/// Tests stateless comparison selection with smart difficulty fallback
+     7→@Suite("AdaptiveNoteStrategy Tests")
+     8→@MainActor
+… (463 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>💭 Thinking</summary>
+
+Now let me check the PerceptualProfile to understand `statsForNote` and `setDifficulty`.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T11:54)
 
 Let me also check the PerceptualProfile and TrainingSettings to understand the interfaces.
 
-### 🤖 Assistant (11:54:26)
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>Task</code></summary>
+
+```
+subagent_type: Explore
+description: Find PerceptualProfile interface
+prompt: Find the PerceptualProfile class/struct definition in /Users/michael/Projekte/peach. I need to see the `statsForNote`…
+model: haiku
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Perfect! I've found and read all the relevant files. Here's a comprehensive summary:
+
+## PerceptualProfile Class
+
+**File:** `/Users/michael/Projekte/peach/Peach/Core/Profile/PerceptualProfile.swift`
+
+### Key Methods:
+
+… (48 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>💭 Thinking</summary>
+
+Now I have everything I need. Let me implement the changes:
+
+1. Add `maxNeighbors` constant to `DifficultyParameters`
+2. Add `weightedEffectiveDifficulty` method
+3. Update `determineCentDifference` to use weighted difficulty
+4. Update tests
+
+Let me start with the implementation.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T11:54)
 
 Now I have all the context. Let me implement the changes.
 
-### 🤖 Assistant (11:54:42)
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskCreate</code></summary>
+
+```
+subject: Add maxNeighbors constant and weightedEffectiveDifficulty method
+description: Add maxNeighbors = 5 to DifficultyParameters and implement the weightedEffectiveDifficulty method in AdaptiveNoteStra…
+activeForm: Implementing weighted effective difficulty
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Task #1 created successfully: Add maxNeighbors constant and weightedEffectiveDifficulty method
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskCreate</code></summary>
+
+```
+subject: Update determineCentDifference to use weighted difficulty
+description: Change determineCentDifference to use weightedEffectiveDifficulty instead of raw currentDifficulty
+activeForm: Updating determineCentDifference
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Task #2 created successfully: Update determineCentDifference to use weighted difficulty
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskCreate</code></summary>
+
+```
+subject: Update existing tests and add new weighted difficulty tests
+description: Update perNoteIndependentDifficulties and difficultyNarrowsAcrossJumps tests, add 6 new tests for weighted difficulty
+activeForm: Updating and adding tests
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Task #3 created successfully: Update existing tests and add new weighted difficulty tests
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskCreate</code></summary>
+
+```
+subject: Run full test suite
+description: Run xcodebuild test to verify all tests pass
+activeForm: Running test suite
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Task #4 created successfully: Run full test suite
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 1
+status: in_progress
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #1 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+old_string:         /// Default difficulty for untrained regions (100 cents = 1 semitone)
+        static let defaultDifficulty: D…
+new_string:         /// Default difficulty for untrained regions (100 cents = 1 semitone)
+        static let defaultDifficulty: D…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
 
 Now add the `weightedEffectiveDifficulty` method before the `clamp` method:
 
-### 🤖 Assistant (11:54:55)
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+old_string:     /// Clamps a value between min and max bounds
+new_string:     /// Computes weighted effective difficulty for a note using nearby trained neighbors
+    ///
+    /// Borrows evid…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
 
 The diagnostics are just SourceKit indexing issues, not real errors. Now update `determineCentDifference`:
 
-### 🤖 Assistant (11:55:06)
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 1
+status: completed
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #1 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:54)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 2
+status: in_progress
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #2 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+old_string:         let stats = profile.statsForNote(note)
+
+        guard let last = lastComparison else {
+            return cla…
+new_string:         guard let last = lastComparison else {
+            let effective = weightedEffectiveDifficulty(for: note, pro…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 2
+status: completed
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #2 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 3
+status: in_progress
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #3 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
 
 Now update the tests. First, let me re-read the modified strategy file to verify correctness:
 
-### 🤖 Assistant (11:55:17)
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+1→import Foundation
+     2→import OSLog
+     3→
+     4→/// Adaptive comparison selection strategy for intelligent training
+     5→///
+     6→/// Implements NextNoteStrategy with stateless comparison selection:
+     7→/// - Reads user's PerceptualProfile for difficulty and weak spots
+     8→/// - Uses TrainingSettings for configuration
+… (283 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
 
 Good, the implementation looks correct. Now let me update the tests. I need to think about which tests need updating:
 
@@ -199,33 +643,362 @@ Good, the implementation looks correct. Now let me update the tests. I need to t
 
 Let me check what `setDifficulty` does vs `update`:
 
-### 🤖 Assistant (11:55:34)
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Grep</code></summary>
+
+```
+pattern: func setDifficulty
+path: /Users/michael/Projekte/peach/Peach/Core/Profile/PerceptualProfile.swift
+output_mode: content
+-A: 10
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+140:    func setDifficulty(note: Int, difficulty: Double) {
+141-        guard note >= 0 && note < 128 else {
+142-            logger.error("Invalid MIDI note: \(note)")
+143-            return
+144-        }
+145-
+146-        noteStats[note].currentDifficulty = difficulty
+147-        logger.debug("Set difficulty for note \(note): \(difficulty) cents")
+… (3 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Grep</code></summary>
+
+```
+pattern: sampleCount
+path: /Users/michael/Projekte/peach/Peach/Core/Profile/PerceptualProfile.swift
+output_mode: content
+-B: 2
+-A: 2
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+46-        // Welford's online algorithm for incremental mean and variance
+47-        // Track ALL comparisons (correct and incorrect) to properly estimate detection threshold
+48:        stats.sampleCount += 1
+49-        let delta = centOffset - stats.mean
+50:        stats.mean += delta / Double(stats.sampleCount)
+51-        let delta2 = centOffset - stats.mean
+52-        stats.m2 += delta * delta2
+53-
+… (49 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>💭 Thinking</summary>
+
+So `setDifficulty` only sets `currentDifficulty` but doesn't increment `sampleCount`. The `statelessStrategyConsistency` test sets difficulty to 42.0 via `setDifficulty` but doesn't call `update`, so `sampleCount` stays 0. With our change, `weightedEffectiveDifficulty` checks `sampleCount > 0`, so it won't see the 42.0 and will return 100.0 instead. This test will break.
+
+The `difficultyRespectsFloor` test also uses `setDifficulty` without `update` — it sets difficulty to 0.5, expects clamping to 1.0. With our change, it'll see 100.0 (default) and return 100.0 clamped to max 100.0... wait, let me check the settings: `minCentDifference: 1.0`, and the default max is 100.0. So it would return 100.0 not 1
+
+.0. This test will break too.
+
+The `difficultyRespectsCeiling` test sets difficulty to 150.0, expects clamping to 100.0. With our change, it'll see 100.0 (default) and return 100.0. The test expects 100.0 so it might pass by coincidence, but for the wrong reason.
+
+For `regionalDifficultyWidensOnIncorrect`, it calls `update` first then `setDifficulty`, so `sampleCount` will be greater than 0 and the test should work correctly.
+
+The same applies to `regionalDifficultyRespectsBounds` — it also calls `update` before `setDifficulty`, so it should pass. I need to fix three tests that are missing the `update` call: `statelessStrategyConsistency`, `difficultyRespectsFloor`, and `difficultyRespectsCeiling`. Let me add those calls and write the new tests.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T11:55)
 
 I see that `setDifficulty` doesn't increment `sampleCount`, so some tests that use only `setDifficulty` (without `update`) will break because `weightedEffectiveDifficulty` checks `sampleCount > 0`. I need to fix: `statelessStrategyConsistency`, `difficultyRespectsFloor`, and `difficultyRespectsCeiling`.
 
-### 🤖 Assistant (11:55:48)
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:         // Set current difficulty below the floor
+        profile.setDifficulty(note: 60, difficulty: 0.5)
+new_string:         // Train the note so sampleCount > 0, then set difficulty below the floor
+        profile.update(note: 60, ce…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:         // Set current difficulty above the ceiling
+        profile.setDifficulty(note: 60, difficulty: 150.0)
+new_string:         // Train the note so sampleCount > 0, then set difficulty above the ceiling
+        profile.update(note: 60, …
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:         // Set a specific difficulty for note 60
+        profile.setDifficulty(note: 60, difficulty: 42.0)
+new_string:         // Train the note so sampleCount > 0, then set a specific difficulty
+        profile.update(note: 60, centOff…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:55)
 
 Now update the `perNoteIndependentDifficulties` test. Note 72 with range `[72,72]` won't see note 60 as a neighbor since it's outside the range. But wait — the test trains note 60 with 5 correct answers. After those iterations, `setDifficulty` is called on note 60 multiple times. Then it queries note 72 with range `[72,72]`. Since the search range is `[72,72]`, no neighbors will be found, so it defaults to 100.0. This test should still pass as-is.
 
 Now let me add the new tests at the end of the file:
 
-### 🤖 Assistant (11:56:00)
+
+### 🤖 Assistant (2026-02-15T11:55)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:     @Test("Per-note tracking: different notes have independent difficulties")
+    func perNoteIndependentDifficulties…
+new_string:     @Test("Per-note tracking: different notes have independent difficulties in isolated ranges")
+    func perNoteInde…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:56)
 
 Now add the 6 new tests at the end of the file:
 
-### 🤖 Assistant (11:57:08)
+
+### 🤖 Assistant (2026-02-15T11:56)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:     @Test("Regional difficulty respects min/max bounds")
+    func regionalDifficultyRespectsBounds() async throws {
+new_string:     // MARK: - Weighted Effective Difficulty Tests
+
+    @Test("Weighted difficulty: no data anywhere returns default …
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T11:57)
+
+<details>
+<summary>💭 Thinking</summary>
+
+The `weightedDifficultyNeighborsOnly` and `weightedDifficultyCurrentNoteDominates` tests are messy with the comments. Let me clean them up. Actually, the `weightedDifficultyNeighborsOnly` test is really messy - it has a lot of dead code and commentary. Let me rewrite it properly. And `weightedDifficultyCurrentNoteDominates` also has issues - the range [60,60] excludes neighbors so it just tests the single note case, not the "dominates" case.
+
+Let me rethink these tests. The challenge is that we can't use noteRangeMin=noteRangeMax=60 to force note selection while also having neighbors in range. 
+
+I could either use a wider range and loop until the desired note is selected, or use a wider range with deterministic note selection through mechanical mode and weak spots. Looking at my existing new tests like `weightedDifficultyNeighborInfluence`, `weightedDifficultyKernelNarrowing`, and `weightedDifficultyBoundaryNote`, they already use the loop approach successfully. Let me apply that same pattern to clean up these problematic tests.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T11:57)
 
 The tests I added have some messy code. Let me clean them up:
 
-### 🤖 Assistant (12:00:21)
+
+### 🤖 Assistant (2026-02-15T11:58)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:     @Test("Weighted difficulty: no data anywhere returns default 100")
+    func weightedDifficultyNoDataReturnsDefaul…
+new_string:     @Test("Weighted difficulty: no data anywhere returns default 100")
+    func weightedDifficultyNoDataReturnsDefaul…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result ❌</summary>
+
+```
+<tool_use_error>String to replace not found in file.
+String:     @Test("Weighted difficulty: no data anywhere returns default 100")
+    func weightedDifficultyNoDataReturnsDefault() async throws {
+        let profile = PerceptualProfile()
+        let strategy = AdaptiveNoteStrategy()
+        let settings = TrainingSettings(noteRangeMin: 36, noteRangeMax: 84)
+
+        // Note 60 with no trained data anywhere → default 100
+… (185 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:00)
 
 Let me read the current state of the test file to get exact strings:
 
-### 🤖 Assistant (12:00:25)
+
+### 🤖 Assistant (2026-02-15T12:00)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+offset: 296
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+296→    }
+   297→
+   298→    // MARK: - Regional Difficulty Adjustment Tests (AC#2, AC#3)
+   299→
+   300→    @Test("Regional difficulty narrows on correct answer using Kazez formula")
+   301→    func regionalDifficultyNarrowsOnCorrect() async throws {
+   302→        let profile = PerceptualProfile()
+   303→        let strategy = AdaptiveNoteStrategy()
+… (434 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:00)
 
 Now I'll rewrite the messy tests cleanly. Let me replace the entire weighted difficulty section:
 
-### 🤖 Assistant (12:01:39)
+
+### 🤖 Assistant (2026-02-15T12:01)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:     // MARK: - Weighted Effective Difficulty Tests
+
+    @Test("Weighted difficulty: no data anywhere returns default …
+new_string:     // MARK: - Weighted Effective Difficulty Tests
+
+    @Test("Weighted difficulty: no data anywhere returns default …
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:01)
 
 Now I need to think about the `difficultyNarrowsAcrossJumps` test more carefully. It uses `fixedSettings84 = TrainingSettings(noteRangeMin: 84, noteRangeMax: 84)`. Note 36 was trained via `setDifficulty` in the Kazez path (line 214 of the strategy). But note 36 is outside the range `[84,84]`, so the weighted search won't find it. Note 84 is untrained (sampleCount=0), so weighted difficulty returns 100.0. Then Kazez narrows from 100 → 50. The test expects 50.0, so it should still pass.
 
@@ -235,19 +1008,320 @@ Now let me also check the `regionalDifficultyNarrowsOnCorrect` test. First compa
 
 Now let me run the tests:
 
-### 🤖 Assistant (12:02:55)
+
+### 🤖 Assistant (2026-02-15T12:01)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 3
+status: completed
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #3 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:01)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 4
+status: in_progress
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #4 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:01)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | tail -60
+description: Run full test suite
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test session results, code coverage, and logs:
+	/Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/Test-Peach-2026.02.15_13-01-44-+0100.xcresult
+
+** TEST FAILED **
+
+sed on 'Clone 1 of iPhone 17 - Peach (26186)' (0.000 seconds)
+Test case 'SineWaveNotePlayerTests/play_ValidFrequency_DoesNotThrow()' passed on 'Clone 1 of iPhone 17 - Peach (26186)' (0.000 seconds)
+Test case 'TrainingSessionTests/comparisonRecordContainsCorrectData()' passed on 'Clone 1 of iPhone 17 - Peach (26186)' (0.000 seconds)
+… (51 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:02)
 
 Tests failed. Let me see what failed:
 
-### 🤖 Assistant (12:03:58)
+
+### 🤖 Assistant (2026-02-15T12:02)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E '(FAIL|failed|error:)'
+description: Find test failures
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test case 'AdaptiveNoteStrategyTests/weightedDifficultyKernelNarrowing()' failed on 'Clone 1 of iPhone 17 - Peach (26644)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/kazezConvergenceFromDefault()' failed on 'Clone 1 of iPhone 17 - Peach (26644)' (0.000 seconds)
+** TEST FAILED **
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:03)
 
 Two failures. Let me check the details:
 
-### 🤖 Assistant (12:09:58)
+
+### 🤖 Assistant (2026-02-15T12:03)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -A5 'kazezConvergenceF…
+description: Get failure details
+timeout: 300000
+```
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T12:05)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -i "expectation\|expec…
+description: Find failure messages
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test suite 'KazezNoteStrategyTests' started on 'Clone 1 of iPhone 17 - Peach (27617)'
+Test case 'AdaptiveNoteStrategyTests/kazezConvergenceFromDefault()' failed on 'Clone 1 of iPhone 17 - Peach (27617)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/weightedDifficultyKernelNarrowing()' failed on 'Clone 1 of iPhone 17 - Peach (27617)' (0.000 seconds)
+Test case 'KazezNoteStrategyTests/ceilingClamping()' passed on 'Clone 1 of iPhone 17 - Peach (27617)' (1.000 seconds)
+Test case 'KazezNoteStrategyTests/recoveryTest()' passed on 'Clone 1 of iPhone 17 - Peach (27617)' (1.000 seconds)
+Test case …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:06)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -B2 -A10 "Expectation …
+description: Get expectation failure details
+timeout: 300000
+```
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T12:07)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -i "AdaptiveNoteStrate…
+description: Find test file error lines
+timeout: 300000
+```
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T12:08)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -B1 -A3 "failed"
+description: Get failure context
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test case 'AdaptiveNoteStrategyTests/nextComparisonReturnsValidComparison()' passed on 'Clone 1 of iPhone 17 - Peach (28991)' (1.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/weightedDifficultyKernelNarrowing()' failed on 'Clone 1 of iPhone 17 - Peach (28991)' (1.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/kazezConvergenceFromDefault()' failed on 'Clone 1 of iPhone 17 - Peach (28991)' (1.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/weakSpotsUseAbsoluteValue()' passed on 'Clone 1 of iPhone 17 - Peach (28991)' (1.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/difficultyRespects …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:09)
+
+<details>
+<summary>💭 Thinking</summary>
+
+I need to see the actual error messages. Let me try a different approach to get the xcresult output.
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T12:09)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E "(cents|Got:|Expect…
+description: Find error messages in output
+timeout: 300000
+```
+
+</details>
+
+
+### 🤖 Assistant (2026-02-15T12:09)
 
 Let me look at the xcresult for detailed errors:
 
-### 🤖 Assistant (12:11:30)
+
+### 🤖 Assistant (2026-02-15T12:10)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcrun xcresulttool get test-results summary --path /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmv…
+description: Get test results summary
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Error: File or directory doesn't exist at path: /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/Test-Peach-2026.02.15_13-08-53-+0100.xcresult.
+Usage: xcresulttool get test-results summary [--schema] [--schema-version <schema-version>] --path <path> [--compact]
+  See 'xcresulttool get test-results summary --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:10)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xcresult | he…
+description: Find latest xcresult
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+/Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/Test-Peach-2026.02.15_13-02-57-+0100.xcresult:
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:10)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcrun xcresulttool get test-results tests --path "/Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvd…
+description: Get failure details from xcresult
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+"nodeIdentifier" : "AdaptiveNoteStrategyTests/weightedDifficultyKernelNarrowing()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Peach/PeachTests/AdaptiveNoteStrategyTests/weightedDifficultyKernelNarrowing()",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                },
+                {
+                  "name" : "Mechanical ratio 1.0 targets weak spots",
+                  "nodeIdentifier" : "AdaptiveNoteStrategyTests/mechanicalRatioTargetsWeakSpots()",
+… (37 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:11)
 
 I don't see the actual error messages. Let me think about what's going wrong:
 
@@ -286,7 +1360,35 @@ But wait, looking at the original code before my changes, `determineCentDifferen
 
 This is the right approach:
 
-### 🤖 Assistant (12:11:55)
+
+### 🤖 Assistant (2026-02-15T12:11)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+old_string:         // Collect current note if trained
+        var candidates: [(distance: Int, difficulty: Double)] = []
+       …
+new_string:         // Always include the current note's own difficulty at distance 0 (maximum weight).
+        // This uses curr…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:11)
 
 Wait, but now the current note is always included, so the `guard !candidates.isEmpty` never triggers for the default case. And an untrained note with no neighbors would return its own 100.0. That's correct.
 
@@ -314,7 +1416,34 @@ So for untrained notes (sampleCount == 0), we should NOT include the current not
 
 The cleanest solution: include the current note if `sampleCount > 0` OR `currentDifficulty != DifficultyParameters.defaultDifficulty`:
 
-### 🤖 Assistant (12:12:16)
+
+### 🤖 Assistant (2026-02-15T12:11)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+old_string:         // Always include the current note's own difficulty at distance 0 (maximum weight).
+        // This uses curr…
+new_string:         // Include the current note at distance 0 if it has data:
+        // either from user comparisons (sampleCoun…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:12)
 
 Now let me think about the `kazezConvergenceFromDefault` test flow again:
 1. Iter 1: no lastComparison → weighted(60) = 100.0 (untrained, no neighbors, default) → returns 100.0
@@ -330,13 +1459,77 @@ Wait, `weakSpots` returns the top 10 weakest notes from ALL 128 MIDI notes. All 
 
 Let me fix this test to be more robust:
 
-### 🤖 Assistant (12:12:22)
+
+### 🤖 Assistant (2026-02-15T12:12)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+offset: 564
+limit: 40
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+564→        }
+   565→    }
+   566→
+   567→    @Test("Weighted difficulty: boundary note with asymmetric neighbors")
+   568→    func weightedDifficultyBoundaryNote() async throws {
+   569→        let profile = PerceptualProfile()
+   570→        let strategy = AdaptiveNoteStrategy()
+   571→
+… (32 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:12)
 
 The problem with the non-deterministic tests is that `weakSpots(count: 10)` returns only 10 from the full 128 MIDI range. The fix is to train all out-of-range notes so only the notes we care about are untrained. Or better, use a tight range where the desired note is more likely to be selected.
 
 Let me fix the `weightedDifficultyKernelNarrowing` test to make it deterministic. I'll train all notes in the range except note 60, so note 60 is the only untrained weak spot:
 
-### 🤖 Assistant (12:12:44)
+
+### 🤖 Assistant (2026-02-15T12:12)
+
+<details>
+<summary>🔧 <code>Read</code></summary>
+
+```
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+offset: 531
+limit: 35
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+531→    }
+   532→
+   533→    @Test("Weighted difficulty: 5-nearest neighbor limit")
+   534→    func weightedDifficultyKernelNarrowing() async throws {
+   535→        let profile = PerceptualProfile()
+   536→        let strategy = AdaptiveNoteStrategy()
+   537→
+   538→        // Train 7 notes below note 60 (only closest 5 should be used)
+… (27 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:12)
 
 The issue is that with range [52,60], note 60 is the only untrained note, but `weakSpots(count: 10)` picks from ALL 128 MIDI notes. There are 119 other untrained notes outside the range. `weakSpots` returns 10 random untrained notes, which are then filtered by `isInRange`. Only note 60 is untrained in range, but it might not be in the initial 10.
 
@@ -371,7 +1564,40 @@ P(never select 60 in 200 iterations) = (1 - 0.18)^200 ≈ 0. So actually it shou
 
 Hmm, let me reconsider. Maybe the `weakSpots` implementation picks untrained notes deterministically, not randomly?
 
-### 🤖 Assistant (12:12:56)
+
+### 🤖 Assistant (2026-02-15T12:12)
+
+<details>
+<summary>🔧 <code>Grep</code></summary>
+
+```
+pattern: func weakSpots
+path: /Users/michael/Projekte/peach/Peach/Core/Profile/PerceptualProfile.swift
+output_mode: content
+-A: 25
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+70:    func weakSpots(count: Int = 10) -> [Int] {
+71-        var scoredNotes: [(note: Int, score: Double)] = []
+72-
+73-        for (midiNote, stats) in noteStats.enumerated() {
+74-            let score: Double
+75-            if stats.sampleCount == 0 {
+76-                // Untrained notes get highest priority (infinite threshold)
+77-                score = Double.infinity
+… (18 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:12)
 
 So `weakSpots(count: 10)` returns the top 10 notes by score. All untrained notes have `Double.infinity` score, so they all sort first. But `sort` is stable in Swift, meaning notes with the same score maintain their original order (enumerated order = 0, 1, 2, ...). So the top 10 weak spots are always notes 0-9 (the first 10 untrained MIDI notes).
 
@@ -383,7 +1609,37 @@ So for each of 200 iterations, note 60 is selected via fallback random with P = 
 
 But maybe the actual test failure is something else entirely. Let me just run the tests and pipe the full output:
 
-### 🤖 Assistant (12:14:46)
+
+### 🤖 Assistant (2026-02-15T12:12)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:PeachTests/AdaptiveN…
+description: Run only AdaptiveNoteStrategy tests
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+CodeSign /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Build/Products/Debug-iphonesimulator/Peach.app/__preview.dylib (in target 'Peach' from project 'Peach')
+    cd /Users/michael/Projekte/peach
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Build/Products/Debug-iphonesimulator/Peach.app/__preview.dylib
+/Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgz …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:14)
 
 `kazezConvergenceFromDefault` now passes. Only `weightedDifficultyKernelNarrowing` fails. It runs twice (Swift Testing runs tests multiple times?) and fails both times. But the test should statistically always hit note 60 in 200 iterations. Let me look more carefully at the issue.
 
@@ -401,41 +1657,600 @@ Maybe the issue is that in the first run, note 60 is NEVER selected in 200 itera
 
 Let me look more carefully. Actually, maybe the test contains a compilation error or something. Let me check:
 
-### 🤖 Assistant (12:15:28)
+
+### 🤖 Assistant (2026-02-15T12:14)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:PeachTests/AdaptiveN…
+description: Run only the failing test
+timeout: 120000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/michael/Projekte/peach/Peach/Resources/Assets.xcassets
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/xcstringstool compile --dry-run --output-directory /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Build/Intermediates.noindex/Peach.build/Debug-iphonesimulator/Peach.build /Users/michael/Pr …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:15)
 
 It passed when run individually! This might be a test isolation issue — another test modifies shared state that affects this test. Let me run the full suite again to see if it's flaky:
 
-### 🤖 Assistant (12:16:33)
+
+### 🤖 Assistant (2026-02-15T12:15)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E "(passed|failed)" |…
+description: Run full test suite, check adaptive tests
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test case 'AdaptiveNoteStrategyTests/regionalDifficultyRespectsBounds()' passed on 'Clone 1 of iPhone 17 - Peach (31350)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/weightedDifficultyBoundaryNote()' passed on 'Clone 1 of iPhone 17 - Peach (31350)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/perNoteIndependentDifficulties()' passed on 'Clone 1 of iPhone 17 - Peach (31350)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/protocolReturnsComparison()' passed on 'Clone 1 of iPhone 17 - Peach (31350)' (0.000 seconds)
+Test case 'AdaptiveNoteStrategyTests/firstComparisonPicksWe …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:16)
 
 Still failing. The test passes in isolation but fails in the full suite. This is a flaky test issue related to the randomized note selection. Since the test creates fresh profile and strategy instances, it shouldn't be a shared state issue — but Swift Testing might run tests concurrently on the same actor.
 
 Actually, since `AdaptiveNoteStrategy` is `@MainActor`, all tests run sequentially on the main actor. The issue must be randomness-based. Let me make the test deterministic by increasing iterations to 1000 and also adding a fallback assertion:
 
-### 🤖 Assistant (12:17:54)
+
+### 🤖 Assistant (2026-02-15T12:16)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:     @Test("Weighted difficulty: 5-nearest neighbor limit")
+    func weightedDifficultyKernelNarrowing() async throws …
+new_string:     @Test("Weighted difficulty: 5-nearest neighbor limit")
+    func weightedDifficultyKernelNarrowing() async throws …
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:16)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E "(passed|failed)" |…
+description: Run full test suite
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Test case 'placeholderTest()' passed on 'Clone 1 of iPhone 17 - Peach (31823)' (0.000 seconds)
+Test case 'TrainingSessionTests/isCorrectValidatesAnswer()' passed on 'Clone 1 of iPhone 17 - Peach (31823)' (0.000 seconds)
+Test case 'TrainingSessionTests/note2FrequencyAppliesCentOffsetLower()' passed on 'Clone 1 of iPhone 17 - Peach (31823)' (0.000 seconds)
+Test case 'TrainingSessionTests/note2FrequencyAppliesCentOffsetHigher()' passed on 'Clone 1 of iPhone 17 - Peach (31823)' (0.000 seconds)
+Test case 'TrainingSessionTests/note1FrequencyCalculatesCorrectly()' passed on 'Clone 1 of iPhone 17 - Pe …(truncated)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:17)
 
 Still only `weightedDifficultyKernelNarrowing` fails and it passes in isolation. I notice it takes 0.000 seconds in the first run but completes. It passes in the isolated run. Let me check the xcresult for the failure message:
 
-### 🤖 Assistant (12:19:31)
+
+### 🤖 Assistant (2026-02-15T12:17)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcrun xcresulttool get test-results tests --path "$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hk…
+description: Parse xcresult for failure details
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result ❌</summary>
+
+```
+Exit code 1
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+    data = json.load(sys.stdin)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py", line 298, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+… (10 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:18)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get test issues from xcresult
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Error: Unknown option '--path'
+Usage: xcresulttool get test-results <subcommand>
+  See 'xcresulttool get test-results --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:18)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get xcresult contents
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+    data = json.load(sys.stdin)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py", line 298, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+… (9 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get raw xcresult output
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Error: This command is deprecated and will be removed in a future release, --legacy flag is required to use it.
+Usage: xcresulttool get object [--legacy] --path <path> [--id <id>] [--version <version>] [--format <format>]
+  See 'xcresulttool get object --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get failed test details
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result ❌</summary>
+
+```
+Exit code 64
+Error: Unknown option '--path'
+Usage: xcresulttool get test-results <subcommand>
+  See 'xcresulttool get test-results --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcrun xcresulttool get test-results --help 2>&1
+description: Check xcresulttool help
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+OVERVIEW: Get a high level description of what was tested, the destinations on
+which tests ran, and other metadata along with all failures reported.
+
+USAGE: xcresulttool get test-results <subcommand>
+
+OPTIONS:
+  --version               Show the version.
+  -h, --help              Show help information.
+… (12 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get detailed test failure info
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result ❌</summary>
+
+```
+Exit code 64
+Error: Missing expected argument '--path <path>'
+Help:  --path <path>  The result bundle path.
+Usage: xcresulttool get test-results test-details [--schema] [--schema-version <schema-version>] --path <path> [--compact] --test-id <test-id>
+  See 'xcresulttool get test-results test-details --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get detailed test failure info
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result ❌</summary>
+
+```
+Exit code 64
+Error: File or directory doesn't exist at path: /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/Test-Peach-2026.02.15_13-08-05-+0100.xcresult:.
+Usage: xcresulttool get test-results test-details [--schema] [--schema-version <schema-version>] --path <path> [--compact] --test-id <test-id>
+  See 'xcresulttool get test-results test-details --help' for more information.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
 
 The colon from `ls` is being included. Let me fix:
 
-### 🤖 Assistant (12:19:40)
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: XCRESULT=$(ls -t /Users/michael/Library/Developer/Xcode/DerivedData/Peach-hkiivdgmvdxnrwgzjcrsmowssdbf/Logs/Test/*.xc…
+description: Get detailed test failure info
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "9C0977EF-FC3F-4659-AB40-11F4C00D8F1D",
+      "deviceName" : "iPhone 17",
+      "modelName" : "iPhone 17",
+      "osBuildNumber" : "23C54",
+… (71 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
 
 The error is a floating point precision issue: `49.99999999999999` vs `50.0`. The weighted average computation introduces floating point error. Let me fix the assertion to use an epsilon comparison:
 
-### 🤖 Assistant (12:19:44)
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Edit</code></summary>
+
+```
+replace_all: false
+file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift
+old_string:             #expect(diff == 50.0, "5-nearest neighbors all at 50.0 → weighted avg should be 50.0. Got: \(diff)")
+new_string:             #expect(abs(diff - 50.0) < 0.01, "5-nearest neighbors all at 50.0 → weighted avg should be 50.0. Got: \(d…
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+The file /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift has been updated successfully.
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:19)
 
 Now run the full test suite again:
 
-### 🤖 Assistant (12:20:30)
+
+### 🤖 Assistant (2026-02-15T12:19)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E "(SUCCEEDED|FAILED|…
+description: Run full test suite
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+** TEST SUCCEEDED **
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:20)
 
 All tests pass. Let me run once more to make sure it's not flaky:
 
-### 🤖 Assistant (12:21:14)
+
+### 🤖 Assistant (2026-02-15T12:20)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' 2>&1 | grep -E "(SUCCEEDED|FAILED|…
+description: Run full test suite again to verify stability
+timeout: 300000
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+** TEST SUCCEEDED **
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
 
 All tests pass consistently. Let me commit the changes.
 
-### 🤖 Assistant (12:21:34)
+
+### 🤖 Assistant (2026-02-15T12:21)
+
+<details>
+<summary>🔧 <code>TaskUpdate</code></summary>
+
+```
+taskId: 4
+status: completed
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+Updated task #4 status
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: git status
+description: Check git status
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+On branch main
+Your branch is ahead of 'origin/main' by 4 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+… (3 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: git diff
+description: Check git diff
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+diff --git a/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift b/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+index 9b84137..f3b9428 100644
+--- a/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
++++ b/Peach/Core/Algorithm/AdaptiveNoteStrategy.swift
+@@ -39,6 +39,9 @@ final class AdaptiveNoteStrategy: NextNoteStrategy {
+ 
+         /// Default difficulty for untrained regions (100 cents = 1 semitone)
+         static let defaultDifficulty: Double = 100.0
+… (325 more lines)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: git log --oneline -5
+description: Check recent commits
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+8a2a85e Integrate Kazez convergence formulas into AdaptiveNoteStrategy
+374131f Add story: integrate Kazez formulas into AdaptiveNoteStrategy
+d286455 Implement KazezNoteStrategy for difficulty convergence evaluation
+9cd3fe0 Add hotfix story: Kazez evaluation strategy for difficulty convergence
+e92dd61 Fix difficulty bug: remove jump/mean logic, use per-note currentDifficulty
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
+
+<details>
+<summary>🔧 <code>Bash</code></summary>
+
+```
+command: git add Peach/Core/Algorithm/AdaptiveNoteStrategy.swift PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift && …
+description: Commit changes
+```
+
+</details>
+
+
+<details>
+<summary>📎 Result</summary>
+
+```
+[main f3ead4b] Implement weighted effective difficulty for faster convergence
+ 2 files changed, 245 insertions(+), 11 deletions(-)
+```
+
+</details>
+
+### 🤖 Assistant (2026-02-15T12:21)
 
 Done. Here's a summary of the changes:
 
@@ -449,6 +2264,7 @@ Done. Here's a summary of the changes:
 - Updated 3 existing tests (`difficultyRespectsFloor`, `difficultyRespectsCeiling`, `statelessStrategyConsistency`) to call `profile.update()` before `setDifficulty()` so `sampleCount > 0`
 - Updated `perNoteIndependentDifficulties` test description to clarify isolated range behavior
 - Added 6 new tests: `weightedDifficultyNoDataReturnsDefault`, `weightedDifficultyCurrentNoteOnlyReturnsOwnDifficulty`, `weightedDifficultyNeighborsOnly`, `weightedDifficultyCurrentNoteDominates`, `weightedDifficultyKernelNarrowing`, `weightedDifficultyBoundaryNote`
+
 
 ---
 
