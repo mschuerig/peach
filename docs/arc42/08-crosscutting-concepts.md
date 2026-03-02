@@ -1,146 +1,99 @@
-# 8. Crosscutting Concepts
+# 8. Cross-cutting Concepts
 
-## Dependency Injection
+## Two-World Architecture
 
-All services are created in `PeachApp.init()` (composition root) and injected into the view hierarchy via SwiftUI `@Environment`:
+The codebase maintains a strict boundary between the **logical world** (musical abstractions) and the **physical world** (audio frequencies):
 
-```swift
-// PeachApp.swift — composition root
-ContentView()
-    .environment(\.comparisonSession, comparisonSession)
-    .environment(\.pitchMatchingSession, pitchMatchingSession)
-    .environment(\.perceptualProfile, profile)
-    .environment(\.trendAnalyzer, trendAnalyzer)
-    .environment(\.thresholdTimeline, thresholdTimeline)
-    .environment(\.soundFontLibrary, soundFontLibrary)
-    .modelContainer(modelContainer)
-```
+| World | Types | Knowledge |
+|---|---|---|
+| **Logical** | `MIDINote`, `DetunedMIDINote`, `Interval`, `DirectedInterval`, `Cents` | Musical structure. No frequency knowledge. Pure math on semitones and cent offsets. |
+| **Physical** | `Frequency` (Hz) | Acoustic reality. No MIDI knowledge. |
 
-All `@Entry` environment key definitions are consolidated in `App/EnvironmentKeys.swift`:
+The bridge between worlds is `TuningSystem`:
 
 ```swift
-extension EnvironmentValues {
-    @Entry var soundFontLibrary = SoundFontLibrary()
-    @Entry var trendAnalyzer = TrendAnalyzer()
-    @Entry var thresholdTimeline = ThresholdTimeline()
-    @Entry var activeSession: (any TrainingSession)? = nil
-    @Entry var perceptualProfile = PerceptualProfile()
-    @Entry var comparisonSession: ComparisonSession = { ... }()
-    @Entry var pitchMatchingSession: PitchMatchingSession = { ... }()
-}
+func frequency(for note: DetunedMIDINote, referencePitch: Frequency) -> Frequency
 ```
 
-The `@Entry` macro replaces manual `EnvironmentKey` structs — no boilerplate `defaultValue` or computed property needed. This consolidation keeps Core/ free of SwiftUI imports.
+`TuningSystem` is an enum (`.equalTemperament`, `.justIntonation`) that maps logical intervals to physical cent offsets. This separation allows the app to support multiple tuning systems without changing any training logic, UI code, or audio playback code.
 
-Views consume services via `@Environment(\.comparisonSession)`. Tests inject mocks directly into session initializers — no environment needed.
+**Consequence:** `NotePlayer` never sees a `MIDINote`. Sessions compute frequencies via `TuningSystem` and pass Hz values to the audio layer. The `SoundFontNotePlayer` internally decomposes Hz back to the nearest MIDI note + pitch bend for the sampler, but this is an implementation detail invisible to the rest of the system.
 
-## Concurrency Model
+## Observer Fan-Out Pattern
 
-**`@MainActor` everywhere UI-facing.** All service classes, all mocks, all test functions are `@MainActor`. The compiler enforces isolation boundaries — there is no manual thread management.
+Both training sessions use a **synchronous observer fan-out** for side effects after each completed exercise:
 
-**`async/await` only.** No completion handlers, no Combine, no `DispatchQueue`. Asynchronous work uses structured concurrency with `Task`s that are stored for cancellation.
-
-**`Sendable` at boundaries.** Value types (`Comparison`, `CompletedComparison`, `TrainingSettings`, `PerceptualNote`) are `Sendable` by construction. Reference types stay on `@MainActor`.
-
-## Observer Pattern
-
-`ComparisonObserver` decouples `ComparisonSession` from its side-effect handlers:
-
-```swift
-protocol ComparisonObserver {
-    func comparisonCompleted(_ completed: CompletedComparison)
-}
+```mermaid
+graph LR
+    CS["ComparisonSession"] -->|"comparisonCompleted()"| DS["TrainingDataStore<br><i>persists record</i>"]
+    CS -->|"comparisonCompleted()"| PP["PerceptualProfile<br><i>updates statistics</i>"]
+    CS -->|"comparisonCompleted()"| HM["HapticFeedbackManager<br><i>buzzes on wrong</i>"]
+    CS -->|"comparisonCompleted()"| TA["TrendAnalyzer<br><i>updates trend</i>"]
+    CS -->|"comparisonCompleted()"| TL["ThresholdTimeline<br><i>updates chart data</i>"]
 ```
 
-Five comparison observers are wired in `PeachApp.init()`:
+Observers are injected at construction time via `[ComparisonObserver]` and `[PitchMatchingObserver]` arrays. Each observer handles its own errors internally — a persistence failure does not break the training loop. This keeps the session as a clean orchestrator that delegates all side effects.
 
-| Observer | Responsibility |
-|---|---|
-| `TrainingDataStore` | Persist the `ComparisonRecord` to SwiftData |
-| `PerceptualProfile` | Update per-note statistics (Welford's) |
-| `HapticFeedbackManager` | Trigger haptic feedback on wrong answer |
-| `TrendAnalyzer` | Update improving/stable/declining trend |
-| `ThresholdTimeline` | Track threshold history for timeline visualization |
+## Protocol-First Design and Dependency Injection
 
-`PitchMatchingObserver` follows the same pattern for `PitchMatchingSession`:
+Every service boundary is defined as a protocol before implementation:
 
-```swift
-protocol PitchMatchingObserver {
-    func pitchMatchingCompleted(_ completed: CompletedPitchMatching)
-}
+| Protocol | Implementation | Test Mock |
+|---|---|---|
+| `NotePlayer` | `SoundFontNotePlayer` | `MockNotePlayer` |
+| `PlaybackHandle` | `SoundFontPlaybackHandle` | `MockPlaybackHandle` |
+| `NextComparisonStrategy` | `KazezNoteStrategy` | Inline closures |
+| `PitchDiscriminationProfile` | `PerceptualProfile` | `MockPitchDiscriminationProfile` |
+| `PitchMatchingProfile` | `PerceptualProfile` | `MockPitchMatchingProfile` |
+| `UserSettings` | `AppUserSettings` | `PreviewUserSettings` |
+| `SoundSourceProvider` | `SoundFontLibrary` | `PreviewSoundSourceProvider` |
+| `ComparisonRecordStoring` | `TrainingDataStore` | `MockTrainingDataStore` |
+| `Resettable` | Various | `MockResettable` |
+
+**Composition root:** All wiring happens in `PeachApp.init()`. No service instantiates its own dependencies. Views receive services exclusively through the SwiftUI `@Environment`.
+
+**Environment keys:** The `@Entry` macro defines typed environment keys with preview-safe defaults. Every screen works in Xcode previews with rich preview stubs — no real audio, persistence, or settings needed.
+
+## Settings Propagation
+
+Settings are stored in `UserDefaults` via `@AppStorage` in the `SettingsScreen`. The propagation path is intentionally indirect:
+
+```
+SettingsScreen (@AppStorage) → UserDefaults → AppUserSettings (reads live) → Session (reads per comparison)
 ```
 
-Pitch matching observers (e.g., `TrainingDataStore`, `PerceptualProfile`) are wired separately in `PeachApp.init()`.
+`AppUserSettings` reads `UserDefaults` on every property access — it never caches. Sessions read `userSettings` at the start of each comparison or pitch matching challenge. This means settings changes take effect on the **next** exercise automatically, with no explicit notification or refresh mechanism.
 
-Each observer handles its own errors internally. A failure in one observer does not affect the others or the training loop.
-
-## Error Handling Strategy
+## Error Handling
 
 **Typed error enums per service:**
-- `AudioError` — `engineStartFailed`, `nodeAttachFailed`, `renderFailed`, `invalidFrequency`, `contextUnavailable`
-- `DataStoreError` — `saveFailed`, `fetchFailed`, `deleteFailed`
 
-**TrainingSession as error boundary:**
-- Audio errors → stop training silently (transition to idle)
-- Data write errors → log internally, continue training (one lost record is acceptable)
+Each service defines its own error type (`DataStoreError`, etc.) enabling exhaustive `catch` patterns in tests.
+
+**Session as error boundary:**
+
+Both `ComparisonSession` and `PitchMatchingSession` catch all service errors and handle them gracefully:
+- Audio failure → stop training silently
+- Data write failure → log internally, continue training (loss of one record is acceptable)
 - The user never sees an error screen during training
 
-**Observer error isolation:**
-- Each `ComparisonObserver` catches its own errors
-- `TrainingDataStore.comparisonCompleted()` wraps `save()` in do/catch
-- A failed observer does not block other observers or the training loop
+**Observers swallow errors:**
 
-## Testing Approach
+`TrainingDataStore`, when acting as an observer, catches its own write errors and logs a warning rather than propagating them. The training loop is resilient — individual side-effect failures don't break the experience.
 
-**Protocol-based mocking.** Every service has a protocol. Tests inject mocks that conform to the same protocol:
+## State Management
 
-```swift
-// Production
-ComparisonSession(notePlayer: SoundFontNotePlayer(), strategy: KazezNoteStrategy(), ...)
+The app uses a consistent state management approach throughout:
 
-// Test
-ComparisonSession(notePlayer: MockNotePlayer(), strategy: MockNextComparisonStrategy(), ...)
-```
+| Mechanism | Usage |
+|---|---|
+| `@Observable` | All service objects: sessions, profile, trend analyzer, timeline. Views observe automatically via SwiftUI. |
+| `@State` | Root ownership of services in `PeachApp`. Local view state. |
+| `@Environment` | Dependency injection from composition root to views. Typed via `@Entry` keys. |
+| `@AppStorage` | User preferences in `SettingsScreen`. Read by `AppUserSettings` for live settings access. |
 
-**Mock contract (all mocks must provide):**
-- Call tracking: `playCallCount`, `lastFrequency`, `playHistory`
-- Error injection: `shouldThrowError`, `errorToThrow`
-- Synchronous callbacks: `onPlayCalled`, `onStopCalled`
-- `instantPlayback` mode for deterministic timing
-- `reset()` method for cleanup
-
-**Async testing pattern:**
-```swift
-@Test("plays note 1 after starting")
-func playsNote1AfterStarting() async {
-    let (session, notePlayer, _) = makeComparisonSession()
-    session.start()
-    try await waitForState(session, expected: .playingNote1)
-    #expect(notePlayer.playCallCount == 1)
-}
-```
-
-`waitForState` polls the session's state with a timeout — never use raw `#expect` immediately after an async action. Test functions are `async` (no explicit `@MainActor` needed — default isolation applies).
-
-**SwiftData in tests:** Always `ModelConfiguration(isStoredInMemoryOnly: true)`. Never use the production container.
-
-## Data Integrity
-
-- SwiftData atomic writes backed by SQLite — no partial `ComparisonRecord`s
-- Only complete comparison results are written (after user answers)
-- Incomplete comparisons (interrupted by navigation, phone call, backgrounding) are discarded entirely
-- `TrainingDataStore` is the sole writer — no concurrent access to `ModelContext`
+No `ObservableObject`, no `@Published`, no Combine. The `@Observable` macro (iOS 17+) provides automatic, granular change tracking.
 
 ## Localization
 
-- String Catalogs (`Localizable.xcstrings`) for English and German
-- SwiftUI native `Text("key")` localization
-- All user-facing strings are localized; technical terms in logs/comments stay in English
-
-## Accessibility
-
-- All interactive controls labeled for VoiceOver
-- Tap targets ≥ 44×44pt (Apple HIG)
-- Sufficient color contrast ratios
-- Haptic feedback as non-visual complement to the feedback indicator
-- `@Environment(\.verticalSizeClass)` for responsive layout (compact vs. regular)
+English and German via Xcode String Catalogs (`.xcstrings`). All user-facing strings use SwiftUI's `LocalizedStringKey` through the standard `Text("key")` pattern. The `bin/add-localization.py` script manages translations programmatically.

@@ -1,41 +1,41 @@
 # 1. Introduction and Goals
 
-## What is Peach?
-
-Peach is an iOS ear training app that improves pitch discrimination through adaptive, rapid two-note comparisons. Two tones play in sequence; the user taps "Higher" or "Lower." The app builds a perceptual profile of the user's hearing across their pitch range and targets weak spots.
-
-**Design philosophy: "Training, not testing."** No scores, no sessions, no gamification. Every comparison makes the user better; no single answer matters.
-
 ## Requirements Overview
 
-The architecture must support three core capabilities:
+Peach is a pitch ear training app for iOS that trains musicians' pitch perception through two complementary modes:
 
-| Capability | Description | Key Requirement |
-|---|---|---|
-| **Adaptive training loop** | Continuous comparisons with immediate feedback. Start/stop with zero friction. One-handed, reflexive interaction. | < 100ms round-trip between comparisons |
-| **Precision audio** | Sine wave generation at exact frequencies derived from MIDI notes and cent offsets. Smooth envelopes, no artifacts. | < 10ms latency, 0.1-cent accuracy |
-| **Perceptual profile** | Per-note aggregate of detection thresholds. Rebuilt from raw data on launch, updated incrementally during training. Drives adaptive note selection. | 128-slot MIDI array, Welford's algorithm |
+- **Pitch Comparison** — two notes play in sequence; the user judges whether the second is higher or lower
+- **Pitch Matching** — a reference note plays, then the user tunes a second note to match a target pitch via a vertical slider
 
-44 functional requirements (FR1–FR43 + FR7a) across 8 categories: Training Loop, Adaptive Algorithm, Audio Engine, Profile & Statistics, Data Persistence, Settings, Localization, Device & Platform.
+Both modes have **interval variants** that generalize from unison to any musical interval, training the user to perceive and produce precise intonation within intervals.
 
-12 non-functional requirements covering performance, accessibility, and data integrity.
+The app builds a perceptual profile of the user's hearing and relentlessly targets weak spots. There are no scores, no gamification, and no session boundaries. Every exercise makes the user better; no single answer matters.
 
-See the [PRD](../planning-artifacts/prd.md) for the full specification.
+**Design philosophy: "Training, not testing."**
+
+| Capability | Description |
+|---|---|
+| Adaptive algorithm | Selects comparisons based on the user's perceptual profile; narrows difficulty on correct answers, widens on wrong |
+| Perceptual profile | Per-note detection thresholds across the MIDI range, updated incrementally with Welford's algorithm |
+| SoundFont audio engine | AVAudioEngine + AVAudioUnitSampler with configurable instrument presets and real-time pitch adjustment |
+| Interval training | Musical intervals from Prime through Octave; tuning system abstraction (12-TET, Just Intonation) |
+| Fully offline | No network, no backend, no account creation. All data stored locally on-device |
+
+For the complete requirements specification, see [PRD](../planning-artifacts/prd.md).
 
 ## Quality Goals
 
-| Priority | Goal | Measure |
+| Priority | Quality Goal | Scenario |
 |---|---|---|
-| 1 | **Low-friction training** | User can begin training with a single tap. Stopping is instant (navigate away or background the app). No session boundaries. |
-| 2 | **Audio precision** | Tones accurate to 0.1 cent. Latency < 10ms (achieved: ~1.5ms with 64-sample buffer at 44.1kHz). No clicks or artifacts. |
-| 3 | **Data integrity** | Every answered comparison persisted atomically. Data survives crashes, force quits, device reboots. |
-| 4 | **Testability** | Protocol-based services with injected dependencies. Full test suite runs before every commit. |
-| 5 | **Simplicity** | Architecture matches project complexity. No over-engineering. Solo developer on unfamiliar platform; favor clarity over abstraction depth. |
+| 1 | **Low-friction training experience** | A user opens the app, taps one button, and is training within 2 seconds. Stopping is equally instant — just navigate away. No session summaries, no confirmation dialogs. |
+| 2 | **Audio precision and fidelity** | Generated tones are accurate to within 0.1 cent of the target frequency. Notes play with smooth envelopes — no clicks or artifacts on start, stop, or real-time pitch adjustment. Audio latency is imperceptible (< 10ms). |
+| 3 | **Data integrity** | Every answered comparison or pitch matching attempt is persisted atomically. Training data survives app crashes, force quits, and device reboots without loss. |
+| 4 | **Testability** | Every service boundary is a protocol. All dependencies are injected. The entire domain layer can be tested without UI, audio hardware, or persistence infrastructure. |
+| 5 | **Adaptability** | The adaptive algorithm continuously recalibrates to the user's current ability — whether improving through regular training or regressing after a break. No manual intervention required. |
 
 ## Stakeholders
 
-| Role | Expectations |
-|---|---|
-| **Michael (developer & primary user)** | Usable app for daily pitch training. Learning vehicle for iOS/SwiftUI development and AI-assisted workflows. |
-| **AI coding agents** | Clear architectural boundaries and implementation rules (documented in [project-context.md](../project-context.md)). Testable interfaces. Unambiguous file placement conventions. |
-| **Future contributors** | Understandable codebase with comprehensive tests. Self-documenting service boundaries. |
+| Role | Person | Expectations |
+|---|---|---|
+| Developer, user, product owner | Michael | A working pitch training tool on his iPhone; a learning platform for iOS/SwiftUI development and AI-assisted workflows |
+| AI development agents | Claude Code, etc. | Clear architectural boundaries, consistent patterns, and comprehensive documentation to enable autonomous implementation |

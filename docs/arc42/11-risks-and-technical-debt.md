@@ -1,84 +1,61 @@
 # 11. Risks and Technical Debt
 
-## Architectural Risks
+## Risks
 
-### R-1: Convergence Chain Lost on Restart
+### R-1: Adaptive Algorithm Tuning
 
-**Severity:** Medium
-**Status:** Open
+| Aspect | Detail |
+|---|---|
+| **Risk** | The Kazez staircase algorithm parameters may not converge to useful detection thresholds for all users. Over-narrowing could make training frustrating; over-widening could make it too easy. |
+| **Probability** | Medium |
+| **Impact** | High — the algorithm is the intellectual core of the app |
+| **Mitigation** | Algorithm parameters are exposed for manual tuning during development (FR15). Convergence behavior validated through test cases. The narrowing/widening asymmetry (5% vs 9% step sizes) is designed to prevent boundary locking. |
 
-The Kazez convergence chain (`lastCompletedComparison` in `ComparisonSession`) is not persisted. On every app restart, the algorithm bootstraps difficulty from neighbor-weighted profile data instead of continuing from the exact point where the user left off. This means returning users experience wider intervals for the first few comparisons as the chain re-converges.
+### R-2: SoundFont Pitch Bend Limits
 
-**Mitigation options:** Persist last cent offset to UserDefaults or SwiftData. Seed the chain on launch.
+| Aspect | Detail |
+|---|---|
+| **Risk** | MIDI pitch bend is configured for ±2 semitones (±200 cents). Pitch matching challenges with initial offsets beyond this range would produce incorrect frequencies. |
+| **Probability** | Low — current implementation uses ±20 cent offsets |
+| **Impact** | Medium — audibly wrong pitch would confuse the user |
+| **Mitigation** | `SoundFontPlaybackHandle.adjustFrequency()` clamps to ±200 cents from the base note. `PitchMatchingSession` generates challenges within ±20 cents. Future expansion would need to switch MIDI notes if exceeding the bend range. |
 
-### R-2: Profile Accumulates All History
+### R-3: SwiftData Maturity
 
-**Severity:** Medium
-**Status:** Open
+| Aspect | Detail |
+|---|---|
+| **Risk** | SwiftData is relatively new (iOS 17). Schema migration tooling and edge-case handling may be less robust than Core Data. |
+| **Probability** | Low — the data model is flat and simple |
+| **Impact** | Medium — could affect data integrity on model changes |
+| **Mitigation** | Data models are intentionally simple (flat records with primitive fields). No complex relationships. Migration needs are minimal. If needed, Core Data interop is available as a fallback. |
 
-`PerceptualProfile` uses Welford's algorithm across the entire comparison history with equal weight. As a user improves over weeks/months, old data drags the statistics. The profile may not reflect current ability.
+### R-4: iOS Version Dependency
 
-**Mitigation options:** Rolling window (last N comparisons per note), exponential decay weighting, or periodic profile snapshots.
-
-### R-3: `fatalError()` in App Initialization
-
-**Severity:** High
-**Status:** Open
-
-`PeachApp.init()` calls `fatalError()` if `ModelContainer`, `SoundFontNotePlayer`, or `dataStore.fetchAll()` fails. A corrupted SwiftData store or audio entitlement issue causes an instant crash with no recovery path.
-
-**Mitigation options:** Fallback error state UI, retry logic, or graceful degradation (e.g., run without audio, show error screen).
-
-### R-4: Seamless Playback May Inflate Difficulty Numbers
-
-**Severity:** Low
-**Status:** Under investigation
-
-Peach plays comparison tones back-to-back without a gap. This may make pitch differences easier to detect than in apps that separate tones with silence, meaning Peach's difficulty numbers could overstate actual discrimination ability.
-
-**Impact:** Training may be less effective if the task is artificially easier. Numbers are not comparable to other ear training apps.
+| Aspect | Detail |
+|---|---|
+| **Risk** | Targeting iOS 26 only means the app requires the very latest OS version. Users on older devices cannot install it. |
+| **Probability** | Certain (by design) |
+| **Impact** | Low — Michael (primary user) runs latest iOS. No commercial distribution goals. |
+| **Mitigation** | Accepted trade-off. Latest-only enables use of newest APIs without legacy workarounds. |
 
 ## Technical Debt
 
-### High Priority
+### TD-1: No iCloud Sync
 
-| Item | Description | Location |
-|---|---|---|
-| ~~**Mock in production**~~ | ~~Resolved (Story 20.9) — `MockHapticFeedbackManager` moved to test target. Preview stubs in `EnvironmentKeys.swift` are minimal and private.~~ | — |
-| **`precondition()` for validation** | `FrequencyCalculation.swift:60` uses `precondition` instead of `guard`/`throw`. Crashes in debug on bad MIDI input instead of using the existing `AudioError` type. | `FrequencyCalculation.swift:60` |
+Training data is device-local only. No mechanism to sync across devices or recover from device loss. Identified as a future enhancement in the PRD.
 
-### Medium Priority
+### TD-2: Profile Rebuild on Every Launch
 
-| Item | Description | Location |
-|---|---|---|
-| **Settings screen violates "views are thin"** | `SettingsScreen.resetAllTrainingData()` orchestrates a multi-service reset. SwiftData import removed (Story 20.10) — `TrainingDataStore` now injected via `@Environment`. Reset logic could still be extracted to a coordinator. | `SettingsScreen.swift` |
-| ~~**Reset doesn't clear difficulty**~~ | ~~Resolved (Story 20.8) — `ComparisonSession` stores `[Resettable]` dependencies; `resetTrainingData()` resets all.~~ | — |
-| **`ComparisonRecordStoring` incomplete** | Protocol defines only `save`/`fetchAll`, but `TrainingDataStore` also exposes `delete`/`deleteAll`. Callers bypass the protocol for deletion. | `ComparisonRecordStoring.swift` |
-| **Fire-and-forget Tasks** | Three locations spawn untracked `Task`s that could outlive their context (stop audio, early note2 stop, delayed haptic). | `ComparisonSession.swift`, `HapticFeedbackManager.swift` |
+The `PerceptualProfile` is rebuilt from all stored records on every app startup. Currently fast (milliseconds for thousands of records), but performance has not been profiled for very large datasets (tens of thousands of records over months of training). A caching strategy may become necessary.
 
-### Low Priority
+### TD-3: No Deinit Safety on PlaybackHandle
 
-| Item | Description | Location |
-|---|---|---|
-| ~~**`nonisolated(unsafe)` env keys**~~ | ~~Resolved — replaced with `@Entry` macro under Swift 6.2 + default MainActor isolation.~~ | — |
-| ~~**Environment key boilerplate**~~ | ~~Resolved — `@Entry` macro eliminates boilerplate.~~ | — |
-| **`hasTrainingData` duplicated** | `ProfileScreen` and `ProfilePreviewView` independently check `timeline.dataPoints.isEmpty`. Should be a computed property on `ThresholdTimeline` or `PerceptualProfile`. | `ProfileScreen.swift:27`, `ProfilePreviewView.swift:8` |
-| **Dead code** | `ContentView.previousScenePhase` is written but never read. | `ContentView.swift:15,37` |
-| **Redundant `note2` field** | `ComparisonRecord` stores `note1` and `note2` separately, but they are always equal (per domain rules). | `ComparisonRecord.swift` |
-| **Polling loop** | `runTrainingLoop()` spin-waits with 100ms sleep to detect state changes. The training flow is otherwise event-driven. | `ComparisonSession.swift` |
+`PlaybackHandle` relies on explicit `stop()` calls. If a handle is deallocated without being stopped, the note continues playing until the audio engine is torn down. All current code paths stop handles explicitly, but orphan safety could be added via `deinit`.
 
-## UX Gaps
+### TD-4: Single Fixed Interval for v0.3
 
-| Item | Priority | Description |
-|---|---|---|
-| **No onboarding** | High | New users have no guided introduction. Concepts like "cents" are unexplained. |
-| **Profile visualization uninterpretable** | High | Confidence band with log-scale Y-axis is technically correct but practically useless for users. |
-| **No progress over time** | Medium | No temporal visualization. `TrendAnalyzer` computes trends but they are only visible on the Profile screen. |
-| **No difficulty display** | Medium | During training, the user has no visibility into current cent difference or session best. |
-| ~~**Feedback icon flicker**~~ | ~~Medium~~ | ~~Resolved — fixed feedback icon briefly showing previous icon before updating.~~ |
-| **No session acknowledgment** | Medium | No summary when stopping training. No sense of duration or progress. |
-| **No iPad haptics** | Low | iPads lack a Taptic Engine. Wrong-answer feedback is visual only on iPad. |
+The initial interval training implementation is limited to a single fixed interval (perfect fifth up, 700 cents in 12-TET). The settings UI for selecting intervals per direction has been implemented, but multiple concurrent intervals in training rotation and tuning system selection beyond 12-TET are deferred.
 
-## Full Details
+### TD-5: No Temporal Progress Visualization
 
-For complete descriptions, root cause analysis, and proposed fixes for all items, see [future-work.md](../implementation-artifacts/future-work.md).
+The Profile Screen shows current snapshot statistics and a threshold timeline chart, but does not yet support profile snapshots over time — a full temporal view showing how the perceptual profile shape has evolved. Identified as a future enhancement.

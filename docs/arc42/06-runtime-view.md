@@ -1,191 +1,158 @@
 # 6. Runtime View
 
-## App Startup
+## Comparison Training Loop
 
-```
-PeachApp.init()
-    │
-    ├── ModelContainer(for: ComparisonRecord.self)
-    ├── TrainingDataStore(modelContext: container.mainContext)
-    ├── SineWaveNotePlayer()
-    │
-    ├── PerceptualProfile()
-    │   └── for record in dataStore.fetchAll():
-    │       profile.update(note:centOffset:isCorrect:)    ← rebuild from all records
-    │
-    ├── TrendAnalyzer(records: existingRecords)
-    ├── AdaptiveNoteStrategy()
-    ├── HapticFeedbackManager()
-    │
-    └── TrainingSession(
-            notePlayer: notePlayer,
-            strategy: strategy,
-            profile: profile,
-            observers: [dataStore, profile, hapticManager, trendAnalyzer]
-        )
+The core training interaction — the user answers a stream of pitch comparisons.
 
-    → Inject via @Environment:
-        \.trainingSession, \.perceptualProfile, \.trendAnalyzer
-    → Inject via .modelContainer():
-        SwiftData ModelContainer
-```
+```mermaid
+sequenceDiagram
+    actor User
+    participant CS as ComparisonSession
+    participant Strategy as KazezNoteStrategy
+    participant Profile as PerceptualProfile
+    participant NP as SoundFontNotePlayer
+    participant Observers as Observers<br>(DataStore, Profile,<br>Haptic, Trend, Timeline)
 
-All services are created once in `PeachApp.init()` and live for the app's lifetime. No lazy initialization, no service locator.
+    User->>CS: start(intervals)
+    activate CS
 
-## Training Loop (Core Runtime Scenario)
+    loop Each comparison
+        CS->>Strategy: nextComparison(profile, settings, lastComparison, interval)
+        Strategy->>Profile: read weak spots, mean threshold
+        Strategy-->>CS: Comparison(referenceNote, targetNote)
 
-This is the central runtime behavior — everything else serves this loop.
+        CS->>CS: state = playingNote1
+        CS->>NP: play(frequency1, duration)
+        Note over NP: Note 1 plays for configured duration
 
-```
-User taps "Start Training"
-    │
-    ▼
-TrainingSession.start()
-    │  guard state == .idle
-    │  spawn Task { runTrainingLoop() }
-    │
-    ▼
-┌─── playNextComparison() ◀────────────────────────────────┐
-│       │                                                    │
-│       ├── Read @AppStorage settings (live)                 │
-│       ├── strategy.nextComparison(profile, settings,       │
-│       │       lastComparison)                              │
-│       │       ├── selectNote(): Natural vs Mechanical      │
-│       │       └── determineCentDifference(): Kazez formula │
-│       │                                                    │
-│       ├── comparison.note1Frequency(referencePitch)        │
-│       ├── comparison.note2Frequency(referencePitch)        │
-│       │                                                    │
-│  ┌────▼────────────────────┐                               │
-│  │ state = .playingNote1   │                               │
-│  │ notePlayer.play(freq1)  │  buttons disabled             │
-│  └────┬────────────────────┘                               │
-│       │ await completion                                   │
-│  ┌────▼────────────────────┐                               │
-│  │ state = .playingNote2   │                               │
-│  │ notePlayer.play(freq2)  │  buttons enabled              │
-│  └────┬────────────────────┘                               │
-│       │ await completion (or user answers early)           │
-│  ┌────▼────────────────────┐                               │
-│  │ state = .awaitingAnswer │  (skipped if answered during  │
-│  └────┬────────────────────┘   note2 playback)             │
-│       │                                                    │
-│       ▼                                                    │
-│  User taps Higher or Lower                                 │
-│       │                                                    │
-│  handleAnswer(isHigher:)                                   │
-│       ├── CompletedComparison(comparison, userAnsweredHigher)
-│       ├── lastCompletedComparison = completed              │
-│       │                                                    │
-│       ├── recordComparison(completed)                      │
-│       │   └── for observer in observers:                   │
-│       │       observer.comparisonCompleted(completed)      │
-│       │       ├── TrainingDataStore: save record            │
-│       │       ├── PerceptualProfile: update(note,offset)   │
-│       │       ├── HapticFeedbackManager: buzz if wrong     │
-│       │       └── TrendAnalyzer: update trend              │
-│       │                                                    │
-│  ┌────▼────────────────────┐                               │
-│  │ state = .showingFeedback│                               │
-│  │ showFeedback = true     │  thumbs up/down visible       │
-│  │ 0.4s delay              │                               │
-│  └────┬────────────────────┘                               │
-│       │                                                    │
-│       └── showFeedback = false ────────────────────────────┘
-│
+        CS->>CS: state = playingNote2
+        CS->>NP: play(frequency2, duration)
+        Note over CS: Buttons enabled — user can answer<br>while note 2 is still playing
+
+        User->>CS: handleAnswer(isHigher: true/false)
+        CS->>CS: compute isCorrect
+        CS->>Observers: comparisonCompleted(result)
+        Note over Observers: DataStore persists record<br>Profile updates statistics<br>HapticManager buzzes on wrong<br>TrendAnalyzer/Timeline update
+
+        CS->>CS: state = showingFeedback (400ms)
+        Note over User: Sees thumbs up/down
+    end
+
+    User->>CS: stop() [navigate away / background]
+    CS->>NP: stop current handle
+    CS->>CS: state = idle
+    deactivate CS
 ```
 
-### Key Timing
+**Key behavior:**
+- Buttons are enabled during `playingNote2` — the user can answer before the second note finishes
+- The 400ms feedback phase is skippable if the user navigates away
+- Audio interruptions (phone call, headphone disconnect) trigger `stop()` automatically via `AudioSessionInterruptionMonitor`
 
-- **Note duration:** configurable (default 1.0s), read from `@AppStorage` per comparison
-- **Feedback phase:** 0.4s fixed — perceptual learning design decision
-- **Round-trip:** effectively zero delay between feedback end and next note1 start
-- **Early answer:** user can tap during note2 playback; note2 stops immediately
+## Pitch Matching Loop
+
+The user tunes a note to match a target pitch.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant PMS as PitchMatchingSession
+    participant NP as SoundFontNotePlayer
+    participant Handle as PlaybackHandle
+    participant Observers as Observers<br>(DataStore, Profile)
+
+    User->>PMS: start(intervals)
+    activate PMS
+
+    loop Each pitch matching attempt
+        PMS->>PMS: generate PitchMatchingChallenge<br>(reference + random ±20¢ offset)
+
+        PMS->>PMS: state = playingReference
+        PMS->>NP: play(referenceFreq, duration)
+        Note over NP: Reference note plays<br>for configured duration
+
+        PMS->>PMS: state = playingTunable
+        PMS->>NP: play(tunableFreq) → handle
+        Note over PMS: Slider becomes active
+
+        loop User drags slider
+            User->>PMS: adjustPitch(sliderValue)
+            PMS->>Handle: adjustFrequency(newFreq)
+            Note over NP: Real-time pitch bend<br>(14-bit MIDI resolution)
+        end
+
+        User->>PMS: commitPitch(finalValue) [releases slider]
+        PMS->>Handle: stop()
+        PMS->>PMS: compute userCentError
+        PMS->>Observers: pitchMatchingCompleted(result)
+
+        PMS->>PMS: state = showingFeedback (400ms)
+        Note over User: Sees arrow + cent error
+    end
+
+    User->>PMS: stop()
+    PMS->>Handle: stop current handle
+    PMS->>PMS: state = idle
+    deactivate PMS
+```
+
+**Key behavior:**
+- The slider maps -1.0..+1.0 to ±20 cents from the initial offset
+- No visual feedback during active tuning — only after release
+- `adjustFrequency()` on the `PlaybackHandle` uses MIDI pitch bend for real-time frequency change
+
+## App Startup and Profile Rebuild
+
+```mermaid
+sequenceDiagram
+    participant App as PeachApp.init()
+    participant DS as TrainingDataStore
+    participant Profile as PerceptualProfile
+    participant Trend as TrendAnalyzer
+    participant Timeline as ThresholdTimeline
+
+    App->>App: Create ModelContainer<br>(ComparisonRecord + PitchMatchingRecord)
+    App->>DS: init(modelContext)
+    App->>Profile: init()
+
+    App->>DS: fetchAllComparisons()
+    DS-->>App: [ComparisonRecord]
+
+    loop Each historical record
+        App->>Profile: update(note, centOffset, isCorrect)
+        App->>Trend: comparisonCompleted(record)
+        App->>Timeline: comparisonCompleted(record)
+    end
+
+    App->>DS: fetchAllPitchMatchings()
+    DS-->>App: [PitchMatchingRecord]
+
+    loop Each historical record
+        App->>Profile: updateMatching(note, centError)
+    end
+
+    Note over App: All services wired.<br>Inject into SwiftUI environment.
+```
+
+The perceptual profile is never persisted — it is always rebuilt from raw records. This ensures the profile is always consistent with the stored data and simplifies the data model.
 
 ## Audio Interruption Handling
 
-```
-AVAudioSession.interruptionNotification
-    │ (phone call, Siri, alarm)
-    ▼
-TrainingSession.handleAudioInterruption(typeValue:)
-    │ case .began:
-    │     stop()  → state = .idle, cancel tasks, stop audio
-    │ case .ended:
-    │     (no auto-restart — user must tap Start again)
+```mermaid
+stateDiagram-v2
+    [*] --> Training : User taps Start
 
-AVAudioSession.routeChangeNotification
-    │ (headphone disconnect)
-    ▼
-TrainingSession.handleAudioRouteChange(reasonValue:)
-    │ case .oldDeviceUnavailable:
-    │     stop()
-    │ other reasons:
-    │     continue training
+    Training --> Interrupted : Phone call / Headphone disconnect /<br>App backgrounded
+
+    state Interrupted {
+        [*] --> StopCurrentNote : AudioSessionInterruptionMonitor<br>fires onStopRequired
+        StopCurrentNote --> DiscardIncomplete : Incomplete comparison/<br>match discarded
+        DiscardIncomplete --> ReturnToStart : state = idle
+    }
+
+    Interrupted --> StartScreen : Navigation stack<br>pops to root
+
+    StartScreen --> Training : User taps Start again
 ```
 
-Incomplete comparisons are always discarded. No partial data is persisted.
-
-## App Lifecycle
-
-```
-App backgrounded during training
-    │
-    ▼
-ContentView.onChange(scenePhase)
-    │ .background or .inactive:
-    │     trainingSession.stop()
-    │
-    ▼
-App foregrounded
-    │ → User sees Start Screen (training was stopped)
-    │ → Profile is intact (was updated incrementally)
-    │ → Convergence chain lost (lastComparison is nil)
-    │   → Bootstrap from neighbor-weighted difficulty on next start
-```
-
-## Profile Rebuild on Launch
-
-```
-PeachApp.init()
-    │
-    ├── dataStore.fetchAll()  → [ComparisonRecord] sorted by timestamp
-    │
-    └── for each record:
-            profile.update(
-                note: record.note1,
-                centOffset: record.note2CentOffset,
-                isCorrect: record.isCorrect
-            )
-            │
-            └── Welford's online algorithm:
-                    count += 1
-                    delta = centOffset - mean
-                    mean += delta / count
-                    delta2 = centOffset - mean
-                    m2 += delta × delta2
-                    stdDev = sqrt(m2 / (count - 1))
-```
-
-The profile is rebuilt from the complete history on every launch. With hundreds to low thousands of records, this completes in < 100ms.
-
-## Settings Propagation
-
-```
-User adjusts slider in SettingsScreen
-    │
-    ▼
-@AppStorage writes to UserDefaults (immediate)
-    │
-    ▼
-Next call to playNextComparison()
-    │
-    ├── currentSettings reads @AppStorage:
-    │   noteRangeMin, noteRangeMax,
-    │   naturalVsMechanical, referencePitch
-    │
-    └── strategy.nextComparison(profile, settings, lastComparison)
-        └── Uses updated settings for note selection and range
-```
-
-No restart needed. No re-injection. Settings take effect on the very next comparison.
+Interruption handling is identical for both training modes. The session discards any incomplete attempt — no partial data is ever persisted.

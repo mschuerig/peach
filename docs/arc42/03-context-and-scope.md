@@ -1,49 +1,70 @@
 # 3. Context and Scope
 
-## System Context
+## Business Context
 
-Peach is a self-contained iOS app with no external system dependencies at runtime.
+Peach is a standalone, fully offline iOS app. It has no backend, no network communication, and no external service dependencies. The system boundary is the app itself running on the user's device.
 
-```
-                    ┌─────────────────────────┐
-                    │                         │
-   User ──────────▶│         Peach           │
-   (taps,          │                         │
-    listens)       │  ┌───────────────────┐  │
-                    │  │  Training Loop    │  │
-                    │  │  Audio Engine     │  │
-                    │  │  Adaptive Algo    │  │
-                    │  │  Profile Store    │  │
-                    │  └───────────────────┘  │
-                    │                         │
-                    └──────────┬──────────────┘
-                               │
-                    ┌──────────▼──────────────┐
-                    │   iOS Platform APIs     │
-                    │                         │
-                    │  AVAudioEngine          │
-                    │  SwiftData / SQLite     │
-                    │  UserDefaults           │
-                    │  UIImpactFeedbackGen.   │
-                    │  AVAudioSession         │
-                    └─────────────────────────┘
+```mermaid
+C4Context
+    title System Context — Peach
+
+    Person(user, "Musician", "Trains pitch perception<br>through comparison and<br>pitch matching exercises")
+
+    System(peach, "Peach", "iOS pitch ear training app.<br>Adaptive algorithm builds<br>perceptual profile and<br>targets weak spots.")
+
+    System_Ext(audio, "iOS Audio System", "AVAudioEngine,<br>AVAudioUnitSampler,<br>device speakers/headphones")
+    System_Ext(haptic, "Haptic Engine", "UIImpactFeedbackGenerator<br>for wrong-answer feedback")
+    System_Ext(storage, "On-Device Storage", "SwiftData (SQLite)<br>for training records.<br>UserDefaults for settings.")
+
+    Rel(user, peach, "Taps buttons, drags slider,<br>adjusts settings")
+    Rel(peach, audio, "Plays notes at precise<br>frequencies via SoundFont")
+    Rel(peach, haptic, "Triggers haptic on<br>incorrect comparison answers")
+    Rel(peach, storage, "Persists training records<br>and user settings")
 ```
 
-## External Interfaces
+| Actor / System | Input to Peach | Output from Peach |
+|---|---|---|
+| **User (musician)** | Tap higher/lower, drag pitch slider, adjust settings | Audio playback, visual feedback, haptic feedback, perceptual profile visualization |
+| **iOS Audio System** | Audio interruption notifications (phone call, headphone disconnect) | Note playback commands (MIDI note on/off, pitch bend, preset selection) |
+| **On-Device Storage** | Persisted training records, user settings | New comparison/pitch matching records, settings updates |
 
-| Interface | Direction | Purpose | Technology |
-|---|---|---|---|
-| **Audio output** | App → Speaker/Headphones | Sine wave tone playback | AVAudioEngine → AVAudioSession |
-| **Haptic engine** | App → Taptic Engine | Wrong-answer tactile feedback | UIImpactFeedbackGenerator |
-| **Local storage** | App ↔ Filesystem | Comparison records (SwiftData/SQLite) | SwiftData `ModelContainer` |
-| **User preferences** | App ↔ Filesystem | Settings (range, duration, pitch, slider) | `@AppStorage` / UserDefaults |
-| **Audio interruptions** | iOS → App | Phone calls, Siri, headphone disconnect | AVAudioSession notifications |
-| **App lifecycle** | iOS → App | Backgrounding, foregrounding | SwiftUI `ScenePhase` |
+## Technical Context
 
-## What Peach Does Not Have
+```mermaid
+graph LR
+    subgraph "iOS Device"
+        subgraph "Peach App Process"
+            UI["SwiftUI Views"]
+            Sessions["ComparisonSession<br>PitchMatchingSession"]
+            Core["Core Services<br>(Algorithm, Profile, Data)"]
+            Audio["SoundFontNotePlayer"]
+        end
 
-- No network access, no API calls, no backend
-- No user accounts, no authentication
-- No push notifications, no camera, no location
-- No in-app purchases
-- No iCloud sync (planned post-MVP)
+        subgraph "System Frameworks"
+            AVAudio["AVAudioEngine<br>+ AVAudioUnitSampler"]
+            SwiftData["SwiftData<br>(SQLite)"]
+            UserDef["UserDefaults"]
+            UIKit["UIImpactFeedbackGenerator"]
+        end
+
+        subgraph "Hardware"
+            Speaker["Speaker /<br>Headphones"]
+            Haptic["Taptic Engine"]
+            Flash["Flash Storage"]
+        end
+    end
+
+    UI --> Sessions
+    Sessions --> Core
+    Sessions --> Audio
+    Core --> SwiftData
+    Core --> UserDef
+    Audio --> AVAudio
+    AVAudio --> Speaker
+    Sessions --> UIKit
+    UIKit --> Haptic
+    SwiftData --> Flash
+    UserDef --> Flash
+```
+
+All communication is in-process. There are no network channels, no IPC, and no remote services. The only external signals are iOS system notifications (audio interruptions, app lifecycle events).

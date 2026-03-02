@@ -1,132 +1,73 @@
 # 9. Architecture Decisions
 
-## AD-1: In-Memory Profile, Not Persisted
+Key architecture decisions are documented in the [Architecture Decision Document](../planning-artifacts/architecture.md). This section summarizes the most significant decisions and their rationale.
 
-**Context:** The perceptual profile aggregates per-note statistics from comparison records. It could be persisted as a separate SwiftData model or kept in memory.
+## ADR-1: SwiftData over Core Data
 
-**Decision:** `PerceptualProfile` is never persisted. It is rebuilt from all `ComparisonRecord`s on every app launch, then updated incrementally during training.
+**Context:** The app needs atomic, crash-resilient persistence for per-answer training records.
 
-**Rationale:**
-- Keeps the data model flat (one `@Model` only)
-- Avoids synchronization between profile and records
-- Profile computation can change (e.g., switch from lifetime average to rolling window) without data migration
-- Rebuild from hundreds/thousands of records takes < 100ms
+**Decision:** Use SwiftData (iOS 17+, backed by SQLite via Core Data).
 
-**Trade-off:** Convergence chain state (the last cent offset used by Kazez formulas) is lost on restart. The algorithm bootstraps from neighbor-weighted difficulty, which introduces a brief re-convergence period. This is a [known issue](../implementation-artifacts/future-work.md#convergence-chain-state-not-persisted-across-app-restarts).
+**Rationale:** Native SwiftUI integration with `@Model` macro. Minimal boilerplate for flat record models (`ComparisonRecord`, `PitchMatchingRecord`). Atomic writes and crash resilience handled by the underlying SQLite engine. No need for Core Data's full complexity.
 
-## AD-2: Single Orchestrator (TrainingSession)
+**Consequences:** Tied to Apple's SwiftData evolution. Migration tooling is less mature than Core Data. Acceptable for a greenfield project with simple models.
 
-**Context:** The training loop involves audio playback, algorithm selection, data persistence, profile updates, and UI feedback. These could be coordinated by the view, by multiple collaborating services, or by a single orchestrator.
+## ADR-2: AVAudioUnitSampler with SoundFont over Custom Synthesis
 
-**Decision:** `TrainingSession` is the sole orchestrator. It is the only component that knows a "comparison" is two notes played in sequence with a user answer.
+**Context:** The MVP used sine wave generation via `AVAudioSourceNode`. Users need more musical timbres.
 
-**Rationale:**
-- Clear single responsibility for the training flow
-- Error boundary: catches all service errors in one place
-- Services stay focused: `NotePlayer` knows frequencies, `NextNoteStrategy` knows note selection, neither knows about the loop
-- Views stay thin: observe `TrainingSession` state, send actions, render
+**Decision:** Replace custom synthesis with `AVAudioUnitSampler` loading SoundFont (.sf2) instrument files.
 
-## AD-3: Observer Pattern for Side Effects
+**Rationale:** SoundFonts provide hundreds of realistic instrument timbres with zero DSP code. `AVAudioUnitSampler` handles MIDI note-on/off, pitch bend, and velocity natively. The bundled GeneralUser GS.sf2 provides comprehensive preset coverage. Real-time pitch adjustment works via standard MIDI pitch bend (14-bit resolution, ±2 semitone range).
 
-**Context:** When a comparison is completed, multiple things must happen: persist the record, update the profile, trigger haptic feedback, update trend analysis. These could be direct method calls from `TrainingSession` or an observer/event pattern.
+**Consequences:** App size increases by ~30 MB for the SoundFont. Sine wave option removed (the SoundFont includes a sine-like "Sine Wave" preset). Pitch bend limited to ±200 cents — sufficient for all current use cases.
 
-**Decision:** `ComparisonObserver` protocol with an array of observers injected into `TrainingSession`.
+## ADR-3: Kazez Psychoacoustic Staircase Algorithm
 
-**Rationale:**
-- `TrainingSession` doesn't know (or care) about the concrete observers
-- Adding a new side effect means creating a new observer and wiring it in `PeachApp.swift`
-- Each observer handles its own errors independently
-- Easy to test: inject only the observers relevant to the test
+**Context:** The adaptive algorithm must continuously adjust difficulty based on user performance without session boundaries.
 
-## AD-4: Protocol-First Design
+**Decision:** Implement a modified Kazez staircase method with asymmetric step sizes.
 
-**Context:** Services could be concrete classes (simpler) or protocol-backed (more testable).
+**Rationale:** Correct answers narrow difficulty by `p * (1.0 - 0.05 * sqrt(p))`, wrong answers widen by `p * (1.0 + 0.09 * sqrt(p))`. The asymmetry prevents the algorithm from getting stuck at boundaries. Square-root scaling makes steps proportional to the current difficulty level. No session-level state — the algorithm reads the perceptual profile and last comparison only.
 
-**Decision:** Every service defines a protocol first, then an implementation. `NotePlayer` → `SoundFontNotePlayer`. `NextComparisonStrategy` → `KazezNoteStrategy`.
+**Consequences:** Algorithm parameters are tunable but not configurable by the user. Convergence behavior validated through implementation testing.
 
-**Rationale:**
-- Enables test mocking without frameworks or subclassing
-- Keeps service boundaries explicit and documented
-- Supports future swappable implementations (e.g., sampled instrument sounds via `NotePlayer` protocol)
-- Small overhead for a small codebase
+## ADR-4: In-Memory Profile Rebuilt from Records
 
-## AD-5: AVAudioEngine with Pre-Generated Buffers
+**Context:** The perceptual profile must be accurate, consistent, and resilient to data corruption.
 
-**Context:** Sine waves could be generated with `AVAudioSourceNode` (real-time callback), `AVAudioPlayerNode` (pre-generated buffer), or `AVTonePlayerUnit` / AudioKit.
+**Decision:** Never persist the `PerceptualProfile` to SwiftData. Rebuild it from all `ComparisonRecord` and `PitchMatchingRecord` entries on every app launch. Update incrementally during training.
 
-**Decision:** `AVAudioPlayerNode` with pre-generated `AVAudioPCMBuffer`. Single engine instance created at startup.
+**Rationale:** Raw records are the single source of truth. Rebuilding eliminates consistency bugs between cached profile and stored records. Welford's algorithm makes incremental updates O(1). Full rebuild from thousands of records completes in milliseconds on modern hardware.
 
-**Rationale:**
-- Pre-generated buffers allow precise envelope shaping (5ms attack/release)
-- No real-time audio callback complexity
-- 44.1kHz mono, ~1.5ms effective latency
-- Single engine instance avoids resource conflicts
-- No third-party dependency needed for sine wave generation
+**Consequences:** App startup includes a full aggregation pass. Acceptable for the expected data volume (thousands of records, not millions).
 
-## AD-6: SwiftData Over Core Data
+## ADR-5: PlaybackHandle Protocol for Note Lifecycle
 
-**Context:** Persistence options include SwiftData, Core Data, SQLite directly, or file-based storage.
+**Context:** Pitch matching requires indefinite note playback with real-time frequency adjustment. The MVP `NotePlayer.stop()` method was ambient (stop whatever is playing).
 
-**Decision:** SwiftData with `ComparisonRecord` and `PitchMatchingRecord` models.
+**Decision:** Redesign `NotePlayer` to return a `PlaybackHandle` from `play()`. The handle owns the playing note and provides `stop()` and `adjustFrequency()`.
 
-**Rationale:**
-- Native SwiftUI integration (`@Model`, `ModelContainer` via environment)
-- Atomic writes via underlying SQLite
-- Minimal boilerplate for the simple flat data model
-- Crash resilience handled by the framework
+**Rationale:** Makes note ownership explicit. The caller that starts a note controls that specific note's lifecycle. Supports both fixed-duration (comparison: play → wait → auto-stop) and indefinite (pitch matching: play → drag → commit → stop) patterns through the same protocol.
 
-## AD-7: @AppStorage for Settings (Not SwiftData)
+**Consequences:** All playback code uses handle-based lifecycle. Fixed-duration convenience method preserved via protocol extension. `stopAll()` retained for emergency cleanup only.
 
-**Context:** User preferences (slider value, note range, duration, pitch) could live in SwiftData alongside comparison records, or in UserDefaults.
+## ADR-6: No Third-Party Dependencies
 
-**Decision:** `@AppStorage` (UserDefaults wrapper) with keys centralized in `SettingsKeys.swift`.
+**Context:** The project is a learning exercise in native iOS development.
 
-**Rationale:**
-- Settings are simple key-value pairs, not relational data
-- `@AppStorage` provides direct SwiftUI binding — views update automatically
-- `TrainingSession` reads settings via `UserDefaults.standard` on each comparison, no injection needed
-- Keeps SwiftData focused on the single domain entity
+**Decision:** Use zero third-party packages. Entire stack is first-party Apple frameworks.
 
-## AD-8: Kazez Convergence with Chain-Based Difficulty
+**Rationale:** Eliminates dependency risk, version conflicts, and build complexity. Forces understanding of Apple's APIs. The project scope doesn't require anything beyond what Apple provides (SwiftUI, SwiftData, AVAudioEngine, Swift Charts, Swift Testing).
 
-**Context:** The adaptive algorithm needs to adjust difficulty based on user performance. Options include fixed step sizes, percentage adjustments, or psychophysical staircase methods.
+**Consequences:** Some "solved problems" (e.g., SoundFont preset parsing) require custom implementation. Acceptable as a learning opportunity.
 
-**Decision:** Kazez (2001) sqrt(P)-scaled formulas applied to a chain of comparisons. Correct answer: `N = P × [1 - 0.08 × √P]`. Wrong answer: `N = P × [1 + 0.09 × √P]`.
+## ADR-7: Feature-Based Project Organization
 
-**Rationale:**
-- Large initial steps that slow down as difficulty increases (sqrt scaling)
-- Single smooth convergence chain regardless of which note is selected
-- Per-note difficulty still tracked in profile for weak spot analysis
-- Coefficients tuned empirically: 0.08 narrowing (up from original 0.05) for faster convergence, 0.09 widening for stability
-- See [hotfix-tune-kazez-convergence.md](../implementation-artifacts/hotfix-tune-kazez-convergence.md) for tuning rationale
+**Context:** Need a project structure that scales with features and is navigable by both humans and AI agents.
 
-## AD-9: Feature-Based Directory Organization
+**Decision:** Organize by feature at the top level (`Comparison/`, `PitchMatching/`, `Profile/`, etc.) with shared code in `Core/` subdivided by concern (`Audio/`, `Algorithm/`, `Data/`, `Profile/`, `Training/`).
 
-**Context:** Code could be organized by layer (models/, views/, services/) or by feature (Training/, Profile/, Settings/).
+**Rationale:** Feature directories map directly to screens — easy to find code for any given functionality. `Core/` prevents duplication of shared logic. Test target mirrors source structure.
 
-**Decision:** Feature-based with a shared `Core/` layer for cross-feature services.
-
-**Rationale:**
-- Each feature is self-contained: screen + supporting views in one directory
-- `Core/` subdirectories group by domain (Audio, Algorithm, Data, Profile, Training)
-- `Core/Training/` holds shared domain types (Comparison, observers, Resettable) used by multiple features
-- Test target mirrors source structure exactly
-- Clear answer to "where does this file go?" for AI agents and future contributors
-
-## AD-10: Dependency Direction Discipline
-
-**Context:** Peach is a single-module Swift app with no compiler-enforced module boundaries. Without explicit rules, dependency arrows naturally become tangled: Core/ files imported SwiftUI for `@Entry` definitions, feature modules referenced types from other feature modules, and views created service instances directly. These violations were found by adversarial code review (Epic 19) and addressed systematically in Epic 20.
-
-**Decision:**
-1. Core/ never depends on feature modules — shared types live in `Core/Training/`
-2. Core/ never imports SwiftUI or UIKit — `@Entry` definitions live in `App/EnvironmentKeys.swift`
-3. Feature modules do not depend on each other — each defines its own constants
-4. Views depend on protocols, not implementations, for all service interactions
-
-**Rationale:**
-- Dependency direction is maintained by convention, enforced by code review and adversarial audits
-- Prepares the codebase for potential future modularization without requiring it now
-- Makes violations visible and intentional rather than accidental
-- Small cost: `EnvironmentKeys.swift` consolidation, a few type moves to Core/
-
-**Trade-off:** Some files move away from their "natural" home (e.g., `SoundSourceID` from Settings/ to Core/Audio/) to satisfy the dependency rule. This is acceptable because the rule prevents a larger class of architectural erosion.
+**Consequences:** Some types could arguably belong to either a feature or Core. The rule: if two or more features use it, it goes in Core.

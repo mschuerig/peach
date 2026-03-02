@@ -1,25 +1,32 @@
-# Peach Architecture Documentation
+# Peach — arc42 Architecture Documentation
 
-Arc42-style architecture reference for developers working on Peach, an adaptive pitch discrimination training app for iOS.
+**Version:** 1.0
+**Date:** 2026-03-02
+**Based on:** arc42 Template v9.0
 
-**Last updated:** 2026-02-22
+This documentation describes the software architecture of **Peach**, an iOS pitch ear training app. It follows the [arc42](https://arc42.org) template structure.
 
-## Sections
+## Table of Contents
 
-1. [Introduction and Goals](./01-introduction-and-goals.md) — What the app does and what drives the architecture
-2. [Constraints](./02-constraints.md) — Technical and organizational boundaries
-3. [Context and Scope](./03-context-and-scope.md) — System boundary and external interfaces
-4. [Solution Strategy](./04-solution-strategy.md) — Technology choices and key design decisions
-5. [Building Block View](./05-building-block-view.md) — Static decomposition into components
-6. [Runtime View](./06-runtime-view.md) — How components interact at runtime
-7. [Crosscutting Concepts](./08-crosscutting-concepts.md) — Patterns applied across the system
-8. [Architecture Decisions](./09-architecture-decisions.md) — Key decisions and their rationale
-9. [Quality Requirements](./10-quality-requirements.md) — Quality goals and how they are achieved
-10. [Risks and Technical Debt](./11-risks-and-technical-debt.md) — Known issues and open items
+| # | Section | Description |
+|---|---|---|
+| 1 | [Introduction and Goals](01-introduction-and-goals.md) | Requirements overview, quality goals, stakeholders |
+| 2 | [Architecture Constraints](02-constraints.md) | Technical, organizational, and convention constraints |
+| 3 | [Context and Scope](03-context-and-scope.md) | System boundary, business and technical context |
+| 4 | [Solution Strategy](04-solution-strategy.md) | Technology decisions, decomposition, quality strategies |
+| 5 | [Building Block View](05-building-block-view.md) | Static decomposition: Level 1 (features + core) and Level 2 (core internals) |
+| 6 | [Runtime View](06-runtime-view.md) | Comparison loop, pitch matching loop, startup, interruption handling |
+| 7 | [Deployment View](07-deployment-view.md) | iOS app sandbox, storage, distribution |
+| 8 | [Cross-cutting Concepts](08-crosscutting-concepts.md) | Two-world architecture, observer pattern, DI, settings propagation, error handling |
+| 9 | [Architecture Decisions](09-architecture-decisions.md) | Key ADRs: SwiftData, SoundFont, Kazez algorithm, PlaybackHandle, and more |
+| 10 | [Quality Requirements](10-quality-requirements.md) | Quality scenarios for performance, reliability, usability, testability |
+| 11 | [Risks and Technical Debt](11-risks-and-technical-debt.md) | Known risks and deferred work items |
+| 12 | [Glossary](12-glossary.md) | Key architectural terms (references full glossary) |
 
 ## Related Documents
 
-- [Glossary](../planning-artifacts/glossary.md) — Domain terminology (60+ terms)
-- [PRD](../planning-artifacts/prd.md) — Product requirements
-- [Project Context](../project-context.md) — Implementation rules for AI agents
-- [Future Work](../implementation-artifacts/future-work.md) — Tracked issues and enhancements
+- [Product Requirements Document](../planning-artifacts/prd.md)
+- [Architecture Decision Document](../planning-artifacts/architecture.md)
+- [UX Design Specification](../planning-artifacts/ux-design-specification.md)
+- [Glossary](../planning-artifacts/glossary.md)
+- [Epics and Stories](../planning-artifacts/epics.md)

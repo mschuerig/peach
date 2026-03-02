@@ -1,38 +1,40 @@
 # 4. Solution Strategy
 
-## Technology Choices
+## Technology Decisions
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| **Language** | Swift 6.0 | Strict concurrency (compile-time actor isolation). Latest iOS APIs. |
-| **UI** | SwiftUI | Declarative, state-driven. `@Observable` macro for reactive updates. No UIKit view code. |
-| **Persistence** | SwiftData | Native SwiftUI integration. SQLite-backed atomic writes. Minimal boilerplate for the simple data model. |
-| **Audio** | AVAudioEngine + AVAudioPlayerNode | Pre-generated PCM buffers for precise sine waves. ~1.5ms latency (64 samples at 44.1kHz). No third-party audio library needed. |
-| **Testing** | Swift Testing | `@Test`/`@Suite`/`#expect()`. Parallel by default. Async-native. Struct-based suites. |
-| **DI** | SwiftUI `@Environment` | Custom `EnvironmentKey` types. Composition root in `PeachApp.swift`. |
-| **Settings** | `@AppStorage` | UserDefaults wrapper. Keys centralized in `SettingsKeys.swift`. Read live on each comparison. |
-| **Localization** | String Catalogs | `Localizable.xcstrings` for English + German. Xcode-native workflow. |
+| **Language & runtime** | Swift 6.2, iOS 26 | Latest-only. No backward compatibility burden. Access to `@Observable`, `@Entry`, structured concurrency, strict sendability. |
+| **UI framework** | SwiftUI | Declarative, state-driven. Sufficient for the app's deliberately simple UI. No UIKit except for haptic feedback. |
+| **Testing** | Swift Testing (`@Test`, `#expect()`) | Modern, parallel by default, async-native. XCTest reserved for UI tests only. |
+| **Data persistence** | SwiftData | Native SwiftUI integration. Atomic writes backed by SQLite. Minimal boilerplate for the flat record models. |
+| **Audio engine** | AVAudioEngine + AVAudioUnitSampler | SoundFont (.sf2) instrument playback. Sub-10ms latency. Real-time pitch bend for pitch matching slider. No third-party audio libraries. |
+| **Settings storage** | `@AppStorage` (UserDefaults) | Lightweight key-value storage. Changes propagate immediately via SwiftUI bindings. Appropriate for ~10 scalar settings. |
+| **Localization** | String Catalogs (.xcstrings) | Xcode-native. English + German. |
+| **Dependencies** | Zero third-party | Entire stack is first-party Apple. No SPM packages, no CocoaPods, no Carthage. |
 
-## Architectural Approach
+## Top-Level Decomposition
 
-**Feature-based organization with a shared Core layer.** Each screen is a feature module. Cross-feature services live in `Core/` subdirectories grouped by domain (Audio, Algorithm, Data, Profile).
+The app follows a **feature-based organization** with a shared `Core/` layer:
 
-**Protocol-first design.** Every service has a protocol (`NotePlayer`, `NextNoteStrategy`, `ComparisonRecordStoring`). Implementations are injected. Tests use mocks conforming to the same protocols.
+- **Feature modules** (`Comparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Start/`, `Info/`) contain screens and feature-specific UI components
+- **Core** (`Core/`) contains domain logic, protocols, and services shared across features — subdivided into `Audio/`, `Algorithm/`, `Data/`, `Profile/`, and `Training/`
+- **App** (`App/`) contains the composition root (`PeachApp.swift`) and navigation shell (`ContentView.swift`)
 
-**Single orchestrator.** `TrainingSession` is the only component that crosses service boundaries. It coordinates the training loop state machine: generate comparison → play notes → await answer → record result → show feedback → repeat.
+The `TrainingSession` protocol unifies both training modes. `ComparisonSession` and `PitchMatchingSession` are independent state machines sharing the same `NotePlayer`, `PerceptualProfile`, and `TrainingDataStore`.
 
-**Observer pattern for decoupling.** `ComparisonObserver` protocol allows `TrainingDataStore`, `PerceptualProfile`, `HapticFeedbackManager`, and `TrendAnalyzer` to react to completed comparisons without `TrainingSession` knowing their concrete types.
+## Key Quality Strategies
 
-**In-memory profile, persisted records.** `PerceptualProfile` is never serialized. It is rebuilt from `ComparisonRecord`s on app launch and updated incrementally during training. This keeps the data model flat and the profile computation flexible.
+| Quality Goal | Architectural Approach |
+|---|---|
+| **Low-friction training** | No onboarding, no session boundaries. Single-tap start. Navigation away stops training silently. App backgrounding returns to Start Screen. |
+| **Audio precision** | SoundFont playback via AVAudioUnitSampler. Pitch bend with 14-bit MIDI resolution (±200 cent range). Frequency decomposition to nearest MIDI note + cent offset. |
+| **Data integrity** | SwiftData atomic writes. Only completed results are persisted — incomplete comparisons/matches are discarded on interruption. |
+| **Testability** | Protocol-first design at every service boundary. Composition root wires all dependencies. Views never instantiate services. Full mock coverage in test target. |
+| **Adaptability** | Kazez psychoacoustic staircase algorithm adjusts difficulty continuously. Perceptual profile rebuilt from raw records at startup; incremental Welford updates during training. No session-level caching. |
 
-## Key Design Decisions
+## Organizational Decisions
 
-1. **No session boundaries.** Training starts and stops instantly. There is no "session" object, no timer, no summary screen. The user trains for as long as they want and stops by navigating away.
-
-2. **Cent offset applies to note 2 only.** Note 1 is always an exact MIDI frequency. Note 2 = note 1 ± cent offset. This simplifies the comparison model and frequency calculation.
-
-3. **TrainingSession as error boundary.** Audio or data failures are caught and handled silently. The user never sees error states during training. One lost comparison record is acceptable.
-
-4. **Settings read live.** `TrainingSession` reads `@AppStorage` on every new comparison. Settings changes take effect immediately without restart or re-injection.
-
-5. **Stateless algorithm.** `AdaptiveNoteStrategy` holds no mutable state. It reads the `PerceptualProfile` and `lastComparison` parameter to select the next comparison. Difficulty progression is tracked in the profile and the comparison chain.
+- **AI-assisted development workflow:** Features are specified as tech specs (implementation artifacts). AI agents implement against the architecture document and project conventions.
+- **Test-first, always:** Every feature begins with tests. The `bin/test.sh` script is the primary feedback loop.
+- **Lean documentation:** Architecture docs describe decisions and rationale. Code is the authoritative source for implementation details.
