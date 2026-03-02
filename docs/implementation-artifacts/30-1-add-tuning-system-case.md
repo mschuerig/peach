@@ -1,6 +1,6 @@
 # Story 30.1: Add Just Intonation Tuning System Case
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,31 +24,31 @@ so that the app can compute interval frequencies using 5-limit just intonation r
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Write failing tests for `.justIntonation` cent offsets (AC: #1, #2)
-  - [ ] 1.1 Add test: `justIntonation centOffset for all 13 intervals returns correct values` — table-driven test iterating all `Interval.allCases` against the expected cent values from the research report
-  - [ ] 1.2 Add test: `justIntonation centOffset for prime returns 0.0` — explicit edge case
-  - [ ] 1.3 Add test: `justIntonation centOffset for octave returns 1200.0` — explicit edge case
-  - [ ] 1.4 Add test: `justIntonation centOffset for majorThird returns 386.314` — the signature JI interval (14¢ flatter than 12-TET)
-  - [ ] 1.5 Add test: `justIntonation centOffset for perfectFifth returns 701.955` — verifies the Pythagorean/JI pure fifth
-- [ ] Task 2: Write failing tests for storage identifiers (AC: #4, #5)
-  - [ ] 2.1 Add test: `storageIdentifier returns "justIntonation" for justIntonation`
-  - [ ] 2.2 Add test: `fromStorageIdentifier round-trips justIntonation`
-  - [ ] 2.3 Update existing test: `fromStorageIdentifier returns nil for unknown identifier` — remove `"justIntonation"` from the unknown-identifier assertions (it is currently tested as unknown)
-- [ ] Task 3: Write failing tests for CaseIterable and Codable (AC: #6, #7)
-  - [ ] 3.1 Update test: `CaseIterable gives 2 cases` (currently asserts 1)
-  - [ ] 3.2 Add test: `Codable round-trip preserves justIntonation`
-- [ ] Task 4: Write failing tests for frequency precision (AC: #3, #8)
-  - [ ] 4.1 Add test: `justIntonation frequency for just major third is accurate to 0.1 cent` — compute expected Hz from ratio 5/4 applied to reference, compare with `TuningSystem.justIntonation.frequency(for:referencePitch:)` using a `DetunedMIDINote` built from the cent offset
-  - [ ] 4.2 Add test: `justIntonation frequency for just perfect fifth is accurate to 0.1 cent` — ratio 3/2
-  - [ ] 4.3 Add test: `justIntonation frequency for just minor seventh is accurate to 0.1 cent` — ratio 9/5, the largest deviation from 12-TET (+17.6¢)
-- [ ] Task 5: Implement `.justIntonation` case in `TuningSystem.swift` (AC: #1, #2, #4, #5)
-  - [ ] 5.1 Add `case justIntonation` to the enum
-  - [ ] 5.2 Add `centOffset(for:)` switch branch with all 13 cent values from research report Section 5.3
-  - [ ] 5.3 Add `storageIdentifier` case returning `"justIntonation"`
-  - [ ] 5.4 Add `fromStorageIdentifier` mapping for `"justIntonation"`
-- [ ] Task 6: Run full test suite and verify all tests pass (AC: all)
-  - [ ] 6.1 Run `bin/test.sh` — all existing + new tests must pass
-  - [ ] 6.2 Verify FR55: confirm no files were changed besides `TuningSystem.swift` and `TuningSystemTests.swift` (AC: #9)
+- [x] Task 1: Write failing tests for `.justIntonation` cent offsets (AC: #1, #2)
+  - [x] 1.1 Add test: `justIntonation centOffset for all 13 intervals returns correct values` — table-driven test iterating all `Interval.allCases` against the expected cent values from the research report
+  - [x] 1.2 Add test: `justIntonation centOffset for prime returns 0.0` — explicit edge case
+  - [x] 1.3 Add test: `justIntonation centOffset for octave returns 1200.0` — explicit edge case
+  - [x] 1.4 Add test: `justIntonation centOffset for majorThird returns 386.314` — the signature JI interval (14¢ flatter than 12-TET)
+  - [x] 1.5 Add test: `justIntonation centOffset for perfectFifth returns 701.955` — verifies the Pythagorean/JI pure fifth
+- [x] Task 2: Write failing tests for storage identifiers (AC: #4, #5)
+  - [x] 2.1 Add test: `storageIdentifier returns "justIntonation" for justIntonation`
+  - [x] 2.2 Add test: `fromStorageIdentifier round-trips justIntonation`
+  - [x] 2.3 Update existing test: `fromStorageIdentifier returns nil for unknown identifier` — remove `"justIntonation"` from the unknown-identifier assertions (it is currently tested as unknown)
+- [x] Task 3: Write failing tests for CaseIterable and Codable (AC: #6, #7)
+  - [x] 3.1 Update test: `CaseIterable gives 2 cases` (currently asserts 1)
+  - [x] 3.2 Add test: `Codable round-trip preserves justIntonation`
+- [x] Task 4: Write failing tests for frequency precision (AC: #3, #8)
+  - [x] 4.1 Add test: `justIntonation frequency for just major third is accurate to 0.1 cent` — compute expected Hz from ratio 5/4 applied to reference, compare with `TuningSystem.justIntonation.frequency(for:referencePitch:)` using a `DetunedMIDINote` built from the cent offset
+  - [x] 4.2 Add test: `justIntonation frequency for just perfect fifth is accurate to 0.1 cent` — ratio 3/2
+  - [x] 4.3 Add test: `justIntonation frequency for just minor seventh is accurate to 0.1 cent` — ratio 9/5, the largest deviation from 12-TET (+17.6¢)
+- [x] Task 5: Implement `.justIntonation` case in `TuningSystem.swift` (AC: #1, #2, #4, #5)
+  - [x] 5.1 Add `case justIntonation` to the enum
+  - [x] 5.2 Add `centOffset(for:)` switch branch with all 13 cent values from research report Section 5.3
+  - [x] 5.3 Add `storageIdentifier` case returning `"justIntonation"`
+  - [x] 5.4 Add `fromStorageIdentifier` mapping for `"justIntonation"`
+- [x] Task 6: Run full test suite and verify all tests pass (AC: all)
+  - [x] 6.1 Run `bin/test.sh` — all existing + new tests must pass (780/780 passed)
+  - [x] 6.2 Verify FR55: confirm no files were changed besides `TuningSystem.swift` and `TuningSystemTests.swift` (AC: #9)
 
 ## Dev Notes
 
@@ -306,10 +306,27 @@ c9ccf11 Implement story 28.2: Audit NotePlayer and Frequency Computation Chain
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no debugging needed.
+
 ### Completion Notes List
 
+- Added `case justIntonation` to `TuningSystem` enum with all 13 hardcoded cent offset values from the 5-limit JI research (story 29.1, Section 5.3)
+- Added `storageIdentifier` and `fromStorageIdentifier` mappings for `"justIntonation"`
+- No changes to `frequency(for:referencePitch:)` — the universal cents-based formula works for any tuning system (FR55 validated)
+- Added 10 new tests: 5 cent offset tests (table-driven + edge cases), 2 storage identifier tests, 1 Codable round-trip test, 3 frequency precision tests
+- Updated 2 existing tests: `caseIterableCount` (1→2), `fromStorageIdentifierUnknown` (replaced `"justIntonation"` with `"pythagorean"`)
+- FR55 confirmed: zero changes outside `TuningSystem.swift` and `TuningSystemTests.swift`
+- All 780 tests pass (12 new, 768 existing unchanged)
+
 ### File List
+
+- `Peach/Core/Audio/TuningSystem.swift` — Modified: added `case justIntonation`, `centOffset(for:)` switch branch, `storageIdentifier` case, `fromStorageIdentifier` mapping
+- `PeachTests/Core/Audio/TuningSystemTests.swift` — Modified: added 10 JI tests, updated 2 existing tests
+
+### Change Log
+
+- 2026-03-02: Implemented `.justIntonation` tuning system case with 13 cent offset constants, storage identifiers, and 12 new/updated tests. FR55 validated — no changes outside TuningSystem files. All 780 tests pass.
