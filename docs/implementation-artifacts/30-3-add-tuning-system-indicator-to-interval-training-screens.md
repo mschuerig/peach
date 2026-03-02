@@ -1,6 +1,6 @@
 # Story 30.3: Add Tuning System Indicator to Interval Training Screens
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -295,6 +295,7 @@ dc5e307 Implement story 30.1: Add Just Intonation Tuning System Case
 ## Change Log
 
 - 2026-03-02: Implemented story 30.3 — exposed `sessionTuningSystem` on both sessions, added tuning system indicator to both training screens with accessibility support, 4 new tests added (791 total passing)
+- 2026-03-02: Code review — fixed 4 issues: (1) added German translation for new accessibility label key `"Target interval: %@, %@"` and removed orphaned `"Target interval: %@"` key, (2) moved PitchMatching tuning system tests from AudioInterruptionTests to main PitchMatchingSessionTests suite, (3) added 2 reset-on-stop tests for sessionTuningSystem (793 total passing)
 
 ## Dev Agent Record
 
@@ -320,7 +321,8 @@ No debug issues encountered. Implementation followed the story spec exactly.
 - Peach/PitchMatching/PitchMatchingSession.swift (modified — `private` → `private(set)` for `sessionTuningSystem`)
 - Peach/Comparison/ComparisonScreen.swift (modified — added tuning system indicator below interval name)
 - Peach/PitchMatching/PitchMatchingScreen.swift (modified — added tuning system indicator below interval name)
-- PeachTests/Comparison/ComparisonSessionTests.swift (modified — added 2 tuning system visibility tests)
-- PeachTests/PitchMatching/PitchMatchingSessionTests.swift (modified — added 2 tuning system visibility tests)
+- Peach/Resources/Localizable.xcstrings (modified — updated accessibility label key from 1-placeholder to 2-placeholder with German translation)
+- PeachTests/Comparison/ComparisonSessionTests.swift (modified — added 3 tuning system visibility tests)
+- PeachTests/PitchMatching/PitchMatchingSessionTests.swift (modified — moved 2 tests to correct suite, added 1 reset-on-stop test)
 - docs/implementation-artifacts/sprint-status.yaml (modified — story status tracking)
 - docs/implementation-artifacts/30-3-add-tuning-system-indicator-to-interval-training-screens.md (modified — task checkboxes, dev record, status)
