@@ -79,6 +79,27 @@ This project has three purposes
 - The ambitious: For me to gain experience with agentic software development. I'm using [Claude Code](https://code.claude.com/docs/) and the [BMad method](https://docs.bmad-method.org/) for development.
 - The failing: I set out to improve my understanding and skills regarding iOS development and Swift. Not much has come of it, so far.
 
+## Music Domain Expert (Adam)
+
+Peach includes a BMAD agent called **Adam** — a music domain expert that serves as a consultant during development. Adam understands music theory, tuning systems, instrument idiomatics, and notation across all eras, and translates that knowledge into developer-actionable guidance.
+
+Adam is especially useful during planning sessions, where he proactively flags hidden musical assumptions in code and specifications (e.g., implicit 12-TET encoding, heptatonic scale assumptions). He is not needed during routine implementation.
+
+### Using Adam
+
+Adam is installed as a BMAD agent in this project. To activate him in a Claude Code session, use the slash command:
+
+```
+/bmad-agent-music-domain-expert
+```
+
+His commands:
+- **[AA] Audit Assumptions** — Review code or specs for hidden musical assumptions
+- **[VI] Validate Implementation** — Check an implementation against musical reality
+- **[CM] Concept Map** — Generate a domain concept map for a musical topic
+
+Adam is most valuable during planning sessions, where he can review stories, epics, and specifications before implementation begins. He catches domain-level errors that developers wouldn't know to look for.
+
 ## License
 
 Source code is licensed under the [MIT License](LICENSE).
