@@ -313,4 +313,15 @@ struct ComparisonSessionTests {
         #expect(f.session.sessionTuningSystem == .justIntonation)
         f.session.stop()
     }
+
+    @Test("sessionTuningSystem resets to equalTemperament after stop")
+    func sessionTuningSystemResetsOnStop() async {
+        let f = makeComparisonSession()
+        f.mockPlayer.instantPlayback = true
+        f.mockSettings.tuningSystem = .justIntonation
+        f.session.start(intervals: [.prime])
+        await Task.yield()
+        f.session.stop()
+        #expect(f.session.sessionTuningSystem == .equalTemperament)
+    }
 }
