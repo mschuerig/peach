@@ -19,7 +19,7 @@ The domain type layer is well-designed for its current purpose: an ear training 
 - `MIDINote.name` sharps-only is a documented 12-TET display simplification, acceptable for the app's scope
 - The architecture holds for adding "fixed-ratio" tuning variants (where each interval has one cent value regardless of root) but not for position-dependent tunings
 
-**Verdict:** No blocking issues. Several findings warrant documentation or minor changes catalogued as recommendations below.
+**Verdict:** No blocking issues. Three findings warrant documentation or minor changes catalogued as recommendations below; two additional findings confirm the current implementation needs no change.
 
 ---
 
@@ -216,7 +216,7 @@ For position-dependent systems, `centOffset` would need additional context (root
 
 ### F-1: Tritone Abbreviation "d5" (Suspect — Low Severity)
 
-**Type:** `Interval.swift`, line 33
+**Type:** `Interval.swift`, line 31
 **Framework:** Standard music theory interval nomenclature
 
 The tritone (6 semitones) is inherently ambiguous:
@@ -312,8 +312,10 @@ This means `centOffset(for:)` is a design hook for future use, not part of the a
 | H-1 | Interval identity = semitone count | `Interval` enum rawValue | Low | Correct in 12-TET and all equal temperaments. In just intonation, different intervals can have the same semitone approximation. Acceptable for ear training. |
 | H-2 | Interval cent value is position-independent | `centOffset(for:)` API | Medium | Blocks position-dependent tuning systems. Acceptable given that no ear training app implements these. |
 | H-3 | Note names use sharps only | `MIDINote.name` | Low | Display simplification. Not used for music theory correctness. |
-| H-4 | 12 notes per octave (MIDI grid) | `MIDINote`, `frequency()` formula | None | This is the MIDI spec, not a hidden assumption. Non-12-TET systems work via cent offsets from the MIDI grid. |
+| H-4 | 12 notes per octave (MIDI grid) | `MIDINote` (incl. `name` property's 12-element pitch class array), `frequency()` formula | None | This is the MIDI spec, not a hidden assumption. Non-12-TET systems work via cent offsets from the MIDI grid. |
 | H-5 | Octave = 2:1 frequency ratio | `Cents` definition, `frequency()` | None | Near-universal acoustic reality. Stretched octaves (piano tuning) are a measurement concern, not a type design issue. |
+
+**Note on `Codable` conformance:** Five of the eight types conform to `Codable` (Interval, DirectedInterval, Direction, TuningSystem, MIDINote). Three do not (DetunedMIDINote, Frequency, Cents). This is consistent with the persistence design — `ComparisonRecord` stores raw `Double`/`Int` values, not domain types directly — so the asymmetry is intentional and appropriate.
 
 ---
 
