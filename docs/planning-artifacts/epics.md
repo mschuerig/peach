@@ -355,38 +355,65 @@ Users see four training modes on the Start Screen and can launch interval compar
 **FRs covered:** FR56, FR60, FR65, FR67
 **Depends on:** Epic 23
 
-### Epic 25: Structured Notes — NoteRange Refactoring
+### Epic 25: Directed Intervals — Full Interval Training
+The system supports directed intervals (ascending and descending), allowing musicians to train interval recognition in both directions. Users can select which directed intervals are active for training via the Settings screen.
+**FRs covered:** None (extends FR56–FR67 with directional intervals)
+**Depends on:** Epic 24
+
+### Epic 26: Pitch Matching UX Refinements
+Pitch matching training UX is refined with delayed target note playback, repositioned feedback, and a tighter pitch range for more precise training.
+**FRs covered:** None (UX improvement to FR45, FR46, FR49)
+
+### Epic 27: SoundFontNotePlayer Quality
+SoundFontNotePlayer's play() method is decomposed into intent-revealing sub-operations, and a stress test suite is created to hunt for preset-specific crashes.
+**FRs covered:** None (code quality and reliability)
+
+### Epic 28: Domain Foundations Audit — Adam Reviews the Music Layer
+The music domain expert audits all domain types and the full NotePlayer pipeline for hidden assumptions, musical correctness, and readiness for non-12-TET tuning systems.
+**FRs covered:** None (audit, enables FR55)
+
+### Epic 29: Tuning System Landscape — Research Practical Alternatives to 12-TET
+The music domain expert researches which tuning systems beyond 12-TET are used by musicians in practice, recommending the most relevant first implementation.
+**FRs covered:** FR55 (research)
+**Depends on:** Epic 28
+
+### Epic 30: Implement Most Relevant Tuning System
+The recommended tuning system — 5-limit just intonation — is implemented as a new TuningSystem case, with a Settings picker and a tuning system indicator on interval training screens.
+**FRs covered:** FR55
+**Depends on:** Epic 29
+
+### Epic 31: Structured Notes — NoteRange Refactoring
 Replace scattered `noteRangeMin`/`noteRangeMax` pairs with a domain-wide `NoteRange` value type that validates its own constraints and is reused across settings, training sessions, strategy, and profile visualization.
 **FRs covered:** None (refactoring only, improves FR31 implementation)
 
-### Epic 26: Everything in Its Place — Settings Screen Reorganization
+### Epic 32: Everything in Its Place — Settings Screen Reorganization
 Settings are grouped logically and ordered for intuitive discoverability, preparing a clean home for new features like export and import.
 **FRs covered:** None (UX improvement)
 
-### Epic 27: Take Your Data — Training Data Export
+### Epic 33: Take Your Data — Training Data Export
 Users can export all training data as a single CSV file for analysis in spreadsheet applications, with a format designed for extensibility as new training types are added.
 **FRs covered:** None (new feature, not in original PRD)
 
-### Epic 28: Bring Your Data — Training Data Import
+### Epic 34: Bring Your Data — Training Data Import
 Users can import training data from CSV with the choice to replace all existing data or merge with duplicate detection.
 **FRs covered:** None (new feature, not in original PRD)
-**Depends on:** Epic 27
+**Depends on:** Epic 33
 
-### Epic 29: Welcome Home — Start Screen Redesign
+### Epic 35: Welcome Home — Start Screen Redesign
 The Start Screen greets users with approachable training names, suitable icons, and a more inviting visual design.
 **FRs covered:** None (UX improvement to FR65)
 
-### Epic 30: Speak Clearly — Localization & Wording Polish
+### Epic 36: Speak Clearly — Localization & Wording Polish
 All German translations and English wordings are reviewed and improved through interactive dialog, ensuring the app communicates clearly and naturally in both languages.
 **FRs covered:** FR37 (improvement)
-**Depends on:** Epic 26, Epic 29
+**Depends on:** Epic 32, Epic 35
 
-### Epic 31: Show Me How — Built-in Help
+### Epic 37: Show Me How — Built-in Help
 Users can access contextual help on the Start Screen, Settings Screen, and Training Screens to understand what the app does, what each setting controls, and how to interact with training.
 **FRs covered:** None (new feature, not in original PRD)
-**Depends on:** Epic 26, Epic 29
+**Depends on:** Epic 32, Epic 35
 
-### Epic 32: See Your Strengths — Perceptual Profile Visualization
+### Epic 38: See Your Strengths — Perceptual Profile Visualization
 Users see a useful and easily understandable visualization of their perceptual profile that encourages them by showing progress and highlights weak spots where further training would give the most improvement.
 **FRs covered:** FR21 (redesign/enhancement)
 
@@ -2656,13 +2683,328 @@ So that I can launch any training mode with a single tap (FR65).
 **Then** all four buttons are accessible and the visual separator is visible
 **And** the one-handed, thumb-friendly layout is preserved
 
+## Epic 25: Directed Intervals — Full Interval Training
+
+The system supports directed intervals (ascending and descending), allowing musicians to train interval recognition in both directions. Users can select which directed intervals are active for training via the Settings screen.
+
+### Story 25.1: Direction Enum and DirectedInterval
+
+As a **musician using Peach**,
+I want interval training to distinguish between ascending and descending intervals,
+So that I can train my ear to recognize intervals in both directions for comprehensive musicianship.
+
+**Acceptance Criteria:**
+
+**Given** the Core/Audio domain
+**When** a `Direction` enum is defined
+**Then** it supports `.up` and `.down` cases
+**And** conforms to `Hashable`, `Comparable`, `Sendable`, `CaseIterable`, `Codable`
+**And** has a `displayName` property returning localized "Up" or "Down"
+
+**Given** the Core/Audio domain
+**When** a `DirectedInterval` value type is created from an `Interval` and a `Direction`
+**Then** it stores both components
+**And** conforms to `Hashable`, `Comparable`, `Sendable`, `Codable`
+**And** has a `displayName` property (e.g., "Perfect Fifth Up", "Major Third Down", "Prime")
+**And** provides static factories: `.prime`, `.up(_)`, `.down(_)`
+
+**Given** a `MIDINote`
+**When** transposed by a `DirectedInterval`
+**Then** `.up` adds semitones and `.down` subtracts semitones
+**And** precondition enforces result stays in MIDI range 0–127
+
+**Given** the training system APIs
+**When** a training session starts
+**Then** `TrainingSession.start(intervals: Set<DirectedInterval>)` is the protocol signature
+**And** `ComparisonSession`, `PitchMatchingSession`, and `NextComparisonStrategy` use `DirectedInterval`
+**And** `KazezNoteStrategy` adjusts note range bounds for downward transposition
+
+**Given** the navigation and settings system
+**When** training mode buttons are tapped
+**Then** `NavigationDestination` cases use `Set<DirectedInterval>`
+**And** `UserSettings.intervals` returns `Set<DirectedInterval>`
+
+### Story 25.2: Interval Selector on Settings Screen
+
+As a **musician using Peach**,
+I want to select which directed intervals are active for training on the Settings screen,
+So that I can customize my interval ear training to focus on specific intervals and directions.
+
+**Acceptance Criteria:**
+
+**Given** the Settings screen
+**When** the user scrolls to the Intervals section
+**Then** a two-row grid displays with row headers ⏶ (up) and ⏷ (down)
+**And** columns for all 13 intervals: P1, m2, M2, m3, M3, P4, d5, P5, m6, M6, m7, M7, P8
+**And** each cell is a toggle button showing the interval abbreviation
+**And** the Prime (P1) column only has an active toggle in the Up row
+
+**Given** the user toggles intervals on/off in the selector
+**When** the app is restarted
+**Then** the previously selected intervals are restored via UserDefaults
+**And** the default value is `[.up(.perfectFifth)]`
+
+**Given** the interval selector with exactly one interval active
+**When** the user attempts to deactivate the last remaining interval
+**Then** the toggle is prevented — the user cannot reach an empty selection state
+
+**Given** the user has selected specific intervals in Settings
+**When** the user taps "Interval Comparison" or "Interval Pitch Matching" on the Start screen
+**Then** the training session uses the user-selected intervals
+**And** unison-mode buttons continue using `[.prime]` regardless of settings
+
+## Epic 26: Pitch Matching UX Refinements
+
+Pitch matching training UX is refined with delayed target note playback, repositioned feedback, and a tighter pitch range for more precise training.
+
+### Story 26.1: Delay targetNote Until Slider Touch
+
+As a **musician using Peach**,
+I want the target note to play only when I first touch the pitch slider,
+So that I have a moment of silence to internalize the reference pitch before the tunable note begins.
+
+**Acceptance Criteria:**
+
+**Given** the reference note has finished playing
+**When** the session transitions from `playingReference`
+**Then** the state becomes `awaitingSliderTouch` (not `playingTunable`)
+**And** no tunable note is playing yet
+
+**Given** the session is in `awaitingSliderTouch` state
+**When** the user first touches the slider
+**Then** the tunable note begins playing and the state transitions to `playingTunable`
+
+**Given** the new state machine: `idle` → `playingReference` → `awaitingSliderTouch` → `playingTunable` → `showingFeedback` → (loop)
+**When** multiple challenges are completed in sequence
+**Then** each cycle includes the `awaitingSliderTouch` pause
+**And** audio interruptions, background, and route changes all stop cleanly from any state
+
+### Story 26.2: Reposition Feedback Indicator Above Slider
+
+As a **musician using Peach's pitch matching mode**,
+I want the feedback indicator positioned above the slider near the top of the screen,
+So that my dragging finger does not obscure the feedback while I am adjusting pitch.
+
+**Acceptance Criteria:**
+
+**Given** the pitch matching session is in `showingFeedback` state
+**When** the feedback indicator appears
+**Then** it is rendered in a dedicated area above the `VerticalPitchSlider`
+**And** positioned in the upper portion of the pitch matching screen
+
+**Given** the feedback indicator appears and disappears during the training loop
+**When** the state transitions between `showingFeedback` and other states
+**Then** the slider does not jump or resize — layout remains stable
+
+**Given** the session is in interval mode
+**When** the interval label and feedback indicator are both relevant
+**Then** the interval label remains visible at the top
+**And** the feedback indicator is positioned below the interval label but above the slider
+
+### Story 26.3: Reduce Pitch Matching Range
+
+As a **musician using Peach's pitch matching mode**,
+I want the pitch matching range reduced from ±100 cents to ±20 cents,
+So that the slider provides finer granularity for precise pitch discrimination training.
+
+**Acceptance Criteria:**
+
+**Given** a pitch matching session is active
+**When** a new challenge is generated
+**Then** the initial random cent offset is within the range -20.0 to +20.0 cents
+**And** the slider's full travel maps to ±20.0 cents
+
+**Given** the user releases the slider to commit their pitch
+**When** `commitPitch` is called with the final normalized slider value
+**Then** the cent offset is calculated using the ±20 cent range
+
+## Epic 27: SoundFontNotePlayer Quality
+
+SoundFontNotePlayer's `play()` method is decomposed into intent-revealing sub-operations, and a stress test suite is created to hunt for preset-specific crashes.
+
+### Story 27.1: Decompose Play Method
+
+As a **developer maintaining SoundFontNotePlayer**,
+I want the `play()` method decomposed into named sub-operations at a uniform abstraction level,
+So that the method reads as a clear sequence of intent-revealing steps and each sub-operation can be understood and modified independently.
+
+**Acceptance Criteria:**
+
+**Given** the `play()` method
+**When** it is refactored
+**Then** it reads as a short sequence of named calls — no inline implementation details remain in the body
+**And** each extracted method has a single responsibility at a consistent abstraction level
+**And** no behavioral change — all existing `SoundFontNotePlayerTests` pass without modification
+**And** all extracted methods are `private`
+**And** no new files — refactoring stays within `SoundFontNotePlayer.swift`
+
+### Story 27.2: Preset Crash Investigation Tests
+
+As a **developer maintaining SoundFontNotePlayer**,
+I want a systematic test suite that iterates all SF2 presets across the MIDI note range with varied durations and velocities,
+So that any preset-specific crashes are detected and root causes can be identified.
+
+**Acceptance Criteria:**
+
+**Given** a new `SoundFontPresetStressTests.swift` test file
+**When** gated by `RUN_STRESS_TESTS` environment variable
+**Then** tests iterate all melodic presets discovered by `SoundFontLibrary`
+**And** exercise multiple MIDI note values, durations, and velocity levels per preset
+**And** report which preset/note/duration combination causes a failure
+**And** regular test suite still passes without `RUN_STRESS_TESTS`
+
+## Epic 28: Domain Foundations Audit — Adam Reviews the Music Layer
+
+The music domain expert audits all domain types and the full NotePlayer pipeline for hidden assumptions, musical correctness, and readiness for non-12-TET tuning systems.
+
+### Story 28.1: Audit Interval and TuningSystem Domain Types
+
+As a **developer preparing to add alternative tuning systems**,
+I want the music domain expert to audit Interval, DirectedInterval, Direction, TuningSystem, MIDINote, DetunedMIDINote, Frequency, and Cents for hidden musical assumptions and correctness,
+So that domain-level errors are caught before building on these foundations.
+
+**Acceptance Criteria:**
+
+**Given** each domain type in `Core/Audio/`
+**When** reviewed by the music domain expert
+**Then** a written audit report is produced
+**And** hidden 12-TET assumptions in types claiming to be tuning-system-agnostic are flagged
+**And** the `TuningSystem.centOffset(for:)` and `TuningSystem.frequency(for:referencePitch:)` methods are verified
+**And** the two-world architecture (logical vs. physical, bridged by TuningSystem) is assessed for soundness
+**And** the audit report is saved in `docs/implementation-artifacts/`
+
+### Story 28.2: Audit NotePlayer and Frequency Computation Chain
+
+As a **developer preparing to add alternative tuning systems**,
+I want the music domain expert to audit the full pipeline from domain types through `TuningSystem.frequency()` to `SoundFontNotePlayer`,
+So that implementation-level errors, hidden assumptions, and precision issues are caught before building non-12-TET playback on these foundations.
+
+**Acceptance Criteria:**
+
+**Given** the complete forward pipeline
+**When** reviewed by the music domain expert
+**Then** `TuningSystem.frequency()` → `NotePlayer.play()` → `SoundFontNotePlayer.startNote()` is verified
+**And** the inverse pipeline (`decompose()`) is verified for mathematical correctness
+**And** the end-to-end precision chain is verified to maintain ≤0.1-cent accuracy
+**And** the pipeline's behavior with non-12-TET cent offsets (>50¢ from 12-TET grid) is assessed
+**And** the `NotePlayer` protocol boundary taking `Frequency` (not `DetunedMIDINote`) is assessed
+**And** the audit report is saved in `docs/implementation-artifacts/`
+
+## Epic 29: Tuning System Landscape — Research Practical Alternatives to 12-TET
+
+The music domain expert researches which tuning systems beyond 12-TET are used by musicians in practice, assessing practical relevance, pedagogical value, and architectural fit to recommend the most relevant first implementation.
+
+> **Depends on:** Epic 28
+
+### Story 29.1: Research Tuning Systems Used by Musicians in Practice
+
+As a **developer preparing to add alternative tuning systems to Peach**,
+I want the music domain expert to research which tuning systems beyond 12-TET are actually used by musicians in practice,
+So that the implementation targets the most practically relevant tuning system.
+
+**Acceptance Criteria:**
+
+**Given** the major tuning system families (equal temperaments, just intonation, Pythagorean, well temperaments, meantone, non-Western)
+**When** surveyed by the music domain expert
+**Then** each is classified by practical usage frequency and ear training relevance
+
+**Given** the Peach architecture constraints from Epic 28
+**When** candidates are evaluated
+**Then** each is assessed for architectural fit with `centOffset(for:)` and the ±200 cent pipeline limit
+
+**Given** the research findings
+**When** a recommendation is made
+**Then** a single most relevant tuning system is recommended with clear rationale
+**And** the complete cent offset table for all 13 intervals (P1–P8) is provided
+**And** the research report is saved in `docs/implementation-artifacts/`
+
+## Epic 30: Implement Most Relevant Tuning System
+
+The recommended tuning system from Epic 29 — 5-limit just intonation — is implemented as a new `TuningSystem` case, with a Settings picker and a tuning system indicator on interval training screens.
+
+> **Depends on:** Epic 29
+
+### Story 30.1: Add Just Intonation Tuning System Case
+
+As a **developer extending Peach's tuning system support**,
+I want to add a `.justIntonation` case to the `TuningSystem` enum with its complete `centOffset(for:)` implementation,
+So that the app can compute interval frequencies using 5-limit just intonation ratios.
+
+**Acceptance Criteria:**
+
+**Given** `TuningSystem` enum
+**When** inspecting its cases
+**Then** a new `.justIntonation` case exists alongside `.equalTemperament`
+
+**Given** `TuningSystem.justIntonation`
+**When** calling `centOffset(for:)` for each of the 13 intervals (P1–P8)
+**Then** it returns the 5-limit just intonation cent values (e.g., P5=701.955, M3=386.314, P8=1200.000)
+
+**Given** `TuningSystem.justIntonation`
+**When** computing `frequency(for:referencePitch:)`
+**Then** the result is accurate to within 0.1 cent of the theoretical value
+**And** no changes to the method implementation are needed — it works via the universal cents-based formula
+
+**Given** no other source files besides `TuningSystem.swift` and its test file
+**When** this story is complete
+**Then** no changes were made to training, data, or session logic (FR55 verification)
+
+### Story 30.2: Add Tuning System Picker to Settings
+
+As a **musician using Peach**,
+I want to select between Equal Temperament and Just Intonation in the Settings screen,
+So that I can train my ear with the tuning system that matches my musical context.
+
+**Acceptance Criteria:**
+
+**Given** the Settings screen Audio section
+**When** viewing the options
+**Then** a "Tuning System" Picker lists both "Equal Temperament" and "Just Intonation"
+
+**Given** a fresh install
+**When** opening Settings
+**Then** "Equal Temperament" is selected by default
+
+**Given** `AppUserSettings.tuningSystem`
+**When** called
+**Then** it reads the live value from UserDefaults (no longer hardcoded to `.equalTemperament`)
+**And** unknown or corrupted values fall back to `.equalTemperament`
+
+**Given** the Tuning System Picker
+**When** displayed in English and German
+**Then** display names and section footer text are properly localized
+
+### Story 30.3: Add Tuning System Indicator to Interval Training Screens
+
+As a **musician training intervals in Peach**,
+I want to see which tuning system is active on the interval training screens,
+So that I know whether I'm training with Equal Temperament or Just Intonation intervals.
+
+**Acceptance Criteria:**
+
+**Given** an interval training session
+**When** `isIntervalMode` is true
+**Then** the active tuning system's `displayName` is shown below the interval name as secondary text
+
+**Given** a unison (prime) training session
+**When** `isIntervalMode` is false
+**Then** no tuning system indicator is shown
+
+**Given** the tuning system indicator
+**When** VoiceOver is active
+**Then** the interval name and tuning system are combined into a single accessible label
+
+**Given** `ComparisonSession.sessionTuningSystem` and `PitchMatchingSession.sessionTuningSystem`
+**When** read from a view
+**Then** they return the tuning system captured at `start()`
+
 ---
 
-## Epic 25: Structured Notes — NoteRange Refactoring
+## Epic 31: Structured Notes — NoteRange Refactoring
 
 Replace scattered `noteRangeMin`/`noteRangeMax` pairs with a domain-wide `NoteRange` value type that validates its own constraints and is reused across settings, training sessions, strategy, and profile visualization.
 
-### Story 25.1: Create NoteRange Value Type
+### Story 31.1: Create NoteRange Value Type
 
 As a **developer**,
 I want a validated `NoteRange` value type that encapsulates a lower and upper MIDI note bound,
@@ -2695,7 +3037,7 @@ So that note range constraints are expressed once and reused throughout the code
 **When** unit tests are run
 **Then** all computed properties, validation, and edge cases are covered
 
-### Story 25.2: Adopt NoteRange in UserSettings and Settings Screen
+### Story 31.2: Adopt NoteRange in UserSettings and Settings Screen
 
 As a **developer**,
 I want `UserSettings` to expose a single `noteRange: NoteRange` instead of separate `noteRangeMin`/`noteRangeMax`,
@@ -2725,7 +3067,7 @@ So that all consumers work with a validated range object.
 **When** the test suite is run
 **Then** all tests pass with the updated interface
 
-### Story 25.3: Adopt NoteRange in Training Sessions and Strategy
+### Story 31.3: Adopt NoteRange in Training Sessions and Strategy
 
 As a **developer**,
 I want training sessions and the note selection strategy to accept `NoteRange` instead of separate min/max values,
@@ -2754,7 +3096,7 @@ So that range handling is consistent and validated at the boundary.
 **When** updated
 **Then** they accept `NoteRange` consistent with the protocol change
 
-### Story 25.4: Adopt NoteRange in Profile and Visualization
+### Story 31.4: Adopt NoteRange in Profile and Visualization
 
 As a **developer**,
 I want profile computation and keyboard visualization to use `NoteRange`,
@@ -2780,11 +3122,11 @@ So that range references are consistent domain-wide.
 
 ---
 
-## Epic 26: Everything in Its Place — Settings Screen Reorganization
+## Epic 32: Everything in Its Place — Settings Screen Reorganization
 
 Settings are grouped logically and ordered for intuitive discoverability, preparing a clean home for new features like export and import.
 
-### Story 26.1: Reorganize Settings Screen Sections
+### Story 32.1: Reorganize Settings Screen Sections
 
 As a **musician using Peach**,
 I want settings grouped logically and in a sensible order,
@@ -2817,11 +3159,11 @@ So that I can find and understand settings intuitively.
 
 ---
 
-## Epic 27: Take Your Data — Training Data Export
+## Epic 33: Take Your Data — Training Data Export
 
 Users can export all training data as a single CSV file for analysis in spreadsheet applications, with a format designed for extensibility as new training types are added.
 
-### Story 27.1: Define and Document CSV Export Schema
+### Story 33.1: Define and Document CSV Export Schema
 
 As a **developer**,
 I want a well-defined CSV schema for training data export,
@@ -2849,7 +3191,7 @@ So that the format is clear, extensible, and spreadsheet-friendly.
 **When** it is added to the app
 **Then** new type-specific columns can be appended without breaking existing exports
 
-### Story 27.2: Implement CSV Export Service
+### Story 33.2: Implement CSV Export Service
 
 As a **developer**,
 I want an export service that generates a CSV file from all training records,
@@ -2876,7 +3218,7 @@ So that the export logic is testable and decoupled from the UI.
 **When** unit tests are run
 **Then** CSV generation is verified for both record types, mixed data, edge cases, and empty data
 
-### Story 27.3: Add Export UI to Settings Screen
+### Story 33.3: Add Export UI to Settings Screen
 
 As a **musician using Peach**,
 I want to export my training data from the Settings screen,
@@ -2903,11 +3245,11 @@ So that I can analyze my progress in a spreadsheet.
 
 ---
 
-## Epic 28: Bring Your Data — Training Data Import
+## Epic 34: Bring Your Data — Training Data Import
 
 Users can import training data from CSV with the choice to replace all existing data or merge with duplicate detection.
 
-### Story 28.1: Implement CSV Import Parser
+### Story 34.1: Implement CSV Import Parser
 
 As a **developer**,
 I want a parser that reads the export CSV format and converts rows back to record objects,
@@ -2934,7 +3276,7 @@ So that import logic is testable and decoupled from the UI.
 **When** unit tests are run
 **Then** parsing is verified for valid data, missing columns, invalid values, empty files, and mixed record types
 
-### Story 28.2: Implement Merge Logic with Duplicate Detection
+### Story 34.2: Implement Merge Logic with Duplicate Detection
 
 As a **developer**,
 I want merge and replace strategies for imported data,
@@ -2960,7 +3302,7 @@ So that users can choose how to combine imported data with existing records.
 **When** unit tests are run
 **Then** both modes are verified including edge cases: empty import, all duplicates, mixed valid/invalid rows
 
-### Story 28.3: Add Import UI with Replace/Merge Choice
+### Story 34.3: Add Import UI with Replace/Merge Choice
 
 As a **musician using Peach**,
 I want to import training data from a CSV file and choose whether to replace or merge,
@@ -2992,11 +3334,11 @@ So that I can restore backups or combine data from multiple devices.
 
 ---
 
-## Epic 29: Welcome Home — Start Screen Redesign
+## Epic 35: Welcome Home — Start Screen Redesign
 
 The Start Screen greets users with approachable training names, suitable icons, and a more inviting visual design.
 
-### Story 29.1: Rename Training Buttons with User-Friendly Labels
+### Story 35.1: Rename Training Buttons with User-Friendly Labels
 
 As a **musician using Peach**,
 I want the training buttons to have approachable, descriptive names,
@@ -3016,7 +3358,7 @@ So that I understand what each training mode does without needing music theory k
 **When** buttons are renamed
 **Then** VoiceOver labels accurately describe each training mode
 
-### Story 29.2: Add SF Symbol Icons to Training Buttons
+### Story 35.2: Add SF Symbol Icons to Training Buttons
 
 As a **musician using Peach**,
 I want each training button to have a suitable icon,
@@ -3036,7 +3378,7 @@ So that the Start Screen is more visually appealing and the modes are quickly di
 **When** a button is focused
 **Then** the icon does not add redundant accessibility information (decorative)
 
-### Story 29.3: Visual Design Polish
+### Story 35.3: Visual Design Polish
 
 As a **musician using Peach**,
 I want the Start Screen to feel welcoming and well-designed,
@@ -3060,11 +3402,11 @@ So that opening the app is an inviting experience.
 
 ---
 
-## Epic 30: Speak Clearly — Localization & Wording Polish
+## Epic 36: Speak Clearly — Localization & Wording Polish
 
 All German translations and English wordings are reviewed and improved through interactive dialog, ensuring the app communicates clearly and naturally in both languages.
 
-### Story 30.1: Interactive Localization and Wording Review
+### Story 36.1: Interactive Localization and Wording Review
 
 As a **musician using Peach**,
 I want all text in the app to be clear, natural, and consistent in both English and German,
@@ -3092,11 +3434,11 @@ So that the app feels polished and professional regardless of language.
 
 ---
 
-## Epic 31: Show Me How — Built-in Help
+## Epic 37: Show Me How — Built-in Help
 
 Users can access contextual help on the Start Screen, Settings Screen, and Training Screens to understand what the app does, what each setting controls, and how to interact with training.
 
-### Story 31.1: Start Screen Help
+### Story 37.1: Start Screen Help
 
 As a **new user of Peach**,
 I want to understand what this app is about and what the different training modes do,
@@ -3119,7 +3461,7 @@ So that I can choose the right training for my goals.
 **When** the user dismisses it
 **Then** they return to the Start Screen without side effects
 
-### Story 31.2: Settings Screen Help
+### Story 37.2: Settings Screen Help
 
 As a **musician using Peach**,
 I want to understand what each setting does,
@@ -3139,7 +3481,7 @@ So that I can configure the app to match my training goals.
 **When** displayed in English or German
 **Then** all text is properly localized
 
-### Story 31.3: Training Screen Help
+### Story 37.3: Training Screen Help
 
 As a **musician using Peach**,
 I want to understand the goal of the current training and how to use the controls,
@@ -3168,11 +3510,11 @@ So that I can focus on training rather than figuring out the interface.
 
 ---
 
-## Epic 32: See Your Strengths — Perceptual Profile Visualization
+## Epic 38: See Your Strengths — Perceptual Profile Visualization
 
 Users see a useful and easily understandable visualization of their perceptual profile that encourages them by showing progress and highlights weak spots where further training would give the most improvement.
 
-### Story 32.1: Brainstorm and Design Profile Visualization
+### Story 38.1: Brainstorm and Design Profile Visualization
 
 As the **product team**,
 We want to explore visualization concepts through interactive brainstorming,
@@ -3196,7 +3538,7 @@ So that we design a profile visualization that is encouraging, actionable, and u
 **Then** a UX concept is produced with enough detail for implementation (layout sketches, data mapping, interaction patterns)
 **And** the concept is approved by the developer before implementation begins
 
-**Note:** Implementation stories (32.2+) will be defined after the design is approved in this story. The scope and number of implementation stories depend on the chosen visualization approach.
+**Note:** Implementation stories (38.2+) will be defined after the design is approved in this story. The scope and number of implementation stories depend on the chosen visualization approach.
 
 ---
 
