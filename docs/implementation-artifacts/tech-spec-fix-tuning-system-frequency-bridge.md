@@ -2,7 +2,7 @@
 title: 'Fix TuningSystem frequency bridge to respect tuning system'
 slug: 'fix-tuning-system-frequency-bridge'
 created: '2026-03-03'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'Swift Testing', 'AVAudioEngine']
 files_to_modify: ['Peach/Core/Audio/TuningSystem.swift', 'PeachTests/Core/Audio/TuningSystemTests.swift']
@@ -82,7 +82,7 @@ Given a `DetunedMIDINote` with MIDI note `n` and cent offset `o`:
 
 ### Tasks
 
-- [ ] Task 1: Add private `totalCentOffset(for:)` method to `TuningSystem`
+- [x] Task 1: Add private `totalCentOffset(for:)` method to `TuningSystem`
   - File: `Peach/Core/Audio/TuningSystem.swift`
   - Action: Add a new `private` method below the existing constants block:
     ```swift
@@ -96,7 +96,7 @@ Given a `DetunedMIDINote` with MIDI note `n` and cent offset `o`:
     ```
   - Notes: Uses Euclidean mod to ensure remainder is always 0–11. `Interval(rawValue:)` force-unwrap is safe because 0–11 are all valid `Interval` cases.
 
-- [ ] Task 2: Rewrite `frequency(for: DetunedMIDINote, referencePitch:)` to use `totalCentOffset`
+- [x] Task 2: Rewrite `frequency(for: DetunedMIDINote, referencePitch:)` to use `totalCentOffset`
   - File: `Peach/Core/Audio/TuningSystem.swift`
   - Action: Replace the existing method body with:
     ```swift
@@ -107,11 +107,11 @@ Given a `DetunedMIDINote` with MIDI note `n` and cent offset `o`:
     ```
   - Notes: The `frequency(for: MIDINote, ...)` convenience overload delegates to this method and needs no changes.
 
-- [ ] Task 3: Remove unused constants
+- [x] Task 3: Remove unused constants
   - File: `Peach/Core/Audio/TuningSystem.swift`
   - Action: Remove `semitonesPerOctave`, `centsPerSemitone`, and `octaveRatio` constants — they are no longer referenced. Keep `referenceMIDINote` (still used by `totalCentOffset`).
 
-- [ ] Task 4: Rewrite JI frequency tests that pre-bake offsets
+- [x] Task 4: Rewrite JI frequency tests that pre-bake offsets
   - File: `PeachTests/Core/Audio/TuningSystemTests.swift`
   - Action: Rewrite the three NFR14 tests (lines 276–312) to test correct behavior — pass plain `MIDINote` values (no pre-baked cent offsets) and verify JI frequencies directly:
     - `justIntonationFrequencyMajorThird`: `TuningSystem.justIntonation.frequency(for: MIDINote(73), referencePitch: .concert440)` should produce `440.0 × 5/4 = 550.0 Hz` (within 0.1-cent precision)
@@ -119,7 +119,7 @@ Given a `DetunedMIDINote` with MIDI note `n` and cent offset `o`:
     - `justIntonationFrequencyMinorSeventh`: `TuningSystem.justIntonation.frequency(for: MIDINote(79), referencePitch: .concert440)` should produce `440.0 × 9/5 = 792.0 Hz` (within 0.1-cent precision)
   - Notes: Update test descriptions to reflect the new behavior (e.g., "justIntonation produces just major third frequency for MIDINote 4 semitones above A4").
 
-- [ ] Task 5: Add new tests for decomposition edge cases
+- [x] Task 5: Add new tests for decomposition edge cases
   - File: `PeachTests/Core/Audio/TuningSystemTests.swift`
   - Action: Add tests covering:
     - **Notes below reference:** `TuningSystem.justIntonation.frequency(for: MIDINote(62), referencePitch: .concert440)` — D4 is 7 semitones below A4; expected Hz = `440.0 / (3/2) = 293.333...` (within 0.1-cent precision)
@@ -128,19 +128,19 @@ Given a `DetunedMIDINote` with MIDI note `n` and cent offset `o`:
     - **JI with DetunedMIDINote offset:** `TuningSystem.justIntonation.frequency(for: DetunedMIDINote(note: MIDINote(76), offset: Cents(10)), referencePitch: .concert440)` — JI perfect fifth + 10 cents microtonal offset
   - Notes: Follow existing test patterns — `@Test("behavioral description")`, `async`, 0.1-cent tolerance via `centError < 0.1`.
 
-- [ ] Task 6: Run full test suite
+- [x] Task 6: Run full test suite
   - Action: Run `bin/test.sh` to confirm all tests pass (existing 12-TET tests unchanged + new/rewritten JI tests green).
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given `TuningSystem.equalTemperament`, when `frequency(for: MIDINote(76), referencePitch: .concert440)` is called, then the result equals the 12-TET perfect fifth (659.255 Hz within 0.01 Hz) — identical to current behavior.
-- [ ] AC 2: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(76), referencePitch: .concert440)` is called, then the result equals `440.0 × 3/2 = 660.0 Hz` within 0.1-cent precision.
-- [ ] AC 3: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(73), referencePitch: .concert440)` is called, then the result equals `440.0 × 5/4 = 550.0 Hz` within 0.1-cent precision.
-- [ ] AC 4: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(62), referencePitch: .concert440)` is called (note below reference), then the result equals `440.0 / (3/2) = 293.333 Hz` within 0.1-cent precision.
-- [ ] AC 5: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(88), referencePitch: .concert440)` is called (multi-octave span), then the result equals `440.0 × 2 × 3/2 = 1320.0 Hz` within 0.1-cent precision.
-- [ ] AC 6: Given `TuningSystem.justIntonation`, when `frequency(for: DetunedMIDINote(note: MIDINote(76), offset: Cents(10)), referencePitch: .concert440)` is called, then the microtonal offset is applied on top of the JI perfect fifth frequency.
-- [ ] AC 7: Given `TuningSystem.equalTemperament`, when any existing frequency test is run, then all results are identical to before the change (no regression).
-- [ ] AC 8: Given `TuningSystem` of either variant, when `frequency(for: MIDINote(69), referencePitch: .concert440)` is called (reference note itself), then the result is exactly `440.0 Hz`.
+- [x] AC 1: Given `TuningSystem.equalTemperament`, when `frequency(for: MIDINote(76), referencePitch: .concert440)` is called, then the result equals the 12-TET perfect fifth (659.255 Hz within 0.01 Hz) — identical to current behavior.
+- [x] AC 2: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(76), referencePitch: .concert440)` is called, then the result equals `440.0 × 3/2 = 660.0 Hz` within 0.1-cent precision.
+- [x] AC 3: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(73), referencePitch: .concert440)` is called, then the result equals `440.0 × 5/4 = 550.0 Hz` within 0.1-cent precision.
+- [x] AC 4: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(62), referencePitch: .concert440)` is called (note below reference), then the result equals `440.0 / (3/2) = 293.333 Hz` within 0.1-cent precision.
+- [x] AC 5: Given `TuningSystem.justIntonation`, when `frequency(for: MIDINote(88), referencePitch: .concert440)` is called (multi-octave span), then the result equals `440.0 × 2 × 3/2 = 1320.0 Hz` within 0.1-cent precision.
+- [x] AC 6: Given `TuningSystem.justIntonation`, when `frequency(for: DetunedMIDINote(note: MIDINote(76), offset: Cents(10)), referencePitch: .concert440)` is called, then the microtonal offset is applied on top of the JI perfect fifth frequency.
+- [x] AC 7: Given `TuningSystem.equalTemperament`, when any existing frequency test is run, then all results are identical to before the change (no regression).
+- [x] AC 8: Given `TuningSystem` of either variant, when `frequency(for: MIDINote(69), referencePitch: .concert440)` is called (reference note itself), then the result is exactly `440.0 Hz`.
 
 ## Additional Context
 
@@ -166,3 +166,11 @@ None. This change is self-contained within `TuningSystem.swift` and its test fil
 - The `semitonesPerOctave`, `centsPerSemitone`, and `octaveRatio` constants become unused after the rewrite and should be removed to avoid confusion
 - The force-unwrap on `Interval(rawValue: remainder)!` is safe by construction: Euclidean mod produces 0–11, and `Interval` has cases for 0–12. A comment explaining this invariant is warranted
 - Future tuning systems (e.g., Pythagorean, meantone) only need to add a case to `centOffset(for:)` — the decomposition and frequency bridge work generically
+
+## Review Notes
+
+- Adversarial review completed
+- Findings: 12 total, 2 fixed, 10 skipped (noise/undecided)
+- Resolution approach: auto-fix
+- F6 fixed: Changed ET regression test to use cent tolerance instead of Hz tolerance
+- F9 fixed: Added negative DetunedMIDINote offset test for JI
