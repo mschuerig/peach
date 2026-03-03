@@ -355,6 +355,41 @@ Users see four training modes on the Start Screen and can launch interval compar
 **FRs covered:** FR56, FR60, FR65, FR67
 **Depends on:** Epic 23
 
+### Epic 25: Structured Notes — NoteRange Refactoring
+Replace scattered `noteRangeMin`/`noteRangeMax` pairs with a domain-wide `NoteRange` value type that validates its own constraints and is reused across settings, training sessions, strategy, and profile visualization.
+**FRs covered:** None (refactoring only, improves FR31 implementation)
+
+### Epic 26: Everything in Its Place — Settings Screen Reorganization
+Settings are grouped logically and ordered for intuitive discoverability, preparing a clean home for new features like export and import.
+**FRs covered:** None (UX improvement)
+
+### Epic 27: Take Your Data — Training Data Export
+Users can export all training data as a single CSV file for analysis in spreadsheet applications, with a format designed for extensibility as new training types are added.
+**FRs covered:** None (new feature, not in original PRD)
+
+### Epic 28: Bring Your Data — Training Data Import
+Users can import training data from CSV with the choice to replace all existing data or merge with duplicate detection.
+**FRs covered:** None (new feature, not in original PRD)
+**Depends on:** Epic 27
+
+### Epic 29: Welcome Home — Start Screen Redesign
+The Start Screen greets users with approachable training names, suitable icons, and a more inviting visual design.
+**FRs covered:** None (UX improvement to FR65)
+
+### Epic 30: Speak Clearly — Localization & Wording Polish
+All German translations and English wordings are reviewed and improved through interactive dialog, ensuring the app communicates clearly and naturally in both languages.
+**FRs covered:** FR37 (improvement)
+**Depends on:** Epic 26, Epic 29
+
+### Epic 31: Show Me How — Built-in Help
+Users can access contextual help on the Start Screen, Settings Screen, and Training Screens to understand what the app does, what each setting controls, and how to interact with training.
+**FRs covered:** None (new feature, not in original PRD)
+**Depends on:** Epic 26, Epic 29
+
+### Epic 32: See Your Strengths — Perceptual Profile Visualization
+Users see a useful and easily understandable visualization of their perceptual profile that encourages them by showing progress and highlights weak spots where further training would give the most improvement.
+**FRs covered:** FR21 (redesign/enhancement)
+
 ## Epic 1: Remember Every Note — Data Foundation
 
 Every comparison the user answers is reliably stored and persists across sessions, crashes, and restarts — so that no training is ever lost. This includes establishing the Xcode project and folder structure as the implementation foundation.
@@ -2620,6 +2655,548 @@ So that I can launch any training mode with a single tap (FR65).
 **When** viewed in portrait and landscape on iPhone and iPad
 **Then** all four buttons are accessible and the visual separator is visible
 **And** the one-handed, thumb-friendly layout is preserved
+
+---
+
+## Epic 25: Structured Notes — NoteRange Refactoring
+
+Replace scattered `noteRangeMin`/`noteRangeMax` pairs with a domain-wide `NoteRange` value type that validates its own constraints and is reused across settings, training sessions, strategy, and profile visualization.
+
+### Story 25.1: Create NoteRange Value Type
+
+As a **developer**,
+I want a validated `NoteRange` value type that encapsulates a lower and upper MIDI note bound,
+So that note range constraints are expressed once and reused throughout the codebase.
+
+**Acceptance Criteria:**
+
+**Given** a new `NoteRange` struct in `Core/Audio/`
+**When** it is created with `lowerBound: MIDINote` and `upperBound: MIDINote`
+**Then** it validates that `upperBound` is at least 12 semitones above `lowerBound`
+**And** invalid ranges are rejected at construction time (fatalError or throwing initializer, consistent with `MIDINote` pattern)
+
+**Given** a valid `NoteRange`
+**When** `contains(_ note: MIDINote)` is called
+**Then** it returns `true` if the note is within `[lowerBound, upperBound]`, `false` otherwise
+
+**Given** a valid `NoteRange`
+**When** `clamped(_ note: MIDINote)` is called
+**Then** it returns the note clamped to `[lowerBound, upperBound]`
+
+**Given** a valid `NoteRange`
+**When** `semitoneSpan` is accessed
+**Then** it returns `upperBound.rawValue - lowerBound.rawValue`
+
+**Given** `NoteRange`
+**When** checked for protocol conformance
+**Then** it conforms to `Equatable`, `Sendable`, and `Hashable`
+
+**Given** the `NoteRange` type
+**When** unit tests are run
+**Then** all computed properties, validation, and edge cases are covered
+
+### Story 25.2: Adopt NoteRange in UserSettings and Settings Screen
+
+As a **developer**,
+I want `UserSettings` to expose a single `noteRange: NoteRange` instead of separate `noteRangeMin`/`noteRangeMax`,
+So that all consumers work with a validated range object.
+
+**Acceptance Criteria:**
+
+**Given** the `UserSettings` protocol
+**When** it is updated
+**Then** `noteRangeMin: MIDINote` and `noteRangeMax: MIDINote` are replaced by `noteRange: NoteRange`
+
+**Given** `AppUserSettings`
+**When** it implements the updated protocol
+**Then** it constructs `NoteRange` from the two `@AppStorage` values
+**And** the `@AppStorage` keys remain unchanged (backward compatible)
+
+**Given** `SettingsScreen`
+**When** the user adjusts the note range steppers
+**Then** validation is performed through `NoteRange` (minimum 12-semitone gap)
+**And** the two-stepper UX remains unchanged
+
+**Given** `SettingsKeys`
+**When** default range values are accessed
+**Then** they are expressed as a `NoteRange` (default: C2–C6)
+
+**Given** all existing tests
+**When** the test suite is run
+**Then** all tests pass with the updated interface
+
+### Story 25.3: Adopt NoteRange in Training Sessions and Strategy
+
+As a **developer**,
+I want training sessions and the note selection strategy to accept `NoteRange` instead of separate min/max values,
+So that range handling is consistent and validated at the boundary.
+
+**Acceptance Criteria:**
+
+**Given** `TrainingSettings`
+**When** it is updated
+**Then** `noteRangeMin`/`noteRangeMax` are replaced by `noteRange: NoteRange`
+
+**Given** `ComparisonSession`
+**When** it reads settings for a new comparison
+**Then** it passes `NoteRange` to the strategy
+
+**Given** `PitchMatchingSession`
+**When** it reads settings for a new challenge
+**Then** it uses `NoteRange` for note selection
+
+**Given** the `NextComparisonStrategy` protocol and `KazezNoteStrategy`
+**When** they receive a `NoteRange`
+**Then** they use `noteRange.contains(_:)` and `noteRange.clamped(_:)` for boundary enforcement
+**And** upper bound shrinking for intervals uses `NoteRange` arithmetic
+
+**Given** `MockNextComparisonStrategy` and other test mocks
+**When** updated
+**Then** they accept `NoteRange` consistent with the protocol change
+
+### Story 25.4: Adopt NoteRange in Profile and Visualization
+
+As a **developer**,
+I want profile computation and keyboard visualization to use `NoteRange`,
+So that range references are consistent domain-wide.
+
+**Acceptance Criteria:**
+
+**Given** `PerceptualProfile`
+**When** it references the displayed note range
+**Then** it uses `NoteRange`
+
+**Given** `PianoKeyboardView`
+**When** it receives range parameters
+**Then** it accepts `NoteRange` instead of separate min/max values
+
+**Given** any other code that references `noteRangeMin`/`noteRangeMax` individually
+**When** the codebase is searched
+**Then** no direct min/max pairs remain — all are expressed through `NoteRange`
+
+**Given** the full test suite
+**When** run after all adoptions
+**Then** all tests pass
+
+---
+
+## Epic 26: Everything in Its Place — Settings Screen Reorganization
+
+Settings are grouped logically and ordered for intuitive discoverability, preparing a clean home for new features like export and import.
+
+### Story 26.1: Reorganize Settings Screen Sections
+
+As a **musician using Peach**,
+I want settings grouped logically and in a sensible order,
+So that I can find and understand settings intuitively.
+
+**Acceptance Criteria:**
+
+**Given** the current `SettingsScreen`
+**When** it is reorganized
+**Then** sections are reordered into logical groups (proposed order to be confirmed during implementation):
+1. **Training Range** — note range (the most fundamental constraint)
+2. **Intervals** — which intervals to train
+3. **Sound** — instrument/sound source, note duration, reference pitch, tuning system
+4. **Difficulty** — vary loudness (and any future difficulty parameters)
+5. **Data** — reset, and later export/import
+
+**Given** each section
+**When** it is displayed
+**Then** it has a clear, descriptive section header
+**And** settings within each section are ordered from most-used to least-used
+
+**Given** the reorganized screen
+**When** viewed on iPhone and iPad in portrait and landscape
+**Then** all settings remain accessible and functional
+**And** no settings are lost or duplicated
+
+**Given** the reorganized screen
+**When** German localization is active
+**Then** all section headers and labels are properly translated
+
+---
+
+## Epic 27: Take Your Data — Training Data Export
+
+Users can export all training data as a single CSV file for analysis in spreadsheet applications, with a format designed for extensibility as new training types are added.
+
+### Story 27.1: Define and Document CSV Export Schema
+
+As a **developer**,
+I want a well-defined CSV schema for training data export,
+So that the format is clear, extensible, and spreadsheet-friendly.
+
+**Acceptance Criteria:**
+
+**Given** the export schema
+**When** it is defined
+**Then** it uses a `trainingType` discriminator column with values like `comparison` and `pitchMatching`
+**And** common columns are: `trainingType`, `timestamp`, `referenceNote`, `referenceNoteName`, `targetNote`, `targetNoteName`, `interval`, `tuningSystem`
+**And** comparison-specific columns are: `centOffset`, `isCorrect`
+**And** pitch-matching-specific columns are: `initialCentOffset`, `userCentError`
+**And** non-applicable cells are left empty
+
+**Given** the `timestamp` column
+**When** a record is exported
+**Then** it uses ISO 8601 format (e.g., `2026-03-03T14:30:00Z`)
+
+**Given** the `referenceNoteName` and `targetNoteName` columns
+**When** a record is exported
+**Then** they contain human-readable note names (e.g., `C4`, `A#3`) alongside the MIDI numbers
+
+**Given** a future training type
+**When** it is added to the app
+**Then** new type-specific columns can be appended without breaking existing exports
+
+### Story 27.2: Implement CSV Export Service
+
+As a **developer**,
+I want an export service that generates a CSV file from all training records,
+So that the export logic is testable and decoupled from the UI.
+
+**Acceptance Criteria:**
+
+**Given** a `TrainingDataExporter` (or similar) in `Core/Data/`
+**When** `export()` is called
+**Then** it queries all `ComparisonRecord`s and `PitchMatchingRecord`s from `TrainingDataStore`
+**And** generates a CSV string with headers and data rows
+**And** rows are sorted by timestamp (ascending)
+
+**Given** the generated CSV
+**When** opened in a spreadsheet application
+**Then** columns are correctly separated and parseable
+**And** special characters in note names do not break parsing
+
+**Given** no training data exists
+**When** `export()` is called
+**Then** it returns only the header row (or indicates empty data)
+
+**Given** the export service
+**When** unit tests are run
+**Then** CSV generation is verified for both record types, mixed data, edge cases, and empty data
+
+### Story 27.3: Add Export UI to Settings Screen
+
+As a **musician using Peach**,
+I want to export my training data from the Settings screen,
+So that I can analyze my progress in a spreadsheet.
+
+**Acceptance Criteria:**
+
+**Given** the Settings Screen data section
+**When** it is displayed
+**Then** an "Export Training Data" button is visible
+
+**Given** training data exists
+**When** the user taps "Export Training Data"
+**Then** a system share sheet appears with a CSV file
+**And** the filename follows the pattern `peach-training-data-YYYY-MM-DD.csv`
+
+**Given** no training data exists
+**When** the export button is displayed
+**Then** it is disabled or shows a message indicating no data to export
+
+**Given** the share sheet
+**When** the user selects a sharing target (Files, AirDrop, etc.)
+**Then** the CSV file is shared successfully
+
+---
+
+## Epic 28: Bring Your Data — Training Data Import
+
+Users can import training data from CSV with the choice to replace all existing data or merge with duplicate detection.
+
+### Story 28.1: Implement CSV Import Parser
+
+As a **developer**,
+I want a parser that reads the export CSV format and converts rows back to record objects,
+So that import logic is testable and decoupled from the UI.
+
+**Acceptance Criteria:**
+
+**Given** a valid CSV file matching the export schema
+**When** it is parsed
+**Then** each row is mapped to the correct record type based on the `trainingType` column
+**And** `ComparisonRecord` fields are populated: referenceNote, targetNote, centOffset, isCorrect, interval, tuningSystem, timestamp
+**And** `PitchMatchingRecord` fields are populated: referenceNote, targetNote, initialCentOffset, userCentError, interval, tuningSystem, timestamp
+
+**Given** a CSV with invalid headers
+**When** it is parsed
+**Then** a descriptive validation error is returned
+
+**Given** a CSV with rows containing invalid data (out-of-range MIDI notes, non-numeric cent values, etc.)
+**When** it is parsed
+**Then** invalid rows are collected as errors with row numbers
+**And** valid rows are still parsed successfully
+
+**Given** the parser
+**When** unit tests are run
+**Then** parsing is verified for valid data, missing columns, invalid values, empty files, and mixed record types
+
+### Story 28.2: Implement Merge Logic with Duplicate Detection
+
+As a **developer**,
+I want merge and replace strategies for imported data,
+So that users can choose how to combine imported data with existing records.
+
+**Acceptance Criteria:**
+
+**Given** a duplicate is defined as a record matching on `timestamp` + `referenceNote` + `targetNote` + `trainingType`
+**When** merge mode is selected
+**Then** only non-duplicate records are inserted
+**And** existing records are not modified
+
+**Given** replace mode is selected
+**When** import is executed
+**Then** all existing training data is deleted
+**And** all imported records are inserted
+
+**Given** an import operation completes
+**When** the result is returned
+**Then** it includes a summary: records imported, records skipped (duplicates), records with errors
+
+**Given** the merge and replace logic
+**When** unit tests are run
+**Then** both modes are verified including edge cases: empty import, all duplicates, mixed valid/invalid rows
+
+### Story 28.3: Add Import UI with Replace/Merge Choice
+
+As a **musician using Peach**,
+I want to import training data from a CSV file and choose whether to replace or merge,
+So that I can restore backups or combine data from multiple devices.
+
+**Acceptance Criteria:**
+
+**Given** the Settings Screen data section
+**When** it is displayed
+**Then** an "Import Training Data" button is visible
+
+**Given** the user taps "Import Training Data"
+**When** the file picker appears
+**Then** it filters for CSV files
+
+**Given** a CSV file is selected
+**When** it is validated successfully
+**Then** a choice dialog appears: "Replace All Data" vs "Merge with Existing Data"
+**And** the "Replace All Data" option warns that existing data will be permanently deleted
+
+**Given** the user confirms their choice
+**When** the import completes
+**Then** a summary is shown: number of records imported, skipped, and errors
+**And** the perceptual profile is rebuilt from the updated data
+
+**Given** the CSV file contains validation errors
+**When** it is imported
+**Then** the user sees a clear error message describing the issue
+
+---
+
+## Epic 29: Welcome Home — Start Screen Redesign
+
+The Start Screen greets users with approachable training names, suitable icons, and a more inviting visual design.
+
+### Story 29.1: Rename Training Buttons with User-Friendly Labels
+
+As a **musician using Peach**,
+I want the training buttons to have approachable, descriptive names,
+So that I understand what each training mode does without needing music theory knowledge.
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen training buttons
+**When** they are displayed
+**Then** the labels use user-friendly names (e.g., "Hear & Compare", "Tune & Match", "Hear Intervals", "Tune Intervals" — final names to be confirmed during implementation)
+
+**Given** the German localization
+**When** the Start Screen is displayed in German
+**Then** the button labels are appropriately translated
+
+**Given** all navigation and accessibility labels
+**When** buttons are renamed
+**Then** VoiceOver labels accurately describe each training mode
+
+### Story 29.2: Add SF Symbol Icons to Training Buttons
+
+As a **musician using Peach**,
+I want each training button to have a suitable icon,
+So that the Start Screen is more visually appealing and the modes are quickly distinguishable.
+
+**Acceptance Criteria:**
+
+**Given** each training button
+**When** it is displayed
+**Then** it shows a leading SF Symbol icon that visually represents the training mode
+
+**Given** dynamic type sizes
+**When** the user changes text size
+**Then** icons scale appropriately alongside the text
+
+**Given** VoiceOver
+**When** a button is focused
+**Then** the icon does not add redundant accessibility information (decorative)
+
+### Story 29.3: Visual Design Polish
+
+As a **musician using Peach**,
+I want the Start Screen to feel welcoming and well-designed,
+So that opening the app is an inviting experience.
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen
+**When** it is displayed
+**Then** spacing, typography, and layout are improved over the current plain button stack
+**And** training buttons use a card-style or visually distinct treatment (final design to be confirmed during implementation)
+
+**Given** the Start Screen layout
+**When** viewed in portrait and landscape on iPhone and iPad
+**Then** the layout adapts gracefully to all form factors
+**And** the one-handed, thumb-friendly design principle is preserved
+
+**Given** navigation to Profile, Settings, and Info
+**When** the screen is redesigned
+**Then** all navigation paths remain accessible and discoverable
+
+---
+
+## Epic 30: Speak Clearly — Localization & Wording Polish
+
+All German translations and English wordings are reviewed and improved through interactive dialog, ensuring the app communicates clearly and naturally in both languages.
+
+### Story 30.1: Interactive Localization and Wording Review
+
+As a **musician using Peach**,
+I want all text in the app to be clear, natural, and consistent in both English and German,
+So that the app feels polished and professional regardless of language.
+
+**Acceptance Criteria:**
+
+**Given** all strings in `Localizable.xcstrings`
+**When** they are reviewed interactively with the developer
+**Then** awkward, unclear, or inconsistent wordings are identified and discussed
+
+**Given** approved wording changes
+**When** they are applied
+**Then** both English and German translations are updated in `Localizable.xcstrings`
+
+**Given** all strings after the review
+**When** the localization catalog is checked
+**Then** no missing translations remain for either language
+
+**Given** the updated wordings
+**When** the app is used in German
+**Then** all text reads naturally and uses consistent terminology throughout
+
+**Note:** This story is inherently interactive — the developer and agent review strings together in dialog, discussing alternatives and agreeing on improvements. It cannot be fully automated.
+
+---
+
+## Epic 31: Show Me How — Built-in Help
+
+Users can access contextual help on the Start Screen, Settings Screen, and Training Screens to understand what the app does, what each setting controls, and how to interact with training.
+
+### Story 31.1: Start Screen Help
+
+As a **new user of Peach**,
+I want to understand what this app is about and what the different training modes do,
+So that I can choose the right training for my goals.
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen
+**When** a help trigger is activated (e.g., info button, help icon — exact mechanism to be decided during implementation)
+**Then** a help view appears explaining:
+- What Peach is and its purpose (ear training / pitch discrimination)
+- What each training mode does in plain language
+- How to get started
+
+**Given** the help content
+**When** displayed in English or German
+**Then** all text is properly localized
+
+**Given** the help view
+**When** the user dismisses it
+**Then** they return to the Start Screen without side effects
+
+### Story 31.2: Settings Screen Help
+
+As a **musician using Peach**,
+I want to understand what each setting does,
+So that I can configure the app to match my training goals.
+
+**Acceptance Criteria:**
+
+**Given** the Settings Screen
+**When** help is accessed (per-section info buttons, a help sheet, or inline descriptions — exact mechanism to be decided during implementation)
+**Then** each setting group has a clear explanation of what it controls and why a user might change it
+
+**Given** settings with non-obvious implications (e.g., tuning system, vary loudness, reference pitch)
+**When** their help is viewed
+**Then** the explanation includes practical context (e.g., "Most musicians use 440 Hz. Some orchestras tune to 442 Hz.")
+
+**Given** the help content
+**When** displayed in English or German
+**Then** all text is properly localized
+
+### Story 31.3: Training Screen Help
+
+As a **musician using Peach**,
+I want to understand the goal of the current training and how to use the controls,
+So that I can focus on training rather than figuring out the interface.
+
+**Acceptance Criteria:**
+
+**Given** a Training Screen (comparison or pitch matching)
+**When** help is accessed (e.g., help button — must not interfere with training flow)
+**Then** a help view explains:
+- The goal of this specific training mode
+- How to interact with the controls (buttons for comparison, slider for pitch matching)
+- What the feedback indicators mean
+
+**Given** interval training mode
+**When** the help is shown
+**Then** it additionally explains what interval training means and how it differs from unison
+
+**Given** the help trigger
+**When** it is available during active training
+**Then** accessing help pauses or stops the current training (no state corruption)
+
+**Given** the help content
+**When** displayed in English or German
+**Then** all text is properly localized
+
+---
+
+## Epic 32: See Your Strengths — Perceptual Profile Visualization
+
+Users see a useful and easily understandable visualization of their perceptual profile that encourages them by showing progress and highlights weak spots where further training would give the most improvement.
+
+### Story 32.1: Brainstorm and Design Profile Visualization
+
+As the **product team**,
+We want to explore visualization concepts through interactive brainstorming,
+So that we design a profile visualization that is encouraging, actionable, and understandable without music theory prerequisites.
+
+**Acceptance Criteria:**
+
+**Given** an interactive brainstorming session with the developer
+**When** visualization concepts are explored
+**Then** the following design goals are addressed:
+- **Encouragement:** Users see their progress and feel motivated to continue
+- **Weak spot identification:** Users see where further training would give the most improvement
+- **Understandability:** The visualization makes sense without music theory background
+
+**Given** the brainstorming output
+**When** concepts are evaluated
+**Then** at least 3 distinct visualization approaches are considered (e.g., heatmaps, progress arcs, radar charts, before/after comparisons, difficulty curves, achievement milestones)
+
+**Given** a selected concept
+**When** it is documented
+**Then** a UX concept is produced with enough detail for implementation (layout sketches, data mapping, interaction patterns)
+**And** the concept is approved by the developer before implementation begins
+
+**Note:** Implementation stories (32.2+) will be defined after the design is approved in this story. The scope and number of implementation stories depend on the chosen visualization approach.
 
 ---
 
