@@ -272,41 +272,94 @@ struct TuningSystemTests {
 
     // MARK: - Just Intonation Frequency Precision (NFR14)
 
-    @Test("justIntonation frequency for just major third is accurate to 0.1 cent")
+    @Test("justIntonation produces just major third frequency for MIDINote 4 semitones above A4")
     func justIntonationFrequencyMajorThird() async {
-        // Just M3 ratio = 5/4, so expected Hz = 440.0 × 5/4 = 550.0
-        // MIDI 73 (C#5) with offset 386.314 - 400.0 = -13.686 cents
         let freq = TuningSystem.justIntonation.frequency(
-            for: DetunedMIDINote(note: MIDINote(73), offset: Cents(-13.686)),
+            for: MIDINote(73),
             referencePitch: .concert440
         )
-        let expectedHz = 440.0 * (5.0 / 4.0) // 550.0 Hz exactly
+        let expectedHz = 440.0 * (5.0 / 4.0) // 550.0 Hz
         let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
         #expect(centError < 0.1)
     }
 
-    @Test("justIntonation frequency for just perfect fifth is accurate to 0.1 cent")
+    @Test("justIntonation produces just perfect fifth frequency for MIDINote 7 semitones above A4")
     func justIntonationFrequencyPerfectFifth() async {
-        // Just P5 ratio = 3/2, so expected Hz = 440.0 × 3/2 = 660.0
-        // MIDI 76 (E5) with offset 701.955 - 700.0 = +1.955 cents
         let freq = TuningSystem.justIntonation.frequency(
-            for: DetunedMIDINote(note: MIDINote(76), offset: Cents(1.955)),
+            for: MIDINote(76),
             referencePitch: .concert440
         )
-        let expectedHz = 440.0 * (3.0 / 2.0) // 660.0 Hz exactly
+        let expectedHz = 440.0 * (3.0 / 2.0) // 660.0 Hz
         let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
         #expect(centError < 0.1)
     }
 
-    @Test("justIntonation frequency for just minor seventh is accurate to 0.1 cent")
+    @Test("justIntonation produces just minor seventh frequency for MIDINote 10 semitones above A4")
     func justIntonationFrequencyMinorSeventh() async {
-        // Just m7 ratio = 9/5, so expected Hz = 440.0 × 9/5 = 792.0
-        // MIDI 79 (G5) with offset 1017.596 - 1000.0 = +17.596 cents
         let freq = TuningSystem.justIntonation.frequency(
-            for: DetunedMIDINote(note: MIDINote(79), offset: Cents(17.596)),
+            for: MIDINote(79),
             referencePitch: .concert440
         )
-        let expectedHz = 440.0 * (9.0 / 5.0) // 792.0 Hz exactly
+        let expectedHz = 440.0 * (9.0 / 5.0) // 792.0 Hz
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
+    }
+
+    // MARK: - Just Intonation Decomposition Edge Cases
+
+    @Test("justIntonation produces correct frequency for note below reference (D4, 7 semitones below A4)")
+    func justIntonationFrequencyBelowReference() async {
+        let freq = TuningSystem.justIntonation.frequency(
+            for: MIDINote(62),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 / (3.0 / 2.0) // 293.333... Hz
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
+    }
+
+    @Test("justIntonation produces correct frequency for multi-octave span (19 semitones above A4)")
+    func justIntonationFrequencyMultiOctaveSpan() async {
+        let freq = TuningSystem.justIntonation.frequency(
+            for: MIDINote(88),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 * 2.0 * (3.0 / 2.0) // 1320.0 Hz
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
+    }
+
+    @Test("equalTemperament still produces 12-TET perfect fifth after refactor")
+    func equalTemperamentPerfectFifthUnchanged() async {
+        let freq = TuningSystem.equalTemperament.frequency(
+            for: MIDINote(76),
+            referencePitch: .concert440
+        )
+        let expectedHz = 440.0 * pow(2.0, 7.0 / 12.0) // 659.255... Hz
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
+    }
+
+    @Test("justIntonation applies positive DetunedMIDINote offset on top of JI perfect fifth")
+    func justIntonationWithPositiveDetunedOffset() async {
+        let freq = TuningSystem.justIntonation.frequency(
+            for: DetunedMIDINote(note: MIDINote(76), offset: Cents(10)),
+            referencePitch: .concert440
+        )
+        let jiPerfectFifthHz = 440.0 * (3.0 / 2.0) // 660.0 Hz
+        let expectedHz = jiPerfectFifthHz * pow(2.0, 10.0 / 1200.0)
+        let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
+        #expect(centError < 0.1)
+    }
+
+    @Test("justIntonation applies negative DetunedMIDINote offset on top of JI perfect fifth")
+    func justIntonationWithNegativeDetunedOffset() async {
+        let freq = TuningSystem.justIntonation.frequency(
+            for: DetunedMIDINote(note: MIDINote(76), offset: Cents(-15)),
+            referencePitch: .concert440
+        )
+        let jiPerfectFifthHz = 440.0 * (3.0 / 2.0) // 660.0 Hz
+        let expectedHz = jiPerfectFifthHz * pow(2.0, -15.0 / 1200.0)
         let centError = abs(1200.0 * log2(freq.rawValue / expectedHz))
         #expect(centError < 0.1)
     }

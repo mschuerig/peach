@@ -35,14 +35,21 @@ enum TuningSystem: Hashable, Sendable, CaseIterable, Codable {
     // MARK: - Frequency Bridge (Logical → Physical)
 
     private static let referenceMIDINote = 69
-    private static let semitonesPerOctave = 12.0
-    private static let centsPerSemitone = 100.0
-    private static let octaveRatio = 2.0
+
+    /// Decomposes MIDI distance into octaves + remainder interval, then computes
+    /// the total cent offset using tuning-system-specific interval sizes.
+    /// Remainder is always 0–11 via Euclidean mod, so Interval(rawValue:)! is safe.
+    private func totalCentOffset(for note: DetunedMIDINote) -> Double {
+        let distance = note.note.rawValue - Self.referenceMIDINote
+        let remainder = ((distance % 12) + 12) % 12
+        let octaves = (distance - remainder) / 12
+        let interval = Interval(rawValue: remainder)!
+        return Double(octaves) * 1200.0 + centOffset(for: interval) + note.offset.rawValue
+    }
 
     func frequency(for note: DetunedMIDINote, referencePitch: Frequency) -> Frequency {
-        let semitones = Double(note.note.rawValue - Self.referenceMIDINote)
-            + note.offset.rawValue / Self.centsPerSemitone
-        return Frequency(referencePitch.rawValue * pow(Self.octaveRatio, semitones / Self.semitonesPerOctave))
+        let cents = totalCentOffset(for: note)
+        return Frequency(referencePitch.rawValue * pow(2.0, cents / 1200.0))
     }
 
     func frequency(for note: MIDINote, referencePitch: Frequency) -> Frequency {
