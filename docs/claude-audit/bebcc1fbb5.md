@@ -40,6 +40,8 @@ Peach/Core/Audio/SineWaveNotePlayer.swift          |  8 +++-
 
 *2026-02-22T19:46 → 2026-02-22T20:01*
 
+<a id="msg-human-1"></a>
+
 ### 🧑 Human (2026-02-22T19:46)
 
 <command-message>bmad-bmm-dev-story</command-message>
@@ -47,10 +49,14 @@ Peach/Core/Audio/SineWaveNotePlayer.swift          |  8 +++-
 <command-args>docs/implementation-artifacts/fix-audio-clicks-when-navigating-away.md</command-args>
 
 
+<a id="msg-assistant-2"></a>
+
 ### 🤖 Assistant (2026-02-22T19:46)
 
 I'll start by loading the workflow system and configuration files.
 
+
+<a id="msg-assistant-3"></a>
 
 ### 🤖 Assistant (2026-02-22T19:46)
 
@@ -79,6 +85,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/tasks/workflow.xml
 ```
 
 </details>
+
+<a id="msg-assistant-4"></a>
 
 ### 🤖 Assistant (2026-02-22T19:46)
 
@@ -109,6 +117,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/4-implementation/de
 
 </details>
 
+<a id="msg-assistant-5"></a>
+
 ### 🤖 Assistant (2026-02-22T19:46)
 
 <details>
@@ -138,6 +148,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/fix-audio
 
 </details>
 
+<a id="msg-assistant-6"></a>
+
 ### 🤖 Assistant (2026-02-22T19:46)
 
 <details>
@@ -153,10 +165,14 @@ Let me load both the config and instructions files.
 </details>
 
 
+<a id="msg-assistant-7"></a>
+
 ### 🤖 Assistant (2026-02-22T19:46)
 
 Now let me load the config source and the instructions file.
 
+
+<a id="msg-assistant-8"></a>
 
 ### 🤖 Assistant (2026-02-22T19:46)
 
@@ -187,6 +203,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/config.yaml
 
 </details>
 
+<a id="msg-assistant-9"></a>
+
 ### 🤖 Assistant (2026-02-22T19:46)
 
 <details>
@@ -212,6 +230,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/4-implementation/de
 ```
 
 </details>
+
+<a id="msg-assistant-10"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -246,6 +266,8 @@ The story is about fixing audio clicks when navigating away, currently marked as
 </details>
 
 
+<a id="msg-assistant-11"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 Good, all workflow components loaded. Let me resolve variables and proceed with the instructions.
@@ -264,6 +286,8 @@ Good, all workflow components loaded. Let me resolve variables and proceed with 
 **Step 1** — Story is provided directly. Already loaded and parsed. Let me now load project context and check for sprint status.
 
 
+<a id="msg-assistant-12"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -275,6 +299,8 @@ pattern: **/project-context.md
 
 </details>
 
+
+<a id="msg-assistant-13"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -306,6 +332,8 @@ pattern: /Users/michael/Projekte/peach/docs/implementation-artifacts/sprint-stat
 
 </details>
 
+<a id="msg-assistant-14"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -334,6 +362,8 @@ file_path: /Users/michael/Projekte/peach/docs/project-context.md
 ```
 
 </details>
+
+<a id="msg-assistant-15"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -364,6 +394,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/sprint-st
 
 </details>
 
+<a id="msg-assistant-16"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -385,6 +417,8 @@ Now I'll update the sprint status and move forward with the implementation work.
 </details>
 
 
+<a id="msg-assistant-17"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 **Step 2** — ✅ **Context Loaded** — Story and project context available for implementation.
@@ -401,6 +435,8 @@ Now I'll update the sprint status and move forward with the implementation work.
 
 **Step 4** — Updating sprint status from `ready-for-dev` → `in-progress`.
 
+
+<a id="msg-assistant-18"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -426,6 +462,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/sprint-stat
 
 </details>
 
+<a id="msg-assistant-19"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 🚀 Starting work on story `fix-audio-clicks-when-navigating-away`
@@ -435,6 +473,8 @@ Status updated: ready-for-dev → in-progress
 
 **Step 5** — Now implementing tasks following the red-green-refactor cycle. Let me first read the existing source files referenced in the story.
 
+
+<a id="msg-assistant-20"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -465,6 +505,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Audio/SineWaveNotePlayer.swi
 
 </details>
 
+<a id="msg-assistant-21"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -494,6 +536,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Audio/NotePlayer.swift
 
 </details>
 
+<a id="msg-assistant-22"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -504,10 +548,14 @@ Good. Now let me read the existing test file to understand the test patterns.
 </details>
 
 
+<a id="msg-assistant-23"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 Now let me read the existing test file and the MockNotePlayer.
 
+
+<a id="msg-assistant-24"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -538,6 +586,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Core/Audio/SineWaveNotePlaye
 
 </details>
 
+<a id="msg-assistant-25"></a>
+
 ### 🤖 Assistant (2026-02-22T19:47)
 
 <details>
@@ -558,6 +608,8 @@ pattern: **/MockNotePlayer.swift
 ```
 
 </details>
+
+<a id="msg-assistant-26"></a>
 
 ### 🤖 Assistant (2026-02-22T19:47)
 
@@ -587,6 +639,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Training/MockNotePlayer.swif
 ```
 
 </details>
+
+<a id="msg-assistant-27"></a>
 
 ### 🤖 Assistant (2026-02-22T19:49)
 
@@ -634,6 +688,8 @@ I'll follow the TDD approach: write tests first, then implement, then run the su
 </details>
 
 
+<a id="msg-assistant-28"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 Good, I have all the context I need. Now let me proceed through the tasks systematically.
@@ -644,6 +700,8 @@ Good, I have all the context I need. Now let me proceed through the tasks system
 
 The story's testing strategy says to verify `stop()` sets mixer volume to 0 before stopping. Since `engine` is `private`, I'll write behavioral contract tests that exercise the stop paths. For a true failing test, I need to verify the fade-out happens. Let me check if we can access internal state.
 
+
+<a id="msg-assistant-29"></a>
 
 ### 🤖 Assistant (2026-02-22T19:49)
 
@@ -676,6 +734,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-30"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 <details>
@@ -700,10 +760,14 @@ I'll skip the internal engine verification since the story constrains API change
 </details>
 
 
+<a id="msg-assistant-31"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 The `engine` and `playerNode` are `private`, so I can't directly verify mixer volume from tests. I'll write behavioral contract tests that verify the stop paths work correctly and don't leave broken state. Let me write the failing tests first, then implement.
 
+
+<a id="msg-assistant-32"></a>
 
 ### 🤖 Assistant (2026-02-22T19:49)
 
@@ -738,6 +802,8 @@ String:     @Test("Reference Pitch: Negative cent offset with custom reference p
 
 </details>
 
+<a id="msg-assistant-33"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 <details>
@@ -768,6 +834,8 @@ offset: 167
 
 </details>
 
+<a id="msg-assistant-34"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 <details>
@@ -796,10 +864,14 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Audio/SineWaveNotePlayerT
 
 </details>
 
+<a id="msg-assistant-35"></a>
+
 ### 🤖 Assistant (2026-02-22T19:49)
 
 Tests written. These verify AC #5 (stop when nothing playing) and Task 1.4 (idempotent stop). Now let me run them to confirm they compile and pass with the current implementation (establishing baseline).
 
+
+<a id="msg-assistant-36"></a>
 
 ### 🤖 Assistant (2026-02-22T19:50)
 
@@ -828,6 +900,8 @@ Test case 'SineWaveNotePlayerTests/frequencyCalculation_MiddleC()' passed on 'Cl
 
 </details>
 
+<a id="msg-assistant-37"></a>
+
 ### 🤖 Assistant (2026-02-22T19:51)
 
 <details>
@@ -840,6 +914,8 @@ Now let me proceed with Task 1.2 — implement the fade-out in `stop()`.
 </details>
 
 
+<a id="msg-assistant-38"></a>
+
 ### 🤖 Assistant (2026-02-22T19:51)
 
 All 28 tests pass including the new stop tests. The SourceKit diagnostic is noise — tests compile and run fine.
@@ -850,6 +926,8 @@ All 28 tests pass including the new stop tests. The SourceKit diagnostic is nois
 
 Now implementing the "simplest reliable approach" from the dev notes: silence the mixer before stopping the player node.
 
+
+<a id="msg-assistant-39"></a>
 
 ### 🤖 Assistant (2026-02-22T19:51)
 
@@ -879,10 +957,14 @@ The file /Users/michael/Projekte/peach/Peach/Core/Audio/SineWaveNotePlayer.swift
 
 </details>
 
+<a id="msg-assistant-40"></a>
+
 ### 🤖 Assistant (2026-02-22T19:51)
 
 Now let me verify the tests still pass with the implementation.
 
+
+<a id="msg-assistant-41"></a>
 
 ### 🤖 Assistant (2026-02-22T19:51)
 
@@ -907,15 +989,21 @@ The user doesn't want to proceed with this tool use. The tool use was rejected (
 
 </details>
 
+<a id="msg-human-42"></a>
+
 ### 🧑 Human (2026-02-22T19:53)
 
 [Request interrupted by user for tool use]
 
 
+<a id="msg-human-43"></a>
+
 ### 🧑 Human (2026-02-22T19:54)
 
 continue
 
+
+<a id="msg-assistant-44"></a>
 
 ### 🤖 Assistant (2026-02-22T19:54)
 
@@ -926,6 +1014,8 @@ The user wants me to continue. They rejected the test run command but want me to
 
 </details>
 
+
+<a id="msg-assistant-45"></a>
 
 ### 🤖 Assistant (2026-02-22T19:54)
 
@@ -954,6 +1044,8 @@ Test case 'TrainingScre …(truncated)
 
 </details>
 
+<a id="msg-assistant-46"></a>
+
 ### 🤖 Assistant (2026-02-22T19:55)
 
 <details>
@@ -977,6 +1069,8 @@ timeout: 300000
 
 </details>
 
+<a id="msg-assistant-47"></a>
+
 ### 🤖 Assistant (2026-02-22T19:55)
 
 All tests pass. Full suite succeeds with no regressions.
@@ -985,6 +1079,8 @@ All tests pass. Full suite succeeds with no regressions.
 
 Now let me verify the implementation covers all subtasks. Let me review the final state of `stop()`.
 
+
+<a id="msg-assistant-48"></a>
 
 ### 🤖 Assistant (2026-02-22T19:55)
 
@@ -1017,6 +1113,8 @@ limit: 10
 
 </details>
 
+<a id="msg-assistant-49"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 **Task 1 subtask verification:**
@@ -1033,6 +1131,8 @@ limit: 10
 
 Let me verify that all stop call sites go through `SineWaveNotePlayer.stop()`.
 
+
+<a id="msg-assistant-50"></a>
 
 ### 🤖 Assistant (2026-02-22T19:56)
 
@@ -1065,6 +1165,8 @@ limit: 20
 
 </details>
 
+<a id="msg-assistant-51"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 <details>
@@ -1096,6 +1198,8 @@ limit: 15
 
 </details>
 
+<a id="msg-assistant-52"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 <details>
@@ -1122,10 +1226,14 @@ Peach/Core/Audio/SineWaveNotePlayer.swift:121:        playerNode.stop()
 
 </details>
 
+<a id="msg-assistant-53"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 Let me also check the audio interruption handler and the training screen.
 
+
+<a id="msg-assistant-54"></a>
 
 ### 🤖 Assistant (2026-02-22T19:56)
 
@@ -1151,6 +1259,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-55"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 <details>
@@ -1175,6 +1285,8 @@ Peach/Training/TrainingSession.swift:429:        audioInterruptionObserver = not
 ```
 
 </details>
+
+<a id="msg-assistant-56"></a>
 
 ### 🤖 Assistant (2026-02-22T19:56)
 
@@ -1207,6 +1319,8 @@ limit: 30
 
 </details>
 
+<a id="msg-assistant-57"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 <details>
@@ -1238,6 +1352,8 @@ limit: 20
 
 </details>
 
+<a id="msg-assistant-58"></a>
+
 ### 🤖 Assistant (2026-02-22T19:56)
 
 **Task 2 verification — All stop paths confirmed:**
@@ -1254,6 +1370,8 @@ All paths go through the single `NotePlayer.stop()` method, which is now `SineWa
 
 The full test suite already passed above. Let me confirm the summary.
 
+
+<a id="msg-assistant-59"></a>
 
 ### 🤖 Assistant (2026-02-22T19:56)
 
@@ -1278,6 +1396,8 @@ timeout: 300000
 
 </details>
 
+<a id="msg-assistant-60"></a>
+
 ### 🤖 Assistant (2026-02-22T19:57)
 
 ✅ **Full test suite passes — no regressions.**
@@ -1294,6 +1414,8 @@ All validation gates met:
 
 Now updating the story file with completed tasks, file list, and dev agent record.
 
+
+<a id="msg-assistant-61"></a>
 
 ### 🤖 Assistant (2026-02-22T19:57)
 
@@ -1324,6 +1446,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/fix-audio
 
 </details>
 
+<a id="msg-assistant-62"></a>
+
 ### 🤖 Assistant (2026-02-22T19:57)
 
 <details>
@@ -1347,6 +1471,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/fix-audio-c
 ```
 
 </details>
+
+<a id="msg-assistant-63"></a>
 
 ### 🤖 Assistant (2026-02-22T19:57)
 
@@ -1373,6 +1499,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/fix-audio-c
 ```
 
 </details>
+
+<a id="msg-assistant-64"></a>
 
 ### 🤖 Assistant (2026-02-22T19:58)
 
@@ -1414,12 +1542,16 @@ Refining the async sleep call... the player node, then restore the mixer volume.
 </details>
 
 
+<a id="msg-assistant-65"></a>
+
 ### 🤖 Assistant (2026-02-22T19:58)
 
 I see your message, Michael. You're right — the current implementation just sets mixer volume to 0 which is instantaneous in the API but might not propagate to the audio render thread before `playerNode.stop()` fires. The waveform cutoff needs a proper fade-out. Let me look at the existing envelope code and improve the approach.
 
 The existing `releaseDuration` (5ms) in `generateBuffer()` handles this for natural note endings. For the `stop()` case, I should use the same duration to ensure the volume change takes effect before stopping.
 
+
+<a id="msg-assistant-66"></a>
 
 ### 🤖 Assistant (2026-02-22T19:58)
 
@@ -1452,6 +1584,8 @@ limit: 10
 
 </details>
 
+<a id="msg-assistant-67"></a>
+
 ### 🤖 Assistant (2026-02-22T19:58)
 
 <details>
@@ -1480,12 +1614,16 @@ The file /Users/michael/Projekte/peach/Peach/Core/Audio/SineWaveNotePlayer.swift
 
 </details>
 
+<a id="msg-assistant-68"></a>
+
 ### 🤖 Assistant (2026-02-22T19:58)
 
 Now `stop()` uses the existing `releaseDuration` constant (5ms) as a propagation delay — matching the envelope design. The `try?` handles task cancellation gracefully (if the task is cancelled, the sleep returns immediately and we still stop the player).
 
 Let me run the full suite to verify.
 
+
+<a id="msg-assistant-69"></a>
 
 ### 🤖 Assistant (2026-02-22T19:58)
 
@@ -1510,10 +1648,14 @@ timeout: 300000
 
 </details>
 
+<a id="msg-assistant-70"></a>
+
 ### 🤖 Assistant (2026-02-22T19:59)
 
 All tests pass. Let me verify the final implementation.
 
+
+<a id="msg-assistant-71"></a>
 
 ### 🤖 Assistant (2026-02-22T19:59)
 
@@ -1546,10 +1688,14 @@ limit: 12
 
 </details>
 
+<a id="msg-assistant-72"></a>
+
 ### 🤖 Assistant (2026-02-22T19:59)
 
 Good. Now let me update the story file's Dev Agent Record and update the sprint status to `review`.
 
+
+<a id="msg-assistant-73"></a>
 
 ### 🤖 Assistant (2026-02-22T20:00)
 
@@ -1591,10 +1737,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/fix-audio-c
 
 </details>
 
+<a id="msg-assistant-74"></a>
+
 ### 🤖 Assistant (2026-02-22T20:00)
 
 Now update sprint status to `review`.
 
+
+<a id="msg-assistant-75"></a>
 
 ### 🤖 Assistant (2026-02-22T20:00)
 
@@ -1620,6 +1770,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/sprint-stat
 
 </details>
 
+<a id="msg-assistant-76"></a>
+
 ### 🤖 Assistant (2026-02-22T20:00)
 
 ✅ Story status updated to "review" in both story file and sprint-status.yaml.
@@ -1643,10 +1795,14 @@ Michael, the story **fix-audio-clicks-when-navigating-away** is complete and rea
 - Check sprint status to see overall project progress
 
 
+<a id="msg-human-77"></a>
+
 ### 🧑 Human (2026-02-22T20:01)
 
 commit this
 
+
+<a id="msg-assistant-78"></a>
 
 ### 🤖 Assistant (2026-02-22T20:01)
 
@@ -1678,6 +1834,8 @@ Changes not staged for commit:
 
 </details>
 
+<a id="msg-assistant-79"></a>
+
 ### 🤖 Assistant (2026-02-22T20:01)
 
 <details>
@@ -1708,6 +1866,8 @@ index fffa521..4d7fcd7 100644
 
 </details>
 
+<a id="msg-assistant-80"></a>
+
 ### 🤖 Assistant (2026-02-22T20:01)
 
 <details>
@@ -1733,6 +1893,8 @@ df10878 Fix code review findings for difficulty display story
 ```
 
 </details>
+
+<a id="msg-assistant-81"></a>
 
 ### 🤖 Assistant (2026-02-22T20:01)
 
@@ -1761,6 +1923,8 @@ nothing to commit, working tree clean
 ```
 
 </details>
+
+<a id="msg-assistant-82"></a>
 
 ### 🤖 Assistant (2026-02-22T20:01)
 

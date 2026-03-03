@@ -47,16 +47,22 @@ docs/arc42/01-introduction-and-goals.md   |  41 +++++++
 
 *2026-02-22T12:25 → 2026-02-22T12:48*
 
+<a id="msg-human-1"></a>
+
 ### 🧑 Human (2026-02-22T12:25)
 
 <command-message>bmad-bmm-document-project</command-message>
 <command-name>/bmad-bmm-document-project</command-name>
 
 
+<a id="msg-assistant-2"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 I'll start by loading the workflow engine and the specific workflow configuration.
 
+
+<a id="msg-assistant-3"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -85,6 +91,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/tasks/workflow.xml
 ```
 
 </details>
+
+<a id="msg-assistant-4"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -115,6 +123,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/document-project/wo
 
 </details>
 
+<a id="msg-assistant-5"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 <details>
@@ -136,10 +146,14 @@ Let me load the config source and the instructions file.
 </details>
 
 
+<a id="msg-assistant-6"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 Now I'll load the config source and the instructions file, plus the template-related files.
 
+
+<a id="msg-assistant-7"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -170,6 +184,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/config.yaml
 
 </details>
 
+<a id="msg-assistant-8"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 <details>
@@ -198,6 +214,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/document-project/in
 ```
 
 </details>
+
+<a id="msg-assistant-9"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -228,6 +246,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/document-project/ch
 
 </details>
 
+<a id="msg-assistant-10"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 <details>
@@ -249,6 +269,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/document-project/do
 ```
 
 </details>
+
+<a id="msg-assistant-11"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -277,6 +299,8 @@ Since there's no template key in the workflow.yaml, this is an action-workflow w
 </details>
 
 
+<a id="msg-assistant-12"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 All components loaded and variables resolved:
@@ -298,6 +322,8 @@ This is an **action-workflow** (no template). Now executing the instructions.
 
 Let me check for the workflow-status module and project status file.
 
+
+<a id="msg-assistant-13"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -321,6 +347,8 @@ No files found
 
 </details>
 
+<a id="msg-assistant-14"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 <details>
@@ -342,6 +370,8 @@ path: /Users/michael/Projekte/peach/docs
 ```
 
 </details>
+
+<a id="msg-assistant-15"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -366,6 +396,8 @@ Now **Step 2**: Check for resumability - check for `project-scan-report.json`
 </details>
 
 
+<a id="msg-assistant-16"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 No workflow-status module found. Running in **standalone mode** without progress tracking.
@@ -378,6 +410,8 @@ No workflow-status module found. Running in **standalone mode** without progress
 
 Checking for existing state file.
 
+
+<a id="msg-assistant-17"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -401,6 +435,8 @@ No files found
 
 </details>
 
+<a id="msg-assistant-18"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 No state file found. Moving to Step 3.
@@ -409,6 +445,8 @@ No state file found. Moving to Step 3.
 
 **Step 3: Check for existing documentation and determine workflow mode**
 
+
+<a id="msg-assistant-19"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -432,6 +470,8 @@ No files found
 
 </details>
 
+<a id="msg-assistant-20"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 <details>
@@ -452,12 +492,16 @@ I need to load and follow the full-scan-instructions.md.
 </details>
 
 
+<a id="msg-assistant-21"></a>
+
 ### 🤖 Assistant (2026-02-22T12:25)
 
 No existing documentation found. **Starting initial project scan...**
 
 Setting `workflow_mode = "initial_scan"`. Now loading the full scan instructions.
 
+
+<a id="msg-assistant-22"></a>
 
 ### 🤖 Assistant (2026-02-22T12:25)
 
@@ -488,6 +532,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/document-project/wo
 
 </details>
 
+<a id="msg-assistant-23"></a>
+
 ### 🤖 Assistant (2026-02-22T12:26)
 
 <details>
@@ -507,6 +553,8 @@ Let me proceed step by step.
 
 </details>
 
+
+<a id="msg-assistant-24"></a>
 
 ### 🤖 Assistant (2026-02-22T12:26)
 
@@ -530,6 +578,8 @@ No existing `index.md` found. Setting `workflow_mode = "initial_scan"`.
 
 Now I need your input on scan depth:
 
+
+<a id="msg-assistant-25"></a>
 
 ### 🤖 Assistant (2026-02-22T12:26)
 
@@ -560,15 +610,21 @@ The user wants to clarify these questions.
 
 </details>
 
+<a id="msg-assistant-26"></a>
+
 ### 🤖 Assistant (2026-02-22T12:26)
 
 What would you like to clarify about the scan level options, Michael? Happy to explain the differences in more detail or answer any questions before we proceed.
 
 
+<a id="msg-human-27"></a>
+
 ### 🧑 Human (2026-02-22T12:28)
 
 I'm not looking to reverse engineer a PRD, we already have one. I'm trying to generate architecture documentation for developers trying to understand the app. Think of https://arc42.org/overview .
 
+
+<a id="msg-assistant-28"></a>
 
 ### 🤖 Assistant (2026-02-22T12:28)
 
@@ -602,12 +658,16 @@ The workflow I have is designed for brownfield projects feeding into PRD creatio
 </details>
 
 
+<a id="msg-assistant-29"></a>
+
 ### 🤖 Assistant (2026-02-22T12:28)
 
 Got it - that's a different goal than what this workflow is optimized for. The document-project workflow is focused on brownfield analysis to feed into PRD creation, but you want **developer-facing architecture documentation** in the arc42 style.
 
 Let me first understand what you already have, then we can figure out the best approach.
 
+
+<a id="msg-assistant-30"></a>
 
 ### 🤖 Assistant (2026-02-22T12:28)
 
@@ -641,6 +701,8 @@ I've completed a thorough exploration of the Peach project. Here's your comprehe
 ```
 
 </details>
+
+<a id="msg-assistant-31"></a>
 
 ### 🤖 Assistant (2026-02-22T12:30)
 
@@ -676,6 +738,8 @@ This is actually a great fit for this project. The information exists across mul
 </details>
 
 
+<a id="msg-assistant-32"></a>
+
 ### 🤖 Assistant (2026-02-22T12:30)
 
 Great, now I have a thorough understanding of Peach. You have rich documentation scattered across planning artifacts, implementation stories, and project-context.md — but no consolidated, developer-facing architecture reference.
@@ -698,6 +762,8 @@ An **arc42-style document** would pull together what exists into a single naviga
 | 12. Glossary | glossary.md (already exists) |
 
 
+<a id="msg-assistant-33"></a>
+
 ### 🤖 Assistant (2026-02-22T12:30)
 
 <details>
@@ -718,6 +784,8 @@ User has answered your questions: "Where should the arc42 architecture document 
 ```
 
 </details>
+
+<a id="msg-assistant-34"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -743,10 +811,14 @@ I'll start by pulling the actual source files to get the details right for the b
 </details>
 
 
+<a id="msg-assistant-35"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 Sharded `docs/arc42/` with 10 sections (skipping Deployment View and Glossary). Let me read the key source material to build accurate documentation.
 
+
+<a id="msg-assistant-36"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -777,6 +849,8 @@ file_path: /Users/michael/Projekte/peach/docs/planning-artifacts/architecture.md
 
 </details>
 
+<a id="msg-assistant-37"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -805,6 +879,8 @@ file_path: /Users/michael/Projekte/peach/docs/project-context.md
 ```
 
 </details>
+
+<a id="msg-assistant-38"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -835,6 +911,8 @@ file_path: /Users/michael/Projekte/peach/docs/planning-artifacts/prd.md
 
 </details>
 
+<a id="msg-assistant-39"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -845,10 +923,14 @@ Now let me read a few key source files to have accurate building block and runti
 </details>
 
 
+<a id="msg-assistant-40"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 Good, I have all the source material. Let me now read the key source files for accurate building block and runtime documentation.
 
+
+<a id="msg-assistant-41"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -879,6 +961,8 @@ file_path: /Users/michael/Projekte/peach/Peach/App/PeachApp.swift
 
 </details>
 
+<a id="msg-assistant-42"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -907,6 +991,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Training/TrainingSession.swift
 ```
 
 </details>
+
+<a id="msg-assistant-43"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -937,6 +1023,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrate
 
 </details>
 
+<a id="msg-assistant-44"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -946,6 +1034,8 @@ Let me also read a few more important source files for the building blocks secti
 
 </details>
 
+
+<a id="msg-assistant-45"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -976,6 +1066,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Profile/PerceptualProfile.sw
 
 </details>
 
+<a id="msg-assistant-46"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -1004,6 +1096,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Audio/NotePlayer.swift
 ```
 
 </details>
+
+<a id="msg-assistant-47"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -1034,6 +1128,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Audio/SineWaveNotePlayer.swi
 
 </details>
 
+<a id="msg-assistant-48"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -1062,6 +1158,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Data/ComparisonRecord.swift
 ```
 
 </details>
+
+<a id="msg-assistant-49"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -1092,6 +1190,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Data/TrainingDataStore.swift
 
 </details>
 
+<a id="msg-assistant-50"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -1121,6 +1221,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/future-wo
 
 </details>
 
+<a id="msg-assistant-51"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 <details>
@@ -1147,10 +1249,14 @@ I'll follow the collaborative workflow by generating the first section and prese
 </details>
 
 
+<a id="msg-assistant-52"></a>
+
 ### 🤖 Assistant (2026-02-22T12:32)
 
 I have everything I need. Let me start generating the arc42 documentation section by section. I'll begin with the index and Section 1 (Introduction & Goals).
 
+
+<a id="msg-assistant-53"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -1164,6 +1270,8 @@ description: Create arc42 docs directory
 
 </details>
 
+
+<a id="msg-assistant-54"></a>
 
 ### 🤖 Assistant (2026-02-22T12:32)
 
@@ -1188,6 +1296,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/index.md
 ```
 
 </details>
+
+<a id="msg-assistant-55"></a>
 
 ### 🤖 Assistant (2026-02-22T12:33)
 
@@ -1215,6 +1325,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/01-introd
 
 </details>
 
+<a id="msg-assistant-56"></a>
+
 ### 🤖 Assistant (2026-02-22T12:33)
 
 **Section 1: Introduction and Goals** is written.
@@ -1232,15 +1344,21 @@ How would you like to proceed?
 - **[y] YOLO** — I'll generate all remaining sections without stopping
 
 
+<a id="msg-human-57"></a>
+
 ### 🧑 Human (2026-02-22T12:39)
 
 y
 
 
+<a id="msg-assistant-58"></a>
+
 ### 🤖 Assistant (2026-02-22T12:39)
 
 YOLO mode activated. Generating all remaining sections.
 
+
+<a id="msg-assistant-59"></a>
 
 ### 🤖 Assistant (2026-02-22T12:40)
 
@@ -1270,6 +1388,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/02-constr
 
 </details>
 
+<a id="msg-assistant-60"></a>
+
 ### 🤖 Assistant (2026-02-22T12:40)
 
 <details>
@@ -1295,6 +1415,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/03-contex
 ```
 
 </details>
+
+<a id="msg-assistant-61"></a>
 
 ### 🤖 Assistant (2026-02-22T12:40)
 
@@ -1324,6 +1446,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/04-soluti
 
 </details>
 
+<a id="msg-assistant-62"></a>
+
 ### 🤖 Assistant (2026-02-22T12:41)
 
 <details>
@@ -1351,6 +1475,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/05-buildi
 ```
 
 </details>
+
+<a id="msg-assistant-63"></a>
 
 ### 🤖 Assistant (2026-02-22T12:42)
 
@@ -1382,6 +1508,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/06-runtim
 
 </details>
 
+<a id="msg-assistant-64"></a>
+
 ### 🤖 Assistant (2026-02-22T12:42)
 
 <details>
@@ -1408,6 +1536,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/08-crossc
 
 </details>
 
+<a id="msg-assistant-65"></a>
+
 ### 🤖 Assistant (2026-02-22T12:43)
 
 <details>
@@ -1433,6 +1563,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/09-archit
 ```
 
 </details>
+
+<a id="msg-assistant-66"></a>
 
 ### 🤖 Assistant (2026-02-22T12:43)
 
@@ -1464,6 +1596,8 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/10-qualit
 
 </details>
 
+<a id="msg-assistant-67"></a>
+
 ### 🤖 Assistant (2026-02-22T12:44)
 
 <details>
@@ -1492,10 +1626,14 @@ File created successfully at: /Users/michael/Projekte/peach/docs/arc42/11-risks-
 
 </details>
 
+<a id="msg-assistant-68"></a>
+
 ### 🤖 Assistant (2026-02-22T12:44)
 
 All 10 sections are written. Let me verify the output.
 
+
+<a id="msg-assistant-69"></a>
 
 ### 🤖 Assistant (2026-02-22T12:44)
 
@@ -1527,6 +1665,8 @@ description: List generated arc42 files
 
 </details>
 
+<a id="msg-assistant-70"></a>
+
 ### 🤖 Assistant (2026-02-22T12:44)
 
 ---
@@ -1552,10 +1692,14 @@ description: List generated arc42 files
 **Total:** ~51K across 11 files. All content derived from actual source code and existing documentation — no placeholders, no TODOs.
 
 
+<a id="msg-human-71"></a>
+
 ### 🧑 Human (2026-02-22T12:48)
 
 commit this
 
+
+<a id="msg-assistant-72"></a>
 
 ### 🤖 Assistant (2026-02-22T12:48)
 
@@ -1586,6 +1730,8 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 </details>
 
+<a id="msg-assistant-73"></a>
+
 ### 🤖 Assistant (2026-02-22T12:48)
 
 <details>
@@ -1598,6 +1744,8 @@ description: Show diff summary for staged/unstaged changes
 
 </details>
 
+
+<a id="msg-assistant-74"></a>
 
 ### 🤖 Assistant (2026-02-22T12:48)
 
@@ -1624,6 +1772,8 @@ description: Show recent commit messages
 ```
 
 </details>
+
+<a id="msg-assistant-75"></a>
 
 ### 🤖 Assistant (2026-02-22T12:48)
 
@@ -1654,6 +1804,8 @@ description: Stage arc42 docs and commit
 ```
 
 </details>
+
+<a id="msg-assistant-76"></a>
 
 ### 🤖 Assistant (2026-02-22T12:48)
 

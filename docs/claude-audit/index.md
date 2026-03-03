@@ -1,19 +1,27 @@
 ---
 repo: "/Users/michael/Projekte/peach"
-total_commits: 364
-audited_commits: 357
+total_commits: 373
+audited_commits: 365
 detail: "full"
-generated: "2026-03-02T15:08:55.795509+00:00"
+generated: "2026-03-03T09:04:53.337076+00:00"
 ---
 
 # Claude Code Audit Log
 
 Repository: `/Users/michael/Projekte/peach`  
-Total commits: 364  
-Commits with Claude Code sessions: 357
+Total commits: 373  
+Commits with Claude Code sessions: 365
 
 ## Commits
 
+- [7ed9617a73](7ed9617a73.md) — 2026-03-03T10:03 — Fix TuningSystem frequency bridge to respect tuning system (1 session, 112 messages)
+- [37862f8014](37862f8014.md) — 2026-03-03T09:46 — Add tech spec: Fix TuningSystem frequency bridge to respect tuning system (2 sessions, 163 messages)
+- [e7e5179e26](e7e5179e26.md) — 2026-03-02T20:29 — Update BMAD to v6.0.4. (2 sessions, 72 messages)
+- [b37c7dba1d](b37c7dba1d.md) — 2026-03-02T20:12 — Rewrite arc42 documentation from codebase analysis (1 session, 122 messages)
+- [f84bab1fa7](f84bab1fa7.md) — 2026-03-02T19:48 — Rename .sf2-cache to .cache for general-purpose caching (1 session, 126 messages)
+- [e53e64e56e](e53e64e56e.md) — 2026-03-02T19:34 — Add tech spec: Rename .sf2-cache to .cache (2 sessions, 127 messages)
+- [c28fb136a0](c28fb136a0.md) — 2026-03-02T19:16 — Install arc42 Documentation Architect agent (Gernot) (1 session, 289 messages)
+- [0f9908fc71](0f9908fc71.md) — 2026-03-02T19:10 — Create arc42 Documentation Architect agent (Gernot) (1 session, 245 messages)
 - [2b06bc9d8a](2b06bc9d8a.md) — 2026-03-02T15:29 — Review story 30.3: Add Tuning System Indicator to Interval Training Screens (1 session, 223 messages)
 - [2bf8fa1a1d](2bf8fa1a1d.md) — 2026-03-02T15:16 — Implement story 30.3: Add Tuning System Indicator to Interval Training Screens (2 sessions, 189 messages)
 - [94c2b420c2](94c2b420c2.md) — 2026-03-02T14:57 — Review story 30.2: Add Tuning System Picker to Settings (1 session, 140 messages)

@@ -38,6 +38,8 @@ docs/implementation-artifacts/future-work.md       |  23 ++++
 
 *2026-02-15T08:47 → 2026-02-15T09:19*
 
+<a id="msg-human-1"></a>
+
 ### 🧑 Human (2026-02-15T08:47)
 
 <command-message>bmad-party-mode</command-message>
@@ -50,10 +52,14 @@ docs/implementation-artifacts/future-work.md       |  23 ++++
 Discuss.</command-args>
 
 
+<a id="msg-assistant-2"></a>
+
 ### 🤖 Assistant (2026-02-15T08:47)
 
 I'll start by reading the workflow file and then exploring the relevant code and the paper.
 
+
+<a id="msg-assistant-3"></a>
 
 ### 🤖 Assistant (2026-02-15T08:47)
 
@@ -84,6 +90,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/workflows/party-mode/workflo
 
 </details>
 
+<a id="msg-assistant-4"></a>
+
 ### 🤖 Assistant (2026-02-15T08:47)
 
 <details>
@@ -105,6 +113,8 @@ PDF file read: /tmp/Pitch-Kazez-CMS-2001-abstract.pdf (95KB)
 
 </details>
 
+<a id="msg-assistant-5"></a>
+
 ### 🤖 Assistant (2026-02-15T08:47)
 
 <details>
@@ -115,10 +125,14 @@ Let me load the agent manifest and config, then explore the current algorithm co
 </details>
 
 
+<a id="msg-assistant-6"></a>
+
 ### 🤖 Assistant (2026-02-15T08:47)
 
 Now let me load the party mode configuration and explore the current algorithm code.
 
+
+<a id="msg-assistant-7"></a>
 
 ### 🤖 Assistant (2026-02-15T08:47)
 
@@ -149,6 +163,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/config.yaml
 
 </details>
 
+<a id="msg-assistant-8"></a>
+
 ### 🤖 Assistant (2026-02-15T08:47)
 
 <details>
@@ -170,6 +186,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/_config/agent-manifest.csv
 ```
 
 </details>
+
+<a id="msg-assistant-9"></a>
 
 ### 🤖 Assistant (2026-02-15T08:47)
 
@@ -204,6 +222,8 @@ The Peach app implements an adaptive pitch discrimination training system with i
 
 </details>
 
+<a id="msg-assistant-10"></a>
+
 ### 🤖 Assistant (2026-02-15T08:48)
 
 <details>
@@ -227,10 +247,14 @@ The user's frustration with the current fixed 0.95 multiplier makes sense now—
 </details>
 
 
+<a id="msg-assistant-11"></a>
+
 ### 🤖 Assistant (2026-02-15T08:48)
 
 Now let me read the discussion orchestration step to complete setup.
 
+
+<a id="msg-assistant-12"></a>
 
 ### 🤖 Assistant (2026-02-15T08:48)
 
@@ -260,6 +284,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/workflows/party-mode/steps/s
 ```
 
 </details>
+
+<a id="msg-assistant-13"></a>
 
 ### 🤖 Assistant (2026-02-15T08:49)
 
@@ -354,10 +380,14 @@ Continue the discussion naturally, or:
 `[E] Exit Party Mode - End the collaborative session`
 
 
+<a id="msg-human-14"></a>
+
 ### 🧑 Human (2026-02-15T08:55)
 
 To be very clear, for the finished product I still want the per note difficulty! But I want it to work properly. So my suggestion is that for evaluation of how narrowing/widening of difficulty works and feels we implement _another_ simpler strategy. That's why we have a protocol.
 
+
+<a id="msg-assistant-15"></a>
 
 ### 🤖 Assistant (2026-02-15T08:55)
 
@@ -368,6 +398,8 @@ Michael is clarifying that he wants to keep the existing AdaptiveNoteStrategy in
 
 </details>
 
+
+<a id="msg-assistant-16"></a>
 
 ### 🤖 Assistant (2026-02-15T08:55)
 
@@ -420,6 +452,8 @@ One more product question that affects implementation:
 `[E] Exit Party Mode - End the collaborative session`
 
 
+<a id="msg-human-17"></a>
+
 ### 🧑 Human (2026-02-15T09:05)
 
 * I don't need a toggle, just hardwire the new strategy for now.
@@ -427,6 +461,8 @@ One more product question that affects implementation:
 
 Before you start the implementation, write the appropriate documentation. We're on a special missioni right now and I want the docs to reflect that we haven't gone rogue but are addressing a major issue that came up during development.
 
+
+<a id="msg-assistant-18"></a>
 
 ### 🤖 Assistant (2026-02-15T09:06)
 
@@ -449,6 +485,8 @@ For the documentation side, I should figure out what docs structure already exis
 </details>
 
 
+<a id="msg-assistant-19"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 📋 **John**: Smart. Document the mission before executing. Paper trail keeps us honest.
@@ -459,6 +497,8 @@ For the documentation side, I should figure out what docs structure already exis
 
 Let me look at the existing documentation to match the format.
 
+
+<a id="msg-assistant-20"></a>
 
 ### 🤖 Assistant (2026-02-15T09:06)
 
@@ -493,6 +533,8 @@ I've thoroughly explored the documentation and project management structure for 
 
 </details>
 
+<a id="msg-assistant-21"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 <details>
@@ -505,10 +547,14 @@ Let me read the epics file and the future-work.md to see if there's already a pl
 </details>
 
 
+<a id="msg-assistant-22"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 Good, I have a thorough understanding of the doc conventions. Let me read the key reference files to get the exact format right.
 
+
+<a id="msg-assistant-23"></a>
 
 ### 🤖 Assistant (2026-02-15T09:06)
 
@@ -540,6 +586,8 @@ limit: 80
 
 </details>
 
+<a id="msg-assistant-24"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 <details>
@@ -568,6 +616,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/4-3-integ
 ```
 
 </details>
+
+<a id="msg-assistant-25"></a>
 
 ### 🤖 Assistant (2026-02-15T09:06)
 
@@ -598,6 +648,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/future-wo
 
 </details>
 
+<a id="msg-assistant-26"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 <details>
@@ -610,10 +662,14 @@ Let me also read the actual source files that will be affected.
 </details>
 
 
+<a id="msg-assistant-27"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 Now let me read the actual current source files to understand the implementation details precisely.
 
+
+<a id="msg-assistant-28"></a>
 
 ### 🤖 Assistant (2026-02-15T09:06)
 
@@ -644,6 +700,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrate
 
 </details>
 
+<a id="msg-assistant-29"></a>
+
 ### 🤖 Assistant (2026-02-15T09:06)
 
 <details>
@@ -672,6 +730,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/NextNoteStrategy.s
 ```
 
 </details>
+
+<a id="msg-assistant-30"></a>
 
 ### 🤖 Assistant (2026-02-15T09:07)
 
@@ -702,6 +762,8 @@ file_path: /Users/michael/Projekte/peach/Peach/App/PeachApp.swift
 
 </details>
 
+<a id="msg-assistant-31"></a>
+
 ### 🤖 Assistant (2026-02-15T09:07)
 
 <details>
@@ -712,10 +774,14 @@ Now I have a complete understanding. Let me also check the existing uncommitted 
 </details>
 
 
+<a id="msg-assistant-32"></a>
+
 ### 🤖 Assistant (2026-02-15T09:07)
 
 Let me check the exact uncommitted changes and the existing test mock.
 
+
+<a id="msg-assistant-33"></a>
 
 ### 🤖 Assistant (2026-02-15T09:07)
 
@@ -747,6 +813,8 @@ index 8cf3e68..494055d 100644
 
 </details>
 
+<a id="msg-assistant-34"></a>
+
 ### 🤖 Assistant (2026-02-15T09:07)
 
 <details>
@@ -775,6 +843,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Training/MockNextNoteStrateg
 ```
 
 </details>
+
+<a id="msg-assistant-35"></a>
 
 ### 🤖 Assistant (2026-02-15T09:07)
 
@@ -806,10 +876,14 @@ Here's what I'd write:
 `[E] Exit Party Mode - End the collaborative session`
 
 
+<a id="msg-human-36"></a>
+
 ### 🧑 Human (2026-02-15T09:12)
 
 Go with the hotfix numbering and draft the story.
 
+
+<a id="msg-assistant-37"></a>
 
 ### 🤖 Assistant (2026-02-15T09:12)
 
@@ -841,10 +915,14 @@ Now I'm creating the story document at `docs/implementation-artifacts/hotfix-kaz
 </details>
 
 
+<a id="msg-assistant-38"></a>
+
 ### 🤖 Assistant (2026-02-15T09:12)
 
 📋 **John**: On it. Drafting the story document now.
 
+
+<a id="msg-assistant-39"></a>
 
 ### 🤖 Assistant (2026-02-15T09:13)
 
@@ -874,10 +952,14 @@ File created successfully at: /Users/michael/Projekte/peach/docs/implementation-
 
 </details>
 
+<a id="msg-assistant-40"></a>
+
 ### 🤖 Assistant (2026-02-15T09:13)
 
 Now let me update `future-work.md` to document the convergence issue.
 
+
+<a id="msg-assistant-41"></a>
 
 ### 🤖 Assistant (2026-02-15T09:13)
 
@@ -907,6 +989,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/future-wo
 ```
 
 </details>
+
+<a id="msg-assistant-42"></a>
 
 ### 🤖 Assistant (2026-02-15T09:13)
 
@@ -940,6 +1024,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/future-work
 
 </details>
 
+<a id="msg-assistant-43"></a>
+
 ### 🤖 Assistant (2026-02-15T09:14)
 
 ---
@@ -964,10 +1050,14 @@ Ready for implementation when you give the word. Should I proceed with the 5 tas
 `[E] Exit Party Mode - End the collaborative session`
 
 
+<a id="msg-human-44"></a>
+
 ### 🧑 Human (2026-02-15T09:17)
 
 I've removed my experimental changes that you noticed. As for the docs, go ahead.
 
+
+<a id="msg-assistant-45"></a>
 
 ### 🤖 Assistant (2026-02-15T09:17)
 
@@ -987,10 +1077,14 @@ Let me start implementing. First, let me verify the changes are reverted.
 </details>
 
 
+<a id="msg-assistant-46"></a>
+
 ### 🤖 Assistant (2026-02-15T09:17)
 
 Let me verify the revert and then start implementing.
 
+
+<a id="msg-assistant-47"></a>
 
 ### 🤖 Assistant (2026-02-15T09:17)
 
@@ -1022,10 +1116,14 @@ Changes not staged for commit:
 
 </details>
 
+<a id="msg-assistant-48"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 Good — algorithm files are clean, only the docs are changed. Let me create the task list and start implementing.
 
+
+<a id="msg-assistant-49"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1050,6 +1148,8 @@ Task #1 created successfully: Commit hotfix story documentation
 
 </details>
 
+<a id="msg-assistant-50"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1072,6 +1172,8 @@ Task #2 created successfully: Implement KazezNoteStrategy
 ```
 
 </details>
+
+<a id="msg-assistant-51"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1096,6 +1198,8 @@ Task #3 created successfully: Hardwire KazezNoteStrategy into PeachApp
 
 </details>
 
+<a id="msg-assistant-52"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1118,6 +1222,8 @@ Task #4 created successfully: Write unit tests for KazezNoteStrategy
 ```
 
 </details>
+
+<a id="msg-assistant-53"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1142,6 +1248,8 @@ Task #5 created successfully: Run full test suite and verify no regressions
 
 </details>
 
+<a id="msg-assistant-54"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1163,6 +1271,8 @@ Updated task #1 status
 ```
 
 </details>
+
+<a id="msg-assistant-55"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1188,6 +1298,8 @@ description: Commit hotfix documentation
 
 </details>
 
+<a id="msg-assistant-56"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1209,6 +1321,8 @@ Updated task #1 status
 ```
 
 </details>
+
+<a id="msg-assistant-57"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1232,10 +1346,14 @@ Updated task #2 status
 
 </details>
 
+<a id="msg-assistant-58"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 Now let me implement the KazezNoteStrategy.
 
+
+<a id="msg-assistant-59"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1264,6 +1382,8 @@ File created successfully at: /Users/michael/Projekte/peach/Peach/Core/Algorithm
 
 </details>
 
+<a id="msg-assistant-60"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1285,6 +1405,8 @@ Updated task #2 status
 ```
 
 </details>
+
+<a id="msg-assistant-61"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1308,10 +1430,14 @@ Updated task #3 status
 
 </details>
 
+<a id="msg-assistant-62"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 Those diagnostics are just SourceKit indexing — the types exist in other files in the same target. Let me wire it into PeachApp.
 
+
+<a id="msg-assistant-63"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1339,6 +1465,8 @@ The file /Users/michael/Projekte/peach/Peach/App/PeachApp.swift has been updated
 
 </details>
 
+<a id="msg-assistant-64"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1360,6 +1488,8 @@ Updated task #3 status
 ```
 
 </details>
+
+<a id="msg-assistant-65"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1383,10 +1513,14 @@ Updated task #4 status
 
 </details>
 
+<a id="msg-assistant-66"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 SourceKit indexing noise — these are all types from the same Peach module. Now let me look at the existing test structure to match conventions, then write the tests.
 
+
+<a id="msg-assistant-67"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1418,6 +1552,8 @@ limit: 50
 
 </details>
 
+<a id="msg-assistant-68"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 <details>
@@ -1440,10 +1576,14 @@ AdaptiveNoteStrategyTests.swift
 
 </details>
 
+<a id="msg-assistant-69"></a>
+
 ### 🤖 Assistant (2026-02-15T09:18)
 
 Let me also check how `CompletedComparison` is constructed in tests.
 
+
+<a id="msg-assistant-70"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1471,6 +1611,8 @@ PeachTests/Core/Algorithm/AdaptiveNoteStrategyTests.swift:374:        let comple
 ```
 
 </details>
+
+<a id="msg-assistant-71"></a>
 
 ### 🤖 Assistant (2026-02-15T09:18)
 
@@ -1502,6 +1644,8 @@ Peach/Training/Comparison.swift-68-    let userAnsweredHigher: Bool
 ```
 
 </details>
+
+<a id="msg-assistant-72"></a>
 
 ### 🤖 Assistant (2026-02-15T09:19)
 

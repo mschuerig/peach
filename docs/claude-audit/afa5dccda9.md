@@ -41,12 +41,16 @@ Peach/Core/Algorithm/AdaptiveNoteStrategy.swift | 27 +++++++++++++------------
 
 *2026-02-17T08:28 → 2026-02-17T08:44*
 
+<a id="msg-human-1"></a>
+
 ### 🧑 Human (2026-02-17T08:28)
 
 <command-message>bmad-party-mode</command-message>
 <command-name>/bmad-party-mode</command-name>
 <command-args>The last changes have been an improvement, but they are still far from perfect. Now the algorithm quickly increases the difficulty, but even though I only give correct answers, the cent difference jumps around in the range from 9 to 22 cents. It never goes below 9 cents. For my personal training at my current level, the interesting training range is from 3 to 10 cents. So, with the algorithm as it is, I never get there.</command-args>
 
+
+<a id="msg-assistant-2"></a>
 
 ### 🤖 Assistant (2026-02-17T08:28)
 
@@ -57,6 +61,8 @@ The user wants me to load and follow the workflow defined in the party-mode work
 
 </details>
 
+
+<a id="msg-assistant-3"></a>
 
 ### 🤖 Assistant (2026-02-17T08:28)
 
@@ -87,6 +93,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/workflows/party-mode/workflo
 
 </details>
 
+<a id="msg-assistant-4"></a>
+
 ### 🤖 Assistant (2026-02-17T08:28)
 
 <details>
@@ -116,6 +124,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/config.yaml
 
 </details>
 
+<a id="msg-assistant-5"></a>
+
 ### 🤖 Assistant (2026-02-17T08:28)
 
 <details>
@@ -137,6 +147,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/_config/agent-manifest.csv
 ```
 
 </details>
+
+<a id="msg-assistant-6"></a>
 
 ### 🤖 Assistant (2026-02-17T08:28)
 
@@ -167,6 +179,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/workflows/party-mode/steps/s
 
 </details>
 
+<a id="msg-assistant-7"></a>
+
 ### 🤖 Assistant (2026-02-17T08:28)
 
 <details>
@@ -187,6 +201,8 @@ I should activate party mode and have these agents discuss the issue, but I need
 
 </details>
 
+
+<a id="msg-assistant-8"></a>
 
 ### 🤖 Assistant (2026-02-17T08:28)
 
@@ -219,6 +235,8 @@ I've thoroughly explored the codebase and identified all the key files and mecha
 
 </details>
 
+<a id="msg-assistant-9"></a>
+
 ### 🤖 Assistant (2026-02-17T08:29)
 
 <details>
@@ -237,10 +255,14 @@ There's a disconnect here - if the user is consistently correct, the difficulty 
 </details>
 
 
+<a id="msg-assistant-10"></a>
+
 ### 🤖 Assistant (2026-02-17T08:29)
 
 Let me read the key algorithm files to give the agents informed context.
 
+
+<a id="msg-assistant-11"></a>
 
 ### 🤖 Assistant (2026-02-17T08:29)
 
@@ -253,6 +275,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrate
 
 </details>
 
+
+<a id="msg-assistant-12"></a>
 
 ### 🤖 Assistant (2026-02-17T08:29)
 
@@ -300,6 +324,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Algorithm/KazezNoteStrategy.
 
 </details>
 
+<a id="msg-assistant-13"></a>
+
 ### 🤖 Assistant (2026-02-17T08:30)
 
 <details>
@@ -326,6 +352,8 @@ Setting up the party mode conversation...
 
 </details>
 
+
+<a id="msg-assistant-14"></a>
 
 ### 🤖 Assistant (2026-02-17T08:31)
 
@@ -421,10 +449,14 @@ _[Awaiting your response...]_
 `[E] Exit Party Mode - End the collaborative session`
 
 
+<a id="msg-human-15"></a>
+
 ### 🧑 Human (2026-02-17T08:38)
 
 Ok, let's give it a try.
 
+
+<a id="msg-assistant-16"></a>
 
 ### 🤖 Assistant (2026-02-17T08:38)
 
@@ -444,6 +476,8 @@ Let me first check the current state of git to make sure there are no uncommitte
 
 </details>
 
+
+<a id="msg-assistant-17"></a>
 
 ### 🤖 Assistant (2026-02-17T08:38)
 
@@ -471,10 +505,14 @@ nothing to commit, working tree clean
 
 </details>
 
+<a id="msg-assistant-18"></a>
+
 ### 🤖 Assistant (2026-02-17T08:38)
 
 Clean working tree. Let me read the test file to understand the existing test expectations before making the change.
 
+
+<a id="msg-assistant-19"></a>
 
 ### 🤖 Assistant (2026-02-17T08:38)
 
@@ -504,6 +542,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Core/Algorithm/AdaptiveNoteS
 ```
 
 </details>
+
+<a id="msg-assistant-20"></a>
 
 ### 🤖 Assistant (2026-02-17T08:39)
 
@@ -560,10 +600,14 @@ Let me move forward with the implementation. Though I should also update the doc
 </details>
 
 
+<a id="msg-assistant-21"></a>
+
 ### 🤖 Assistant (2026-02-17T08:39)
 
 The change is straightforward — use the last comparison's actual cent difference as the Kazez input instead of per-note stored difficulty. This creates a single smooth convergence chain.
 
+
+<a id="msg-assistant-22"></a>
 
 ### 🤖 Assistant (2026-02-17T08:39)
 
@@ -593,10 +637,14 @@ The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy
 
 </details>
 
+<a id="msg-assistant-23"></a>
+
 ### 🤖 Assistant (2026-02-17T08:40)
 
 Also update the class-level doc comment to reflect the new design.
 
+
+<a id="msg-assistant-24"></a>
 
 ### 🤖 Assistant (2026-02-17T08:40)
 
@@ -626,6 +674,8 @@ The file /Users/michael/Projekte/peach/Peach/Core/Algorithm/AdaptiveNoteStrategy
 
 </details>
 
+<a id="msg-assistant-25"></a>
+
 ### 🤖 Assistant (2026-02-17T08:40)
 
 <details>
@@ -636,10 +686,14 @@ Those diagnostics are just SourceKit noise from not having the full Xcode projec
 </details>
 
 
+<a id="msg-assistant-26"></a>
+
 ### 🤖 Assistant (2026-02-17T08:40)
 
 Those are just SourceKit indexing warnings, not real errors. Now let me run the full test suite as required.
 
+
+<a id="msg-assistant-27"></a>
 
 ### 🤖 Assistant (2026-02-17T08:40)
 
@@ -668,10 +722,14 @@ Test case 'TrainingSessionFeedbackTests/feedbackShowsAfterCorrectAnswer()' passe
 
 </details>
 
+<a id="msg-assistant-28"></a>
+
 ### 🤖 Assistant (2026-02-17T08:43)
 
 **TEST SUCCEEDED** — all tests pass. Now let me commit this change.
 
+
+<a id="msg-assistant-29"></a>
 
 ### 🤖 Assistant (2026-02-17T08:43)
 
@@ -703,6 +761,8 @@ index cb4d1c1..8ddda09 100644
 
 </details>
 
+<a id="msg-assistant-30"></a>
+
 ### 🤖 Assistant (2026-02-17T08:43)
 
 <details>
@@ -728,6 +788,8 @@ f3ead4b Implement weighted effective difficulty for faster convergence
 ```
 
 </details>
+
+<a id="msg-assistant-31"></a>
 
 ### 🤖 Assistant (2026-02-17T08:43)
 
@@ -757,6 +819,8 @@ nothing to commit, working tree clean
 ```
 
 </details>
+
+<a id="msg-assistant-32"></a>
 
 ### 🤖 Assistant (2026-02-17T08:44)
 

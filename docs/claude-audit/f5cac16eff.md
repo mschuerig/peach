@@ -47,6 +47,8 @@ Peach/App/EnvironmentKeys.swift                    |  2 +-
 
 *2026-02-27T20:27 → 2026-02-27T21:18*
 
+<a id="msg-human-1"></a>
+
 ### 🧑 Human (2026-02-27T20:27)
 
 <command-message>bmad-bmm-code-review</command-message>
@@ -54,10 +56,14 @@ Peach/App/EnvironmentKeys.swift                    |  2 +-
 <command-args>20.10</command-args>
 
 
+<a id="msg-assistant-2"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 I'll start by loading the workflow execution framework and the code review workflow configuration.
 
+
+<a id="msg-assistant-3"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -86,6 +92,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/core/tasks/workflow.xml
 ```
 
 </details>
+
+<a id="msg-assistant-4"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -116,6 +124,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/4-implementation/co
 
 </details>
 
+<a id="msg-assistant-5"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -132,10 +142,14 @@ Let me load all these in parallel.
 </details>
 
 
+<a id="msg-assistant-6"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Now let me load the config source and the instructions/checklist files.
 
+
+<a id="msg-assistant-7"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -166,6 +180,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/config.yaml
 
 </details>
 
+<a id="msg-assistant-8"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -193,6 +209,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/4-implementation/co
 ```
 
 </details>
+
+<a id="msg-assistant-9"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -223,6 +241,8 @@ file_path: /Users/michael/Projekte/peach/_bmad/bmm/workflows/4-implementation/co
 
 </details>
 
+<a id="msg-assistant-10"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -249,6 +269,8 @@ The argument "20.10" refers to epic 20, story 10. Now I'm starting step 1 by loa
 </details>
 
 
+<a id="msg-assistant-11"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Good. Workflow loaded and variables resolved. This is an **action-workflow** (no template). Let me begin executing the instructions.
@@ -257,6 +279,8 @@ Good. Workflow loaded and variables resolved. This is an **action-workflow** (no
 
 Let me find and load the story file for 20.10.
 
+
+<a id="msg-assistant-12"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -280,6 +304,8 @@ path: /Users/michael/Projekte/peach/docs
 
 </details>
 
+<a id="msg-assistant-13"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -292,6 +318,8 @@ description: Check git status for uncommitted changes
 
 </details>
 
+
+<a id="msg-assistant-14"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -306,6 +334,8 @@ description: Show modified but unstaged files
 </details>
 
 
+<a id="msg-assistant-15"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -318,6 +348,8 @@ description: Show staged files
 
 </details>
 
+
+<a id="msg-assistant-16"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -345,6 +377,8 @@ c2f79c8 Implement story 20.9: Move MockHapticFeedbackManager to test target
 
 </details>
 
+<a id="msg-assistant-17"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -357,10 +391,14 @@ Git status is clean - the story was already committed in `aeab05f`. Let me read 
 </details>
 
 
+<a id="msg-assistant-18"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Working tree is clean. The story was committed in `aeab05f`. Let me read the story and see the actual files changed in that commit.
 
+
+<a id="msg-assistant-19"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -391,6 +429,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-inj
 
 </details>
 
+<a id="msg-assistant-20"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -416,6 +456,8 @@ docs/implementation-artifacts/sprint-status.yaml
 ```
 
 </details>
+
+<a id="msg-assistant-21"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -453,6 +495,8 @@ Now I'm moving into the input discovery phase. I need to pull in the architectur
 </details>
 
 
+<a id="msg-assistant-22"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Story loaded. **story_key** = `20-10-inject-trainingdatastore-into-settingsscreen`
@@ -461,6 +505,8 @@ Story loaded. **story_key** = `20-10-inject-trainingdatastore-into-settingsscree
 
 Now let me execute the `discover_inputs` protocol and load project context.
 
+
+<a id="msg-assistant-23"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -484,6 +530,8 @@ path: /Users/michael/Projekte/peach
 
 </details>
 
+<a id="msg-assistant-24"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -496,6 +544,8 @@ path: /Users/michael/Projekte/peach/docs/planning-artifacts
 
 </details>
 
+
+<a id="msg-assistant-25"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -528,6 +578,8 @@ path: /Users/michael/Projekte/peach/docs/planning-artifacts
 
 </details>
 
+<a id="msg-assistant-26"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -549,6 +601,8 @@ path: /Users/michael/Projekte/peach/docs/planning-artifacts
 ```
 
 </details>
+
+<a id="msg-assistant-27"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -579,6 +633,8 @@ file_path: /Users/michael/Projekte/peach/docs/project-context.md
 
 </details>
 
+<a id="msg-assistant-28"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -607,6 +663,8 @@ Preview (first 2KB):
 ```
 
 </details>
+
+<a id="msg-assistant-29"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -637,6 +695,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-30"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 <details>
@@ -647,10 +707,14 @@ I have the project context and architecture. Now let me load the epic 20 section
 </details>
 
 
+<a id="msg-assistant-31"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Let me load Epic 20 from the epics file.
 
+
+<a id="msg-assistant-32"></a>
 
 ### 🤖 Assistant (2026-02-27T20:27)
 
@@ -682,10 +746,14 @@ limit: 200
 
 </details>
 
+<a id="msg-assistant-33"></a>
+
 ### 🤖 Assistant (2026-02-27T20:27)
 
 Good. Now I have all the context. Let me proceed to **Step 2: Build Review Attack Plan** and then immediately execute **Step 3: Adversarial Review**. Let me read all the implementation files.
 
+
+<a id="msg-assistant-34"></a>
 
 ### 🤖 Assistant (2026-02-27T20:28)
 
@@ -716,6 +784,8 @@ file_path: /Users/michael/Projekte/peach/Peach/App/EnvironmentKeys.swift
 
 </details>
 
+<a id="msg-assistant-35"></a>
+
 ### 🤖 Assistant (2026-02-27T20:28)
 
 <details>
@@ -744,6 +814,8 @@ file_path: /Users/michael/Projekte/peach/Peach/App/PeachApp.swift
 ```
 
 </details>
+
+<a id="msg-assistant-36"></a>
 
 ### 🤖 Assistant (2026-02-27T20:28)
 
@@ -774,6 +846,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift
 
 </details>
 
+<a id="msg-assistant-37"></a>
+
 ### 🤖 Assistant (2026-02-27T20:28)
 
 <details>
@@ -803,6 +877,8 @@ index 96c6560..cee51b1 100644
 ```
 
 </details>
+
+<a id="msg-assistant-38"></a>
 
 ### 🤖 Assistant (2026-02-27T20:29)
 
@@ -888,10 +964,14 @@ Now I need to verify that the TrainingDataStore actually has a `deleteAll()` met
 </details>
 
 
+<a id="msg-assistant-39"></a>
+
 ### 🤖 Assistant (2026-02-27T20:29)
 
 Now let me verify a few implementation details more closely.
 
+
+<a id="msg-assistant-40"></a>
 
 ### 🤖 Assistant (2026-02-27T20:29)
 
@@ -917,6 +997,8 @@ Peach/Core/Data/TrainingDataStore.swift:59:    func deleteAll() throws {
 
 </details>
 
+<a id="msg-assistant-41"></a>
+
 ### 🤖 Assistant (2026-02-27T20:29)
 
 <details>
@@ -941,6 +1023,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-42"></a>
+
 ### 🤖 Assistant (2026-02-27T20:29)
 
 <details>
@@ -951,10 +1035,14 @@ Confirmed. Let me now look at the TrainingDataStore to verify deleteAll:
 </details>
 
 
+<a id="msg-assistant-43"></a>
+
 ### 🤖 Assistant (2026-02-27T20:29)
 
 Good. `deleteAll()` exists on `TrainingDataStore`. And the project-context.md rule at line 64 indeed says views should **never** reference `TrainingDataStore`. Let me check one more thing — the original SettingsScreen before this commit to see if it was already violating this rule.
 
+
+<a id="msg-assistant-44"></a>
 
 ### 🤖 Assistant (2026-02-27T20:29)
 
@@ -986,6 +1074,8 @@ struct SettingsScreen: View {
 
 </details>
 
+<a id="msg-assistant-45"></a>
+
 ### 🤖 Assistant (2026-02-27T20:29)
 
 <details>
@@ -1009,6 +1099,8 @@ description: Find TrainingDataStore/SwiftData refs in old SettingsScreen
 ```
 
 </details>
+
+<a id="msg-assistant-46"></a>
 
 ### 🤖 Assistant (2026-02-27T20:29)
 
@@ -1040,6 +1132,8 @@ That gives me 6 findings total to present.
 
 </details>
 
+
+<a id="msg-assistant-47"></a>
 
 ### 🤖 Assistant (2026-02-27T20:30)
 
@@ -1109,10 +1203,14 @@ What should I do with these issues?
 Choose [1], [2], or specify which issue to examine:
 
 
+<a id="msg-human-48"></a>
+
 ### 🧑 Human (2026-02-27T20:32)
 
 H1: I very much favor Option B.
 
+
+<a id="msg-assistant-49"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1136,10 +1234,14 @@ So the approach is to move the `deleteAll()` call into `ComparisonSession.resetT
 </details>
 
 
+<a id="msg-assistant-50"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 Good call — that keeps `SettingsScreen` decoupled. Let me explore how `ComparisonSession.resetTrainingData()` works now to understand the implementation path.
 
+
+<a id="msg-assistant-51"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1164,6 +1266,8 @@ Peach/Comparison/ComparisonSession.swift:135:    func resetTrainingData() {
 ```
 
 </details>
+
+<a id="msg-assistant-52"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1190,6 +1294,8 @@ Peach/Core/Profile/PitchMatchingProfile.swift:6:    func resetMatching()
 ```
 
 </details>
+
+<a id="msg-assistant-53"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1222,6 +1328,8 @@ limit: 30
 
 </details>
 
+<a id="msg-assistant-54"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 <details>
@@ -1251,6 +1359,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Data/TrainingDataStore.swift
 
 </details>
 
+<a id="msg-assistant-55"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 <details>
@@ -1277,10 +1387,14 @@ But I'm realizing ComparisonSession doesn't have direct access to dataStore sinc
 </details>
 
 
+<a id="msg-assistant-56"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 Let me see how `ComparisonSession` is initialized and what it has access to.
 
+
+<a id="msg-assistant-57"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1312,6 +1426,8 @@ limit: 50
 
 </details>
 
+<a id="msg-assistant-58"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 <details>
@@ -1339,6 +1455,8 @@ Peach/Core/TrainingSession.swift-3-    var isIdle: Bool { get }
 ```
 
 </details>
+
+<a id="msg-assistant-59"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1372,6 +1490,8 @@ Pe …(truncated)
 
 </details>
 
+<a id="msg-assistant-60"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 <details>
@@ -1382,10 +1502,14 @@ Now I understand the full picture. Let me also check PitchMatchingSession to see
 </details>
 
 
+<a id="msg-assistant-61"></a>
+
 ### 🤖 Assistant (2026-02-27T20:32)
 
 Let me check `PitchMatchingSession` too, since the reset also needs `profile.resetMatching()`.
 
+
+<a id="msg-assistant-62"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1410,6 +1534,8 @@ No matches found
 ```
 
 </details>
+
+<a id="msg-assistant-63"></a>
 
 ### 🤖 Assistant (2026-02-27T20:32)
 
@@ -1441,6 +1567,8 @@ limit: 50
 
 </details>
 
+<a id="msg-assistant-64"></a>
+
 ### 🤖 Assistant (2026-02-27T20:33)
 
 <details>
@@ -1468,10 +1596,14 @@ The simpler path: introduce a protocol like `DataResettable` that exposes `delet
 </details>
 
 
+<a id="msg-assistant-65"></a>
+
 ### 🤖 Assistant (2026-02-27T20:33)
 
 Let me check the `Resettable` protocol and how `profile.reset()` works vs `profile.resetMatching()`.
 
+
+<a id="msg-assistant-66"></a>
 
 ### 🤖 Assistant (2026-02-27T20:33)
 
@@ -1499,6 +1631,8 @@ Peach/Core/Training/Resettable.swift:2:protocol Resettable {
 ```
 
 </details>
+
+<a id="msg-assistant-67"></a>
 
 ### 🤖 Assistant (2026-02-27T20:33)
 
@@ -1533,6 +1667,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-68"></a>
+
 ### 🤖 Assistant (2026-02-27T20:33)
 
 <details>
@@ -1562,6 +1698,8 @@ Peach/Core/Profile/PitchDiscriminationProfile.swift-6-    func statsForNote(_ no
 ```
 
 </details>
+
+<a id="msg-assistant-69"></a>
 
 ### 🤖 Assistant (2026-02-27T20:34)
 
@@ -1596,10 +1734,14 @@ Defining the data deleter closure... I need to check if making `resetTrainingDat
 </details>
 
 
+<a id="msg-assistant-70"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 Let me check who calls `resetTrainingData()` and understand the dependency graph better.
 
+
+<a id="msg-assistant-71"></a>
 
 ### 🤖 Assistant (2026-02-27T20:34)
 
@@ -1628,6 +1770,8 @@ docs/implementation-artifacts/fix-reset-all-data-should-reset-difficulty.md:72:*
 ```
 
 </details>
+
+<a id="msg-assistant-72"></a>
 
 ### 🤖 Assistant (2026-02-27T20:34)
 
@@ -1665,10 +1809,14 @@ Looking at the test impact, making it throwing means updating 7 call sites acros
 </details>
 
 
+<a id="msg-assistant-73"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 Good. `resetTrainingData()` is only called from `SettingsScreen` in production. Let me see the full ComparisonSession init and the test factory.
 
+
+<a id="msg-assistant-74"></a>
 
 ### 🤖 Assistant (2026-02-27T20:34)
 
@@ -1703,6 +1851,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-75"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 <details>
@@ -1731,6 +1881,8 @@ PeachTests/Comparison/ComparisonSessionLoudnessTests.swift:103 …(truncated)
 
 </details>
 
+<a id="msg-assistant-76"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 <details>
@@ -1741,10 +1893,14 @@ Let me read the test factory `makeComparisonSession` and the reset tests to unde
 </details>
 
 
+<a id="msg-assistant-77"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 Let me read the test factory and the reset tests.
 
+
+<a id="msg-assistant-78"></a>
 
 ### 🤖 Assistant (2026-02-27T20:34)
 
@@ -1775,6 +1931,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonTestHel
 
 </details>
 
+<a id="msg-assistant-79"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 <details>
@@ -1804,6 +1962,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSession
 
 </details>
 
+<a id="msg-assistant-80"></a>
+
 ### 🤖 Assistant (2026-02-27T20:34)
 
 <details>
@@ -1832,6 +1992,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTest
 ```
 
 </details>
+
+<a id="msg-assistant-81"></a>
 
 ### 🤖 Assistant (2026-02-27T20:35)
 
@@ -1874,6 +2036,8 @@ Looking back at the conversation, I presented three options and they chose Optio
 </details>
 
 
+<a id="msg-assistant-82"></a>
+
 ### 🤖 Assistant (2026-02-27T20:35)
 
 Good choice. Here's my plan for implementing Option B:
@@ -1897,10 +2061,14 @@ Good choice. Here's my plan for implementing Option B:
 Shall I proceed with fixing all issues (H1 with Option B + M1, M2, L1–L3), or just H1?
 
 
+<a id="msg-human-83"></a>
+
 ### 🧑 Human (2026-02-27T20:45)
 
 Why do dataDelete and ComparisonSession need any relationship? When the user choose to delete all data on the Data Screen, this should only affect TrainingDataStore. Suggestion: Make TrainingDataStore conform to Resettable, add it to the environment as dataStoreResetter, and use that in SettingsScreen. What do you think?
 
+
+<a id="msg-assistant-84"></a>
 
 ### 🤖 Assistant (2026-02-27T20:46)
 
@@ -1936,6 +2104,8 @@ The tradeoff here is losing the throwing error handling from `deleteAll()`, but 
 </details>
 
 
+<a id="msg-assistant-85"></a>
+
 ### 🤖 Assistant (2026-02-27T20:46)
 
 You're right — the data deletion has nothing to do with ComparisonSession. I was overcomplicating it. Your approach is much cleaner:
@@ -1947,10 +2117,14 @@ You're right — the data deletion has nothing to do with ComparisonSession. I w
 **One tradeoff to flag:** `Resettable.reset()` is non-throwing, but `deleteAll()` throws. The `TrainingDataStore.reset()` conformance would need to catch internally and log, which means SettingsScreen loses the error alert (`showResetError`). In practice, a SwiftData batch delete on local SQLite essentially never fails, so this seems acceptable. Worth it?
 
 
+<a id="msg-human-86"></a>
+
 ### 🧑 Human (2026-02-27T20:48)
 
 What would be the repercussions of making reset() throwing?
 
+
+<a id="msg-assistant-87"></a>
 
 ### 🤖 Assistant (2026-02-27T20:48)
 
@@ -1976,6 +2150,8 @@ Peach/Comparison/ComparisonSession.swift:143:        resettables.forEach { $0.re
 ```
 
 </details>
+
+<a id="msg-assistant-88"></a>
 
 ### 🤖 Assistant (2026-02-27T20:48)
 
@@ -2008,6 +2184,8 @@ PeachTests/Core/Profile/Thresho …(truncated)
 
 </details>
 
+<a id="msg-assistant-89"></a>
+
 ### 🤖 Assistant (2026-02-27T20:48)
 
 <details>
@@ -2031,6 +2209,8 @@ The impact isn't huge but it's not trivial either. Making `resetTrainingData()` 
 </details>
 
 
+<a id="msg-assistant-90"></a>
+
 ### 🤖 Assistant (2026-02-27T20:48)
 
 The blast radius is fairly contained:
@@ -2052,10 +2232,14 @@ The blast radius is fairly contained:
 So it's roughly: 2 production conformances get `throws` added, `resetTrainingData()` becomes throwing, and ~12 test call sites get `try`. All mechanical. The question is whether it's worth adding `throws` to conformances that never throw, just so `TrainingDataStore` can propagate its error. I'd say yes — it's honest about the contract, and the test churn is trivial.
 
 
+<a id="msg-human-91"></a>
+
 ### 🧑 Human (2026-02-27T20:49)
 
 go ahead, fix all issues
 
+
+<a id="msg-assistant-92"></a>
 
 ### 🤖 Assistant (2026-02-27T20:50)
 
@@ -2086,6 +2270,8 @@ In plan mode, you should:
 
 </details>
 
+<a id="msg-assistant-93"></a>
+
 ### 🤖 Assistant (2026-02-27T20:50)
 
 <details>
@@ -2102,10 +2288,14 @@ Let me launch explore agents to verify specific details I haven't checked yet.
 </details>
 
 
+<a id="msg-assistant-94"></a>
+
 ### 🤖 Assistant (2026-02-27T20:50)
 
 I already have deep context from the code review. Let me verify a few remaining details before writing the plan.
 
+
+<a id="msg-assistant-95"></a>
 
 ### 🤖 Assistant (2026-02-27T20:50)
 
@@ -2140,6 +2330,8 @@ Perfect! Now I have all the information I need. Let me compile a comprehensive i
 
 </details>
 
+<a id="msg-assistant-96"></a>
+
 ### 🤖 Assistant (2026-02-27T20:51)
 
 <details>
@@ -2171,10 +2363,14 @@ I should also check if project-context.md needs updating now that the TrainingDa
 </details>
 
 
+<a id="msg-assistant-97"></a>
+
 ### 🤖 Assistant (2026-02-27T20:51)
 
 I have all the context I need. Let me write the implementation plan.
 
+
+<a id="msg-assistant-98"></a>
 
 ### 🤖 Assistant (2026-02-27T20:52)
 
@@ -2202,6 +2398,8 @@ File created successfully at: /Users/michael/.claude/plans/elegant-tickling-boot
 
 </details>
 
+<a id="msg-assistant-99"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 <details>
@@ -2214,10 +2412,14 @@ Actually, let me also check if MockResettable exists in the test target.
 </details>
 
 
+<a id="msg-assistant-100"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 Let me verify a couple of details before finalizing.
 
+
+<a id="msg-assistant-101"></a>
 
 ### 🤖 Assistant (2026-02-27T20:52)
 
@@ -2251,6 +2453,8 @@ PeachTests/Mocks/MockResettable.swift:3:final class MockResettable: Resettable {
 
 </details>
 
+<a id="msg-assistant-102"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 <details>
@@ -2280,6 +2484,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Settings/SettingsTests.swift
 
 </details>
 
+<a id="msg-assistant-103"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 <details>
@@ -2297,6 +2503,8 @@ Let me check PitchMatchingProfileTests.swift to see if there are any similar res
 
 </details>
 
+
+<a id="msg-assistant-104"></a>
 
 ### 🤖 Assistant (2026-02-27T20:52)
 
@@ -2325,6 +2533,8 @@ output_mode: content
 ```
 
 </details>
+
+<a id="msg-assistant-105"></a>
 
 ### 🤖 Assistant (2026-02-27T20:52)
 
@@ -2358,6 +2568,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-106"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 <details>
@@ -2371,6 +2583,8 @@ Let me check the enclosing test function to see if it already has throws.
 
 </details>
 
+
+<a id="msg-assistant-107"></a>
 
 ### 🤖 Assistant (2026-02-27T20:52)
 
@@ -2403,6 +2617,8 @@ limit: 25
 
 </details>
 
+<a id="msg-assistant-108"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 <details>
@@ -2427,10 +2643,14 @@ Now I'm ready to finalize the test changes with these protocol distinctions in m
 </details>
 
 
+<a id="msg-assistant-109"></a>
+
 ### 🤖 Assistant (2026-02-27T20:52)
 
 Good, I have all the details. Let me finalize the plan with precise file-level changes.
 
+
+<a id="msg-assistant-110"></a>
 
 ### 🤖 Assistant (2026-02-27T20:53)
 
@@ -2457,6 +2677,8 @@ The file /Users/michael/.claude/plans/elegant-tickling-boot.md has been updated 
 ```
 
 </details>
+
+<a id="msg-assistant-111"></a>
 
 ### 🤖 Assistant (2026-02-27T20:53)
 
@@ -2492,6 +2714,8 @@ You can refer back to it if needed during implementation.
 
 </details>
 
+<a id="msg-assistant-112"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 <details>
@@ -2502,10 +2726,14 @@ Great, the plan is approved. Let me create tasks and start implementing.
 </details>
 
 
+<a id="msg-assistant-113"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 Let me create tasks and start implementing.
 
+
+<a id="msg-assistant-114"></a>
 
 ### 🤖 Assistant (2026-02-27T20:54)
 
@@ -2530,6 +2758,8 @@ Task #1 created successfully: Make Resettable.reset() throwing and update confor
 
 </details>
 
+<a id="msg-assistant-115"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 <details>
@@ -2552,6 +2782,8 @@ Task #2 created successfully: Replace environment key and update wiring
 ```
 
 </details>
+
+<a id="msg-assistant-116"></a>
 
 ### 🤖 Assistant (2026-02-27T20:54)
 
@@ -2576,6 +2808,8 @@ Task #3 created successfully: Update ComparisonSession.resetTrainingData() to th
 
 </details>
 
+<a id="msg-assistant-117"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 <details>
@@ -2598,6 +2832,8 @@ Task #4 created successfully: Update all test files for throwing reset
 ```
 
 </details>
+
+<a id="msg-assistant-118"></a>
 
 ### 🤖 Assistant (2026-02-27T20:54)
 
@@ -2622,6 +2858,8 @@ Task #5 created successfully: Fix documentation issues and update story status
 
 </details>
 
+<a id="msg-assistant-119"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 <details>
@@ -2645,10 +2883,14 @@ Task #6 created successfully: Run full test suite to verify
 
 </details>
 
+<a id="msg-assistant-120"></a>
+
 ### 🤖 Assistant (2026-02-27T20:54)
 
 Now let me start implementing. Tasks 1-3 are production code changes that I'll do together, then task 4 for tests.
 
+
+<a id="msg-assistant-121"></a>
 
 ### 🤖 Assistant (2026-02-27T20:54)
 
@@ -2671,6 +2913,8 @@ Updated task #1 status
 ```
 
 </details>
+
+<a id="msg-assistant-122"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2696,6 +2940,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Training/Resettable.swift
 ```
 
 </details>
+
+<a id="msg-assistant-123"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2726,6 +2972,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Profile/TrendAnalyzer.swift
 
 </details>
 
+<a id="msg-assistant-124"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 <details>
@@ -2754,6 +3002,8 @@ file_path: /Users/michael/Projekte/peach/Peach/Core/Profile/ThresholdTimeline.sw
 ```
 
 </details>
+
+<a id="msg-assistant-125"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2798,12 +3048,16 @@ Now I'm checking which files don't need any modifications — `TrendAnalyzer.swi
 </details>
 
 
+<a id="msg-assistant-126"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 Wait — I just realized something important. In Swift, a **non-throwing** method satisfies a **throwing** protocol requirement. So `TrendAnalyzer.reset()` and `ThresholdTimeline.reset()` don't need to change at all. Direct calls to them won't need `try` either. Only calls through the `Resettable` protocol type need `try`.
 
 This significantly reduces the blast radius. Let me implement.
 
+
+<a id="msg-assistant-127"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2829,10 +3083,14 @@ The file /Users/michael/Projekte/peach/Peach/Core/Training/Resettable.swift has 
 
 </details>
 
+<a id="msg-assistant-128"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 Now add `Resettable` conformance to `TrainingDataStore`.
 
+
+<a id="msg-assistant-129"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2862,6 +3120,8 @@ The file /Users/michael/Projekte/peach/Peach/Core/Data/TrainingDataStore.swift h
 
 </details>
 
+<a id="msg-assistant-130"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 <details>
@@ -2883,6 +3143,8 @@ Updated task #1 status
 ```
 
 </details>
+
+<a id="msg-assistant-131"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2906,6 +3168,8 @@ Updated task #2 status
 
 </details>
 
+<a id="msg-assistant-132"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 <details>
@@ -2916,10 +3180,14 @@ Those SourceKit diagnostics are just standard noise from the IDE not being able 
 </details>
 
 
+<a id="msg-assistant-133"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 Those are SourceKit cross-file resolution artifacts, not real errors. Let me continue with the environment key and wiring changes.
 
+
+<a id="msg-assistant-134"></a>
 
 ### 🤖 Assistant (2026-02-27T20:55)
 
@@ -2945,6 +3213,8 @@ The file /Users/michael/Projekte/peach/Peach/App/EnvironmentKeys.swift has been 
 
 </details>
 
+<a id="msg-assistant-135"></a>
+
 ### 🤖 Assistant (2026-02-27T20:55)
 
 <details>
@@ -2969,10 +3239,14 @@ The file /Users/michael/Projekte/peach/Peach/App/PeachApp.swift has been updated
 
 </details>
 
+<a id="msg-assistant-136"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 Now update SettingsScreen.
 
+
+<a id="msg-assistant-137"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -2997,6 +3271,8 @@ The file /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift has b
 ```
 
 </details>
+
+<a id="msg-assistant-138"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3026,6 +3302,8 @@ The file /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift has b
 
 </details>
 
+<a id="msg-assistant-139"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3047,6 +3325,8 @@ Updated task #2 status
 ```
 
 </details>
+
+<a id="msg-assistant-140"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3070,10 +3350,14 @@ Updated task #3 status
 
 </details>
 
+<a id="msg-assistant-141"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 Now update `ComparisonSession.resetTrainingData()`.
 
+
+<a id="msg-assistant-142"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3109,6 +3393,8 @@ The file /Users/michael/Projekte/peach/Peach/Comparison/ComparisonSession.swift 
 
 </details>
 
+<a id="msg-assistant-143"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3130,6 +3416,8 @@ Updated task #3 status
 ```
 
 </details>
+
+<a id="msg-assistant-144"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3153,10 +3441,14 @@ Updated task #4 status
 
 </details>
 
+<a id="msg-assistant-145"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 Now update the test files. Let me read and fix them.
 
+
+<a id="msg-assistant-146"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3187,6 +3479,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Mocks/MockResettable.swift
 
 </details>
 
+<a id="msg-assistant-147"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3199,10 +3493,14 @@ Now let me update `ResettableTests.swift`. The calls through `Resettable` typed 
 </details>
 
 
+<a id="msg-assistant-148"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 `MockResettable` needs no change — non-throwing `reset()` satisfies the throwing protocol requirement. Now update `ResettableTests.swift` — only calls through `Resettable`-typed variables need `try`.
 
+
+<a id="msg-assistant-149"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3233,6 +3531,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTest
 
 </details>
 
+<a id="msg-assistant-150"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3260,6 +3560,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTests.
 ```
 
 </details>
+
+<a id="msg-assistant-151"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3289,6 +3591,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTests.
 
 </details>
 
+<a id="msg-assistant-152"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3316,6 +3620,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTests.
 ```
 
 </details>
+
+<a id="msg-assistant-153"></a>
 
 ### 🤖 Assistant (2026-02-27T20:56)
 
@@ -3345,6 +3651,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTests.
 
 </details>
 
+<a id="msg-assistant-154"></a>
+
 ### 🤖 Assistant (2026-02-27T20:56)
 
 <details>
@@ -3373,10 +3681,14 @@ The file /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTests.
 
 </details>
 
+<a id="msg-assistant-155"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 Now update `ComparisonSessionResetTests.swift` — 6 calls to `resetTrainingData()` need `try`.
 
+
+<a id="msg-assistant-156"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3402,6 +3714,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 
 </details>
 
+<a id="msg-assistant-157"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 <details>
@@ -3425,6 +3739,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 ```
 
 </details>
+
+<a id="msg-assistant-158"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3450,6 +3766,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 
 </details>
 
+<a id="msg-assistant-159"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 <details>
@@ -3473,6 +3791,8 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 ```
 
 </details>
+
+<a id="msg-assistant-160"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3498,10 +3818,14 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 
 </details>
 
+<a id="msg-assistant-161"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 Now add `try` to all 6 `session.resetTrainingData()` calls.
 
+
+<a id="msg-assistant-162"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3527,10 +3851,14 @@ The file /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSessionRe
 
 </details>
 
+<a id="msg-assistant-163"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 `SettingsTests.swift` and `ThresholdTimelineTests.swift` — calls are on concrete types (non-throwing), so no changes needed. Let me verify by reading the final state of the test files I changed.
 
+
+<a id="msg-assistant-164"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3561,6 +3889,8 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Core/Training/ResettableTest
 
 </details>
 
+<a id="msg-assistant-165"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 <details>
@@ -3590,10 +3920,14 @@ file_path: /Users/michael/Projekte/peach/PeachTests/Comparison/ComparisonSession
 
 </details>
 
+<a id="msg-assistant-166"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 All tests look correct. Let me verify the production files are clean too.
 
+
+<a id="msg-assistant-167"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3617,6 +3951,8 @@ Updated task #4 status
 
 </details>
 
+<a id="msg-assistant-168"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 <details>
@@ -3639,10 +3975,14 @@ Updated task #5 status
 
 </details>
 
+<a id="msg-assistant-169"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 Now fix the documentation issues in the story file.
 
+
+<a id="msg-assistant-170"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3673,6 +4013,8 @@ file_path: /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-inj
 
 </details>
 
+<a id="msg-assistant-171"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 <details>
@@ -3687,10 +4029,14 @@ And then I need to update the story with the code review fixes:- Status: review 
 </details>
 
 
+<a id="msg-assistant-172"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 Let me fix all the documentation issues.
 
+
+<a id="msg-assistant-173"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3716,10 +4062,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-174"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 **M1:** Fix AC #6 text.
 
+
+<a id="msg-assistant-175"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3745,10 +4095,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-176"></a>
+
 ### 🤖 Assistant (2026-02-27T20:57)
 
 **M2:** Fix Git Intelligence "20.9" → "20.10".
 
+
+<a id="msg-assistant-177"></a>
 
 ### 🤖 Assistant (2026-02-27T20:57)
 
@@ -3774,10 +4128,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-178"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 **L3:** Update "Existing Code to Reference" to reflect post-implementation state.
 
+
+<a id="msg-assistant-179"></a>
 
 ### 🤖 Assistant (2026-02-27T20:58)
 
@@ -3807,10 +4165,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-180"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 Now update the File List and Change Log to reflect the code review fixes.
 
+
+<a id="msg-assistant-181"></a>
 
 ### 🤖 Assistant (2026-02-27T20:58)
 
@@ -3842,6 +4204,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-182"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 <details>
@@ -3866,10 +4230,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-183"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 Now update the sprint status.
 
+
+<a id="msg-assistant-184"></a>
 
 ### 🤖 Assistant (2026-02-27T20:58)
 
@@ -3902,6 +4270,8 @@ limit: 10
 
 </details>
 
+<a id="msg-assistant-185"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 <details>
@@ -3926,6 +4296,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/sprint-stat
 
 </details>
 
+<a id="msg-assistant-186"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 <details>
@@ -3947,6 +4319,8 @@ Updated task #5 status
 ```
 
 </details>
+
+<a id="msg-assistant-187"></a>
 
 ### 🤖 Assistant (2026-02-27T20:58)
 
@@ -3970,10 +4344,14 @@ Updated task #6 status
 
 </details>
 
+<a id="msg-assistant-188"></a>
+
 ### 🤖 Assistant (2026-02-27T20:58)
 
 Now let me run the full test suite.
 
+
+<a id="msg-assistant-189"></a>
 
 ### 🤖 Assistant (2026-02-27T20:58)
 
@@ -4001,6 +4379,8 @@ Test case 'Compariso …(truncated)
 ```
 
 </details>
+
+<a id="msg-assistant-190"></a>
 
 ### 🤖 Assistant (2026-02-27T21:00)
 
@@ -4032,6 +4412,8 @@ Test case 'VerticalPitchSliderTests/ …(truncated)
 
 </details>
 
+<a id="msg-assistant-191"></a>
+
 ### 🤖 Assistant (2026-02-27T21:01)
 
 <details>
@@ -4054,10 +4436,14 @@ description: Extract test summary line
 
 </details>
 
+<a id="msg-assistant-192"></a>
+
 ### 🤖 Assistant (2026-02-27T21:01)
 
 All tests pass. Let me count the tests to confirm.
 
+
+<a id="msg-assistant-193"></a>
 
 ### 🤖 Assistant (2026-02-27T21:01)
 
@@ -4081,10 +4467,14 @@ description: Count passed tests
 
 </details>
 
+<a id="msg-assistant-194"></a>
+
 ### 🤖 Assistant (2026-02-27T21:01)
 
 All 598 tests pass. Let me also do a quick verification that `SettingsScreen` has no reference to `TrainingDataStore`.
 
+
+<a id="msg-assistant-195"></a>
 
 ### 🤖 Assistant (2026-02-27T21:01)
 
@@ -4109,6 +4499,8 @@ No matches found
 
 </details>
 
+<a id="msg-assistant-196"></a>
+
 ### 🤖 Assistant (2026-02-27T21:01)
 
 <details>
@@ -4131,6 +4523,8 @@ Updated task #6 status
 
 </details>
 
+<a id="msg-assistant-197"></a>
+
 ### 🤖 Assistant (2026-02-27T21:01)
 
 **TEST SUCCEEDED** — 598 tests pass, zero regressions. `SettingsScreen` has zero references to `TrainingDataStore`, `SwiftData`, or `ModelContext`.
@@ -4151,10 +4545,14 @@ Updated task #6 status
 **Key architectural win:** Non-throwing `reset()` on `TrendAnalyzer`/`ThresholdTimeline` still satisfies the throwing protocol — no changes needed to those files or their direct call sites. Only calls through the `Resettable` protocol type require `try`.
 
 
+<a id="msg-human-198"></a>
+
 ### 🧑 Human (2026-02-27T21:09)
 
 I still don't like the implementation of SettingsScreen.resetAllTrainingData(). Effectively, it means that the screen has to know what it means to reset all data. But it should not know anything about it! There's currently only place in the app that ought to know what is involved and that is PeachApp. PeachApp should have a method that does the resetting and pass it in a closure (dataStoreResetter) to SettingsScreen.
 
+
+<a id="msg-assistant-199"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4201,10 +4599,14 @@ Let me verify this is correct and then implement the changes: I'll update the en
 </details>
 
 
+<a id="msg-assistant-200"></a>
+
 ### 🤖 Assistant (2026-02-27T21:11)
 
 You're absolutely right. SettingsScreen shouldn't orchestrate the reset at all — it should just call a closure that PeachApp provides. And then SettingsScreen won't even need `@Environment(\.comparisonSession)` or `@Environment(\.perceptualProfile)` for the reset.
 
+
+<a id="msg-assistant-201"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4232,6 +4634,8 @@ output_mode: content
 
 </details>
 
+<a id="msg-assistant-202"></a>
+
 ### 🤖 Assistant (2026-02-27T21:11)
 
 <details>
@@ -4241,6 +4645,8 @@ Wait, line 160 shows `comparisonSession.resetTrainingData()` but what about `pro
 
 </details>
 
+
+<a id="msg-assistant-203"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4273,10 +4679,14 @@ limit: 20
 
 </details>
 
+<a id="msg-assistant-204"></a>
+
 ### 🤖 Assistant (2026-02-27T21:11)
 
 Good — `comparisonSession` and `profile` are used **only** in `resetAllTrainingData()`. Moving the logic to PeachApp means SettingsScreen drops both dependencies.
 
+
+<a id="msg-assistant-205"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4301,6 +4711,8 @@ The file /Users/michael/Projekte/peach/Peach/App/EnvironmentKeys.swift has been 
 ```
 
 </details>
+
+<a id="msg-assistant-206"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4327,10 +4739,14 @@ The file /Users/michael/Projekte/peach/Peach/App/PeachApp.swift has been updated
 
 </details>
 
+<a id="msg-assistant-207"></a>
+
 ### 🤖 Assistant (2026-02-27T21:11)
 
 Now simplify SettingsScreen — remove the two environment dependencies and simplify the reset method.
 
+
+<a id="msg-assistant-208"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4357,6 +4773,8 @@ The file /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift has b
 ```
 
 </details>
+
+<a id="msg-assistant-209"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4389,10 +4807,14 @@ The file /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift has b
 
 </details>
 
+<a id="msg-assistant-210"></a>
+
 ### 🤖 Assistant (2026-02-27T21:11)
 
 Now run the tests to verify.
 
+
+<a id="msg-assistant-211"></a>
 
 ### 🤖 Assistant (2026-02-27T21:11)
 
@@ -4417,6 +4839,8 @@ timeout: 300000
 
 </details>
 
+<a id="msg-assistant-212"></a>
+
 ### 🤖 Assistant (2026-02-27T21:16)
 
 <details>
@@ -4427,10 +4851,14 @@ Wait, there's a diagnostics issue: "Cannot find 'comparisonSession' in scope" an
 </details>
 
 
+<a id="msg-assistant-213"></a>
+
 ### 🤖 Assistant (2026-02-27T21:16)
 
 All 598 tests pass. Let me verify the final state of SettingsScreen is clean.
 
+
+<a id="msg-assistant-214"></a>
 
 ### 🤖 Assistant (2026-02-27T21:16)
 
@@ -4461,12 +4889,16 @@ file_path: /Users/michael/Projekte/peach/Peach/Settings/SettingsScreen.swift
 
 </details>
 
+<a id="msg-assistant-215"></a>
+
 ### 🤖 Assistant (2026-02-27T21:16)
 
 Clean. SettingsScreen now has only 2 `@Environment` dependencies (`dataStoreResetter` and `soundFontLibrary`), no knowledge of `ComparisonSession`, `PerceptualProfile`, or `TrainingDataStore`. The reset is a single closure call.
 
 Let me update the story file to reflect this final design.
 
+
+<a id="msg-assistant-216"></a>
 
 ### 🤖 Assistant (2026-02-27T21:16)
 
@@ -4495,6 +4927,8 @@ limit: 25
 
 </details>
 
+<a id="msg-assistant-217"></a>
+
 ### 🤖 Assistant (2026-02-27T21:17)
 
 <details>
@@ -4520,6 +4954,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-218"></a>
+
 ### 🤖 Assistant (2026-02-27T21:17)
 
 <details>
@@ -4544,10 +4980,14 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-219"></a>
+
 ### 🤖 Assistant (2026-02-27T21:17)
 
 Now update the "Existing Code to Reference" to match the final state.
 
+
+<a id="msg-assistant-220"></a>
 
 ### 🤖 Assistant (2026-02-27T21:17)
 
@@ -4577,6 +5017,8 @@ The file /Users/michael/Projekte/peach/docs/implementation-artifacts/20-10-injec
 
 </details>
 
+<a id="msg-assistant-221"></a>
+
 ### 🤖 Assistant (2026-02-27T21:17)
 
 Done. Here's what changed with this refinement:
@@ -4588,10 +5030,14 @@ Done. Here's what changed with this refinement:
 All 598 tests pass. `SettingsScreen` has zero knowledge of `ComparisonSession`, `PerceptualProfile`, `TrainingDataStore`, `SwiftData`, or `ModelContext`.
 
 
+<a id="msg-human-222"></a>
+
 ### 🧑 Human (2026-02-27T21:18)
 
 commit this
 
+
+<a id="msg-assistant-223"></a>
 
 ### 🤖 Assistant (2026-02-27T21:18)
 
@@ -4623,6 +5069,8 @@ Changes not staged for commit:
 
 </details>
 
+<a id="msg-assistant-224"></a>
+
 ### 🤖 Assistant (2026-02-27T21:18)
 
 <details>
@@ -4653,6 +5101,8 @@ index cee51b1..dbd7b09 100644
 
 </details>
 
+<a id="msg-assistant-225"></a>
+
 ### 🤖 Assistant (2026-02-27T21:18)
 
 <details>
@@ -4677,6 +5127,8 @@ c2f79c8 Implement story 20.9: Move MockHapticFeedbackManager to test target
 
 </details>
 
+<a id="msg-assistant-226"></a>
+
 ### 🤖 Assistant (2026-02-27T21:18)
 
 <details>
@@ -4689,6 +5141,8 @@ description: Stage all changed files
 
 </details>
 
+
+<a id="msg-assistant-227"></a>
 
 ### 🤖 Assistant (2026-02-27T21:18)
 
@@ -4713,6 +5167,8 @@ description: Create commit with review fixes
 ```
 
 </details>
+
+<a id="msg-assistant-228"></a>
 
 ### 🤖 Assistant (2026-02-27T21:18)
 
@@ -4739,6 +5195,8 @@ nothing to commit, working tree clean
 ```
 
 </details>
+
+<a id="msg-assistant-229"></a>
 
 ### 🤖 Assistant (2026-02-27T21:18)
 
