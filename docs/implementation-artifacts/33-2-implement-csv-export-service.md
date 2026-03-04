@@ -1,6 +1,6 @@
 # Story 33.2: Implement CSV Export Service
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -190,8 +190,25 @@ Claude Opus 4.6
 ### File List
 
 - `Peach/Core/Data/TrainingDataExporter.swift` (new) — Export service: fetch + merge + sort + format
-- `PeachTests/Core/Data/TrainingDataExporterTests.swift` (new) — 7 tests covering all ACs
+- `PeachTests/Core/Data/TrainingDataExporterTests.swift` (new) — 8 tests covering all ACs
+
+## Senior Developer Review (AI)
+
+**Reviewer:** Claude Opus 4.6 | **Date:** 2026-03-04 | **Outcome:** Approved with fixes applied
+
+**Findings (2 MEDIUM, 3 LOW):**
+
+| # | Severity | Finding | Resolution |
+|---|----------|---------|------------|
+| M1 | MEDIUM | Missing test for same-timestamp deterministic ordering (listed in dev notes as key scenario) | **Fixed** — added `sameTimestampStableOrder` test |
+| M2 | MEDIUM | Tests only verified row prefixes, not full CSV content end-to-end | **Fixed** — `exportMixedRecords` now verifies key fields by index |
+| L1 | LOW | No explicit test for "no trailing newline after last row" | **Fixed** — added `#expect(!csv.hasSuffix("\n"))` assertion |
+| L2 | LOW | Force-unwrapping in test helpers (`TimeZone!`, `calendar.date!`) | Deferred — pre-existing pattern from story 33.1 |
+| L3 | LOW | Imperative `for` loops where `map` would be more idiomatic | Deferred — style preference, current code is readable |
+
+**All ACs verified. All tasks genuinely complete. 858 tests pass (0 regressions).**
 
 ## Change Log
 
 - 2026-03-04: Implemented TrainingDataExporter service and full test suite (Story 33.2)
+- 2026-03-04: Code review — added same-timestamp stable sort test, full row content verification, no-trailing-newline assertion (Review 33.2)
