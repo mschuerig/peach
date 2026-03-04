@@ -284,3 +284,10 @@ development_status:
   34-2-implement-merge-logic-with-duplicate-detection: done
   34-3-add-import-ui-with-replace-merge-choice: done
   epic-34-retrospective: optional
+
+  # Epic 35: Welcome Home — Start Screen Redesign
+  epic-35: in-progress
+  35-1-rename-training-buttons-with-user-friendly-labels: ready-for-dev
+  35-2-add-sf-symbol-icons-to-training-buttons: backlog
+  35-3-visual-design-polish: backlog
+  epic-35-retrospective: optional
