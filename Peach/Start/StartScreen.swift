@@ -13,23 +13,27 @@ struct StartScreen: View {
 
     // MARK: - Layout Parameters (extracted for testability)
 
-    static func vstackSpacing(isCompact: Bool) -> CGFloat {
-        isCompact ? 8 : 16
+    static func sectionSpacing(isCompact: Bool) -> CGFloat {
+        isCompact ? 16 : 28
     }
+
+    static func cardSpacing(isCompact: Bool) -> CGFloat {
+        isCompact ? 6 : 10
+    }
+
+    static let cardCornerRadius: CGFloat = 12
 
     var body: some View {
         Group {
             if isCompactHeight {
-                HStack(spacing: 24) {
+                HStack(spacing: Self.sectionSpacing(isCompact: true)) {
                     singleNotesSection
-                    Divider()
                     intervalsSection
                 }
             } else {
-                VStack(spacing: Self.vstackSpacing(isCompact: false)) {
+                VStack(spacing: Self.sectionSpacing(isCompact: false)) {
                     Spacer()
                     singleNotesSection
-                    Divider()
                     intervalsSection
                     Spacer()
                 }
@@ -78,45 +82,56 @@ struct StartScreen: View {
     // MARK: - Sections
 
     private var singleNotesSection: some View {
-        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
+        VStack(spacing: Self.cardSpacing(isCompact: isCompactHeight)) {
             Text("Single Notes")
-                .font(.headline)
+                .font(.title3)
+                .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
-                Label("Hear & Compare", systemImage: "ear")
-                    .frame(maxWidth: .infinity)
+                trainingCard("Hear & Compare", systemImage: "ear")
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(.plain)
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
-                Label("Tune & Match", systemImage: "arrow.up.and.down")
-                    .frame(maxWidth: .infinity)
+                trainingCard("Tune & Match", systemImage: "arrow.up.and.down")
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.plain)
         }
     }
 
     private var intervalsSection: some View {
-        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
+        VStack(spacing: Self.cardSpacing(isCompact: isCompactHeight)) {
             Text("Intervals")
-                .font(.headline)
+                .font(.title3)
+                .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: intervalSelection.intervals)) {
-                Label("Hear & Compare", systemImage: "ear")
-                    .frame(maxWidth: .infinity)
+                trainingCard("Hear & Compare", systemImage: "ear")
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.plain)
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: intervalSelection.intervals)) {
-                Label("Tune & Match", systemImage: "arrow.up.and.down")
-                    .frame(maxWidth: .infinity)
+                trainingCard("Tune & Match", systemImage: "arrow.up.and.down")
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(.plain)
         }
+    }
+
+    // MARK: - Card View
+
+    private func trainingCard(
+        _ title: LocalizedStringKey,
+        systemImage: String
+    ) -> some View {
+        Label(title, systemImage: systemImage)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .foregroundStyle(.primary)
+            .background(
+                RoundedRectangle(cornerRadius: Self.cardCornerRadius)
+                    .fill(.regularMaterial)
+            )
     }
 }
 

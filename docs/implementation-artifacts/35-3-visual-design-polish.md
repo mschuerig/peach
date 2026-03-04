@@ -1,6 +1,6 @@
 # Story 35.3: Visual Design Polish
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,31 +20,31 @@ so that opening the app is an inviting experience.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Design card-style button treatment (AC: #1)
-  - [ ] 1.1 Discuss visual direction with user: card-style buttons with rounded corners, subtle shadows/fills, or material-based backgrounds. Confirm approach before coding.
-  - [ ] 1.2 Implement the chosen button style replacing `.borderedProminent`/`.bordered` + `.controlSize(.large)` with a custom card treatment that visually distinguishes the four training modes.
-  - [ ] 1.3 Ensure "Hear & Compare (Single Notes)" retains visual prominence as the primary/recommended training mode.
+- [x] Task 1: Design card-style button treatment (AC: #1)
+  - [x] 1.1 Discuss visual direction with user: card-style buttons with rounded corners, subtle shadows/fills, or material-based backgrounds. Confirm approach before coding.
+  - [x] 1.2 Implement the chosen button style replacing `.borderedProminent`/`.bordered` + `.controlSize(.large)` with a custom card treatment that visually distinguishes the four training modes.
+  - [x] 1.3 Per user decision: all four buttons use equal visual weight (no primary distinction).
 
-- [ ] Task 2: Improve typography and spacing (AC: #1, #2)
-  - [ ] 2.1 Review section headers ("Single Notes", "Intervals") — consider `.title3` or `.title2` instead of `.headline`, or add a subtitle/description.
-  - [ ] 2.2 Adjust spacing between sections and within sections for a more spacious, breathable layout.
-  - [ ] 2.3 Extract any new layout constants to `static` methods for testability (matching existing `vstackSpacing` pattern).
+- [x] Task 2: Improve typography and spacing (AC: #1, #2)
+  - [x] 2.1 Review section headers ("Single Notes", "Intervals") — consider `.title3` or `.title2` instead of `.headline`, or add a subtitle/description.
+  - [x] 2.2 Adjust spacing between sections and within sections for a more spacious, breathable layout.
+  - [x] 2.3 Extract any new layout constants to `static` methods for testability (matching existing `vstackSpacing` pattern).
 
-- [ ] Task 3: Verify adaptive layout on all form factors (AC: #2)
-  - [ ] 3.1 Verify portrait iPhone, landscape iPhone, portrait iPad, landscape iPad all render gracefully.
-  - [ ] 3.2 Ensure thumb-friendly button targets are preserved (minimum 44pt touch targets).
-  - [ ] 3.3 Verify dynamic type scaling at all accessibility sizes.
+- [x] Task 3: Verify adaptive layout on all form factors (AC: #2)
+  - [x] 3.1 Verify portrait iPhone, landscape iPhone, portrait iPad, landscape iPad all render gracefully.
+  - [x] 3.2 Ensure thumb-friendly button targets are preserved (minimum 44pt touch targets).
+  - [x] 3.3 Verify dynamic type scaling at all accessibility sizes.
 
-- [ ] Task 4: Verify all navigation paths remain functional (AC: #3)
-  - [ ] 4.1 Confirm toolbar items (Info, Profile, Settings) remain accessible and discoverable after redesign.
-  - [ ] 4.2 Confirm all four training NavigationLinks still navigate correctly.
+- [x] Task 4: Verify all navigation paths remain functional (AC: #3)
+  - [x] 4.1 Confirm toolbar items (Info, Profile, Settings) remain accessible and discoverable after redesign.
+  - [x] 4.2 Confirm all four training NavigationLinks still navigate correctly.
 
-- [ ] Task 5: Update layout tests if constants change (AC: #1, #2)
-  - [ ] 5.1 Update `StartScreenLayoutTests` if spacing constants change or new static layout methods are added.
-  - [ ] 5.2 Run `bin/build.sh` and `bin/test.sh` to verify clean build and all tests pass.
+- [x] Task 5: Update layout tests if constants change (AC: #1, #2)
+  - [x] 5.1 Update `StartScreenLayoutTests` if spacing constants change or new static layout methods are added.
+  - [x] 5.2 Run `bin/build.sh` and `bin/test.sh` to verify clean build and all tests pass.
 
-- [ ] Task 6: Add German localization for any new strings (AC: #1)
-  - [ ] 6.1 If any new descriptive text is added (e.g., subtitles), add German translations via `bin/add-localization.py`.
+- [x] Task 6: Add German localization for any new strings (AC: #1)
+  - [x] 6.1 No new strings added — section headers and button labels unchanged from Stories 35.1/35.2.
 
 ## Dev Notes
 
@@ -173,10 +173,30 @@ Codebase is clean and ready for the next change.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no debugging needed.
+
 ### Completion Notes List
 
+- User chose **Option B: Material-based cards** for button treatment and approved **removing the Divider** between sections
+- Replaced `.borderedProminent`/`.bordered` + `.controlSize(.large)` with custom card treatment using `RoundedRectangle` backgrounds
+- All four buttons use `.regularMaterial` fill for equal visual weight — no primary distinction per user decision
+- Section headers upgraded from `.headline` to `.title3` with `.secondary` foreground for subtle hierarchy
+- Replaced single `vstackSpacing` with two distinct spacing methods: `sectionSpacing` (28/16pt) and `cardSpacing` (10/6pt)
+- Added `cardCornerRadius` static constant (12pt) for testability
+- Divider removed between sections; spacing provides visual separation
+- `trainingCard` helper method (15 lines) kept inline — no subview extraction needed
+- Layout tests fully rewritten: 7 tests covering `sectionSpacing`, `cardSpacing`, and `cardCornerRadius`
+- All 931 tests pass, build clean, no regressions
+
+### Change Log
+
+- 2026-03-04: Implemented visual design polish — material card buttons, improved typography and spacing, removed section divider
+
 ### File List
+
+- `Peach/Start/StartScreen.swift` — Modified: card-style button treatment, updated typography, spacing, removed Divider
+- `PeachTests/Start/StartScreenLayoutTests.swift` — Modified: replaced `vstackSpacing` tests with `sectionSpacing`, `cardSpacing`, `cardCornerRadius` tests
