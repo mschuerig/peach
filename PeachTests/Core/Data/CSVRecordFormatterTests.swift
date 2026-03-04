@@ -32,7 +32,7 @@ struct CSVRecordFormatterTests {
         let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
 
         #expect(fields[0] == "comparison")
-        #expect(fields[1] == "2026-03-03T14:30:00Z")
+        #expect(fields[1] == "2026-03-03T14:30:00.000Z")
         #expect(fields[2] == "60")
         #expect(fields[3] == "C4")
         #expect(fields[4] == "64")
@@ -63,7 +63,7 @@ struct CSVRecordFormatterTests {
         let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
 
         #expect(fields[0] == "pitchMatching")
-        #expect(fields[1] == "2026-03-03T14:30:00Z")
+        #expect(fields[1] == "2026-03-03T14:30:00.000Z")
         #expect(fields[2] == "60")
         #expect(fields[3] == "C4")
         #expect(fields[4] == "67")
@@ -77,6 +77,22 @@ struct CSVRecordFormatterTests {
     }
 
     // MARK: - Timestamp Formatting
+
+    @Test("timestamp includes fractional seconds for round-trip fidelity")
+    func timestampIncludesFractionalSeconds() async {
+        let date = Date(timeIntervalSinceReferenceDate: 794_394_000.456)
+        let record = ComparisonRecord(
+            referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
+            interval: 0, tuningSystem: "equalTemperament", timestamp: date
+        )
+
+        let row = CSVRecordFormatter.format(record)
+        let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        let parsed = try? Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(fields[1])
+
+        #expect(parsed != nil)
+        #expect(abs(parsed!.timeIntervalSince(date)) < 0.001)
+    }
 
     @Test("timestamp formatting is ISO 8601 UTC")
     func timestampFormatIsISO8601() async {
@@ -93,7 +109,7 @@ struct CSVRecordFormatterTests {
         let row = CSVRecordFormatter.format(record)
         let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(fields[1] == "2026-03-03T14:30:00Z")
+        #expect(fields[1] == "2026-03-03T14:30:00.000Z")
     }
 
     // MARK: - Note Name Formatting
