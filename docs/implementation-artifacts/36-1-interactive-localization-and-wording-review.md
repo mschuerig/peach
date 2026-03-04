@@ -1,6 +1,6 @@
 # Story 36.1: Interactive Localization and Wording Review
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -226,3 +226,4 @@ None.
 - `Peach/Resources/Localizable.xcstrings` — added 12 German translations, removed 22 stale keys, migrated 4 renamed keys, sorted alphabetically
 - `Peach/Start/StartScreen.swift` — changed "Tune & Match" icon from `arrow.up.and.down` to `target`
 - `Peach/Settings/SettingsScreen.swift` — renamed Lower→Lowest Note, Upper→Highest Note, Sound Source→Sound, Reference Pitch→Concert Pitch
+- `docs/implementation-artifacts/sprint-status.yaml` — updated story status
