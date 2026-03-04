@@ -1,6 +1,6 @@
 # Story 35.1: Rename Training Buttons with User-Friendly Labels
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -120,12 +120,15 @@ None — clean implementation with no issues.
 
 ### File List
 - `Peach/Start/StartScreen.swift` (modified — layout rework, toolbar, sections, labels)
+- `Peach/Start/ProfilePreviewView.swift` (deleted — orphaned after layout rework)
 - `Peach/Comparison/ComparisonScreen.swift` (modified — nav title updated)
 - `Peach/PitchMatching/PitchMatchingScreen.swift` (modified — nav title updated)
-- `Peach/Resources/Localizable.xcstrings` (modified — 3 new keys added, 6 orphaned keys removed)
+- `Peach/Resources/Localizable.xcstrings` (modified — 3 new keys added, 8 orphaned keys removed, keys sorted alphabetically)
 - `PeachTests/Start/StartScreenLayoutTests.swift` (modified — updated spacing assertions)
+- `PeachTests/Start/ProfilePreviewViewTests.swift` (deleted — orphaned after layout rework)
 - `docs/implementation-artifacts/35-1-rename-training-buttons-with-user-friendly-labels.md` (modified — task tracking)
 - `docs/implementation-artifacts/sprint-status.yaml` (modified — status updated)
 
 ### Change Log
 - 2026-03-04: Renamed training buttons, added section headers, reworked StartScreen layout with toolbar navigation and landscape side-by-side sections
+- 2026-03-04: [Review] Deleted orphaned ProfilePreviewView + tests, removed 2 orphaned localization keys, sorted xcstrings keys alphabetically

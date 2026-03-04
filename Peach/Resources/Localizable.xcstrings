@@ -92,6 +92,26 @@
         }
       }
     },
+    "%lld duplicates skipped": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Duplikate übersprungen"
+          }
+        }
+      }
+    },
+    "%lld errors": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Fehler"
+          }
+        }
+      }
+    },
     "%lld of %lld correct": {
       "localizations": {
         "de": {
@@ -142,6 +162,26 @@
         }
       }
     },
+    "%lld records imported": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Datensätze importiert"
+          }
+        }
+      }
+    },
+    "%lld records imported, %lld duplicates skipped, %lld errors.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Datensätze importiert, %lld Duplikate übersprungen, %lld Fehler."
+          }
+        }
+      }
+    },
     "Acknowledgments": {
       "localizations": {
         "de": {
@@ -187,12 +227,52 @@
         }
       }
     },
+    "Could not access the selected file.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf die ausgewählte Datei konnte nicht zugegriffen werden."
+          }
+        }
+      }
+    },
     "Could not delete training records. Please try again.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Trainingsdaten konnten nicht gelöscht werden. Bitte versuche es erneut."
+          }
+        }
+      }
+    },
+    "Could not export training data. Please try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trainingsdaten konnten nicht exportiert werden. Bitte versuche es erneut."
+          }
+        }
+      }
+    },
+    "Could not import the training data. Please try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Trainingsdaten konnten nicht importiert werden. Bitte versuche es erneut."
+          }
+        }
+      }
+    },
+    "Could not read the selected file.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die ausgewählte Datei konnte nicht gelesen werden."
           }
         }
       }
@@ -249,6 +329,16 @@
         }
       }
     },
+    "Difficulty": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schwierigkeit"
+          }
+        }
+      }
+    },
     "Done": {
       "localizations": {
         "de": {
@@ -279,6 +369,36 @@
         }
       }
     },
+    "Equal Temperament": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gleichstufige Stimmung"
+          }
+        }
+      }
+    },
+    "Export Failed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export fehlgeschlagen"
+          }
+        }
+      }
+    },
+    "Export Training Data": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trainingsdaten exportieren"
+          }
+        }
+      }
+    },
     "GitHub": {
       "extractionState": "stale",
       "localizations": {
@@ -290,12 +410,52 @@
         }
       }
     },
+    "Hear & Compare": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hören & Vergleichen"
+          }
+        }
+      }
+    },
     "Higher": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Höher"
+          }
+        }
+      }
+    },
+    "Import Complete": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import abgeschlossen"
+          }
+        }
+      }
+    },
+    "Import Failed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import fehlgeschlagen"
+          }
+        }
+      }
+    },
+    "Import Training Data": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trainingsdaten importieren"
           }
         }
       }
@@ -336,6 +496,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Intervalle"
+          }
+        }
+      }
+    },
+    "Just Intonation": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reine Stimmung"
           }
         }
       }
@@ -525,6 +695,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mittlerer Abgleichfehler: %.1f Cent"
+          }
+        }
+      }
+    },
+    "Merge with Existing Data": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit vorhandenen Daten zusammenführen"
           }
         }
       }
@@ -850,6 +1030,26 @@
         }
       }
     },
+    "Replace All Data": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Daten ersetzen"
+          }
+        }
+      }
+    },
+    "Replace deletes all existing data first. Merge keeps existing data and skips duplicates.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "„Ersetzen“ löscht alle vorhandenen Daten. „Zusammenführen“ behält vorhandene Daten und überspringt Duplikate."
+          }
+        }
+      }
+    },
     "Reset": {
       "localizations": {
         "de": {
@@ -911,6 +1111,16 @@
         }
       }
     },
+    "Select how intervals are tuned. Equal Temperament divides the octave into 12 equal steps. Just Intonation uses pure frequency ratios.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle die Stimmung für Intervalle. Die gleichstufige Stimmung teilt die Oktave in 12 gleiche Schritte. Reine Stimmung verwendet reine Frequenzverhältnisse."
+          }
+        }
+      }
+    },
     "Select which intervals to practice. At least one must remain active.": {
       "localizations": {
         "de": {
@@ -949,6 +1159,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Einstellungen"
+          }
+        }
+      }
+    },
+    "Single Notes": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einzeltöne"
+          }
+        }
+      }
+    },
+    "Sound": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klang"
           }
         }
       }
@@ -1067,6 +1297,16 @@
         }
       }
     },
+    "The file contains no valid training data.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei enthält keine gültigen Trainingsdaten."
+          }
+        }
+      }
+    },
     "This will permanently delete all training data and reset your profile. This cannot be undone.": {
       "localizations": {
         "de": {
@@ -1109,6 +1349,16 @@
       }
     },
     "Time": {},
+    "Training Range": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tonumfang"
+          }
+        }
+      }
+    },
     "Trend": {
       "localizations": {
         "de": {
@@ -1166,6 +1416,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tritonus aufwärts"
+          }
+        }
+      }
+    },
+    "Tune & Match": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stimmen & Treffen"
+          }
+        }
+      }
+    },
+    "Tuning System": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stimmung"
           }
         }
       }
@@ -1273,26 +1543,6 @@
         }
       }
     },
-    "Your training progress. Tap to view details.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Trainingsfortschritt. Tippe für Details."
-          }
-        }
-      }
-    },
-    "Your training progress. Tap to view details. Current threshold: %lld cents.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Trainingsfortschritt. Tippe für Details. Aktuelle Schwelle: %lld Cent."
-          }
-        }
-      }
-    },
     "average": {
       "localizations": {
         "de": {
@@ -1389,276 +1639,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "Equal Temperament": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gleichstufige Stimmung"
-          }
-        }
-      }
-    },
-    "Just Intonation": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reine Stimmung"
-          }
-        }
-      }
-    },
-    "Tuning System": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stimmung"
-          }
-        }
-      }
-    },
-    "Select how intervals are tuned. Equal Temperament divides the octave into 12 equal steps. Just Intonation uses pure frequency ratios.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wähle die Stimmung für Intervalle. Die gleichstufige Stimmung teilt die Oktave in 12 gleiche Schritte. Reine Stimmung verwendet reine Frequenzverhältnisse."
-          }
-        }
-      }
-    },
-    "Training Range": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tonumfang"
-          }
-        }
-      }
-    },
-    "Sound": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Klang"
-          }
-        }
-      }
-    },
-    "Difficulty": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schwierigkeit"
-          }
-        }
-      }
-    },
-    "Export Training Data": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trainingsdaten exportieren"
-          }
-        }
-      }
-    },
-    "Export Failed": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Export fehlgeschlagen"
-          }
-        }
-      }
-    },
-    "Could not export training data. Please try again.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trainingsdaten konnten nicht exportiert werden. Bitte versuche es erneut."
-          }
-        }
-      }
-    },
-    "Import Training Data": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trainingsdaten importieren"
-          }
-        }
-      }
-    },
-    "Replace All Data": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alle Daten ersetzen"
-          }
-        }
-      }
-    },
-    "Merge with Existing Data": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mit vorhandenen Daten zusammenführen"
-          }
-        }
-      }
-    },
-    "Replace deletes all existing data first. Merge keeps existing data and skips duplicates.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "„Ersetzen“ löscht alle vorhandenen Daten. „Zusammenführen“ behält vorhandene Daten und überspringt Duplikate."
-          }
-        }
-      }
-    },
-    "Import Complete": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import abgeschlossen"
-          }
-        }
-      }
-    },
-    "%lld records imported, %lld duplicates skipped, %lld errors.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Datensätze importiert, %lld Duplikate übersprungen, %lld Fehler."
-          }
-        }
-      }
-    },
-    "Could not access the selected file.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Auf die ausgewählte Datei konnte nicht zugegriffen werden."
-          }
-        }
-      }
-    },
-    "Could not read the selected file.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die ausgewählte Datei konnte nicht gelesen werden."
-          }
-        }
-      }
-    },
-    "The file contains no valid training data.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Datei enthält keine gültigen Trainingsdaten."
-          }
-        }
-      }
-    },
-    "Import Failed": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import fehlgeschlagen"
-          }
-        }
-      }
-    },
-    "Could not import the training data. Please try again.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Trainingsdaten konnten nicht importiert werden. Bitte versuche es erneut."
-          }
-        }
-      }
-    },
-    "%lld records imported": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Datensätze importiert"
-          }
-        }
-      }
-    },
-    "%lld duplicates skipped": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Duplikate übersprungen"
-          }
-        }
-      }
-    },
-    "%lld errors": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Fehler"
-          }
-        }
-      }
-    },
-    "Hear & Compare": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hören & Vergleichen"
-          }
-        }
-      }
-    },
-    "Tune & Match": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stimmen & Treffen"
-          }
-        }
-      }
-    },
-    "Single Notes": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Einzeltöne"
           }
         }
       }
