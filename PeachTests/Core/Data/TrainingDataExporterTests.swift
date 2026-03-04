@@ -49,8 +49,23 @@ struct TrainingDataExporterTests {
 
         #expect(lines.count == 3)
         #expect(lines[0] == CSVExportSchema.headerRow)
-        #expect(lines[1].hasPrefix("pitchMatching"))
-        #expect(lines[2].hasPrefix("comparison"))
+        #expect(!csv.hasSuffix("\n"))
+
+        // Verify pitch matching row (earlier timestamp — first data row)
+        let pmFields = lines[1].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        #expect(pmFields[0] == "pitchMatching")
+        #expect(pmFields[2] == "69")
+        #expect(pmFields[3] == "A4")
+        #expect(pmFields[10] == "25.0")
+        #expect(pmFields[11] == "3.2")
+
+        // Verify comparison row (later timestamp — second data row)
+        let compFields = lines[2].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        #expect(compFields[0] == "comparison")
+        #expect(compFields[2] == "60")
+        #expect(compFields[3] == "C4")
+        #expect(compFields[8] == "15.5")
+        #expect(compFields[9] == "true")
     }
 
     // MARK: - Comparison Only Tests
@@ -140,6 +155,32 @@ struct TrainingDataExporterTests {
         #expect(lines[2].hasPrefix("comparison"))
         #expect(lines[3].hasPrefix("pitchMatching"))
         #expect(lines[4].hasPrefix("comparison"))
+    }
+
+    // MARK: - Stable Sort Tests
+
+    @Test("records with same timestamp maintain stable insertion order")
+    func sameTimestampStableOrder() async throws {
+        let store = try makeStore()
+
+        let timestamp = fixedDate()
+        let comparison = ComparisonRecord(
+            referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
+            interval: 4, tuningSystem: "equalTemperament", timestamp: timestamp
+        )
+        let pitchMatching = PitchMatchingRecord(
+            referenceNote: 69, targetNote: 72, initialCentOffset: 25.0, userCentError: 3.2,
+            interval: 3, tuningSystem: "equalTemperament", timestamp: timestamp
+        )
+        try store.save(comparison)
+        try store.save(pitchMatching)
+
+        let csv = try TrainingDataExporter.export(from: store)
+        let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+
+        #expect(lines.count == 3)
+        #expect(lines[1].hasPrefix("comparison"))
+        #expect(lines[2].hasPrefix("pitchMatching"))
     }
 
     // MARK: - Header Row Tests
