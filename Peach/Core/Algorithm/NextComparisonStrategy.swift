@@ -54,27 +54,20 @@ protocol NextComparisonStrategy {
 /// - Reference pitch: 440Hz — standard concert pitch (A4)
 /// - Difficulty bounds: 0.1 to 100.0 cents — practical human discrimination range
 struct TrainingSettings {
-    var noteRangeMin: MIDINote
-    var noteRangeMax: MIDINote
+    var noteRange: NoteRange
     var referencePitch: Frequency
     var minCentDifference: Cents
     var maxCentDifference: Cents
 
     init(
-        noteRangeMin: MIDINote = 36,
-        noteRangeMax: MIDINote = 84,
+        noteRange: NoteRange = NoteRange(lowerBound: MIDINote(36), upperBound: MIDINote(84)),
         referencePitch: Frequency,
         minCentDifference: Cents = 0.1,
         maxCentDifference: Cents = 100.0
     ) {
-        self.noteRangeMin = noteRangeMin
-        self.noteRangeMax = noteRangeMax
+        self.noteRange = noteRange
         self.referencePitch = referencePitch
         self.minCentDifference = minCentDifference
         self.maxCentDifference = maxCentDifference
-    }
-
-    func isInRange(_ note: MIDINote) -> Bool {
-        return note >= noteRangeMin && note <= noteRangeMax
     }
 }

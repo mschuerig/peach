@@ -39,8 +39,7 @@ final class ComparisonSession: TrainingSession {
 
     private var currentSettings: TrainingSettings {
         TrainingSettings(
-            noteRangeMin: userSettings.noteRange.lowerBound,
-            noteRangeMax: userSettings.noteRange.upperBound,
+            noteRange: userSettings.noteRange,
             referencePitch: userSettings.referencePitch
         )
     }

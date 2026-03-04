@@ -19,7 +19,7 @@ struct KazezNoteStrategyTests {
             interval: .prime,
         )
 
-        #expect(comparison.referenceNote >= settings.noteRangeMin && comparison.referenceNote <= settings.noteRangeMax)
+        #expect(settings.noteRange.contains(comparison.referenceNote))
         #expect(comparison.targetNote.note == comparison.referenceNote)
         #expect(comparison.targetNote.offset.magnitude > 0)
     }
@@ -150,7 +150,7 @@ struct KazezNoteStrategyTests {
     @Test("Notes always within settings noteRangeMin...noteRangeMax")
     func noteRange() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 72, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)), referencePitch: .concert440)
 
         for _ in 0..<100 {
             let comparison = strategy.nextComparison(
@@ -166,7 +166,7 @@ struct KazezNoteStrategyTests {
     @Test("Notes respect custom note range from settings")
     func customNoteRange() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 72, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)), referencePitch: .concert440)
 
         for _ in 0..<100 {
             let comparison = strategy.nextComparison(
@@ -337,7 +337,7 @@ struct KazezNoteStrategyTests {
     @Test("Perfect fifth interval produces targetNote.note 7 semitones above referenceNote")
     func perfectFifthInterval() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 84, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440)
 
         for _ in 0..<20 {
             let comparison = strategy.nextComparison(
@@ -353,7 +353,7 @@ struct KazezNoteStrategyTests {
     @Test("MIDI range constraint prevents overflow with large interval")
     func midiRangeConstraint() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 60, noteRangeMax: 124, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(124)), referencePitch: .concert440)
 
         for _ in 0..<50 {
             let comparison = strategy.nextComparison(
@@ -370,7 +370,7 @@ struct KazezNoteStrategyTests {
     @Test("Octave interval produces targetNote.note 12 semitones above referenceNote")
     func octaveInterval() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 84, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440)
 
         for _ in 0..<20 {
             let comparison = strategy.nextComparison(
@@ -387,7 +387,7 @@ struct KazezNoteStrategyTests {
     @Test("Downward perfect fifth produces targetNote.note 7 semitones below referenceNote")
     func downwardPerfectFifthInterval() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 48, noteRangeMax: 84, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440)
 
         for _ in 0..<20 {
             let comparison = strategy.nextComparison(
@@ -404,7 +404,7 @@ struct KazezNoteStrategyTests {
     @Test("Downward interval constrains reference note minimum to interval semitones")
     func downwardIntervalNoteRangeConstraint() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 0, noteRangeMax: 84, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440)
 
         for _ in 0..<50 {
             let comparison = strategy.nextComparison(
@@ -422,7 +422,7 @@ struct KazezNoteStrategyTests {
     @Test("Downward octave constrains reference note minimum to 12")
     func downwardOctaveNoteRangeConstraint() {
         let strategy = KazezNoteStrategy()
-        let settings = TrainingSettings(noteRangeMin: 0, noteRangeMax: 84, referencePitch: .concert440)
+        let settings = TrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440)
 
         for _ in 0..<50 {
             let comparison = strategy.nextComparison(

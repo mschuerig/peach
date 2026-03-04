@@ -41,11 +41,11 @@ final class KazezNoteStrategy: NextComparisonStrategy {
         let minNote: MIDINote
         let maxNote: MIDINote
         if interval.direction == .up {
-            minNote = settings.noteRangeMin
-            maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.interval.semitones))
+            minNote = settings.noteRange.lowerBound
+            maxNote = MIDINote(min(settings.noteRange.upperBound.rawValue, 127 - interval.interval.semitones))
         } else {
-            minNote = MIDINote(max(settings.noteRangeMin.rawValue, interval.interval.semitones))
-            maxNote = settings.noteRangeMax
+            minNote = MIDINote(max(settings.noteRange.lowerBound.rawValue, interval.interval.semitones))
+            maxNote = settings.noteRange.upperBound
         }
         let note = MIDINote.random(in: minNote...maxNote)
         let targetBaseNote = note.transposed(by: interval)

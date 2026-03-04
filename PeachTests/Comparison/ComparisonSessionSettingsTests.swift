@@ -28,8 +28,8 @@ struct ComparisonSessionSettingsTests {
         session.start(intervals: [.prime])
         try await waitForState(session, .awaitingAnswer)
 
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.lowerBound == MIDINote(48))
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.upperBound == MIDINote(72))
     }
 
     @Test("Strategy receives updated profile after answer")
@@ -75,8 +75,8 @@ struct ComparisonSessionSettingsTests {
         session.start(intervals: [.prime])
         try await waitForState(session, .awaitingAnswer)
 
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 48)
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 72)
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.lowerBound == MIDINote(48))
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.upperBound == MIDINote(72))
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
     }
 
