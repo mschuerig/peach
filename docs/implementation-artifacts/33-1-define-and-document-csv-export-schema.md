@@ -1,6 +1,6 @@
 # Story 33.1: Define and Document CSV Export Schema
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -204,7 +204,7 @@ Claude Opus 4.6
 - Created `CSVExportSchema` enum with 12 column name constants, `TrainingType` nested enum, `headerRow`, and column grouping properties
 - Created `CSVRecordFormatter` enum with `format(_:)` methods for both record types, ISO 8601 timestamp formatting, MIDINote name lookup, Interval abbreviation lookup, and RFC 4180 field escaping
 - TDD: wrote 7 schema tests and 14 formatter tests covering all ACs, edge cases (MIDI 0/127, negative offsets, zero offsets, invalid intervals, all 13 interval abbreviations, both tuning systems, RFC 4180 escaping for commas/quotes/newlines)
-- All 850 tests pass (14 new), no regressions
+- All 850 tests pass (21 new: 7 schema + 14 formatter), no regressions
 - Dependency check passes
 
 ### File List
@@ -217,3 +217,4 @@ Claude Opus 4.6
 ## Change Log
 
 - 2026-03-04: Implemented story 33.1 — CSV export schema definition and record formatter with full test coverage
+- 2026-03-04: Code review — Made MIDINote, Interval, CSVRecordFormatter nonisolated; removed unnecessary Foundation import; made escapeField private with \r handling; removed SwiftData boilerplate from tests; fixed test count documentation

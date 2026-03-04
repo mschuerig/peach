@@ -3,7 +3,7 @@ import Foundation
 /// Semitone distance between two notes, from prime (0) through octave (12).
 ///
 /// Wrapped by `DirectedInterval` to add direction. Raw value is the semitone count.
-enum Interval: Int, Hashable, Comparable, Sendable, CaseIterable, Codable {
+nonisolated enum Interval: Int, Hashable, Comparable, Sendable, CaseIterable, Codable {
     case prime = 0
     case minorSecond = 1
     case majorSecond = 2
