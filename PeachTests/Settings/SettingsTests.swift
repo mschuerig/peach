@@ -12,8 +12,8 @@ struct SettingsTests {
     func algorithmDefaultsMatchTrainingSettings() {
         let trainingDefaults = TrainingSettings(referencePitch: .concert440)
 
-        #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRangeMin.rawValue)
-        #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRangeMax.rawValue)
+        #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRange.lowerBound.rawValue)
+        #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRange.upperBound.rawValue)
         #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch.rawValue)
     }
 

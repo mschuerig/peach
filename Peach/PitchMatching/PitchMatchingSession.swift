@@ -194,8 +194,7 @@ final class PitchMatchingSession: TrainingSession {
 
     private var currentSettings: TrainingSettings {
         TrainingSettings(
-            noteRangeMin: userSettings.noteRange.lowerBound,
-            noteRangeMax: userSettings.noteRange.upperBound,
+            noteRange: userSettings.noteRange,
             referencePitch: userSettings.referencePitch
         )
     }
@@ -210,11 +209,11 @@ final class PitchMatchingSession: TrainingSession {
         let minNote: MIDINote
         let maxNote: MIDINote
         if interval.direction == .up {
-            minNote = settings.noteRangeMin
-            maxNote = MIDINote(min(settings.noteRangeMax.rawValue, 127 - interval.interval.semitones))
+            minNote = settings.noteRange.lowerBound
+            maxNote = MIDINote(min(settings.noteRange.upperBound.rawValue, 127 - interval.interval.semitones))
         } else {
-            minNote = MIDINote(max(settings.noteRangeMin.rawValue, interval.interval.semitones))
-            maxNote = settings.noteRangeMax
+            minNote = MIDINote(max(settings.noteRange.lowerBound.rawValue, interval.interval.semitones))
+            maxNote = settings.noteRange.upperBound
         }
         let note = MIDINote.random(in: minNote...maxNote)
         let targetNote = note.transposed(by: interval)

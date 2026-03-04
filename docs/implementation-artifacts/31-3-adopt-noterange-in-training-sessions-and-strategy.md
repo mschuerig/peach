@@ -1,6 +1,6 @@
 # Story 31.3: Adopt NoteRange in Training Sessions and Strategy
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,33 +20,33 @@ so that range handling is consistent and validated at the boundary.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update `TrainingSettings` struct (AC: #1)
-  - [ ] 1.1 Write failing test: `TrainingSettings` has `noteRange: NoteRange` property instead of `noteRangeMin`/`noteRangeMax`
-  - [ ] 1.2 Replace `noteRangeMin: MIDINote` and `noteRangeMax: MIDINote` with `noteRange: NoteRange` in `TrainingSettings`
-  - [ ] 1.3 Update init to accept `noteRange: NoteRange` with default `NoteRange(lowerBound: MIDINote(36), upperBound: MIDINote(84))`
-  - [ ] 1.4 Remove `isInRange(_:)` method (unused in production and tests; replaced by `noteRange.contains(_:)`)
-  - [ ] 1.5 Verify test passes
-- [ ] Task 2: Update `KazezNoteStrategy` (AC: #4)
-  - [ ] 2.1 Replace `settings.noteRangeMin` with `settings.noteRange.lowerBound` (2 occurrences)
-  - [ ] 2.2 Replace `settings.noteRangeMax` with `settings.noteRange.upperBound` (2 occurrences)
-  - [ ] 2.3 Verify build succeeds
-- [ ] Task 3: Simplify `ComparisonSession.currentSettings` (AC: #2)
-  - [ ] 3.1 Replace decomposed `noteRangeMin: userSettings.noteRange.lowerBound, noteRangeMax: userSettings.noteRange.upperBound` with `noteRange: userSettings.noteRange`
-  - [ ] 3.2 Verify build succeeds
-- [ ] Task 4: Simplify `PitchMatchingSession` (AC: #3)
-  - [ ] 4.1 Replace decomposed min/max in `currentSettings` with `noteRange: userSettings.noteRange`
-  - [ ] 4.2 Replace `settings.noteRangeMin`/`settings.noteRangeMax` with `settings.noteRange.lowerBound`/`settings.noteRange.upperBound` in `generateChallenge()` (4 occurrences)
-  - [ ] 4.3 Verify build succeeds
-- [ ] Task 5: Update test files (AC: #5)
-  - [ ] 5.1 Update `KazezNoteStrategyTests.swift`: 8 `TrainingSettings(noteRangeMin:noteRangeMax:...)` calls to `TrainingSettings(noteRange: NoteRange(...), ...)`, plus 1 assertion using `settings.noteRangeMin`/`settings.noteRangeMax`
-  - [ ] 5.2 Update `ComparisonSessionSettingsTests.swift`: 4 assertions `?.noteRangeMin`/`?.noteRangeMax` to `?.noteRange.lowerBound`/`?.noteRange.upperBound`
-  - [ ] 5.3 Update `ComparisonSessionUserDefaultsTests.swift`: 6 assertions same pattern
-  - [ ] 5.4 Update `SettingsTests.swift`: 2 assertions `trainingDefaults.noteRangeMin.rawValue`/`.noteRangeMax.rawValue` to `trainingDefaults.noteRange.lowerBound.rawValue`/`.noteRange.upperBound.rawValue`
-  - [ ] 5.5 Verify all tests calling `TrainingSettings(referencePitch:)` still compile with new default (ComparisonSessionIntegrationTests, ComparisonSessionResetTests)
-- [ ] Task 6: Run full test suite (AC: all)
-  - [ ] 6.1 Run `bin/test.sh` — all tests must pass
-  - [ ] 6.2 Run `bin/build.sh` — no warnings or errors
-  - [ ] 6.3 Run `bin/check-dependencies.sh` — no dependency violations
+- [x] Task 1: Update `TrainingSettings` struct (AC: #1)
+  - [x] 1.1 Write failing test: `TrainingSettings` has `noteRange: NoteRange` property instead of `noteRangeMin`/`noteRangeMax`
+  - [x] 1.2 Replace `noteRangeMin: MIDINote` and `noteRangeMax: MIDINote` with `noteRange: NoteRange` in `TrainingSettings`
+  - [x] 1.3 Update init to accept `noteRange: NoteRange` with default `NoteRange(lowerBound: MIDINote(36), upperBound: MIDINote(84))`
+  - [x] 1.4 Remove `isInRange(_:)` method (unused in production and tests; replaced by `noteRange.contains(_:)`)
+  - [x] 1.5 Verify test passes
+- [x] Task 2: Update `KazezNoteStrategy` (AC: #4)
+  - [x] 2.1 Replace `settings.noteRangeMin` with `settings.noteRange.lowerBound` (2 occurrences)
+  - [x] 2.2 Replace `settings.noteRangeMax` with `settings.noteRange.upperBound` (2 occurrences)
+  - [x] 2.3 Verify build succeeds
+- [x] Task 3: Simplify `ComparisonSession.currentSettings` (AC: #2)
+  - [x] 3.1 Replace decomposed `noteRangeMin: userSettings.noteRange.lowerBound, noteRangeMax: userSettings.noteRange.upperBound` with `noteRange: userSettings.noteRange`
+  - [x] 3.2 Verify build succeeds
+- [x] Task 4: Simplify `PitchMatchingSession` (AC: #3)
+  - [x] 4.1 Replace decomposed min/max in `currentSettings` with `noteRange: userSettings.noteRange`
+  - [x] 4.2 Replace `settings.noteRangeMin`/`settings.noteRangeMax` with `settings.noteRange.lowerBound`/`settings.noteRange.upperBound` in `generateChallenge()` (4 occurrences)
+  - [x] 4.3 Verify build succeeds
+- [x] Task 5: Update test files (AC: #5)
+  - [x] 5.1 Update `KazezNoteStrategyTests.swift`: 8 `TrainingSettings(noteRangeMin:noteRangeMax:...)` calls to `TrainingSettings(noteRange: NoteRange(...), ...)`, plus 1 assertion using `settings.noteRangeMin`/`settings.noteRangeMax`
+  - [x] 5.2 Update `ComparisonSessionSettingsTests.swift`: 4 assertions `?.noteRangeMin`/`?.noteRangeMax` to `?.noteRange.lowerBound`/`?.noteRange.upperBound`
+  - [x] 5.3 Update `ComparisonSessionUserDefaultsTests.swift`: 6 assertions same pattern
+  - [x] 5.4 Update `SettingsTests.swift`: 2 assertions `trainingDefaults.noteRangeMin.rawValue`/`.noteRangeMax.rawValue` to `trainingDefaults.noteRange.lowerBound.rawValue`/`.noteRange.upperBound.rawValue`
+  - [x] 5.5 Verify all tests calling `TrainingSettings(referencePitch:)` still compile with new default (ComparisonSessionIntegrationTests, ComparisonSessionResetTests)
+- [x] Task 6: Run full test suite (AC: all)
+  - [x] 6.1 Run `bin/test.sh` — all tests must pass
+  - [x] 6.2 Run `bin/build.sh` — no warnings or errors
+  - [x] 6.3 Run `bin/check-dependencies.sh` — no dependency violations
 
 ## Dev Notes
 
@@ -345,10 +345,34 @@ This is story 3 of 4 in Epic 31:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+No issues encountered. Purely mechanical refactoring — all changes compiled and passed on first attempt.
+
 ### Completion Notes List
 
+- Replaced `noteRangeMin: MIDINote` and `noteRangeMax: MIDINote` with `noteRange: NoteRange` in `TrainingSettings` struct
+- Removed dead code `isInRange(_:)` method from `TrainingSettings`
+- Updated `KazezNoteStrategy` to access `settings.noteRange.lowerBound`/`upperBound` (4 occurrences)
+- Simplified `ComparisonSession.currentSettings` — `noteRange` now flows directly from `userSettings.noteRange`
+- Simplified `PitchMatchingSession.currentSettings` — same direct flow pattern
+- Updated `PitchMatchingSession.generateChallenge()` to use `settings.noteRange.lowerBound`/`upperBound` (4 occurrences)
+- Updated 4 test files: `KazezNoteStrategyTests` (8 init calls + 1 assertion), `ComparisonSessionSettingsTests` (4 assertions), `ComparisonSessionUserDefaultsTests` (6 assertions), `SettingsTests` (2 assertions)
+- Build clean, 826 tests pass, no dependency violations
+
+### Change Log
+
+- 2026-03-04: Implemented story 31.3 — adopted NoteRange in TrainingSettings, training sessions, and strategy
+
 ### File List
+
+- `Peach/Core/Algorithm/NextComparisonStrategy.swift` — modified (TrainingSettings: replaced noteRangeMin/noteRangeMax with noteRange, removed isInRange)
+- `Peach/Core/Algorithm/KazezNoteStrategy.swift` — modified (4 property path updates)
+- `Peach/Comparison/ComparisonSession.swift` — modified (currentSettings simplified)
+- `Peach/PitchMatching/PitchMatchingSession.swift` — modified (currentSettings simplified + generateChallenge updated)
+- `PeachTests/Core/Algorithm/KazezNoteStrategyTests.swift` — modified (8 init calls + 1 assertion migrated)
+- `PeachTests/Comparison/ComparisonSessionSettingsTests.swift` — modified (4 assertions migrated)
+- `PeachTests/Comparison/ComparisonSessionUserDefaultsTests.swift` — modified (6 assertions migrated)
+- `PeachTests/Settings/SettingsTests.swift` — modified (2 assertions migrated)

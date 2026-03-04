@@ -30,8 +30,8 @@ struct ComparisonSessionUserDefaultsTests {
         session.start(intervals: [.prime])
         try await waitForState(session, .awaitingAnswer)
 
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 50)
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 70)
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.lowerBound == MIDINote(50))
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.upperBound == MIDINote(70))
         #expect(mockStrategy.lastReceivedSettings?.referencePitch == 432.0)
 
         session.stop()
@@ -116,7 +116,7 @@ struct ComparisonSessionUserDefaultsTests {
         session.start(intervals: [.prime])
         try await waitForState(session, .awaitingAnswer)
 
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin.rawValue == SettingsKeys.defaultNoteRangeMin)
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.lowerBound.rawValue == SettingsKeys.defaultNoteRangeMin)
 
         mockSettings.noteRange = NoteRange(lowerBound: MIDINote(50), upperBound: MIDINote(70))
         mockSettings.noteDuration = 2.0
@@ -125,8 +125,8 @@ struct ComparisonSessionUserDefaultsTests {
         try await waitForPlayCallCount(mockPlayer, 3)
 
         #expect(mockStrategy.callCount == 2, "Second comparison should have been requested")
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMin == 50)
-        #expect(mockStrategy.lastReceivedSettings?.noteRangeMax == 70)
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.lowerBound == MIDINote(50))
+        #expect(mockStrategy.lastReceivedSettings?.noteRange.upperBound == MIDINote(70))
         #expect(mockPlayer.lastDuration == 2.0)
 
         session.stop()
