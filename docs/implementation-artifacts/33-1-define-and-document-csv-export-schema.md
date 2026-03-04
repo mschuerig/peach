@@ -1,6 +1,6 @@
 # Story 33.1: Define and Document CSV Export Schema
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,28 +22,28 @@ so that the format is clear, extensible, and spreadsheet-friendly.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `CSVExportSchema` enum in `Core/Data/` (AC: #1, #4)
-  - [ ] 1.1 Define column name constants for all 12 columns in canonical order
-  - [ ] 1.2 Define `TrainingType` nested enum with `comparison` and `pitchMatching` cases and `csvValue` property
-  - [ ] 1.3 Add `headerRow` static property returning the full CSV header string
-  - [ ] 1.4 Add `commonColumns` and type-specific column grouping properties for documentation
-- [ ] Task 2: Create `CSVRecordFormatter` in `Core/Data/` (AC: #1, #2, #3)
-  - [ ] 2.1 Add `format(_ record: ComparisonRecord) -> String` method producing a CSV row
-  - [ ] 2.2 Add `format(_ record: PitchMatchingRecord) -> String` method producing a CSV row
-  - [ ] 2.3 Timestamp formatting: ISO 8601 with `Date.ISO8601FormatStyle` (UTC timezone)
-  - [ ] 2.4 Note name formatting: `MIDINote(rawValue:).name` for human-readable names
-  - [ ] 2.5 Interval formatting: `Interval(rawValue:)?.abbreviation` (e.g., `M3`)
-  - [ ] 2.6 Tuning system formatting: use storage identifier directly (e.g., `equalTemperament`)
-  - [ ] 2.7 Leave non-applicable columns empty (trailing commas for empty fields)
-- [ ] Task 3: Write tests for schema and formatter (AC: #1, #2, #3, #4)
-  - [ ] 3.1 Test `headerRow` contains all 12 column names in correct order
-  - [ ] 3.2 Test `ComparisonRecord` formatting produces correct CSV row with empty pitch-matching fields
-  - [ ] 3.3 Test `PitchMatchingRecord` formatting produces correct CSV row with empty comparison fields
-  - [ ] 3.4 Test timestamp formatting is ISO 8601 UTC
-  - [ ] 3.5 Test note name formatting (edge cases: MIDI 0 → `C-1`, MIDI 127 → `G9`)
-  - [ ] 3.6 Test interval abbreviation formatting
-  - [ ] 3.7 Test that fields containing commas or quotes are properly escaped (RFC 4180)
-  - [ ] 3.8 Test extensibility: adding a column after existing ones doesn't break header order
+- [x] Task 1: Create `CSVExportSchema` enum in `Core/Data/` (AC: #1, #4)
+  - [x] 1.1 Define column name constants for all 12 columns in canonical order
+  - [x] 1.2 Define `TrainingType` nested enum with `comparison` and `pitchMatching` cases and `csvValue` property
+  - [x] 1.3 Add `headerRow` static property returning the full CSV header string
+  - [x] 1.4 Add `commonColumns` and type-specific column grouping properties for documentation
+- [x] Task 2: Create `CSVRecordFormatter` in `Core/Data/` (AC: #1, #2, #3)
+  - [x] 2.1 Add `format(_ record: ComparisonRecord) -> String` method producing a CSV row
+  - [x] 2.2 Add `format(_ record: PitchMatchingRecord) -> String` method producing a CSV row
+  - [x] 2.3 Timestamp formatting: ISO 8601 with `Date.ISO8601FormatStyle` (UTC timezone)
+  - [x] 2.4 Note name formatting: `MIDINote(rawValue:).name` for human-readable names
+  - [x] 2.5 Interval formatting: `Interval(rawValue:)?.abbreviation` (e.g., `M3`)
+  - [x] 2.6 Tuning system formatting: use storage identifier directly (e.g., `equalTemperament`)
+  - [x] 2.7 Leave non-applicable columns empty (trailing commas for empty fields)
+- [x] Task 3: Write tests for schema and formatter (AC: #1, #2, #3, #4)
+  - [x] 3.1 Test `headerRow` contains all 12 column names in correct order
+  - [x] 3.2 Test `ComparisonRecord` formatting produces correct CSV row with empty pitch-matching fields
+  - [x] 3.3 Test `PitchMatchingRecord` formatting produces correct CSV row with empty comparison fields
+  - [x] 3.4 Test timestamp formatting is ISO 8601 UTC
+  - [x] 3.5 Test note name formatting (edge cases: MIDI 0 → `C-1`, MIDI 127 → `G9`)
+  - [x] 3.6 Test interval abbreviation formatting
+  - [x] 3.7 Test that fields containing commas or quotes are properly escaped (RFC 4180)
+  - [x] 3.8 Test extensibility: adding a column after existing ones doesn't break header order
 
 ## Dev Notes
 
@@ -193,10 +193,27 @@ Run full test suite: `bin/test.sh`
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Initial build failed: `CSVRecordFormatter` marked `nonisolated` but `MIDINote.init(_:)`, `MIDINote.name`, and `Interval.abbreviation` are implicitly `@MainActor` due to project's `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. Fixed by removing `nonisolated` from `CSVRecordFormatter` (kept `nonisolated` on `CSVExportSchema` which has no MainActor dependencies).
+
 ### Completion Notes List
 
+- Created `CSVExportSchema` enum with 12 column name constants, `TrainingType` nested enum, `headerRow`, and column grouping properties
+- Created `CSVRecordFormatter` enum with `format(_:)` methods for both record types, ISO 8601 timestamp formatting, MIDINote name lookup, Interval abbreviation lookup, and RFC 4180 field escaping
+- TDD: wrote 7 schema tests and 14 formatter tests covering all ACs, edge cases (MIDI 0/127, negative offsets, zero offsets, invalid intervals, all 13 interval abbreviations, both tuning systems, RFC 4180 escaping for commas/quotes/newlines)
+- All 850 tests pass (14 new), no regressions
+- Dependency check passes
+
 ### File List
+
+- `Peach/Core/Data/CSVExportSchema.swift` (new)
+- `Peach/Core/Data/CSVRecordFormatter.swift` (new)
+- `PeachTests/Core/Data/CSVExportSchemaTests.swift` (new)
+- `PeachTests/Core/Data/CSVRecordFormatterTests.swift` (new)
+
+## Change Log
+
+- 2026-03-04: Implemented story 33.1 — CSV export schema definition and record formatter with full test coverage
