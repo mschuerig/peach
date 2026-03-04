@@ -265,3 +265,8 @@ development_status:
   31-3-adopt-noterange-in-training-sessions-and-strategy: done
   31-4-adopt-noterange-in-profile-and-visualization: done
   epic-31-retrospective: optional
+
+  # Epic 32: Everything in Its Place — Settings Screen Reorganization
+  epic-32: in-progress
+  32-1-reorganize-settings-screen-sections: ready-for-dev
+  epic-32-retrospective: optional
