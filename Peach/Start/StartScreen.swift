@@ -83,14 +83,14 @@ struct StartScreen: View {
                 .font(.headline)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
-                Text("Hear & Compare")
+                Label("Hear & Compare", systemImage: "ear")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
-                Text("Tune & Match")
+                Label("Tune & Match", systemImage: "arrow.up.and.down")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -104,14 +104,14 @@ struct StartScreen: View {
                 .font(.headline)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: intervalSelection.intervals)) {
-                Text("Hear & Compare")
+                Label("Hear & Compare", systemImage: "ear")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: intervalSelection.intervals)) {
-                Text("Tune & Match")
+                Label("Tune & Match", systemImage: "arrow.up.and.down")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)

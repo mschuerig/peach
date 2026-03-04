@@ -1,6 +1,6 @@
 # Story 35.2: Add SF Symbol Icons to Training Buttons
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,22 +20,22 @@ so that the Start Screen is more visually appealing and the modes are quickly di
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Choose SF Symbol icons for each training mode (AC: #1)
-  - [ ] 1.1 Select icons that visually distinguish the four buttons — two "Hear & Compare" buttons and two "Tune & Match" buttons — while communicating each mode's character. Confirm with user before proceeding.
-- [ ] Task 2: Add `Label` with SF Symbol to each NavigationLink (AC: #1, #2, #3)
-  - [ ] 2.1 Replace `Text("Hear & Compare")` with `Label("Hear & Compare", systemImage: "chosen.icon")` in `singleNotesSection`
-  - [ ] 2.2 Replace `Text("Tune & Match")` with `Label("Tune & Match", systemImage: "chosen.icon")` in `singleNotesSection`
-  - [ ] 2.3 Replace `Text("Hear & Compare")` with `Label("Hear & Compare", systemImage: "chosen.icon")` in `intervalsSection`
-  - [ ] 2.4 Replace `Text("Tune & Match")` with `Label("Tune & Match", systemImage: "chosen.icon")` in `intervalsSection`
-- [ ] Task 3: Ensure icons are decorative for accessibility (AC: #3)
-  - [ ] 3.1 Verify that SwiftUI `Label` in a `NavigationLink` reads only the text to VoiceOver (default behavior — the icon is decorative). No `.accessibilityLabel` override should be needed. Confirm by reading Apple docs or testing.
-- [ ] Task 4: Verify dynamic type scaling (AC: #2)
-  - [ ] 4.1 Confirm `Label` with `systemImage:` scales the SF Symbol alongside text automatically (this is default SwiftUI behavior). No extra code needed.
-- [ ] Task 5: Add German localization if any new strings introduced (AC: #1)
-  - [ ] 5.1 No new localization strings expected — button text is unchanged from Story 35.1, and SF Symbols are language-independent. Skip unless new text is added.
-- [ ] Task 6: Build and run full test suite
-  - [ ] 6.1 Run `bin/build.sh` to verify no build errors
-  - [ ] 6.2 Run `bin/test.sh` to verify all tests pass (930+ tests)
+- [x] Task 1: Choose SF Symbol icons for each training mode (AC: #1)
+  - [x] 1.1 Select icons that visually distinguish the four buttons — two "Hear & Compare" buttons and two "Tune & Match" buttons — while communicating each mode's character. Confirm with user before proceeding.
+- [x] Task 2: Add `Label` with SF Symbol to each NavigationLink (AC: #1, #2, #3)
+  - [x] 2.1 Replace `Text("Hear & Compare")` with `Label("Hear & Compare", systemImage: "ear")` in `singleNotesSection`
+  - [x] 2.2 Replace `Text("Tune & Match")` with `Label("Tune & Match", systemImage: "arrow.up.and.down")` in `singleNotesSection`
+  - [x] 2.3 Replace `Text("Hear & Compare")` with `Label("Hear & Compare", systemImage: "ear")` in `intervalsSection`
+  - [x] 2.4 Replace `Text("Tune & Match")` with `Label("Tune & Match", systemImage: "arrow.up.and.down")` in `intervalsSection`
+- [x] Task 3: Ensure icons are decorative for accessibility (AC: #3)
+  - [x] 3.1 Verify that SwiftUI `Label` in a `NavigationLink` reads only the text to VoiceOver (default behavior — the icon is decorative). No `.accessibilityLabel` override should be needed. Confirm by reading Apple docs or testing.
+- [x] Task 4: Verify dynamic type scaling (AC: #2)
+  - [x] 4.1 Confirm `Label` with `systemImage:` scales the SF Symbol alongside text automatically (this is default SwiftUI behavior). No extra code needed.
+- [x] Task 5: Add German localization if any new strings introduced (AC: #1)
+  - [x] 5.1 No new localization strings expected — button text is unchanged from Story 35.1, and SF Symbols are language-independent. Skipped — no new text added.
+- [x] Task 6: Build and run full test suite
+  - [x] 6.1 Run `bin/build.sh` to verify no build errors
+  - [x] 6.2 Run `bin/test.sh` to verify all tests pass (927 tests passed)
 
 ## Dev Notes
 
@@ -76,7 +76,7 @@ The four buttons need distinct icons. The same button name appears in both secti
 
 **Candidate icons (discuss with user):**
 - "Hear & Compare" → `ear` (listening/hearing), `waveform` (sound wave comparison), `speaker.wave.2` (audio)
-- "Tune & Match" → `tuningfork` (tuning), `slider.horizontal.below.rectangle` (slider-based matching), `dial.medium` (fine-tuning)
+- "Tune & Match" → `tuningfork` (tuning), `arrow.up.and.down` (slider-based matching), `dial.medium` (fine-tuning)
 
 Alternatively, all four buttons could use unique icons if the sections feel too similar:
 - Single Notes / Hear & Compare → `ear`
@@ -152,10 +152,24 @@ The codebase is clean and ready for the next change.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None — clean implementation with no issues.
+
 ### Completion Notes List
 
+- Icons chosen with user: `ear` for "Hear & Compare", `arrow.up.and.down` for "Tune & Match"
+- Replaced 4 `Text(...)` with `Label(..., systemImage:)` in StartScreen.swift
+- SwiftUI `Label` provides decorative icon behavior for VoiceOver and automatic dynamic type scaling — no extra code needed
+- No new localization strings introduced (button text unchanged, SF Symbols are language-independent)
+- Build succeeded, all 927 tests pass, no regressions
+
+### Change Log
+
+- 2026-03-04: Implemented story 35.2 — added SF Symbol icons to all four training buttons on Start Screen
+
 ### File List
+
+- `Peach/Start/StartScreen.swift` (modified)
