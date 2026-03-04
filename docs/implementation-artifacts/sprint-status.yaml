@@ -287,7 +287,7 @@ development_status:
 
   # Epic 35: Welcome Home — Start Screen Redesign
   epic-35: in-progress
-  35-1-rename-training-buttons-with-user-friendly-labels: ready-for-dev
+  35-1-rename-training-buttons-with-user-friendly-labels: review
   35-2-add-sf-symbol-icons-to-training-buttons: backlog
   35-3-visual-design-polish: backlog
   epic-35-retrospective: optional

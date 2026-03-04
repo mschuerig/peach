@@ -14,83 +14,50 @@ struct StartScreen: View {
     // MARK: - Layout Parameters (extracted for testability)
 
     static func vstackSpacing(isCompact: Bool) -> CGFloat {
-        isCompact ? 12 : 40
+        isCompact ? 8 : 16
     }
 
     var body: some View {
-        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
-            Spacer()
-
-            // Profile Preview (navigates to full Profile Screen)
-            NavigationLink(value: NavigationDestination.profile) {
-                ProfilePreviewView()
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            // Comparison Button (Primary Action)
-            NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
-                Text("Comparison")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-
-            // Pitch Matching Button (Secondary Action)
-            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
-                Text("Pitch Matching")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-
-            // Visual separator between unison and interval groups
-            Divider()
-
-            // Interval Comparison Button
-            NavigationLink(value: NavigationDestination.comparison(intervals: intervalSelection.intervals)) {
-                Text("Interval Comparison")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-
-            // Interval Pitch Matching Button
-            NavigationLink(value: NavigationDestination.pitchMatching(intervals: intervalSelection.intervals)) {
-                Text("Interval Pitch Matching")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-
-            Spacer()
-
-            // Secondary Navigation Buttons
-            HStack(spacing: 32) {
-                NavigationLink(value: NavigationDestination.settings) {
-                    Image(systemName: "gearshape")
-                        .imageScale(.large)
+        Group {
+            if isCompactHeight {
+                HStack(spacing: 24) {
+                    singleNotesSection
+                    Divider()
+                    intervalsSection
                 }
-                .accessibilityLabel("Settings")
-
-                NavigationLink(value: NavigationDestination.profile) {
-                    Image(systemName: "chart.xyaxis.line")
-                        .imageScale(.large)
+            } else {
+                VStack(spacing: Self.vstackSpacing(isCompact: false)) {
+                    Spacer()
+                    singleNotesSection
+                    Divider()
+                    intervalsSection
+                    Spacer()
                 }
-                .accessibilityLabel("Profile")
-
-                Button {
-                    showInfoSheet = true
-                } label: {
-                    Image(systemName: "info.circle")
-                        .imageScale(.large)
-                }
-                .accessibilityLabel("Info")
             }
         }
         .padding()
         .navigationTitle("Peach")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    showInfoSheet = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+                .accessibilityLabel("Info")
+            }
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                NavigationLink(value: NavigationDestination.profile) {
+                    Image(systemName: "chart.xyaxis.line")
+                }
+                .accessibilityLabel("Profile")
+
+                NavigationLink(value: NavigationDestination.settings) {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel("Settings")
+            }
+        }
         .navigationDestination(for: NavigationDestination.self) { destination in
             switch destination {
             case .comparison(let intervals):
@@ -108,6 +75,49 @@ struct StartScreen: View {
         }
     }
 
+    // MARK: - Sections
+
+    private var singleNotesSection: some View {
+        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
+            Text("Single Notes")
+                .font(.headline)
+
+            NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
+                Text("Hear & Compare")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+
+            NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
+                Text("Tune & Match")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+    }
+
+    private var intervalsSection: some View {
+        VStack(spacing: Self.vstackSpacing(isCompact: isCompactHeight)) {
+            Text("Intervals")
+                .font(.headline)
+
+            NavigationLink(value: NavigationDestination.comparison(intervals: intervalSelection.intervals)) {
+                Text("Hear & Compare")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+
+            NavigationLink(value: NavigationDestination.pitchMatching(intervals: intervalSelection.intervals)) {
+                Text("Tune & Match")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+    }
 }
 
 #Preview {

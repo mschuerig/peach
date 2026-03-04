@@ -67,7 +67,7 @@ struct ComparisonScreen: View {
             }
         }
         .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: comparisonSession.showFeedback)
-        .navigationTitle("Training")
+        .navigationTitle("Hear & Compare")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
