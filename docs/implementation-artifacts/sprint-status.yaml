@@ -259,9 +259,9 @@ development_status:
   epic-30-retrospective: optional
 
   # Epic 31: Structured Notes — NoteRange Refactoring
-  epic-31: in-progress
+  epic-31: done
   31-1-create-noterange-value-type: done
   31-2-adopt-noterange-in-usersettings-and-settings-screen: done
   31-3-adopt-noterange-in-training-sessions-and-strategy: done
-  31-4-adopt-noterange-in-profile-and-visualization: review
+  31-4-adopt-noterange-in-profile-and-visualization: done
   epic-31-retrospective: optional

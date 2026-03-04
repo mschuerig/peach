@@ -202,6 +202,38 @@ struct PerceptualProfileTests {
         #expect(profile.overallStdDev == 0.0)
     }
 
+    // MARK: - Average Threshold (Story 31.4)
+
+    @Test("averageThreshold returns nil when no notes in range are trained")
+    func averageThresholdColdStart() async {
+        let profile = PerceptualProfile()
+
+        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
+        #expect(result == nil)
+    }
+
+    @Test("averageThreshold computes mean of trained notes within range")
+    func averageThresholdWithTrainedNotes() async {
+        let profile = PerceptualProfile()
+        profile.update(note: MIDINote(60), centOffset: 40, isCorrect: true)
+        profile.update(note: MIDINote(62), centOffset: 20, isCorrect: true)
+        profile.update(note: MIDINote(64), centOffset: 60, isCorrect: true)
+
+        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
+        #expect(result == 40) // Int((40+20+60)/3) = Int(40.0) = 40
+    }
+
+    @Test("averageThreshold ignores trained notes outside the given range")
+    func averageThresholdRespectsRange() async {
+        let profile = PerceptualProfile()
+        // Note 30 is outside defaultNoteRange (36...84)
+        profile.update(note: MIDINote(30), centOffset: 100, isCorrect: true)
+        profile.update(note: MIDINote(60), centOffset: 20, isCorrect: true)
+
+        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
+        #expect(result == 20) // Only note 60 is in range
+    }
+
     // MARK: - Interval Context Verification (Story 23.4)
 
     @Test("ComparisonObserver uses referenceNote as profile key when interval is non-prime")

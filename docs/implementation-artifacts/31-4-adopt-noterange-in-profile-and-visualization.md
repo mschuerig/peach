@@ -1,6 +1,6 @@
 # Story 31.4: Adopt NoteRange in Profile and Visualization
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -349,8 +349,8 @@ This is story 4 of 4 in Epic 31 — the **final story**:
 
 - [Source: docs/planning-artifacts/epics.md#Epic 31] — Epic definition, story 31.4 acceptance criteria
 - [Source: Peach/Core/Audio/NoteRange.swift] — Value type created in story 31.1, `minimumSpan = 12`, `contains(_:)`, `clamped(_:)`
-- [Source: Peach/Core/Profile/PitchDiscriminationProfile.swift:7] — `averageThreshold(midiRange: ClosedRange<Int>) -> Int?` protocol method
-- [Source: Peach/Core/Profile/PerceptualProfile.swift:90-95] — `averageThreshold` implementation with `ClosedRange<Int>` parameter
+- [Source: Peach/Core/Profile/PitchDiscriminationProfile.swift:7] — `averageThreshold(noteRange: NoteRange) -> Int?` protocol method
+- [Source: Peach/Core/Profile/PerceptualProfile.swift:90-95] — `averageThreshold` implementation with `NoteRange` parameter
 - [Source: Peach/Profile/PianoKeyboardView.swift:6] — `PianoKeyboardLayout.midiRange: ClosedRange<Int>` property
 - [Source: Peach/Profile/PianoKeyboardView.swift:30,45,50-51,61] — 6 internal references to `midiRange.lowerBound`/`midiRange.upperBound`
 - [Source: Peach/Profile/SummaryStatisticsView.swift:9,11,86] — `midiRange: ClosedRange<Int>` property, init, and `computeStats` signature
@@ -386,6 +386,7 @@ No issues encountered — purely mechanical type migration compiled and passed o
 ### Change Log
 
 - 2026-03-04: Implemented story 31.4 — adopted NoteRange in profile and visualization layer (5 production files, 3 test files modified)
+- 2026-03-04: Code review — added 3 missing `averageThreshold(noteRange:)` tests, fixed stale References in story and architecture.md
 
 ### File List
 
@@ -394,6 +395,7 @@ No issues encountered — purely mechanical type migration compiled and passed o
 - Peach/Profile/PianoKeyboardView.swift (modified)
 - Peach/Profile/SummaryStatisticsView.swift (modified)
 - Peach/Profile/ProfileScreen.swift (modified)
+- PeachTests/Core/Profile/PerceptualProfileTests.swift (modified — review: added averageThreshold tests)
 - PeachTests/Profile/MockPitchDiscriminationProfile.swift (modified)
 - PeachTests/Profile/ProfileScreenTests.swift (modified)
 - PeachTests/Profile/SummaryStatisticsTests.swift (modified)
