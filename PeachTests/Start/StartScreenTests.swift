@@ -166,6 +166,31 @@ struct StartScreenTests {
         }
     }
 
+    // MARK: - Info Screen Help Content Tests
+
+    @Test("Info Screen has non-empty app description")
+    func infoScreenHasAppDescription() {
+        #expect(!InfoScreen.appDescription.isEmpty)
+    }
+
+    @Test("Info Screen has four training mode descriptions")
+    func infoScreenHasFourTrainingModes() {
+        #expect(InfoScreen.trainingModes.count == 4)
+    }
+
+    @Test("Info Screen training modes have non-empty names and descriptions")
+    func infoScreenTrainingModesAreComplete() {
+        for mode in InfoScreen.trainingModes {
+            #expect(!mode.name.isEmpty)
+            #expect(!mode.description.isEmpty)
+        }
+    }
+
+    @Test("Info Screen has non-empty getting started text")
+    func infoScreenHasGettingStarted() {
+        #expect(!InfoScreen.gettingStartedText.isEmpty)
+    }
+
     // MARK: - Hub and Spoke Pattern Verification
 
     @Test("All navigation destinations can be created")
