@@ -33,10 +33,10 @@ struct SettingsScreen: View {
 
     var body: some View {
         Form {
+            trainingRangeSection
             intervalSection
-            noteRangeSection
-            audioSection
-            instrumentSection
+            soundSection
+            difficultySection
             dataSection
         }
         .navigationTitle("Settings")
@@ -65,8 +65,8 @@ struct SettingsScreen: View {
         }
     }
 
-    private var noteRangeSection: some View {
-        Section("Note Range") {
+    private var trainingRangeSection: some View {
+        Section(String(localized: "Training Range")) {
             Stepper(
                 "Lower: \(PianoKeyboardLayout.noteName(midiNote: noteRangeMin))",
                 value: $noteRangeMin,
@@ -82,8 +82,13 @@ struct SettingsScreen: View {
         }
     }
 
-    private var audioSection: some View {
+    private var soundSection: some View {
         Section {
+            Picker("Sound Source", selection: validatedSoundSource) {
+                ForEach(soundSourceProvider.availableSources, id: \.self) { source in
+                    Text(soundSourceProvider.displayName(for: source)).tag(source.rawValue)
+                }
+            }
             Stepper(
                 "Duration: \(noteDuration, specifier: "%.1f")s",
                 value: $noteDuration,
@@ -96,6 +101,20 @@ struct SettingsScreen: View {
                 in: 380...500,
                 step: 1
             )
+            Picker(String(localized: "Tuning System"), selection: $tuningSystemIdentifier) {
+                ForEach(TuningSystem.allCases, id: \.self) { system in
+                    Text(system.displayName).tag(system.storageIdentifier)
+                }
+            }
+        } header: {
+            Text(String(localized: "Sound"))
+        } footer: {
+            Text(String(localized: "Select how intervals are tuned. Equal Temperament divides the octave into 12 equal steps. Just Intonation uses pure frequency ratios."))
+        }
+    }
+
+    private var difficultySection: some View {
+        Section(String(localized: "Difficulty")) {
             VStack(alignment: .leading) {
                 Text("Vary Loudness")
                 Slider(value: $varyLoudness, in: 0...1) {
@@ -104,25 +123,6 @@ struct SettingsScreen: View {
                     Text("Off")
                 } maximumValueLabel: {
                     Text("Max")
-                }
-            }
-            Picker(String(localized: "Tuning System"), selection: $tuningSystemIdentifier) {
-                ForEach(TuningSystem.allCases, id: \.self) { system in
-                    Text(system.displayName).tag(system.storageIdentifier)
-                }
-            }
-        } header: {
-            Text("Audio")
-        } footer: {
-            Text(String(localized: "Select how intervals are tuned. Equal Temperament divides the octave into 12 equal steps. Just Intonation uses pure frequency ratios."))
-        }
-    }
-
-    private var instrumentSection: some View {
-        Section("Instrument") {
-            Picker("Sound Source", selection: validatedSoundSource) {
-                ForEach(soundSourceProvider.availableSources, id: \.self) { source in
-                    Text(soundSourceProvider.displayName(for: source)).tag(source.rawValue)
                 }
             }
         }
