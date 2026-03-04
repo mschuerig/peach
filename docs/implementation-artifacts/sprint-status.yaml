@@ -295,3 +295,9 @@ development_status:
   # Epic 36: Speak Clearly — Localization & Wording Polish
   epic-36: done
   36-1-interactive-localization-and-wording-review: done
+
+  # Epic 37: Show Me How — Built-in Help
+  epic-37: in-progress
+  37-1-start-screen-help: review
+  37-2-settings-screen-help: backlog
+  37-3-training-screen-help: backlog
