@@ -72,9 +72,21 @@
     "%lld pitch matching exercises completed": {
       "localizations": {
         "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Tonhöhenübungen abgeschlossen"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Tonhöhenübung abgeschlossen"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Tonhöhenübungen abgeschlossen"
+                }
+              }
+            }
           }
         },
         "en": {
