@@ -136,10 +136,19 @@ enum TrainingDataImporter {
         static let pitchMatching = "pitchMatching"
     }
 
+    private static let timestampFormat = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+
     private struct DuplicateKey: Hashable {
-        let timestamp: Date
+        let normalizedTimestamp: String
         let referenceNote: Int
         let targetNote: Int
         let trainingType: String
+
+        init(timestamp: Date, referenceNote: Int, targetNote: Int, trainingType: String) {
+            self.normalizedTimestamp = timestamp.formatted(timestampFormat)
+            self.referenceNote = referenceNote
+            self.targetNote = targetNote
+            self.trainingType = trainingType
+        }
     }
 }

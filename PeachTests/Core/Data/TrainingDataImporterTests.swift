@@ -433,4 +433,35 @@ struct TrainingDataImporterTests {
         #expect(summary.comparisonsSkipped == 0)
         #expect(try store.fetchAllComparisons().count == 3)
     }
+
+    // MARK: - CSV Round-Trip Duplicate Detection
+
+    @Test("merge detects duplicates after export-import round-trip with sub-millisecond timestamps")
+    func mergeDetectsDuplicatesAfterRoundTrip() async throws {
+        let store = try makeStore()
+
+        // Record with sub-millisecond precision (like Date() produces)
+        let timestamp = Date(timeIntervalSinceReferenceDate: 794_394_000.123456)
+        let record = ComparisonRecord(
+            referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
+            interval: 4, tuningSystem: "equalTemperament", timestamp: timestamp
+        )
+        try store.save(record)
+
+        // Simulate export → import: format to ISO8601 string, parse back
+        let exported = timestamp.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true))
+        let reimported = try Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(exported)
+
+        let importedRecord = ComparisonRecord(
+            referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
+            interval: 4, tuningSystem: "equalTemperament", timestamp: reimported
+        )
+        let importResult = makeImportResult(comparisons: [importedRecord])
+
+        let summary = try TrainingDataImporter.importData(importResult, mode: .merge, into: store)
+
+        #expect(summary.comparisonsImported == 0)
+        #expect(summary.comparisonsSkipped == 1)
+        #expect(try store.fetchAllComparisons().count == 1)
+    }
 }
