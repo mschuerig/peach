@@ -687,7 +687,7 @@ protocol PitchDiscriminationProfile: AnyObject {
     var overallMean: Double? { get }
     var overallStdDev: Double? { get }
     func statsForNote(_ note: Int) -> PerceptualNote
-    func averageThreshold(midiRange: ClosedRange<Int>) -> Int?
+    func averageThreshold(noteRange: NoteRange) -> Int?
     func setDifficulty(note: Int, difficulty: Double)
     func reset()
 }
