@@ -43,7 +43,7 @@ struct PitchMatchingScreen: View {
             )
             .padding()
         }
-        .navigationTitle("Pitch Matching")
+        .navigationTitle("Tune & Match")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
