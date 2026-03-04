@@ -45,7 +45,7 @@ nonisolated enum CSVRecordFormatter {
     // MARK: - Field Formatters
 
     private static func formatTimestamp(_ date: Date) -> String {
-        date.formatted(.iso8601)
+        date.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true))
     }
 
     private static func formatNoteName(_ midiNote: Int) -> String {
