@@ -1,8 +1,8 @@
 import Foundation
 
-enum CSVRecordFormatter {
+nonisolated enum CSVRecordFormatter {
 
-    // MARK: - Comparison Record Formatting (Task 2.1)
+    // MARK: - Comparison Record Formatting
 
     static func format(_ record: ComparisonRecord) -> String {
         let fields: [String] = [
@@ -22,7 +22,7 @@ enum CSVRecordFormatter {
         return fields.map { escapeField($0) }.joined(separator: ",")
     }
 
-    // MARK: - PitchMatching Record Formatting (Task 2.2)
+    // MARK: - PitchMatching Record Formatting
 
     static func format(_ record: PitchMatchingRecord) -> String {
         let fields: [String] = [
@@ -64,10 +64,10 @@ enum CSVRecordFormatter {
         return formatted + ".0"
     }
 
-    // MARK: - RFC 4180 Escaping (Task 2.7)
+    // MARK: - RFC 4180 Escaping
 
-    static func escapeField(_ field: String) -> String {
-        if field.contains(",") || field.contains("\"") || field.contains("\n") {
+    private static func escapeField(_ field: String) -> String {
+        if field.contains(",") || field.contains("\"") || field.contains("\n") || field.contains("\r") {
             let escaped = field.replacingOccurrences(of: "\"", with: "\"\"")
             return "\"\(escaped)\""
         }

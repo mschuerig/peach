@@ -1,8 +1,6 @@
-import Foundation
-
 nonisolated enum CSVExportSchema {
 
-    // MARK: - Column Names (Task 1.1)
+    // MARK: - Column Names
 
     static let columnTrainingType = "trainingType"
     static let columnTimestamp = "timestamp"
@@ -17,7 +15,7 @@ nonisolated enum CSVExportSchema {
     static let columnInitialCentOffset = "initialCentOffset"
     static let columnUserCentError = "userCentError"
 
-    // MARK: - Training Type (Task 1.2)
+    // MARK: - Training Type
 
     enum TrainingType: Sendable {
         case comparison
@@ -31,7 +29,7 @@ nonisolated enum CSVExportSchema {
         }
     }
 
-    // MARK: - Header Row (Task 1.3)
+    // MARK: - Header Row
 
     static let allColumns: [String] = [
         columnTrainingType,
@@ -50,7 +48,7 @@ nonisolated enum CSVExportSchema {
 
     static let headerRow: String = allColumns.joined(separator: ",")
 
-    // MARK: - Column Groupings (Task 1.4)
+    // MARK: - Column Groupings
 
     static let commonColumns: [String] = [
         columnTrainingType,

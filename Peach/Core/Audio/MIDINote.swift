@@ -5,7 +5,7 @@ import Foundation
 /// MIDINote is a pure index in the logical world — it carries no tuning or
 /// frequency information. To convert to a sounding frequency, use
 /// `TuningSystem.frequency(for:referencePitch:)`.
-struct MIDINote: Hashable, Comparable, Codable, Sendable {
+nonisolated struct MIDINote: Hashable, Comparable, Codable, Sendable {
     static let validRange = 0...127
 
     let rawValue: Int
