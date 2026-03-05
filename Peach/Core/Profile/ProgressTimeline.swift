@@ -81,13 +81,11 @@ enum TrainingMode: CaseIterable {
     }
 }
 
-/// Whether a training mode has enough data for visualization.
+/// Whether a training mode has data for visualization.
 enum TrainingModeState: Equatable {
     /// No records at all — card is hidden.
     case noData
-    /// Some records but below the cold-start threshold — show encouragement message.
-    case coldStart(recordsNeeded: Int)
-    /// Enough data to render a full chart.
+    /// Has data — show chart/sparkline.
     case active
 }
 
@@ -140,13 +138,9 @@ final class ProgressTimeline {
 
     // MARK: - Public API
 
-    /// Returns the display state for a training mode (no data, cold start, or active).
+    /// Returns the display state for a training mode (no data or active).
     func state(for mode: TrainingMode) -> TrainingModeState {
-        guard let data = modeData[mode] else { return .noData }
-        let count = data.recordCount
-        let threshold = mode.config.coldStartThreshold
-        if count == 0 { return .noData }
-        if count < threshold { return .coldStart(recordsNeeded: threshold - count) }
+        guard let data = modeData[mode], data.recordCount > 0 else { return .noData }
         return .active
     }
 
@@ -177,11 +171,9 @@ final class ProgressTimeline {
         return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: sessionGap)
     }
 
-    /// Returns the trend direction for a mode, or nil if below the trend threshold.
+    /// Returns the trend direction for a mode, or nil if insufficient data.
     func trend(for mode: TrainingMode) -> Trend? {
-        guard let data = modeData[mode] else { return nil }
-        let count = data.recordCount
-        guard count >= mode.config.trendThreshold else { return nil }
+        guard let data = modeData[mode], data.recordCount >= 2 else { return nil }
         return data.computedTrend
     }
 
@@ -279,7 +271,7 @@ final class ProgressTimeline {
         }
 
         mutating func recomputeTrend(config: TrainingModeConfig) {
-            guard recordCount >= config.trendThreshold else {
+            guard recordCount >= 2 else {
                 computedTrend = nil
                 return
             }

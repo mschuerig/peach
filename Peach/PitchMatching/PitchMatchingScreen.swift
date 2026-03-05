@@ -5,6 +5,7 @@ struct PitchMatchingScreen: View {
     let intervals: Set<DirectedInterval>
 
     @Environment(\.pitchMatchingSession) private var pitchMatchingSession
+    @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var showHelpSheet = false
@@ -30,8 +31,19 @@ struct PitchMatchingScreen: View {
         ),
     ]
 
+    private var trainingMode: TrainingMode {
+        Self.trainingMode(for: intervals)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
+            TrainingStatsView(
+                latestValue: pitchMatchingSession.lastResult.map { abs($0.userCentError) },
+                sessionBest: pitchMatchingSession.sessionBestCentError,
+                trend: progressTimeline.trend(for: trainingMode)
+            )
+            .padding(.horizontal)
+
             if pitchMatchingSession.isIntervalMode, let interval = pitchMatchingSession.currentInterval {
                 VStack(spacing: 2) {
                     Text(interval.displayName)
@@ -125,6 +137,12 @@ struct PitchMatchingScreen: View {
             logger.info("PitchMatchingScreen disappeared - stopping pitch matching")
             pitchMatchingSession.stop()
         }
+    }
+
+    // MARK: - Helpers
+
+    static func trainingMode(for intervals: Set<DirectedInterval>) -> TrainingMode {
+        intervals == [.prime] ? .unisonMatching : .intervalMatching
     }
 
     // MARK: - Layout Parameters (extracted for testability)

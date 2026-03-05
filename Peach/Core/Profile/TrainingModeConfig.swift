@@ -3,8 +3,8 @@ import Foundation
 /// Configuration for a training mode's progress tracking behavior.
 ///
 /// Each training mode (unison/interval x comparison/matching) has its own
-/// statistical parameters for EWMA smoothing, adaptive bucketing, trend
-/// detection, and cold-start thresholds.
+/// statistical parameters for EWMA smoothing, adaptive bucketing, and trend
+/// detection.
 struct TrainingModeConfig {
     /// Localized name shown in UI cards and accessibility labels.
     let displayName: String
@@ -17,12 +17,6 @@ struct TrainingModeConfig {
 
     /// Half-life for exponentially weighted moving average smoothing.
     let ewmaHalflife: Duration
-
-    /// Minimum number of records before displaying a chart.
-    let coldStartThreshold: Int
-
-    /// Minimum number of records before computing a trend direction.
-    let trendThreshold: Int
 
     /// Fractional change required to classify trend as improving or declining.
     /// A value of 0.05 means 5% change between the earlier and later halves.
@@ -38,8 +32,6 @@ extension TrainingModeConfig {
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(8.0),
         ewmaHalflife: .seconds(7 * 86400),
-        coldStartThreshold: 20,
-        trendThreshold: 100,
         trendChangeThreshold: 0.05,
         sessionGap: .seconds(1800)
     )
@@ -49,8 +41,6 @@ extension TrainingModeConfig {
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(12.0),
         ewmaHalflife: .seconds(7 * 86400),
-        coldStartThreshold: 20,
-        trendThreshold: 100,
         trendChangeThreshold: 0.05,
         sessionGap: .seconds(1800)
     )
@@ -60,8 +50,6 @@ extension TrainingModeConfig {
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(5.0),
         ewmaHalflife: .seconds(7 * 86400),
-        coldStartThreshold: 20,
-        trendThreshold: 100,
         trendChangeThreshold: 0.05,
         sessionGap: .seconds(1800)
     )
@@ -71,8 +59,6 @@ extension TrainingModeConfig {
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(8.0),
         ewmaHalflife: .seconds(7 * 86400),
-        coldStartThreshold: 20,
-        trendThreshold: 100,
         trendChangeThreshold: 0.05,
         sessionGap: .seconds(1800)
     )

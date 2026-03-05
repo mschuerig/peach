@@ -7,6 +7,9 @@ struct ComparisonScreen: View {
     /// Training session injected via environment
     @Environment(\.comparisonSession) private var comparisonSession
 
+    /// Progress timeline for accuracy summary
+    @Environment(\.progressTimeline) private var progressTimeline
+
     /// Whether the user has enabled Reduce Motion in system accessibility settings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -45,15 +48,18 @@ struct ComparisonScreen: View {
         verticalSizeClass == .compact
     }
 
+    private var trainingMode: TrainingMode {
+        Self.trainingMode(for: intervals)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
-            if let difficulty = comparisonSession.currentDifficulty {
-                DifficultyDisplayView(
-                    currentDifficulty: difficulty,
-                    sessionBest: comparisonSession.sessionBestCentDifference
-                )
-                .padding(.horizontal)
-            }
+            TrainingStatsView(
+                latestValue: comparisonSession.lastCompletedCentDifference,
+                sessionBest: comparisonSession.sessionBestCentDifference,
+                trend: progressTimeline.trend(for: trainingMode)
+            )
+            .padding(.horizontal)
 
             if comparisonSession.isIntervalMode, let interval = comparisonSession.currentInterval {
                 VStack(spacing: 2) {
@@ -217,6 +223,10 @@ struct ComparisonScreen: View {
     }
 
     // MARK: - Helpers
+
+    static func trainingMode(for intervals: Set<DirectedInterval>) -> TrainingMode {
+        intervals == [.prime] ? .unisonComparison : .intervalComparison
+    }
 
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states
     private var buttonsEnabled: Bool {
