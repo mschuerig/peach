@@ -34,7 +34,7 @@ struct TrainingModeConfig {
 
 extension TrainingModeConfig {
     static let unisonComparison = TrainingModeConfig(
-        displayName: String(localized: "Unison Comparison"),
+        displayName: String(localized: "Hear & Compare – Single Notes"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(8.0),
         ewmaHalflife: .seconds(7 * 86400),
@@ -45,7 +45,7 @@ extension TrainingModeConfig {
     )
 
     static let intervalComparison = TrainingModeConfig(
-        displayName: String(localized: "Interval Comparison"),
+        displayName: String(localized: "Hear & Compare – Intervals"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(12.0),
         ewmaHalflife: .seconds(7 * 86400),
@@ -56,7 +56,7 @@ extension TrainingModeConfig {
     )
 
     static let unisonMatching = TrainingModeConfig(
-        displayName: String(localized: "Unison Matching"),
+        displayName: String(localized: "Tune & Match – Single Notes"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(5.0),
         ewmaHalflife: .seconds(7 * 86400),
@@ -67,7 +67,7 @@ extension TrainingModeConfig {
     )
 
     static let intervalMatching = TrainingModeConfig(
-        displayName: String(localized: "Interval Matching"),
+        displayName: String(localized: "Tune & Match – Intervals"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(8.0),
         ewmaHalflife: .seconds(7 * 86400),

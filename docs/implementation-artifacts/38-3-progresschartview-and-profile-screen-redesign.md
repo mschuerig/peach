@@ -1,6 +1,6 @@
 # Story 38.3: ProgressChartView and Profile Screen Redesign
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -285,13 +285,16 @@ New files:
 
 Modified files:
 - `Peach/Profile/ProfileScreen.swift`
+- `Peach/Profile/ProgressChartView.swift`
 - `Peach/App/EnvironmentKeys.swift`
 - `Peach/App/PeachApp.swift`
 - `Peach/Core/Data/TrainingDataTransferService.swift`
 - `Peach/Core/Profile/ProgressTimeline.swift`
+- `Peach/Core/Profile/TrainingModeConfig.swift`
 - `Peach/Core/Training/ComparisonObserver.swift`
-- `Peach/Localizable.xcstrings`
+- `Peach/Resources/Localizable.xcstrings`
 - `PeachTests/Core/Data/TrainingDataTransferServiceTests.swift`
+- `PeachTests/Core/Profile/TrainingModeConfigTests.swift`
 - `PeachTests/Settings/SettingsTests.swift`
 - `PeachTests/Settings/TrainingDataImportActionTests.swift`
 - `PeachTests/Comparison/ComparisonSessionResetTests.swift`
@@ -313,3 +316,4 @@ Deleted files:
 ## Change Log
 
 - 2026-03-05: Implemented story 38.3 — Created ProgressChartView with Apple Charts, redesigned ProfileScreen to card-based layout, deleted old profile views and types (ThresholdTimeline, TrendAnalyzer, ThresholdTimelineView, SummaryStatisticsView, MatchingStatisticsView), unwired old types from composition root and services, added German translations, 933 tests passing
+- 2026-03-05: Code review fixes — Renamed training mode displayNames to match Start Screen labels ("Hear & Compare – Single Notes" etc.), removed old localization keys, eliminated redundant stddev re-query in ProgressChartView, made RelativeDateTimeFormatter static, optimized O(n) bucket lookup to O(1) with dictionary, fixed story File List (added TrainingModeConfig.swift, TrainingModeConfigTests.swift, corrected Localizable.xcstrings path). Note: AC #3's "0 records" message conflicts with AC #1's "hide no-data modes" — implementation correctly hides empty modes per AC #1. 933 tests passing

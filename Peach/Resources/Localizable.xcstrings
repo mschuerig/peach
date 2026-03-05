@@ -1714,46 +1714,6 @@
         }
       }
     },
-    "Unison Comparison": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Einklangvergleich"
-          }
-        }
-      }
-    },
-    "Interval Comparison": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intervallvergleich"
-          }
-        }
-      }
-    },
-    "Unison Matching": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Einklang-Matching"
-          }
-        }
-      }
-    },
-    "Interval Matching": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intervall-Matching"
-          }
-        }
-      }
-    }
   },
   "version": "1.1"
 }

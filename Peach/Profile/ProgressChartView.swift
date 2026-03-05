@@ -45,9 +45,10 @@ struct ProgressChartView: View {
         let buckets = progressTimeline.buckets(for: mode)
         let ewma = progressTimeline.currentEWMA(for: mode)
         let trend = progressTimeline.trend(for: mode)
+        let stddev = buckets.last?.stddev ?? 0
 
         return VStack(alignment: .leading, spacing: 12) {
-            headlineRow(ewma: ewma, trend: trend)
+            headlineRow(ewma: ewma, stddev: stddev, trend: trend)
             chart(buckets: buckets)
                 .frame(height: chartHeight)
         }
@@ -64,7 +65,7 @@ struct ProgressChartView: View {
 
     // MARK: - Headline Row
 
-    private func headlineRow(ewma: Double?, trend: Trend?) -> some View {
+    private func headlineRow(ewma: Double?, stddev: Double, trend: Trend?) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(config.displayName)
                 .font(.headline)
@@ -74,7 +75,7 @@ struct ProgressChartView: View {
             if let ewma {
                 Text(Self.formatEWMA(ewma))
                     .font(.title2.bold())
-                Text(Self.formatStdDev(stddevForCurrentMode))
+                Text(Self.formatStdDev(stddev))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -87,16 +88,11 @@ struct ProgressChartView: View {
         }
     }
 
-    private var stddevForCurrentMode: Double {
-        let buckets = progressTimeline.buckets(for: mode)
-        guard let last = buckets.last else { return 0 }
-        return last.stddev
-    }
-
     // MARK: - Chart
 
     private func chart(buckets: [TimeBucket]) -> some View {
         let now = Date()
+        let bucketSizeByDate = Dictionary(uniqueKeysWithValues: buckets.map { ($0.periodStart, $0.bucketSize) })
         return Chart {
             ForEach(Array(buckets.enumerated()), id: \.offset) { _, bucket in
                 AreaMark(
@@ -124,8 +120,7 @@ struct ProgressChartView: View {
                 AxisGridLine()
                 AxisValueLabel {
                     if let date = value.as(Date.self) {
-                        let bucket = buckets.first { $0.periodStart == date }
-                        let size = bucket?.bucketSize ?? .day
+                        let size = bucketSizeByDate[date] ?? .day
                         Text(Self.bucketLabel(for: date, size: size, relativeTo: now))
                     }
                 }
@@ -140,12 +135,16 @@ struct ProgressChartView: View {
 
     // MARK: - Static Helpers
 
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter
+    }()
+
     static func bucketLabel(for date: Date, size: BucketSize, relativeTo now: Date) -> String {
         switch size {
         case .session:
-            let formatter = RelativeDateTimeFormatter()
-            formatter.unitsStyle = .short
-            return formatter.localizedString(for: date, relativeTo: now)
+            return relativeFormatter.localizedString(for: date, relativeTo: now)
         case .day:
             return date.formatted(.dateTime.weekday(.abbreviated))
         case .week:
