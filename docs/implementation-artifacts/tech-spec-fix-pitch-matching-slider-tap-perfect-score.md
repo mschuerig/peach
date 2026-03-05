@@ -2,7 +2,7 @@
 title: 'Fix pitch matching slider-tap-perfect-score regression'
 slug: 'fix-pitch-matching-slider-tap-perfect-score'
 created: '2026-03-05'
-status: 'ready-for-dev'
+status: 'implementation-complete'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'SwiftUI', 'Swift Testing']
 files_to_modify: ['Peach/PitchMatching/PitchMatchingSession.swift', 'PeachTests/PitchMatching/PitchMatchingSessionTests.swift']
@@ -69,12 +69,12 @@ Add `challenge.initialCentOffset` into the cent offset calculation in both `adju
 
 ### Tasks
 
-- [ ] Task 1: Write failing regression test
+- [x] Task 1: Write failing regression test
   - File: `PeachTests/PitchMatching/PitchMatchingSessionTests.swift`
   - Action: Add a test that starts a session, waits for `awaitingSliderTouch`, calls `commitPitch(0.0)`, and asserts that `userCentError` is NOT near zero (it should equal the challenge's `initialCentOffset`). Use fixed `noteRange` (e.g., `MIDINote(69)...MIDINote(81)`) and `.concert440` reference pitch for deterministic frequency values. Assert `abs(result.userCentError) > 1.0` to prove the bug (this test will fail before the fix).
   - Notes: The `initialCentOffset` is random in -20...+20 range, so any non-trivial offset will produce error > 1.0 cent. To make the test deterministic, also assert that `abs(result.userCentError - challenge.initialCentOffset) < 0.01` after the fix — slider=0 should produce exactly the initial detuning as error.
 
-- [ ] Task 2: Fix `adjustPitch()` to include `initialCentOffset`
+- [x] Task 2: Fix `adjustPitch()` to include `initialCentOffset`
   - File: `Peach/PitchMatching/PitchMatchingSession.swift`
   - Action: Change the cent offset calculation (line 111) from:
     ```swift
@@ -87,7 +87,7 @@ Add `challenge.initialCentOffset` into the cent offset calculation in both `adju
     ```
   - Notes: This makes slider=0 set the note to the initial detuned frequency (no audible jump when first touching). Moving the slider adjusts from the detuned starting point.
 
-- [ ] Task 3: Fix `commitPitch()` to include `initialCentOffset`
+- [x] Task 3: Fix `commitPitch()` to include `initialCentOffset`
   - File: `Peach/PitchMatching/PitchMatchingSession.swift`
   - Action: Change the cent offset calculation (line 126) from:
     ```swift
@@ -100,7 +100,7 @@ Add `challenge.initialCentOffset` into the cent offset calculation in both `adju
     ```
   - Notes: This makes slider=0 submit `initialCentOffset` as the user's cent error instead of 0.
 
-- [ ] Task 4: Fix the existing buggy test
+- [x] Task 4: Fix the existing buggy test
   - File: `PeachTests/PitchMatching/PitchMatchingSessionTests.swift`
   - Action: Update `commitPitchFromAwaitingSliderTouchProducesResult` (line 174). Change the assertion from `#expect(abs(result.userCentError) < 0.01)` to assert that the error equals the challenge's `initialCentOffset`. For example:
     ```swift
@@ -109,16 +109,16 @@ Add `challenge.initialCentOffset` into the cent offset calculation in both `adju
     ```
   - Notes: The test description should also be updated to reflect the corrected behavior (e.g., "commitPitch from awaitingSliderTouch produces result with initial offset error").
 
-- [ ] Task 5: Run full test suite
+- [x] Task 5: Run full test suite
   - Action: `bin/test.sh` — all tests must pass with zero regressions
   - Notes: Pay attention to tests that assert specific frequency values after `adjustPitch(0.0)` — these should now produce the detuned frequency, not the perfect frequency. The `transitionToPlayingTunable` helper uses `adjustPitch(0.0)` but tests using it check state transitions, not frequencies, so they should pass.
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the session is in `awaitingSliderTouch` state, when the user commits pitch at slider value 0 (tap without moving), then `userCentError` equals `initialCentOffset` (not 0)
-- [ ] AC 2: Given the session is in `playingTunable` state with the slider at value 0, when `adjustPitch(0.0)` is called, then the tunable note plays at the initial detuned frequency (not the exact target frequency)
-- [ ] AC 3: Given the session is in `playingTunable` state, when the user drags the slider to the position where `initialCentOffset + value * 20 = 0`, then `userCentError` is approximately 0 (perfect match requires finding the correct slider position)
-- [ ] AC 4: Given the fix is applied, when the full test suite runs, then all existing tests pass with zero regressions
+- [x] AC 1: Given the session is in `awaitingSliderTouch` state, when the user commits pitch at slider value 0 (tap without moving), then `userCentError` equals `initialCentOffset` (not 0)
+- [x] AC 2: Given the session is in `playingTunable` state with the slider at value 0, when `adjustPitch(0.0)` is called, then the tunable note plays at the initial detuned frequency (not the exact target frequency)
+- [x] AC 3: Given the session is in `playingTunable` state, when the user drags the slider to the position where `initialCentOffset + value * 20 = 0`, then `userCentError` is approximately 0 (perfect match requires finding the correct slider position)
+- [x] AC 4: Given the fix is applied, when the full test suite runs, then all existing tests pass with zero regressions
 
 ## Additional Context
 
