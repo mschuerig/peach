@@ -107,9 +107,7 @@ final class PitchMatchingSession: TrainingSession {
             sliderTouchContinuation = nil
             return
         }
-        guard state == .playingTunable, let referenceFrequency else { return }
-        let centOffset = value * Self.initialCentOffsetRange.upperBound
-        let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
+        guard state == .playingTunable, let frequency = sliderFrequency(for: value) else { return }
         Task {
             try? await currentHandle?.adjustFrequency(Frequency(frequency))
         }
@@ -122,10 +120,14 @@ final class PitchMatchingSession: TrainingSession {
             sliderTouchContinuation?.resume()
             sliderTouchContinuation = nil
         }
-        guard state == .playingTunable, let referenceFrequency else { return }
-        let centOffset = value * Self.initialCentOffsetRange.upperBound
-        let frequency = referenceFrequency * pow(2.0, centOffset / 1200.0)
+        guard state == .playingTunable, let frequency = sliderFrequency(for: value) else { return }
         commitResult(userFrequency: frequency)
+    }
+
+    private func sliderFrequency(for value: Double) -> Double? {
+        guard let referenceFrequency, let challenge = currentChallenge else { return nil }
+        let centOffset = challenge.initialCentOffset + value * Self.initialCentOffsetRange.upperBound
+        return referenceFrequency * pow(2.0, centOffset / 1200.0)
     }
 
     private func commitResult(userFrequency: Double) {
