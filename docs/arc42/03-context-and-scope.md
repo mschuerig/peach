@@ -35,7 +35,7 @@ graph LR
     subgraph "iOS Device"
         subgraph "Peach App Process"
             UI["SwiftUI Views"]
-            Sessions["ComparisonSession<br>PitchMatchingSession"]
+            Sessions["PitchComparisonSession<br>PitchMatchingSession"]
             Core["Core Services<br>(Algorithm, Profile, Data)"]
             Audio["SoundFontNotePlayer"]
         end

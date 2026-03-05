@@ -61,15 +61,15 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftUI Views:**
 - **Views are thin** — observe state, render, send actions; no business logic in views
-- **Views only interact with `ComparisonSession`, `PitchMatchingSession`, `PerceptualProfile`, and `TrainingSession`** — never import or reference `NotePlayer`, `NextComparisonStrategy`, or `TrainingDataStore` from views
-- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var comparisonSession = ComparisonSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
+- **Views only interact with `PitchComparisonSession`, `PitchMatchingSession`, `PerceptualProfile`, and `TrainingSession`** — never import or reference `NotePlayer`, `NextPitchComparisonStrategy`, or `TrainingDataStore` from views
+- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var pitchComparisonSession = PitchComparisonSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
 - **Extract subviews at ~40 lines** — when a view body exceeds ~40 lines, extract child views
 - **Responsive layout** — detect `@Environment(\.verticalSizeClass)` for compact/regular; extract layout parameters to `static` methods for unit testability
 - **`NavigationDestination` enum** for type-safe routing — no string-based navigation
 
 **SwiftData:**
 - **`TrainingDataStore` is the sole data accessor** — all CRUD goes through this single service
-- **`ComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `ComparisonRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `interval`, `tuningSystem`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `targetNote`, `initialCentOffset`, `userCentError`, `interval`, `tuningSystem`, `timestamp`
+- **`PitchComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `PitchComparisonRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `interval`, `tuningSystem`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `targetNote`, `initialCentOffset`, `userCentError`, `interval`, `tuningSystem`, `timestamp`
 - **`ModelContainer` initialized once in `PeachApp.swift`** — passed via SwiftUI environment; new models must be registered in the schema there
 
 **AVAudioEngine:**
@@ -82,10 +82,10 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Two-world architecture** — logical world (`MIDINote`, `DetunedMIDINote`, `Interval`, `Cents`) and physical world (`Frequency`), bridged by `TuningSystem.frequency(for:referencePitch:)`. Forward conversion (logical → physical) always goes through `TuningSystem`; inverse (Hz → MIDI note + cents) is `SoundFontNotePlayer.decompose(frequency:)` (internal for testability, used only within the SoundFont layer). All bridge parameters are explicit (no defaults)
 
 **State Management:**
-- **`ComparisonSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
+- **`PitchComparisonSession` is the central state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
 - **State transitions are guarded** — preconditions enforced; never skip states
-- **Observer pattern** — `ComparisonObserver` protocol; observers injected as array into `ComparisonSession`
-- **Settings read live** — `ComparisonSession` reads from `UserSettings` protocol on each comparison, not cached; `SoundFontNotePlayer` reads `soundSource` on each `play()` call. `AppUserSettings` reads `UserDefaults.standard` under the hood, staying in sync with `@AppStorage` writes from `SettingsScreen`
+- **Observer pattern** — `PitchComparisonObserver` protocol; observers injected as array into `PitchComparisonSession`
+- **Settings read live** — `PitchComparisonSession` reads from `UserSettings` protocol on each pitch comparison, not cached; `SoundFontNotePlayer` reads `soundSource` on each `play()` call. `AppUserSettings` reads `UserDefaults.standard` under the hood, staying in sync with `@AppStorage` writes from `SettingsScreen`
 
 **Composition Root (`PeachApp.swift`):**
 - **All service instantiation happens in `PeachApp.swift`** — this is the single dependency graph source of truth
@@ -93,10 +93,10 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **When Adding New Components:**
 - New injectable service → add `@Entry var myService = MyService()` in `App/EnvironmentKeys.swift`, wire in `PeachApp.swift`
-- New `ComparisonObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
+- New `PitchComparisonObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
 - New SwiftData `@Model` → register in `ModelContainer` schema in `PeachApp.swift`
 - New layout logic → extract to `static` methods for unit testability
-- New state transitions → respect existing guards in `ComparisonSession`; use `waitForState` helper in tests
+- New state transitions → respect existing guards in `PitchComparisonSession`; use `waitForState` helper in tests
 
 ### Testing Rules
 
@@ -130,8 +130,8 @@ Never run only specific test files — always the complete suite.
 - Provide `reset()` method for cleanup
 
 **Test Helpers:**
-- **`waitForState` helper** — async assertion for `ComparisonSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
-- **Factory methods return tuples** — `makeComparisonSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
+- **`waitForState` helper** — async assertion for `PitchComparisonSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
+- **Factory methods return tuples** — `makePitchComparisonSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
 - **Layout tests use `static` methods** — test layout logic without instantiating SwiftUI views
 
 **Coverage:**
@@ -140,18 +140,18 @@ Never run only specific test files — always the complete suite.
 ### Code Quality & Style Rules
 
 **Project-Specific Naming (non-obvious conventions):**
-- **Protocols:** nouns for roles (`NotePlayer`, `NextComparisonStrategy`, `TrainingSession`), `-able`/`-ible` for capabilities (`Resettable`, `Sendable`) per [Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/) (not `-Protocol` suffix)
+- **Protocols:** nouns for roles (`NotePlayer`, `NextPitchComparisonStrategy`, `TrainingSession`), `-able`/`-ible` for capabilities (`Resettable`, `Sendable`) per [Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/) (not `-Protocol` suffix)
 - **Protocol implementations:** descriptive prefix — `SoundFontNotePlayer`, `KazezNoteStrategy`
 - **Screens:** `{Name}Screen.swift` — not `{Name}View` or `{Name}ViewController`
-- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `ComparisonFeedbackIndicator.swift`
+- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `PitchComparisonFeedbackIndicator.swift`
 - **Mocks:** `Mock{Name}.swift` — not `{Name}Mock`, `Fake{Name}`, or `Stub{Name}`
 - **Boolean properties:** `is`/`has`/`should` prefix — `isCorrect`, `isCompact`, `shouldThrowError`
 - **Enum cases:** `lowerCamelCase` — `case playingNote1`, not `case PlayingNote1`
-- **SwiftData models:** singular noun — `ComparisonRecord`, not `ComparisonRecords`
+- **SwiftData models:** singular noun — `PitchComparisonRecord`, not `PitchComparisonRecords`
 
 **File Placement (decision tree):**
 - Protocol or service used across features → `Core/{subdomain}/`
-- Shared training domain types (Comparison, observers, Resettable) → `Core/Training/`
+- Shared training domain types (PitchComparison, observers, Resettable) → `Core/Training/`
 - Audio domain value types (SoundSourceID, NoteDuration, etc.) → `Core/Audio/`
 - New `@Entry` environment key → `App/EnvironmentKeys.swift` (not co-located with domain types)
 - Screen the user navigates to → `{Feature}/{Feature}Screen.swift`
@@ -163,8 +163,8 @@ Never run only specific test files — always the complete suite.
 **Dependency Direction Rules (enforced by `bin/check-dependencies.sh`):**
 - **Core/ is framework-free** — no `import SwiftUI`, `import UIKit`, or `import Charts` in any Core/ file
 - **SwiftData is encapsulated** — `import SwiftData` only in `Core/Data/` and `App/`; all other code accesses persistence through `TrainingDataStore`
-- **UIKit is injected** — `import UIKit` only in `Comparison/HapticFeedbackManager.swift` (protocol abstraction) and `App/` (composition root); nowhere else
-- **No cross-feature coupling** — feature directories (`Comparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Info/`) must not reference types from other feature directories; shared types belong in `Core/`; `Start/` is exempt as the navigation router
+- **UIKit is injected** — `import UIKit` only in `PitchComparison/HapticFeedbackManager.swift` (protocol abstraction) and `App/` (composition root); nowhere else
+- **No cross-feature coupling** — feature directories (`PitchComparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Info/`) must not reference types from other feature directories; shared types belong in `Core/`; `Start/` is exempt as the navigation router
 - **No Combine** — use `async/await` throughout; `import Combine` is forbidden
 - **Views must not orchestrate services** — if a view needs to coordinate multiple services (e.g., reset data + reset profile + reset session), wrap that coordination in a closure or method owned by the composition root (`PeachApp`) and inject the closure; the view should call one thing, not three
 - **Minimize a view's `@Environment` surface** — each `@Environment` dependency is a coupling point; if a view only uses a dependency to pass it to another call, the dependency belongs higher up
@@ -215,9 +215,9 @@ Never run only specific test files — always the complete suite.
 - **Read before writing** — before implementing anything, read the existing implementation of the component you're modifying or the closest analogous component; the codebase is the primary source of truth for patterns
 
 **Architectural Boundaries (hard rules):**
-- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `ComparisonSession` or `PerceptualProfile` as computed properties
-- **`ComparisonSession` is the ONLY component that understands "comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextComparisonStrategy` knows note selection, neither knows about the loop
-- **`PerceptualProfile` is in-memory only** — rebuilt from `ComparisonRecord` on startup, updated incrementally; never persist it to SwiftData
+- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `PitchComparisonSession` or `PerceptualProfile` as computed properties
+- **`PitchComparisonSession` is the ONLY component that understands "pitch comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextPitchComparisonStrategy` knows note selection, neither knows about the loop
+- **`PerceptualProfile` is in-memory only** — rebuilt from `PitchComparisonRecord` on startup, updated incrementally; never persist it to SwiftData
 
 **Domain Rules Agents Will Get Wrong:**
 - **MIDI note range: 0–127** — `PerceptualProfile` is indexed by MIDI note (128 slots, 0-based); out-of-range = crash
@@ -241,10 +241,10 @@ Never run only specific test files — always the complete suite.
 - `Pitch` struct → deleted; use `DetunedMIDINote` + `TuningSystem.frequency(for:referencePitch:)` instead
 
 **Error Resilience:**
-- **`ComparisonSession` is the error boundary** — catches all service errors; training loop continues gracefully
-- **Audio interruption mid-comparison** → discard incomplete comparison, stop training
+- **`PitchComparisonSession` is the error boundary** — catches all service errors; training loop continues gracefully
+- **Audio interruption mid-pitch-comparison** → discard incomplete pitch comparison, stop training
 - **App backgrounding** → stop training; return to Start Screen on foreground
-- **Empty profile (cold start)** → `KazezNoteStrategy` starts at `maxCentDifference` (or `profile.overallMean` if some training exists); handle gracefully
+- **Empty profile (cold start)** → `KazezNoteStrategy` starts at `maxCentDifference` (or `profile.overallMean` if some pitch comparison training exists); handle gracefully
 
 ---
 

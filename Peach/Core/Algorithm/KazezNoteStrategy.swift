@@ -1,7 +1,7 @@
 import Foundation
 import OSLog
 
-final class KazezNoteStrategy: NextComparisonStrategy {
+final class KazezNoteStrategy: NextPitchComparisonStrategy {
 
     // MARK: - Properties
 
@@ -13,20 +13,20 @@ final class KazezNoteStrategy: NextComparisonStrategy {
         logger.info("KazezNoteStrategy initialized")
     }
 
-    // MARK: - NextComparisonStrategy Protocol
+    // MARK: - NextPitchComparisonStrategy Protocol
 
-    func nextComparison(
-        profile: PitchDiscriminationProfile,
+    func nextPitchComparison(
+        profile: PitchComparisonProfile,
         settings: TrainingSettings,
-        lastComparison: CompletedComparison?,
+        lastPitchComparison: CompletedPitchComparison?,
         interval: DirectedInterval
-    ) -> Comparison {
+    ) -> PitchComparison {
         let magnitude: Double
 
         let difficultyRange = settings.minCentDifference.rawValue...settings.maxCentDifference.rawValue
 
-        if let last = lastComparison {
-            let p = last.comparison.targetNote.offset.magnitude
+        if let last = lastPitchComparison {
+            let p = last.pitchComparison.targetNote.offset.magnitude
             magnitude = last.isCorrect
                 ? kazezNarrow(p: p).clamped(to: difficultyRange)
                 : kazezWiden(p: p).clamped(to: difficultyRange)
@@ -52,7 +52,7 @@ final class KazezNoteStrategy: NextComparisonStrategy {
 
         logger.info("note=\(note.rawValue), interval=\(interval.interval.semitones), target=\(targetBaseNote.rawValue), offset=\(magnitude, format: .fixed(precision: 1))")
 
-        return Comparison(
+        return PitchComparison(
             referenceNote: note,
             targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(signed))
         )

@@ -27,16 +27,16 @@ struct ResettableTests {
         let timeline = ProgressTimeline()
         let resettable: Resettable = timeline
         try resettable.reset()
-        #expect(timeline.state(for: .unisonComparison) == .noData)
+        #expect(timeline.state(for: .unisonPitchComparison) == .noData)
     }
 
-    @Test("ComparisonSession.resetTrainingData calls reset on all resettables")
+    @Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
     func resetTrainingDataCallsAllResettables() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()
-        let session = ComparisonSession(
+        let session = PitchComparisonSession(
             notePlayer: MockNotePlayer(),
-            strategy: MockNextComparisonStrategy(),
+            strategy: MockNextPitchComparisonStrategy(),
             profile: PerceptualProfile(),
             userSettings: MockUserSettings(),
             resettables: [mock1, mock2]

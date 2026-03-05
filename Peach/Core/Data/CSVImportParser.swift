@@ -3,7 +3,7 @@ import Foundation
 nonisolated enum CSVImportParser {
 
     struct ImportResult {
-        var comparisons: [ComparisonRecord]
+        var pitchComparisons: [PitchComparisonRecord]
         var pitchMatchings: [PitchMatchingRecord]
         var errors: [CSVImportError]
     }
@@ -25,7 +25,7 @@ nonisolated enum CSVImportParser {
     // MARK: - Top-Level Parse
 
     static func parse(_ csvContent: String) -> ImportResult {
-        var comparisons: [ComparisonRecord] = []
+        var pitchComparisons: [PitchComparisonRecord] = []
         var pitchMatchings: [PitchMatchingRecord] = []
         var errors: [CSVImportError] = []
 
@@ -33,12 +33,12 @@ nonisolated enum CSVImportParser {
 
         guard let headerLine = lines.first, !headerLine.isEmpty else {
             errors.append(.invalidHeader(expected: CSVExportSchema.headerRow, actual: "(empty)"))
-            return ImportResult(comparisons: comparisons, pitchMatchings: pitchMatchings, errors: errors)
+            return ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
         }
 
         if let headerError = validateHeader(headerLine) {
             errors.append(headerError)
-            return ImportResult(comparisons: comparisons, pitchMatchings: pitchMatchings, errors: errors)
+            return ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
         }
 
         let dataLines = lines.dropFirst()
@@ -46,8 +46,8 @@ nonisolated enum CSVImportParser {
             if line.isEmpty { continue }
             let rowNumber = index + 1
             switch parseRow(line, rowNumber: rowNumber) {
-            case .comparison(let record):
-                comparisons.append(record)
+            case .pitchComparison(let record):
+                pitchComparisons.append(record)
             case .pitchMatching(let record):
                 pitchMatchings.append(record)
             case .error(let error):
@@ -55,7 +55,7 @@ nonisolated enum CSVImportParser {
             }
         }
 
-        return ImportResult(comparisons: comparisons, pitchMatchings: pitchMatchings, errors: errors)
+        return ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
     }
 
     // MARK: - Header Validation
@@ -165,7 +165,7 @@ nonisolated enum CSVImportParser {
     // MARK: - Row Parsing
 
     private enum RowResult {
-        case comparison(ComparisonRecord)
+        case pitchComparison(PitchComparisonRecord)
         case pitchMatching(PitchMatchingRecord)
         case error(CSVImportError)
     }
@@ -222,10 +222,10 @@ nonisolated enum CSVImportParser {
 
         // Dispatch by training type
         switch trainingType {
-        case CSVExportSchema.TrainingType.comparison.csvValue:
+        case CSVExportSchema.TrainingType.pitchComparison.csvValue:
             // Validate type-specific empty fields
             guard initialCentOffsetStr.isEmpty && userCentErrorStr.isEmpty else {
-                return .error(.invalidRowData(row: rowNumber, column: "initialCentOffset/userCentError", value: "\(initialCentOffsetStr),\(userCentErrorStr)", reason: "must be empty for comparison rows"))
+                return .error(.invalidRowData(row: rowNumber, column: "initialCentOffset/userCentError", value: "\(initialCentOffsetStr),\(userCentErrorStr)", reason: "must be empty for pitchComparison rows"))
             }
 
             guard let centOffset = Double(centOffsetStr) else {
@@ -238,7 +238,7 @@ nonisolated enum CSVImportParser {
 
             let isCorrect = isCorrectStr == "true"
 
-            let record = ComparisonRecord(
+            let record = PitchComparisonRecord(
                 referenceNote: referenceNote,
                 targetNote: targetNote,
                 centOffset: centOffset,
@@ -247,7 +247,7 @@ nonisolated enum CSVImportParser {
                 tuningSystem: tuningSystemStr,
                 timestamp: timestamp
             )
-            return .comparison(record)
+            return .pitchComparison(record)
 
         case CSVExportSchema.TrainingType.pitchMatching.csvValue:
             // Validate type-specific empty fields
@@ -275,7 +275,7 @@ nonisolated enum CSVImportParser {
             return .pitchMatching(record)
 
         default:
-            return .error(.invalidRowData(row: rowNumber, column: "trainingType", value: trainingType, reason: "must be 'comparison' or 'pitchMatching'"))
+            return .error(.invalidRowData(row: rowNumber, column: "trainingType", value: trainingType, reason: "must be 'pitchComparison' or 'pitchMatching'"))
         }
     }
 

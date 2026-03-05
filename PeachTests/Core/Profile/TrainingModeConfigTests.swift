@@ -7,7 +7,7 @@ struct TrainingModeConfigTests {
 
     @Test("unison comparison has expected parameters")
     func unisonComparison() async {
-        let config = TrainingModeConfig.unisonComparison
+        let config = TrainingModeConfig.unisonPitchComparison
         #expect(config.optimalBaseline == Cents(8.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -15,7 +15,7 @@ struct TrainingModeConfigTests {
 
     @Test("interval comparison has expected parameters")
     func intervalComparison() async {
-        let config = TrainingModeConfig.intervalComparison
+        let config = TrainingModeConfig.intervalPitchComparison
         #expect(config.optimalBaseline == Cents(12.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -40,8 +40,8 @@ struct TrainingModeConfigTests {
     @Test("all four configurations have unique display names")
     func uniqueDisplayNames() async {
         let configs = [
-            TrainingModeConfig.unisonComparison,
-            TrainingModeConfig.intervalComparison,
+            TrainingModeConfig.unisonPitchComparison,
+            TrainingModeConfig.intervalPitchComparison,
             TrainingModeConfig.unisonMatching,
             TrainingModeConfig.intervalMatching
         ]

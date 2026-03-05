@@ -11,13 +11,13 @@ struct TrainingDataStoreTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     private func makeFileBasedContainer() throws -> ModelContainer {
         let tempDir = FileManager.default.temporaryDirectory
         let config = ModelConfiguration(url: tempDir.appendingPathComponent("test-\(UUID().uuidString).store"))
-        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     // MARK: - Save and Fetch Tests
@@ -28,7 +28,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 50.0,
@@ -40,7 +40,7 @@ struct TrainingDataStoreTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
@@ -58,15 +58,15 @@ struct TrainingDataStoreTests {
         let store = TrainingDataStore(modelContext: context)
 
         let now = Date()
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-60))
-        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-30))
-        let record3 = ComparisonRecord(referenceNote: 64, targetNote: 64, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now)
+        let record1 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-60))
+        let record2 = PitchComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: now.addingTimeInterval(-30))
+        let record3 = PitchComparisonRecord(referenceNote: 64, targetNote: 64, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: now)
 
         try store.save(record1)
         try store.save(record2)
         try store.save(record3)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
 
         #expect(fetched.count == 3)
         #expect(fetched[0].referenceNote == 60)
@@ -81,7 +81,7 @@ struct TrainingDataStoreTests {
         let store = TrainingDataStore(modelContext: context)
 
         let timestamp = Date()
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 72,
             targetNote: 72,
             centOffset: 123.45,
@@ -93,7 +93,7 @@ struct TrainingDataStoreTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
 
         #expect(fetched.count == 1)
         let retrieved = fetched[0]
@@ -114,15 +114,15 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
-        var fetched = try store.fetchAllComparisons()
+        var fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 1)
 
         try store.delete(record)
 
-        fetched = try store.fetchAllComparisons()
+        fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.isEmpty)
     }
 
@@ -132,14 +132,14 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
-        let record2 = ComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
+        let record1 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record2 = PitchComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record1)
         try store.save(record2)
 
         try store.delete(record1)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 62)
     }
@@ -154,7 +154,7 @@ struct TrainingDataStoreTests {
             let context1 = ModelContext(container)
             let store1 = TrainingDataStore(modelContext: context1)
 
-            let record = ComparisonRecord(
+            let record = PitchComparisonRecord(
                 referenceNote: 69,
                 targetNote: 69,
                 centOffset: 75.0,
@@ -168,7 +168,7 @@ struct TrainingDataStoreTests {
         let context2 = ModelContext(container)
         let store2 = TrainingDataStore(modelContext: context2)
 
-        let fetched = try store2.fetchAllComparisons()
+        let fetched = try store2.fetchAllPitchComparisons()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 69)
@@ -183,10 +183,10 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
         #expect(fetched[0].targetNote == 60)
@@ -202,7 +202,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
 
         #expect(fetched.isEmpty)
     }
@@ -277,7 +277,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let comparisonRecord = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let comparisonRecord = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(comparisonRecord)
 
         let pitchRecord1 = PitchMatchingRecord(referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
@@ -287,7 +287,7 @@ struct TrainingDataStoreTests {
 
         try store.deleteAll()
 
-        let comparisonFetched = try store.fetchAllComparisons()
+        let comparisonFetched = try store.fetchAllPitchComparisons()
         #expect(comparisonFetched.isEmpty)
 
         let pitchFetched = try store.fetchAllPitchMatchings()
@@ -347,29 +347,29 @@ struct TrainingDataStoreTests {
         #expect(fetched.count == 2)
     }
 
-    // MARK: - ComparisonObserver Conformance Tests
+    // MARK: - PitchComparisonObserver Conformance Tests
 
-    @Test("ComparisonObserver conformance saves record with derived interval and tuningSystem")
+    @Test("PitchComparisonObserver conformance saves record with derived interval and tuningSystem")
     func comparisonObserverSaves() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
         let timestamp = Date()
-        let comparison = Comparison(
+        let comparison = PitchComparison(
             referenceNote: 60,
             targetNote: DetunedMIDINote(note: 60, offset: Cents(25.0))
         )
-        let completed = CompletedComparison(
-            comparison: comparison,
+        let completed = CompletedPitchComparison(
+            pitchComparison: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament,
             timestamp: timestamp
         )
 
-        store.comparisonCompleted(completed)
+        store.pitchComparisonCompleted(completed)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
 
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
@@ -383,25 +383,25 @@ struct TrainingDataStoreTests {
 
     // MARK: - Interval Context Verification (Story 23.4)
 
-    @Test("ComparisonObserver persists correct interval and tuningSystem for non-prime interval")
+    @Test("PitchComparisonObserver persists correct interval and tuningSystem for non-prime interval")
     func comparisonObserverWithInterval() async throws {
         let container = try makeTestContainer()
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let comparison = Comparison(
+        let comparison = PitchComparison(
             referenceNote: MIDINote(60),
             targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(25.0))
         )
-        let completed = CompletedComparison(
-            comparison: comparison,
+        let completed = CompletedPitchComparison(
+            pitchComparison: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
 
-        store.comparisonCompleted(completed)
+        store.pitchComparisonCompleted(completed)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].referenceNote == 60)
         #expect(fetched[0].targetNote == 67)

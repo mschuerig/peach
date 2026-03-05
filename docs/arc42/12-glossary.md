@@ -6,13 +6,13 @@ The following table summarizes the most architecturally significant terms:
 
 | Term | Definition |
 |---|---|
-| **Comparison** | A single pitch comparison interaction: two sequential notes, user judges higher/lower. The atomic unit of comparison training. |
+| **Pitch Comparison** | A single pitch comparison interaction: two sequential notes, user judges higher/lower. The atomic unit of pitch comparison training. |
 | **Pitch Matching** | A training interaction where the user tunes a note to match a target pitch via a vertical slider. Results are continuous (signed cent error), not binary. |
 | **Perceptual Profile** | The in-memory user model: 128-slot array indexed by MIDI note, each slot holding Welford's online mean/variance/stdDev. Rebuilt from records on startup, updated incrementally during training. |
 | **Cent** | Unit of pitch difference. 100 cents = 1 semitone. The fundamental unit of precision and difficulty throughout the app. |
 | **DetunedMIDINote** | A MIDI note with a cent offset applied. Bridges the logical world (MIDI) and physical world (frequency) through `TuningSystem`. |
 | **PlaybackHandle** | Protocol representing ownership of a playing note. Provides `stop()` and `adjustFrequency()`. Returned by `NotePlayer.play()`. |
-| **ComparisonSession** | State machine orchestrating the comparison training loop. Coordinates strategy, audio, persistence, and profile updates. |
+| **PitchComparisonSession** | State machine orchestrating the pitch comparison training loop. Coordinates strategy, audio, persistence, and profile updates. |
 | **PitchMatchingSession** | State machine orchestrating the pitch matching loop. Manages reference playback, slider interaction, and result recording. |
 | **Kazez Strategy** | The psychoacoustic staircase algorithm: narrows difficulty on correct answers, widens on wrong, with asymmetric step sizes and square-root scaling. |
 | **Two-World Architecture** | Strict separation between logical types (MIDINote, Interval, Cents) and physical types (Frequency). Bridged exclusively through `TuningSystem`. |

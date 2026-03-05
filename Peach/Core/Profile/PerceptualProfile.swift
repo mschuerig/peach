@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 
 @Observable
-final class PerceptualProfile: PitchDiscriminationProfile, PitchMatchingProfile {
+final class PerceptualProfile: PitchComparisonProfile, PitchMatchingProfile {
 
     // MARK: - Properties
 
@@ -168,15 +168,15 @@ struct PerceptualNote {
     }
 }
 
-// MARK: - ComparisonObserver Conformance
+// MARK: - PitchComparisonObserver Conformance
 
-extension PerceptualProfile: ComparisonObserver {
-    func comparisonCompleted(_ completed: CompletedComparison) {
-        let comparison = completed.comparison
-        let centOffset = comparison.targetNote.offset.magnitude
+extension PerceptualProfile: PitchComparisonObserver {
+    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
+        let pitchComparison = completed.pitchComparison
+        let centOffset = pitchComparison.targetNote.offset.magnitude
 
         update(
-            note: comparison.referenceNote,
+            note: pitchComparison.referenceNote,
             centOffset: centOffset,
             isCorrect: completed.isCorrect
         )

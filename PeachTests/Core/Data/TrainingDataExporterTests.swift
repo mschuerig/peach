@@ -10,7 +10,7 @@ struct TrainingDataExporterTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     private func fixedDate(minutesOffset: Double = 0) -> Date {
@@ -33,7 +33,7 @@ struct TrainingDataExporterTests {
     func exportMixedRecords() async throws {
         let store = try makeStore()
 
-        let comparison = ComparisonRecord(
+        let comparison = PitchComparisonRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 1)
         )
@@ -61,7 +61,7 @@ struct TrainingDataExporterTests {
 
         // Verify comparison row (later timestamp — second data row)
         let compFields = lines[2].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
-        #expect(compFields[0] == "comparison")
+        #expect(compFields[0] == "pitchComparison")
         #expect(compFields[2] == "60")
         #expect(compFields[3] == "C4")
         #expect(compFields[8] == "15.5")
@@ -74,7 +74,7 @@ struct TrainingDataExporterTests {
     func exportComparisonOnly() async throws {
         let store = try makeStore()
 
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate()
         )
@@ -85,7 +85,7 @@ struct TrainingDataExporterTests {
 
         #expect(lines.count == 2)
         #expect(lines[0] == CSVExportSchema.headerRow)
-        #expect(lines[1].hasPrefix("comparison"))
+        #expect(lines[1].hasPrefix("pitchComparison"))
     }
 
     // MARK: - Pitch Matching Only Tests
@@ -129,7 +129,7 @@ struct TrainingDataExporterTests {
             referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 1.0,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
         )
-        let comp1 = ComparisonRecord(
+        let comp1 = PitchComparisonRecord(
             referenceNote: 60, targetNote: 62, centOffset: 5.0, isCorrect: true,
             interval: 2, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 1)
         )
@@ -137,7 +137,7 @@ struct TrainingDataExporterTests {
             referenceNote: 64, targetNote: 64, initialCentOffset: 20.0, userCentError: -2.0,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 2)
         )
-        let comp2 = ComparisonRecord(
+        let comp2 = PitchComparisonRecord(
             referenceNote: 67, targetNote: 72, centOffset: -10.0, isCorrect: false,
             interval: 5, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 3)
         )
@@ -152,9 +152,9 @@ struct TrainingDataExporterTests {
 
         #expect(lines.count == 5)
         #expect(lines[1].hasPrefix("pitchMatching"))
-        #expect(lines[2].hasPrefix("comparison"))
+        #expect(lines[2].hasPrefix("pitchComparison"))
         #expect(lines[3].hasPrefix("pitchMatching"))
-        #expect(lines[4].hasPrefix("comparison"))
+        #expect(lines[4].hasPrefix("pitchComparison"))
     }
 
     // MARK: - Stable Sort Tests
@@ -164,7 +164,7 @@ struct TrainingDataExporterTests {
         let store = try makeStore()
 
         let timestamp = fixedDate()
-        let comparison = ComparisonRecord(
+        let comparison = PitchComparisonRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: timestamp
         )
@@ -179,7 +179,7 @@ struct TrainingDataExporterTests {
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
         #expect(lines.count == 3)
-        #expect(lines[1].hasPrefix("comparison"))
+        #expect(lines[1].hasPrefix("pitchComparison"))
         #expect(lines[2].hasPrefix("pitchMatching"))
     }
 
@@ -189,7 +189,7 @@ struct TrainingDataExporterTests {
     func csvStartsWithHeader() async throws {
         let store = try makeStore()
 
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate()
         )
@@ -208,7 +208,7 @@ struct TrainingDataExporterTests {
     func rowCountEqualsRecordsPlusHeader() async throws {
         let store = try makeStore()
 
-        let comp = ComparisonRecord(
+        let comp = PitchComparisonRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
         )

@@ -23,6 +23,6 @@
 | Convention | Description |
 |---|---|
 | **Swift naming conventions** | Types: `PascalCase`. Properties/methods: `camelCase`. Protocols: noun describing capability (`NotePlayer`, not `NotePlayable`). |
-| **Feature-based project organization** | Top-level directories by feature (`Comparison/`, `PitchMatching/`, `Profile/`, etc.). Shared code in `Core/` with subdirectories by concern. |
+| **Feature-based project organization** | Top-level directories by feature (`PitchComparison/`, `PitchMatching/`, `Profile/`, etc.). Shared code in `Core/` with subdirectories by concern. |
 | **`@Observable` over `ObservableObject`** | iOS 26 observation model throughout. No `@Published`, no Combine for state management. |
 | **Protocol-first service design** | Every service boundary is defined as a protocol before implementation. Enables mock-based testing and future substitution. |

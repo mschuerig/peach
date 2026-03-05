@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate a CSV file with backdated training data for testing chart expansion.
 
-Creates comparison records at multiple time ranges so all bucket types appear:
+Creates pitch comparison records at multiple time ranges so all bucket types appear:
   - 2-3 months ago  -> month buckets (tap to expand into weeks)
   - 2-3 weeks ago   -> week buckets  (tap to expand into days)
   - 2-3 days ago    -> day buckets   (tap to expand into sessions)
@@ -43,10 +43,10 @@ def iso_timestamp(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def comparison_row(timestamp: datetime, cent_offset: float) -> list:
+def pitch_pitch_comparison_row(timestamp: datetime, cent_offset: float) -> list:
     ref = 60
     return [
-        "comparison",
+        "pitchComparison",
         iso_timestamp(timestamp),
         str(ref), midi_name(ref),
         str(ref), midi_name(ref),
@@ -54,8 +54,8 @@ def comparison_row(timestamp: datetime, cent_offset: float) -> list:
         "equalTemperament",
         f"{cent_offset:.1f}",
         "true",
-        "",  # initialCentOffset (comparison doesn't use)
-        "",  # userCentError (comparison doesn't use)
+        "",  # initialCentOffset (pitchComparison doesn't use)
+        "",  # userCentError (pitchComparison doesn't use)
     ]
 
 
@@ -67,13 +67,13 @@ def generate_records():
     for day in range(60, 91, 2):
         for session in range(3):
             ts = now - timedelta(days=day) + timedelta(minutes=session * 10)
-            rows.append(comparison_row(ts, round(random.uniform(8, 25), 1)))
+            rows.append(pitch_comparison_row(ts, round(random.uniform(8, 25), 1)))
 
     # Week buckets: 10-20 days ago, spread across days
     for day in range(10, 21):
         for session in range(3):
             ts = now - timedelta(days=day) + timedelta(minutes=session * 10)
-            rows.append(comparison_row(ts, round(random.uniform(6, 20), 1)))
+            rows.append(pitch_comparison_row(ts, round(random.uniform(6, 20), 1)))
 
     # Day buckets: 2-3 days ago, multiple sessions per day (hours apart)
     for day in [2, 3]:
@@ -81,12 +81,12 @@ def generate_records():
             base = now - timedelta(days=day) + timedelta(hours=hour)
             for i in range(4):
                 ts = base + timedelta(seconds=i * 30)
-                rows.append(comparison_row(ts, round(random.uniform(5, 18), 1)))
+                rows.append(pitch_comparison_row(ts, round(random.uniform(5, 18), 1)))
 
     # Session buckets: today, within last hour
     for i in range(5):
         ts = now - timedelta(minutes=i * 5)
-        rows.append(comparison_row(ts, round(random.uniform(4, 15), 1)))
+        rows.append(pitch_comparison_row(ts, round(random.uniform(4, 15), 1)))
 
     return rows
 

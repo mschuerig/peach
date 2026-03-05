@@ -40,11 +40,11 @@ struct ProfileScreen: View {
     NavigationStack {
         ProfileScreen()
             .environment(\.progressTimeline, {
-                var comparisons: [ComparisonRecord] = []
+                var comparisons: [PitchComparisonRecord] = []
                 for i in 0..<50 {
                     let baseOffset = 50.0 - Double(i) * 0.5
                     let noise = Double.random(in: -10...10)
-                    comparisons.append(ComparisonRecord(
+                    comparisons.append(PitchComparisonRecord(
                         referenceNote: 60,
                         targetNote: 60,
                         centOffset: baseOffset + noise,
@@ -54,7 +54,7 @@ struct ProfileScreen: View {
                         timestamp: Date().addingTimeInterval(Double(i - 50) * 3600)
                     ))
                 }
-                return ProgressTimeline(comparisonRecords: comparisons)
+                return ProgressTimeline(pitchComparisonRecords: comparisons)
             }())
     }
 }

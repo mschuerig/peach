@@ -4,14 +4,14 @@ import SwiftData
 @Observable
 final class TrainingDataTransferService {
     private let dataStore: TrainingDataStore
-    private let onDataChanged: ([ComparisonRecord], [PitchMatchingRecord]) -> Void
+    private let onDataChanged: ([PitchComparisonRecord], [PitchMatchingRecord]) -> Void
 
     private(set) var exportCSV: String?
     private(set) var exportError: Error?
 
     init(
         dataStore: TrainingDataStore,
-        onDataChanged: @escaping ([ComparisonRecord], [PitchMatchingRecord]) -> Void
+        onDataChanged: @escaping ([PitchComparisonRecord], [PitchMatchingRecord]) -> Void
     ) {
         self.dataStore = dataStore
         self.onDataChanged = onDataChanged
@@ -45,7 +45,7 @@ final class TrainingDataTransferService {
         do {
             let csvString = try String(contentsOf: url, encoding: .utf8)
             let parseResult = CSVImportParser.parse(csvString)
-            if parseResult.comparisons.isEmpty && parseResult.pitchMatchings.isEmpty {
+            if parseResult.pitchComparisons.isEmpty && parseResult.pitchMatchings.isEmpty {
                 if parseResult.errors.isEmpty {
                     return .failure(String(localized: "The file contains no valid training data."))
                 } else {
@@ -65,7 +65,7 @@ final class TrainingDataTransferService {
     ) throws -> TrainingDataImporter.ImportSummary {
         let summary = try TrainingDataImporter.importData(parseResult, mode: mode, into: dataStore)
 
-        let allComparisons = try dataStore.fetchAllComparisons()
+        let allComparisons = try dataStore.fetchAllPitchComparisons()
         let allPitchMatchings = try dataStore.fetchAllPitchMatchings()
 
         onDataChanged(allComparisons, allPitchMatchings)
@@ -78,7 +78,7 @@ final class TrainingDataTransferService {
 
     static func preview() -> TrainingDataTransferService {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        guard let container = try? ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config) else {
+        guard let container = try? ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config) else {
             fatalError("Failed to create preview ModelContainer for TrainingDataTransferService")
         }
         let dataStore = TrainingDataStore(modelContext: container.mainContext)
