@@ -1664,12 +1664,32 @@
         }
       }
     },
+    "Collapse expanded region": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erweiterten Bereich schließen"
+          }
+        }
+      }
+    },
     "Progress chart for %@": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Fortschrittsdiagramm für %@"
+          }
+        }
+      }
+    },
+    "Progress chart for %@. Expanded view of %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fortschrittsdiagramm für %@. Erweiterte Ansicht von %@"
           }
         }
       }
@@ -1713,7 +1733,7 @@
           }
         }
       }
-    },
+    }
   },
   "version": "1.1"
 }

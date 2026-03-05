@@ -93,6 +93,77 @@ struct ProgressChartViewTests {
         #expect(!value.isEmpty)
     }
 
+    // MARK: - Display Buckets
+
+    @Test("displayBuckets returns original buckets when no expansion")
+    func displayBucketsNoExpansion() async {
+        let timeline = ProgressTimeline()
+        let buckets = makeSampleBuckets()
+        let result = ProgressChartView.displayBuckets(
+            from: buckets,
+            expandedIndex: nil,
+            timeline: timeline,
+            mode: .unisonComparison
+        )
+        #expect(result.count == buckets.count)
+    }
+
+    @Test("displayBuckets replaces expanded bucket with sub-buckets")
+    func displayBucketsWithExpansion() async {
+        // Create records spanning ~45 days ago (month bucket) with multiple weeks
+        let now = Date()
+        let calendar = Calendar.current
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
+        let records = (0..<20).map { i in
+            ComparisonRecord(
+                referenceNote: 60,
+                targetNote: 60,
+                centOffset: 10.0 + Double(i),
+                isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
+                timestamp: monthStart.addingTimeInterval(Double(i % 28) * 86400 + Double(i) * 60)
+            )
+        }
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let baseBuckets = timeline.buckets(for: .unisonComparison)
+
+        guard let monthIndex = baseBuckets.firstIndex(where: { $0.bucketSize == .month }) else {
+            Issue.record("Expected at least one month bucket")
+            return
+        }
+
+        let result = ProgressChartView.displayBuckets(
+            from: baseBuckets,
+            expandedIndex: monthIndex,
+            timeline: timeline,
+            mode: .unisonComparison
+        )
+        // Should have more buckets than base (month replaced by multiple weeks)
+        #expect(result.count > baseBuckets.count)
+    }
+
+    @Test("displayBuckets with out-of-range index returns original buckets")
+    func displayBucketsOutOfRange() async {
+        let timeline = ProgressTimeline()
+        let buckets = makeSampleBuckets()
+        let result = ProgressChartView.displayBuckets(
+            from: buckets,
+            expandedIndex: 999,
+            timeline: timeline,
+            mode: .unisonComparison
+        )
+        #expect(result.count == buckets.count)
+    }
+
+    private func makeSampleBuckets() -> [TimeBucket] {
+        let now = Date()
+        return [
+            TimeBucket(periodStart: now.addingTimeInterval(-86400), periodEnd: now.addingTimeInterval(-43200), bucketSize: .day, mean: 10.0, stddev: 2.0, recordCount: 5),
+            TimeBucket(periodStart: now.addingTimeInterval(-43200), periodEnd: now, bucketSize: .day, mean: 8.0, stddev: 1.5, recordCount: 3),
+        ]
+    }
+
     // MARK: - Helpers
 
     private func dateFromComponents(year: Int, month: Int, day: Int) -> Date {

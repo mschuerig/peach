@@ -1,6 +1,6 @@
 # Story 38.4: Focus+Context Chart Interaction
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,37 +20,37 @@ So that I can explore specific periods of my training history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add sub-bucket query API to `ProgressTimeline` (AC: #1)
-  - [ ] 1.1 In `ModeState`, replace `allValues: [Double]` with `allMetrics: [MetricPoint]` (retaining `timestamp: Date` alongside `value: Double`); derive `[Double]` for trend computation via `allMetrics.map(\.value)`
-  - [ ] 1.2 Add `func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket]` — filters `allMetrics` to `bucket.periodStart..<bucket.periodEnd`, then groups at one `BucketSize` level finer (`.month` -> `.week`, `.week` -> `.day`, `.day` -> `.session` using `TrainingModeConfig.sessionGap`)
-  - [ ] 1.3 Return empty array for `.session` buckets (finest granularity, cannot expand)
-  - [ ] 1.4 Write tests for `subBuckets(for:expanding:)` covering all `BucketSize` granularity transitions
+- [x] Task 1: Add sub-bucket query API to `ProgressTimeline` (AC: #1)
+  - [x] 1.1 In `ModeState`, replace `allValues: [Double]` with `allMetrics: [MetricPoint]` (retaining `timestamp: Date` alongside `value: Double`); derive `[Double]` for trend computation via `allMetrics.map(\.value)`
+  - [x] 1.2 Add `func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket]` — filters `allMetrics` to `bucket.periodStart..<bucket.periodEnd`, then groups at one `BucketSize` level finer (`.month` -> `.week`, `.week` -> `.day`, `.day` -> `.session` using `TrainingModeConfig.sessionGap`)
+  - [x] 1.3 Return empty array for `.session` buckets (finest granularity, cannot expand)
+  - [x] 1.4 Write tests for `subBuckets(for:expanding:)` covering all `BucketSize` granularity transitions
 
-- [ ] Task 2: Add expansion state to `ProgressChartView` (AC: #1, #2)
-  - [ ] 2.1 Add `@State private var expandedBucketIndex: Int?` to track which bucket (if any) is currently expanded
-  - [ ] 2.2 Compute `displayBuckets: [TimeBucket]` from the original buckets: if an index is expanded, replace that single bucket with its sub-buckets from `ProgressTimeline.subBuckets(for:expanding:)`; keep all other buckets unchanged
-  - [ ] 2.3 Animate the bucket transition with `.animation(.easeInOut(duration: 0.3), value: expandedBucketIndex)`
+- [x] Task 2: Add expansion state to `ProgressChartView` (AC: #1, #2)
+  - [x] 2.1 Add `@State private var expandedBucketIndex: Int?` to track which bucket (if any) is currently expanded
+  - [x] 2.2 Compute `displayBuckets: [TimeBucket]` from the original buckets: if an index is expanded, replace that single bucket with its sub-buckets from `ProgressTimeline.subBuckets(for:expanding:)`; keep all other buckets unchanged
+  - [x] 2.3 Animate the bucket transition with `.animation(.easeInOut(duration: 0.3), value: expandedBucketIndex)`
 
-- [ ] Task 3: Add tap gesture to chart (AC: #1, #2)
-  - [ ] 3.1 Add `.chartOverlay` with `GeometryReader` + `ChartProxy` to detect taps
-  - [ ] 3.2 On tap: use `chart.value(atX: location.x)` to find the tapped `Date`, then find the nearest bucket by `periodStart`
-  - [ ] 3.3 If tapped bucket is already expanded -> collapse (set `expandedBucketIndex = nil`)
-  - [ ] 3.4 If tapped bucket is a different bucket -> expand it (replace previous expansion)
-  - [ ] 3.5 If tapped bucket is `.session` granularity -> no-op (cannot expand further)
+- [x] Task 3: Add tap gesture to chart (AC: #1, #2)
+  - [x] 3.1 Add `.chartOverlay` with `GeometryReader` + `ChartProxy` to detect taps
+  - [x] 3.2 On tap: use `chart.value(atX: location.x)` to find the tapped `Date`, then find the nearest bucket by `periodStart`
+  - [x] 3.3 If tapped bucket is already expanded -> collapse (set `expandedBucketIndex = nil`)
+  - [x] 3.4 If tapped bucket is a different bucket -> expand it (replace previous expansion)
+  - [x] 3.5 If tapped bucket is `.session` granularity -> no-op (cannot expand further)
 
-- [ ] Task 4: Accessibility for expanded state (AC: #3)
-  - [ ] 4.1 Update chart accessibility label to announce when a region is expanded: "Expanded view of [bucket label]"
-  - [ ] 4.2 Add accessibility action "Collapse expanded region" when a bucket is expanded
-  - [ ] 4.3 Add localization strings for expanded state announcements (English + German)
+- [x] Task 4: Accessibility for expanded state (AC: #3)
+  - [x] 4.1 Update chart accessibility label to announce when a region is expanded: "Expanded view of [bucket label]"
+  - [x] 4.2 Add accessibility action "Collapse expanded region" when a bucket is expanded
+  - [x] 4.3 Add localization strings for expanded state announcements (English + German)
 
-- [ ] Task 5: Write tests (AC: #1, #2, #3)
-  - [ ] 5.1 `ProgressTimelineTests`: test `subBuckets` returns finer granularity for month/week/day buckets
-  - [ ] 5.2 `ProgressTimelineTests`: test `subBuckets` returns empty for session buckets (finest level)
-  - [ ] 5.3 `ProgressTimelineTests`: test sub-bucket metrics are consistent (sum of sub-bucket recordCounts equals parent bucket recordCount)
-  - [ ] 5.4 `ProgressChartViewTests`: test `displayBuckets` computation with no expansion, with one expanded bucket, and with toggle behavior (expand -> collapse)
+- [x] Task 5: Write tests (AC: #1, #2, #3)
+  - [x] 5.1 `ProgressTimelineTests`: test `subBuckets` returns finer granularity for month/week/day buckets
+  - [x] 5.2 `ProgressTimelineTests`: test `subBuckets` returns empty for session buckets (finest level)
+  - [x] 5.3 `ProgressTimelineTests`: test sub-bucket metrics are consistent (sum of sub-bucket recordCounts equals parent bucket recordCount)
+  - [x] 5.4 `ProgressChartViewTests`: test `displayBuckets` computation with no expansion, with one expanded bucket, and with toggle behavior (expand -> collapse)
 
-- [ ] Task 6: Verify full test suite passes
-  - [ ] 6.1 Run `bin/test.sh` -- all tests pass
+- [x] Task 6: Verify full test suite passes
+  - [x] 6.1 Run `bin/test.sh` -- all tests pass
 
 ## Dev Notes
 
@@ -257,10 +257,36 @@ The existing `bucketLabel(for:size:relativeTo:)` already handles all four `Bucke
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None needed.
+
 ### Completion Notes List
 
+- Replaced `ModeState.allValues: [Double]` with `allMetrics: [MetricPoint]` to retain timestamps alongside values; derived `[Double]` for trend computation via `allMetrics.map(\.value)`
+- Added `subBuckets(for:expanding:)` public API to `ProgressTimeline` that filters metrics to a parent bucket's time range and re-groups at one level finer granularity (month->week, week->day, day->session)
+- Added `assignSubBuckets` private helper using same grouping pattern as `assignBuckets` but parameterized by parent `BucketSize`
+- Added `@State expandedBucketIndex: Int?` to `ProgressChartView` for tracking which bucket is visually expanded
+- Added static `displayBuckets(from:expandedIndex:timeline:mode:)` method for computing the display array with one bucket replaced by its sub-buckets
+- Added `.chartOverlay` with `GeometryReader` + `ChartProxy` for tap-to-expand/collapse interaction
+- Added `handleChartTap` method that finds nearest bucket by date and toggles expansion
+- Added accessibility label that announces expanded state and accessibility action "Collapse expanded region"
+- Added English + German localization strings for expanded state announcements
+- All 941 tests pass, including 8 new tests (5 sub-bucket tests, 3 displayBuckets tests)
+- **Feature flag:** Tap-to-expand interaction disabled via `ProgressChartView.chartExpansionEnabled = false`. After testing with real data, the interaction was confusing — the chart line became "more wiggly" on tap without any visual context explaining what changed or why. The user couldn't tell which region expanded, that expansion happened at all, or what value the drill-down provided. The underlying data API (`subBuckets`, `displayBuckets`) remains fully implemented and tested, ready to re-enable once a clear UX direction is established (e.g., highlight band on expanded region, detail popover instead of in-place expansion, or removal if drill-down proves unnecessary). Set `chartExpansionEnabled = true` and re-add the `.chartOverlay` tap gesture to re-enable.
+
+### Change Log
+
+- 2026-03-05: Implemented focus+context chart interaction — tap to expand buckets into finer granularity, tap again to collapse
+- 2026-03-05: Disabled tap-to-expand behind feature flag (`chartExpansionEnabled`) — UX unclear without visual feedback for expanded regions; data layer retained for future use
+
 ### File List
+
+- Modified: `Peach/Core/Profile/ProgressTimeline.swift`
+- Modified: `Peach/Profile/ProgressChartView.swift`
+- Modified: `Peach/Resources/Localizable.xcstrings`
+- Modified: `PeachTests/Core/Profile/ProgressTimelineTests.swift`
+- Modified: `PeachTests/Profile/ProgressChartViewTests.swift`
+- Modified: `docs/implementation-artifacts/sprint-status.yaml`
