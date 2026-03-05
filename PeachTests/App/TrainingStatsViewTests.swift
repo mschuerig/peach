@@ -9,23 +9,21 @@ struct TrainingStatsViewTests {
     @Test("formattedCents uses locale-aware decimal separator")
     func formattedCentsLocaleAware() async {
         let result = TrainingStatsView.formattedCents(8.2)
-        // Result should contain either "8.2" or "8,2" depending on locale
-        #expect(result.contains("8"))
-        #expect(result.contains("2"))
+        // Result should be "8.2" or "8,2" depending on locale
+        #expect(result == "8.2" || result == "8,2")
     }
 
     @Test("formattedCents rounds to one decimal place")
     func formattedCentsRounding() async {
         let result = TrainingStatsView.formattedCents(4.27)
         // Should be "4.3" or "4,3"
-        #expect(result.contains("4"))
-        #expect(result.contains("3"))
+        #expect(result == "4.3" || result == "4,3")
     }
 
     @Test("formattedCents handles zero")
     func formattedCentsZero() async {
         let result = TrainingStatsView.formattedCents(0.0)
-        #expect(result.contains("0"))
+        #expect(result == "0.0" || result == "0,0")
     }
 
     // MARK: - Trend Helpers

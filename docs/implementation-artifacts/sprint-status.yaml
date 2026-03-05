@@ -308,7 +308,7 @@ development_status:
   38-2-progresstimeline-core-ewma-adaptive-buckets-and-trainingmodeconfig: done
   38-3-progresschartview-and-profile-screen-redesign: done
   38-4-focus-context-chart-interaction: wont-do
-  38-5-start-screen-sparkline-and-training-screen-summary: review
+  38-5-start-screen-sparkline-and-training-screen-summary: done
 
   # Cleanup: Consistent "Comparison" terminology
   cleanup-rename-discrimination-to-comparison: backlog # Rename PitchDiscriminationProfile → PitchComparisonProfile, MockPitchDiscriminationProfile, test file, and all references; also audit docs for stale "discrimination" terminology
