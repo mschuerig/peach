@@ -174,27 +174,15 @@ struct ProgressChartView: View {
     }
 
     static func trendSymbol(_ trend: Trend) -> String {
-        switch trend {
-        case .improving: "arrow.down.right"
-        case .stable: "arrow.right"
-        case .declining: "arrow.up.right"
-        }
+        TrainingStatsView.trendSymbol(trend)
     }
 
     static func trendLabel(_ trend: Trend) -> String {
-        switch trend {
-        case .improving: String(localized: "Improving")
-        case .stable: String(localized: "Stable")
-        case .declining: String(localized: "Declining")
-        }
+        TrainingStatsView.trendLabel(trend)
     }
 
     static func trendColor(_ trend: Trend) -> Color {
-        switch trend {
-        case .improving: .green
-        case .stable: .secondary
-        case .declining: .orange
-        }
+        TrainingStatsView.trendColor(trend)
     }
 
     static func formatEWMA(_ value: Double) -> String {

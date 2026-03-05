@@ -1,6 +1,6 @@
 # Story 38.5: Start Screen Sparkline and Training Screen Summary
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -309,6 +309,7 @@ No debug issues encountered.
 ### Change Log
 
 - 2026-03-05: Implemented story 38.5 — sparklines on Start Screen, training stats redesign, threshold removal, locale-aware formatting
+- 2026-03-05: Code review — fixed sparkline compact EWMA missing unit separator space, strengthened formattedCents test assertions, deduplicated trend helpers in ProgressChartView via delegation to TrainingStatsView
 
 ### File List
 
