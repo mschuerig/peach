@@ -2,7 +2,7 @@
 title: 'Add logging to PitchMatchingSession'
 slug: 'pitch-matching-session-logging'
 created: '2026-03-05'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'os.Logger']
 files_to_modify: ['Peach/PitchMatching/PitchMatchingSession.swift']
@@ -64,26 +64,26 @@ Add `logger.info` calls to PitchMatchingSession for challenge details and commit
 
 ### Tasks
 
-- [ ] Task 1: Add `logger.info("Starting training loop")` in `start()`
+- [x] Task 1: Add `logger.info("Starting training loop")` in `start()`
   - File: `Peach/PitchMatching/PitchMatchingSession.swift`
   - Action: Insert `logger.info("Starting training loop")` after the `sessionTuningSystem` assignment (line 96), before the `trainingTask` assignment
   - Notes: Matches PitchComparisonSession `start()` at line 121
 
-- [ ] Task 2: Add challenge detail logging in `playNextChallenge()`
+- [x] Task 2: Add challenge detail logging in `playNextChallenge()`
   - File: `Peach/PitchMatching/PitchMatchingSession.swift`
   - Action: Insert a `logger.info` call after `self.referenceFrequency = targetFreq.rawValue` (line 252), logging: reference note, target note, initial cent offset, reference frequency, and target frequency
   - Notes: Format: `logger.info("Challenge: ref=\(challenge.referenceNote.rawValue) \(refFreq.rawValue)Hz, target=\(challenge.targetNote.rawValue) \(targetFreq.rawValue)Hz, initialOffset=\(challenge.initialCentOffset)cents")`
 
-- [ ] Task 3: Add result logging in `commitResult()`
+- [x] Task 3: Add result logging in `commitResult()`
   - File: `Peach/PitchMatching/PitchMatchingSession.swift`
   - Action: Insert a `logger.info` call after computing `userCentError` (line 144), logging: reference note, target note, initial cent offset, and user cent error
   - Notes: Format: `logger.info("Result: ref=\(challenge.referenceNote.rawValue), target=\(challenge.targetNote.rawValue), initialOffset=\(challenge.initialCentOffset)cents, userCentError=\(userCentError)cents")`
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given a pitch matching session is idle, when `start(intervals:)` is called with valid intervals, then an info log "Starting training loop" is emitted before the training task begins
-- [ ] AC 2: Given a new challenge is generated in `playNextChallenge()`, when frequencies are computed, then an info log is emitted containing: reference note raw value, target note raw value, initial cent offset, reference frequency in Hz, and target frequency in Hz
-- [ ] AC 3: Given the user commits a pitch in `commitResult()`, when user cent error is computed, then an info log is emitted containing: reference note raw value, target note raw value, initial cent offset, and user cent error in cents
+- [x] AC 1: Given a pitch matching session is idle, when `start(intervals:)` is called with valid intervals, then an info log "Starting training loop" is emitted before the training task begins
+- [x] AC 2: Given a new challenge is generated in `playNextChallenge()`, when frequencies are computed, then an info log is emitted containing: reference note raw value, target note raw value, initial cent offset, reference frequency in Hz, and target frequency in Hz
+- [x] AC 3: Given the user commits a pitch in `commitResult()`, when user cent error is computed, then an info log is emitted containing: reference note raw value, target note raw value, initial cent offset, and user cent error in cents
 
 ## Additional Context
 

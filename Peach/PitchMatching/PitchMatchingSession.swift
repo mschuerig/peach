@@ -94,6 +94,7 @@ final class PitchMatchingSession: TrainingSession {
         precondition(!intervals.isEmpty, "intervals must not be empty")
         sessionIntervals = intervals
         sessionTuningSystem = userSettings.tuningSystem
+        logger.info("Starting training loop")
 
         trainingTask = Task {
             await playNextChallenge()
@@ -142,6 +143,7 @@ final class PitchMatchingSession: TrainingSession {
 
         guard let referenceFrequency else { return }
         let userCentError = 1200.0 * log2(userFrequency / referenceFrequency)
+        logger.info("Result: ref=\(challenge.referenceNote.rawValue), target=\(challenge.targetNote.rawValue), initialOffset=\(challenge.initialCentOffset)cents, userCentError=\(userCentError)cents")
 
         let result = CompletedPitchMatching(
             referenceNote: challenge.referenceNote,
@@ -250,6 +252,7 @@ final class PitchMatchingSession: TrainingSession {
             let targetFreq = sessionTuningSystem.frequency(
                 for: challenge.targetNote, referencePitch: settings.referencePitch)
             self.referenceFrequency = targetFreq.rawValue
+            logger.info("Challenge: ref=\(challenge.referenceNote.rawValue) \(refFreq.rawValue)Hz, target=\(challenge.targetNote.rawValue) \(targetFreq.rawValue)Hz, initialOffset=\(challenge.initialCentOffset)cents")
 
             state = .playingReference
             try await notePlayer.play(
