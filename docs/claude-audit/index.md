@@ -1,19 +1,79 @@
 ---
 repo: "/Users/michael/Projekte/peach"
-total_commits: 373
-audited_commits: 365
+total_commits: 433
+audited_commits: 425
 detail: "full"
-generated: "2026-03-03T09:04:53.337076+00:00"
+generated: "2026-03-05T00:57:13.375437+00:00"
 ---
 
 # Claude Code Audit Log
 
 Repository: `/Users/michael/Projekte/peach`  
-Total commits: 373  
-Commits with Claude Code sessions: 365
+Total commits: 433  
+Commits with Claude Code sessions: 425
 
 ## Commits
 
+- [cc07c3b0e7](cc07c3b0e7.md) — 2026-03-05T01:56 — Review story 37.3: Add missing translations and mark epic 37 done (1 session, 100 messages)
+- [1dce2139ba](1dce2139ba.md) — 2026-03-05T01:48 — Implement story 37.3: Training Screen Help (1 session, 133 messages)
+- [33e1bfb2f9](33e1bfb2f9.md) — 2026-03-05T01:39 — Create story 37.3: Training Screen Help (2 sessions, 138 messages)
+- [c2fbce5e53](c2fbce5e53.md) — 2026-03-05T01:33 — Review story 37.2: Stronger tests with title verification and title-based lookup (2 sessions, 124 messages)
+- [7f6cde20e8](7f6cde20e8.md) — 2026-03-05T01:22 — Implement story 37.2: Settings Screen Help (2 sessions, 167 messages)
+- [89e81622bc](89e81622bc.md) — 2026-03-05T01:11 — Create story 37.2: Settings Screen Help (2 sessions, 129 messages)
+- [1cee06b38e](1cee06b38e.md) — 2026-03-05T01:03 — Implement quick spec: Template-Based Localized Help Content (1 session, 223 messages)
+- [0f7feed5ba](0f7feed5ba.md) — 2026-03-05T00:23 — Create quick spec: Template-Based Localized Help Content (1 session, 275 messages)
+- [7e20a3babd](7e20a3babd.md) — 2026-03-04T23:54 — Review story 37.1: Fix dead code, dynamic copyright year, stronger tests (1 session, 192 messages)
+- [0c66c03e32](0c66c03e32.md) — 2026-03-04T23:18 — Implement story 37.1: Start Screen Help (1 session, 190 messages)
+- [838084ea6f](838084ea6f.md) — 2026-03-04T22:42 — Review story 36.1: Fix German plural form and mark epic 36 done (2 sessions, 138 messages)
+- [542c272d1a](542c272d1a.md) — 2026-03-04T22:22 — Implement story 36.1: Interactive Localization and Wording Review (2 sessions, 196 messages)
+- [fefc0f64c9](fefc0f64c9.md) — 2026-03-04T21:36 — Create story 36.1: Interactive Localization and Wording Review (2 sessions, 94 messages)
+- [ceb95235e7](ceb95235e7.md) — 2026-03-04T21:28 — Review story 35.3: Fix touch targets, press feedback, and landscape spacing (2 sessions, 130 messages)
+- [5274fac384](5274fac384.md) — 2026-03-04T21:22 — Implement story 35.3: Visual Design Polish for Start Screen (2 sessions, 140 messages)
+- [956ccede1d](956ccede1d.md) — 2026-03-04T20:44 — Create story 35.3: Visual Design Polish for Start Screen (1 session, 88 messages)
+- [0db340b6d0](0db340b6d0.md) — 2026-03-04T20:23 — Review story 35.2: Fix documentation issues and mark done (1 session, 112 messages)
+- [07a527e284](07a527e284.md) — 2026-03-04T20:09 — Implement story 35.2: Add SF Symbol Icons to Training Buttons (1 session, 82 messages)
+- [0433d10855](0433d10855.md) — 2026-03-04T19:53 — Create story 35.2: Add SF Symbol Icons to Training Buttons (2 sessions, 263 messages)
+- [72137aeb83](72137aeb83.md) — 2026-03-04T19:49 — Review story 35.1: Remove orphaned code and fix localization key ordering (1 session, 185 messages)
+- [0ef06f5b09](0ef06f5b09.md) — 2026-03-04T18:43 — Implement story 35.1: Rename training buttons and rework Start Screen layout (2 sessions, 260 messages)
+- [a1d7320b62](a1d7320b62.md) — 2026-03-04T17:52 — Create story 35.1: Rename Training Buttons with User-Friendly Labels (1 session, 82 messages)
+- [be98e8ddd8](be98e8ddd8.md) — 2026-03-04T17:39 — Review story 34.3: Fix import error UX and summary pluralization (1 session, 141 messages)
+- [263a345d75](263a345d75.md) — 2026-03-04T17:17 — Fix CSV export/import round-trip: drop fractional seconds entirely (1 session, 314 messages)
+- [e395498d34](e395498d34.md) — 2026-03-04T16:43 — Fix merge duplicate detection for sub-millisecond timestamp precision (1 session, 264 messages)
+- [c24790dc71](c24790dc71.md) — 2026-03-04T16:32 — Fix CSV export timestamp truncation breaking merge duplicate detection (1 session, 232 messages)
+- [e9a714b866](e9a714b866.md) — 2026-03-04T16:32 — Implement story 34.3: Add Import UI with Replace/Merge Choice (1 session, 232 messages)
+- [59ce0ba268](59ce0ba268.md) — 2026-03-04T15:38 — Create story 34.3: Add Import UI with Replace/Merge Choice (1 session, 118 messages)
+- [e554593bab](e554593bab.md) — 2026-03-04T15:30 — Review story 34.2: Fix magic strings, add intra-file dedup test, cleanup (2 sessions, 147 messages)
+- [42d24b7522](42d24b7522.md) — 2026-03-04T15:14 — Create quick spec: Fix CSV Export File Sharing (2 sessions, 285 messages)
+- [9a84829db8](9a84829db8.md) — 2026-03-04T14:53 — Implement story 34.2: Merge Logic with Duplicate Detection (1 session, 156 messages)
+- [c80f8c43cf](c80f8c43cf.md) — 2026-03-04T14:34 — Create story 34.2: Implement Merge Logic with Duplicate Detection (1 session, 99 messages)
+- [581b342e6e](581b342e6e.md) — 2026-03-04T14:23 — Review story 34.1: Fix access control, CRLF handling, and documentation (1 session, 227 messages)
+- [06b6e6291c](06b6e6291c.md) — 2026-03-04T13:50 — Implement story 34.1: CSV Import Parser (1 session, 173 messages)
+- [d49b7f66c4](d49b7f66c4.md) — 2026-03-04T13:30 — Create story 34.1: Implement CSV Import Parser (2 sessions, 143 messages)
+- [c6c8b64210](c6c8b64210.md) — 2026-03-04T13:20 — Review story 33.3: Fix test coverage and export error handling (1 session, 130 messages)
+- [2d6175baa0](2d6175baa0.md) — 2026-03-04T13:10 — Implement story 33.3: Add Export UI to Settings Screen (2 sessions, 164 messages)
+- [37740cc887](37740cc887.md) — 2026-03-04T12:55 — Create story 33.3: Add Export UI to Settings Screen (2 sessions, 138 messages)
+- [38ebd7704b](38ebd7704b.md) — 2026-03-04T12:32 — Review story 33.2: Add missing test coverage and strengthen assertions (2 sessions, 126 messages)
+- [db0f60c3ea](db0f60c3ea.md) — 2026-03-04T12:21 — Implement story 33.2: Implement CSV Export Service (1 session, 89 messages)
+- [cda92e19d9](cda92e19d9.md) — 2026-03-04T10:33 — Create story 33.2: Implement CSV Export Service (2 sessions, 102 messages)
+- [8f9419b0ce](8f9419b0ce.md) — 2026-03-04T10:22 — Review story 33.1: Make core types nonisolated, clean up tests and code quality (2 sessions, 146 messages)
+- [accc939168](accc939168.md) — 2026-03-04T10:00 — Implement story 33.1: Define and Document CSV Export Schema (1 session, 125 messages)
+- [ea19c274b1](ea19c274b1.md) — 2026-03-04T09:27 — Create story 33.1: Define and Document CSV Export Schema (1 session, 75 messages)
+- [4eacf691ea](4eacf691ea.md) — 2026-03-04T02:33 — Review story 32.1: Reorder properties, fix localization consistency, mark epic 32 done (1 session, 113 messages)
+- [2a15e61e9b](2a15e61e9b.md) — 2026-03-04T02:18 — Implement story 32.1: Reorganize Settings Screen Sections (2 sessions, 120 messages)
+- [f5e4bdae85](f5e4bdae85.md) — 2026-03-04T02:13 — Create story 32.1: Reorganize Settings Screen Sections (2 sessions, 105 messages)
+- [1246a1f0ff](1246a1f0ff.md) — 2026-03-04T02:02 — Review story 31.4: Add missing averageThreshold tests and fix stale doc references (1 session, 143 messages)
+- [779c7556fc](779c7556fc.md) — 2026-03-04T01:52 — Implement story 31.4: Adopt NoteRange in Profile and Visualization (1 session, 121 messages)
+- [38848ae306](38848ae306.md) — 2026-03-04T01:45 — Create story 31.4: Adopt NoteRange in Profile and Visualization (2 sessions, 158 messages)
+- [671eddfa9f](671eddfa9f.md) — 2026-03-04T01:38 — Review story 31.3: Fix stale test description referencing removed noteRangeMin/noteRangeMax API (2 sessions, 169 messages)
+- [c92dfbe3b0](c92dfbe3b0.md) — 2026-03-04T01:28 — Implement story 31.3: Adopt NoteRange in Training Sessions and Strategy (2 sessions, 164 messages)
+- [57294047b7](57294047b7.md) — 2026-03-04T01:20 — Create story 31.3: Adopt NoteRange in Training Sessions and Strategy (1 session, 84 messages)
+- [3170a45f6c](3170a45f6c.md) — 2026-03-04T01:09 — Review story 31.2: Add defensive fallback for corrupted UserDefaults in AppUserSettings.noteRange (1 session, 147 messages)
+- [f2b6804a19](f2b6804a19.md) — 2026-03-04T00:57 — Implement story 31.2: Adopt NoteRange in UserSettings and Settings Screen (1 session, 197 messages)
+- [e1ef035a44](e1ef035a44.md) — 2026-03-04T00:34 — Implement story 31.1: Create NoteRange value type (1 session, 85 messages)
+- [2e6d8a7393](2e6d8a7393.md) — 2026-03-04T00:20 — Create story 31.1: NoteRange value type (1 session, 91 messages)
+- [79553b0147](79553b0147.md) — 2026-03-04T00:09 — Fix epic numbering: insert Epics 25–30, renumber 25–32 → 31–38 (1 session, 134 messages)
+- [74fb0fe6e3](74fb0fe6e3.md) — 2026-03-03T23:43 — Add epics 25–32: NoteRange refactoring, settings reorg, data export/import, Start Screen redesign, localization polish, built-in help, profile visualization (1 session, 58 messages)
+- [195e0ab297](195e0ab297.md) — 2026-03-03T10:05 — Update docs/claude-audit. (1 session, 112 messages)
 - [7ed9617a73](7ed9617a73.md) — 2026-03-03T10:03 — Fix TuningSystem frequency bridge to respect tuning system (1 session, 112 messages)
 - [37862f8014](37862f8014.md) — 2026-03-03T09:46 — Add tech spec: Fix TuningSystem frequency bridge to respect tuning system (2 sessions, 163 messages)
 - [e7e5179e26](e7e5179e26.md) — 2026-03-02T20:29 — Update BMAD to v6.0.4. (2 sessions, 72 messages)
