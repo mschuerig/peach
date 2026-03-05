@@ -236,21 +236,21 @@ struct PerceptualProfileTests {
 
     // MARK: - Interval Context Verification (Story 23.4)
 
-    @Test("ComparisonObserver uses referenceNote as profile key when interval is non-prime")
+    @Test("PitchComparisonObserver uses referenceNote as profile key when interval is non-prime")
     func comparisonObserverUsesReferenceNoteWithInterval() async throws {
         let profile = PerceptualProfile()
 
-        let comparison = Comparison(
+        let pitchComparison = PitchComparison(
             referenceNote: MIDINote(60),
             targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(25.0))
         )
-        let completed = CompletedComparison(
-            comparison: comparison,
+        let completed = CompletedPitchComparison(
+            pitchComparison: pitchComparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
 
-        profile.comparisonCompleted(completed)
+        profile.pitchComparisonCompleted(completed)
 
         // Profile should index by referenceNote (60), not targetNote (67)
         let refStats = profile.statsForNote(MIDINote(60))

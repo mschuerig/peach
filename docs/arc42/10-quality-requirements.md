@@ -17,18 +17,18 @@
 | Aspect | Detail |
 |---|---|
 | **Source** | User taps "Start Training" |
-| **Stimulus** | First note of first comparison must play |
+| **Stimulus** | First note of first pitch comparison must play |
 | **Response** | Audio output begins |
 | **Metric** | Time from tap to audible sound < 10ms (imperceptible). AVAudioEngine with 64-sample buffer at 44.1 kHz achieves ~1.5ms. |
 
-### QS-2: Comparison Transition Speed
+### QS-2: Pitch Comparison Transition Speed
 
 | Aspect | Detail |
 |---|---|
-| **Source** | User answers a comparison (taps Higher/Lower) |
-| **Stimulus** | Next comparison must begin |
-| **Response** | First note of next comparison plays |
-| **Metric** | Transition completes within 500ms (400ms feedback + ~100ms next comparison setup). |
+| **Source** | User answers a pitch comparison (taps Higher/Lower) |
+| **Stimulus** | Next pitch comparison must begin |
+| **Response** | First note of next pitch comparison plays |
+| **Metric** | Transition completes within 500ms (400ms feedback + ~100ms next pitch comparison setup). |
 
 ### QS-3: Frequency Precision
 
@@ -55,7 +55,7 @@
 | **Source** | App crash or force quit during training |
 | **Stimulus** | Process terminates unexpectedly |
 | **Response** | All previously completed records are intact; incomplete attempt is lost |
-| **Metric** | Zero completed records lost. SwiftData (SQLite) provides atomic writes. Only completed results are written — incomplete comparisons/matches exist only in memory. |
+| **Metric** | Zero completed records lost. SwiftData (SQLite) provides atomic writes. Only completed results are written — incomplete pitch comparisons/matches exist only in memory. |
 
 ### QS-6: App Launch to Training-Ready
 

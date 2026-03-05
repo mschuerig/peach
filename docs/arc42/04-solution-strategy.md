@@ -17,11 +17,11 @@
 
 The app follows a **feature-based organization** with a shared `Core/` layer:
 
-- **Feature modules** (`Comparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Start/`, `Info/`) contain screens and feature-specific UI components
+- **Feature modules** (`PitchComparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Start/`, `Info/`) contain screens and feature-specific UI components
 - **Core** (`Core/`) contains domain logic, protocols, and services shared across features — subdivided into `Audio/`, `Algorithm/`, `Data/`, `Profile/`, and `Training/`
 - **App** (`App/`) contains the composition root (`PeachApp.swift`) and navigation shell (`ContentView.swift`)
 
-The `TrainingSession` protocol unifies both training modes. `ComparisonSession` and `PitchMatchingSession` are independent state machines sharing the same `NotePlayer`, `PerceptualProfile`, and `TrainingDataStore`.
+The `TrainingSession` protocol unifies both training modes. `PitchComparisonSession` and `PitchMatchingSession` are independent state machines sharing the same `NotePlayer`, `PerceptualProfile`, and `TrainingDataStore`.
 
 ## Key Quality Strategies
 

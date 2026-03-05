@@ -9,7 +9,7 @@ graph TB
 
         subgraph "Feature Modules"
             Start["Start/<br><i>Home screen,<br>training entry points</i>"]
-            Comparison["Comparison/<br><i>Comparison training<br>screen + UI</i>"]
+            PitchComparison["PitchComparison/<br><i>Pitch comparison training<br>screen + UI</i>"]
             PitchMatching["PitchMatching/<br><i>Pitch matching<br>screen + slider</i>"]
             Profile["Profile/<br><i>Profile visualization,<br>statistics</i>"]
             Settings["Settings/<br><i>Configuration UI</i>"]
@@ -18,7 +18,7 @@ graph TB
 
         subgraph "Core"
             Audio["Core/Audio/<br><i>NotePlayer, SoundFont,<br>PlaybackHandle</i>"]
-            Algorithm["Core/Algorithm/<br><i>NextComparisonStrategy,<br>KazezNoteStrategy</i>"]
+            Algorithm["Core/Algorithm/<br><i>NextPitchComparisonStrategy,<br>KazezNoteStrategy</i>"]
             Data["Core/Data/<br><i>TrainingDataStore,<br>SwiftData models</i>"]
             ProfileCore["Core/Profile/<br><i>PerceptualProfile,<br>TrendAnalyzer</i>"]
             Training["Core/Training/<br><i>Session protocols,<br>domain value types</i>"]
@@ -26,14 +26,14 @@ graph TB
     end
 
     App --> Start
-    Start --> Comparison
+    Start --> PitchComparison
     Start --> PitchMatching
     Start --> Profile
     Start --> Settings
     Start --> Info
 
-    Comparison --> Training
-    Comparison --> Audio
+    PitchComparison --> Training
+    PitchComparison --> Audio
     PitchMatching --> Training
     PitchMatching --> Audio
 
@@ -52,17 +52,17 @@ graph TB
 | Building Block | Responsibility |
 |---|---|
 | **App/** | Composition root (`PeachApp.swift`): wires all dependencies, injects services into SwiftUI environment. Navigation shell (`ContentView.swift`): hub-and-spoke `NavigationStack`. |
-| **Start/** | Home screen with four training entry points (Comparison, Pitch Matching, Interval Comparison, Interval Pitch Matching), profile preview sparkline, and navigation to Settings/Profile/Info. |
-| **Comparison/** | Comparison training UI: Higher/Lower buttons, feedback indicator, difficulty display. Reads `ComparisonSession` from environment. |
+| **Start/** | Home screen with four training entry points (Pitch Comparison, Pitch Matching, Interval Pitch Comparison, Interval Pitch Matching), profile preview sparkline, and navigation to Settings/Profile/Info. |
+| **PitchComparison/** | Pitch comparison training UI: Higher/Lower buttons, feedback indicator, difficulty display. Reads `PitchComparisonSession` from environment. |
 | **PitchMatching/** | Pitch matching UI: vertical pitch slider, feedback indicator. Reads `PitchMatchingSession` from environment. |
 | **Profile/** | Perceptual profile visualization: threshold timeline chart (Swift Charts), summary statistics with trend, matching statistics. |
 | **Settings/** | Configuration interface: interval selector, note range, duration, reference pitch, loudness variation, tuning system, sound source picker, reset button. All backed by `@AppStorage`. |
 | **Info/** | Static about screen: app name, developer, copyright, version. |
 | **Core/Audio/** | Audio playback: `NotePlayer` protocol, `SoundFontNotePlayer` (AVAudioEngine + AVAudioUnitSampler), `PlaybackHandle` for note lifecycle, `SoundFontLibrary` for preset discovery, `AudioSessionInterruptionMonitor`. |
-| **Core/Algorithm/** | Comparison selection: `NextComparisonStrategy` protocol, `KazezNoteStrategy` (psychoacoustic staircase algorithm). |
-| **Core/Data/** | Persistence: `TrainingDataStore` (SwiftData CRUD), `ComparisonRecord` and `PitchMatchingRecord` (`@Model` classes). |
-| **Core/Profile/** | User model: `PerceptualProfile` (128-slot per-note statistics via Welford's algorithm), `PitchDiscriminationProfile` and `PitchMatchingProfile` protocols, `TrendAnalyzer`, `ThresholdTimeline`. |
-| **Core/Training/** | Domain types and session protocols: `Comparison`, `CompletedComparison`, `CompletedPitchMatching`, `PitchMatchingChallenge`, `ComparisonObserver`, `PitchMatchingObserver`, `TrainingSession` protocol, `Resettable`. |
+| **Core/Algorithm/** | Pitch comparison selection: `NextPitchComparisonStrategy` protocol, `KazezNoteStrategy` (psychoacoustic staircase algorithm). |
+| **Core/Data/** | Persistence: `TrainingDataStore` (SwiftData CRUD), `PitchComparisonRecord` and `PitchMatchingRecord` (`@Model` classes). |
+| **Core/Profile/** | User model: `PerceptualProfile` (128-slot per-note statistics via Welford's algorithm), `PitchComparisonProfile` and `PitchMatchingProfile` protocols, `TrendAnalyzer`, `ThresholdTimeline`. |
+| **Core/Training/** | Domain types and session protocols: `PitchComparison`, `CompletedPitchComparison`, `CompletedPitchMatching`, `PitchMatchingChallenge`, `PitchComparisonObserver`, `PitchMatchingObserver`, `TrainingSession` protocol, `Resettable`. |
 
 ---
 
@@ -142,13 +142,13 @@ classDiagram
         +isIdle: Bool
     }
 
-    class ComparisonSession {
-        -state: ComparisonSessionState
+    class PitchComparisonSession {
+        -state: PitchComparisonSessionState
         -notePlayer: NotePlayer
-        -strategy: NextComparisonStrategy
-        -profile: PitchDiscriminationProfile
+        -strategy: NextPitchComparisonStrategy
+        -profile: PitchComparisonProfile
         -userSettings: UserSettings
-        -observers: [ComparisonObserver]
+        -observers: [PitchComparisonObserver]
         +start(intervals)
         +stop()
         +handleAnswer(isHigher: Bool)
@@ -166,9 +166,9 @@ classDiagram
         +commitPitch(Double)
     }
 
-    class ComparisonObserver {
+    class PitchComparisonObserver {
         <<protocol>>
-        +comparisonCompleted(CompletedComparison)
+        +pitchComparisonCompleted(CompletedPitchComparison)
     }
 
     class PitchMatchingObserver {
@@ -176,9 +176,9 @@ classDiagram
         +pitchMatchingCompleted(CompletedPitchMatching)
     }
 
-    TrainingSession <|.. ComparisonSession
+    TrainingSession <|.. PitchComparisonSession
     TrainingSession <|.. PitchMatchingSession
-    ComparisonSession ..> ComparisonObserver : notifies
+    PitchComparisonSession ..> PitchComparisonObserver : notifies
     PitchMatchingSession ..> PitchMatchingObserver : notifies
 ```
 
@@ -190,7 +190,7 @@ Both sessions follow the same patterns: `@Observable` state machines, protocol-b
 
 ```mermaid
 classDiagram
-    class PitchDiscriminationProfile {
+    class PitchComparisonProfile {
         <<protocol>>
         +update(note, centOffset, isCorrect)
         +overallMean: Double?
@@ -230,12 +230,12 @@ classDiagram
         +rollingMean() [Double]
     }
 
-    PitchDiscriminationProfile <|.. PerceptualProfile
+    PitchComparisonProfile <|.. PerceptualProfile
     PitchMatchingProfile <|.. PerceptualProfile
-    ComparisonObserver <|.. PerceptualProfile
+    PitchComparisonObserver <|.. PerceptualProfile
     PitchMatchingObserver <|.. PerceptualProfile
-    ComparisonObserver <|.. TrendAnalyzer
-    ComparisonObserver <|.. ThresholdTimeline
+    PitchComparisonObserver <|.. TrendAnalyzer
+    PitchComparisonObserver <|.. ThresholdTimeline
 ```
 
-`PerceptualProfile` is the central user model — a 128-slot array indexed by MIDI note, each slot holding Welford's online statistics (mean, variance, standard deviation, sample count, current difficulty). It is never persisted directly; it is rebuilt from `ComparisonRecord` entries on every app launch and updated incrementally during training.
+`PerceptualProfile` is the central user model — a 128-slot array indexed by MIDI note, each slot holding Welford's online statistics (mean, variance, standard deviation, sample count, current difficulty). It is never persisted directly; it is rebuilt from `PitchComparisonRecord` entries on every app launch and updated incrementally during training.

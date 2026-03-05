@@ -15,7 +15,7 @@ workflowType: 'prd'
 lastEdited: '2026-02-28'
 editHistory:
   - date: '2026-02-28'
-    changes: 'Added interval training variants (v0.3 scope): interval comparison, interval pitch matching, interval domain model, tuning system abstraction; two new user journeys; 15 new FRs (FR53-FR67)'
+    changes: 'Added interval training variants (v0.3 scope): interval pitch comparison, interval pitch matching, interval domain model, tuning system abstraction; two new user journeys; 15 new FRs (FR53-FR67)'
   - date: '2026-02-25'
     changes: 'Added pitch matching training paradigm (v0.2 scope); restructured phases; removed completed/obsolete roadmap items'
 ---
@@ -40,7 +40,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 ### User Success
 
 - The perceptual profile shows measurable narrowing of detectable cent differences over time through continued training
-- The comparison training loop feels instinctive and low-friction — users can do 30 seconds of comparisons without thinking about the app, just about the sounds
+- The pitch comparison training loop feels instinctive and low-friction — users can do 30 seconds of comparisons without thinking about the app, just about the sounds
 - Pitch matching accuracy improves over time — users achieve smaller cent errors with continued training
 - Summary statistics (mean and standard deviation of detection thresholds) show a visible improving trend over time
 - Interval training shows measurable improvement in detecting intonation deviations within intervals over time
@@ -71,7 +71,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 ### MVP Strategy & Philosophy
 
-**MVP Approach:** Experience MVP — the core value is the training feel, not a feature count. Ship the smallest thing that lets a musician train pitch discrimination with adaptive comparison selection and see that it's working.
+**MVP Approach:** Experience MVP — the core value is the training feel, not a feature count. Ship the smallest thing that lets a musician train pitch comparison with adaptive comparison selection and see that it's working.
 
 **Resource:** Solo developer learning iOS/SwiftUI, AI-assisted development.
 
@@ -97,7 +97,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 ### Version 0.2 Scope (Phase 2 — Pitch Matching)
 
-**Core addition:** A second training paradigm — Pitch Matching — where the user tunes a note to match a reference pitch, training active pitch production rather than passive discrimination.
+**Core addition:** A second training paradigm — Pitch Matching — where the user tunes a note to match a reference pitch, training active pitch production rather than passive pitch comparison.
 
 **Must-Have Capabilities:**
 - Pitch Matching Screen with large vertical slider for pitch adjustment
@@ -107,7 +107,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Pitch matching results recorded: reference note, user's final pitch, error in cents, timestamp
 - Start Screen integration: dedicated "Pitch Matching" button below "Start Training"
 - Audio engine support for indefinite playback and real-time frequency adjustment
-- Same interruption handling as comparison training (discard on navigation away, backgrounding, etc.)
+- Same interruption handling as pitch comparison training (discard on navigation away, backgrounding, etc.)
 
 **User Journey Supported:** Journey 6 (Pitch Matching)
 
@@ -120,9 +120,9 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Tuning System abstraction — 12-tone equal temperament (12-TET) initially, extensible to Just Intonation and others
 
 **Must-Have Capabilities:**
-- Interval Comparison training: reference note plays, second note plays at target interval ± cent deviation, user judges higher/lower relative to the correct interval
+- Interval Pitch Comparison training: reference note plays, second note plays at target interval ± cent deviation, user judges higher/lower relative to the correct interval
 - Interval Pitch Matching training: reference note plays, user adjusts second note to match target interval
-- Start Screen integration: two new buttons ("Interval Comparison", "Interval Pitch Matching")
+- Start Screen integration: two new buttons ("Interval Pitch Comparison", "Interval Pitch Matching")
 - Existing comparison and pitch matching modes are the prime (unison) case — same underlying training session, fixed to prime interval
 - Initial implementation limited to a single fixed interval: perfect fifth up (700 cents in 12-TET)
 
@@ -131,7 +131,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - Multiple concurrent intervals in training rotation
 - Tuning system selection beyond 12-TET
 
-**User Journeys Supported:** Journey 7 (Interval Comparison), Journey 8 (Interval Pitch Matching)
+**User Journeys Supported:** Journey 7 (Interval Pitch Comparison), Journey 8 (Interval Pitch Matching)
 
 ### Future Ideas
 
@@ -227,7 +227,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 ### Journey 6: Pitch Matching — "Tune Your Ear"
 
-**Persona:** Sarah, two months into comparison training. She wants to challenge herself differently — not just hearing pitch differences, but actively producing a target pitch.
+**Persona:** Sarah, two months into pitch comparison training. She wants to challenge herself differently — not just hearing pitch differences, but actively producing a target pitch.
 
 **Opening Scene:** She opens Peach and sees the familiar Start Screen. Below "Start Training" there's a "Pitch Matching" button. She taps it.
 
@@ -235,23 +235,23 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 **Climax:** She releases the slider. The note stops. The result is recorded — she was 4 cents off. No score, no judgment. The next reference note plays. She goes again. The rhythm is different from comparisons — slower, more deliberate, more like tuning an actual instrument. After a minute she's answered six matches. It feels like a different kind of exercise — active rather than reactive.
 
-**Resolution:** She switches back to comparison training for a quick burst, then closes the app. Both modes feed her perceptual profile. Tomorrow she'll do a few minutes of each.
+**Resolution:** She switches back to pitch comparison training for a quick burst, then closes the app. Both modes feed her perceptual profile. Tomorrow she'll do a few minutes of each.
 
-**Requirements revealed:** Pitch Matching Screen, indefinite note playback, real-time pitch adjustment via slider, visual proximity feedback, result recording, Start Screen integration, same interruption handling as comparison training.
+**Requirements revealed:** Pitch Matching Screen, indefinite note playback, real-time pitch adjustment via slider, visual proximity feedback, result recording, Start Screen integration, same interruption handling as pitch comparison training.
 
-### Journey 7: Interval Comparison — "Is That Fifth In Tune?"
+### Journey 7: Interval Pitch Comparison — "Is That Fifth In Tune?"
 
-**Persona:** Sarah, three months into comparison training. Her unison pitch discrimination has sharpened noticeably. She wants to train interval intonation — the skill she actually uses when playing with others.
+**Persona:** Sarah, three months into pitch comparison training. Her unison pitch comparison has sharpened noticeably. She wants to train interval intonation — the skill she actually uses when playing with others.
 
-**Opening Scene:** She opens Peach and sees two new buttons below the existing ones: "Interval Comparison" and "Interval Pitch Matching." She taps "Interval Comparison."
+**Opening Scene:** She opens Peach and sees two new buttons below the existing ones: "Interval Pitch Comparison" and "Interval Pitch Matching." She taps "Interval Pitch Comparison."
 
 **Rising Action:** The screen indicates the target interval: Perfect Fifth Up. A reference note plays, then a second note plays — it should be a perfect fifth above, but it's slightly off. She taps "Higher" — the second note was a few cents sharp of a true fifth. Thumbs up. Next pair: she gets it wrong. The haptic buzz. The rhythm is familiar from unison training, but the listening task is different — she's not comparing two isolated pitches, she's evaluating the quality of an interval.
 
 **Climax:** After a minute, she notices her ear is doing something new. She's not just hearing "higher or lower" — she's hearing "sharp fifth or flat fifth." The training feels directly relevant to ensemble intonation. This is the skill gap she's been trying to close.
 
-**Resolution:** She switches back to unison comparison for a quick burst. Both modes feed her understanding of pitch. The interval mode trains a higher-order skill that builds on the foundation the unison mode established.
+**Resolution:** She switches back to unison pitch comparison for a quick burst. Both modes feed her understanding of pitch. The interval mode trains a higher-order skill that builds on the foundation the unison mode established.
 
-**Requirements revealed:** Interval Comparison Screen, target interval display, second note offset from correct interval (not from reference), same higher/lower interaction pattern, same feedback mechanisms, Start Screen integration.
+**Requirements revealed:** Interval Pitch Comparison Screen, target interval display, second note offset from correct interval (not from reference), same higher/lower interaction pattern, same feedback mechanisms, Start Screen integration.
 
 ### Journey 8: Interval Pitch Matching — "Tune That Fifth"
 
@@ -290,7 +290,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 | Visual proximity feedback for pitch matching | 6 | v0.2 |
 | Pitch matching result recording | 6 | v0.2 |
 | Interrupted pitch matching handling | 6 | v0.2 |
-| Interval Comparison Screen with target interval display | 7 | v0.3 |
+| Interval Pitch Comparison Screen with target interval display | 7 | v0.3 |
 | Interval Pitch Matching Screen with target interval display | 8 | v0.3 |
 | Interval-based result recording (target interval + deviation) | 7, 8 | v0.3 |
 | Start Screen buttons for interval training variants | 7, 8 | v0.3 |
@@ -431,12 +431,12 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 - **FR54:** System computes the target frequency for an interval using a Tuning System; 12-tone equal temperament (12-TET) is the initial tuning system
 - **FR55:** System supports multiple tuning systems beyond 12-TET (e.g., Just Intonation); adding a new tuning system requires no changes to interval or training logic
 
-### Interval Comparison
+### Interval Pitch Comparison
 
-- **FR56:** User can start interval comparison training from the Start Screen via a dedicated button
+- **FR56:** User can start interval pitch pitch comparison training from the Start Screen via a dedicated button
 - **FR57:** Generalizes FR2: system plays a reference note followed by a second note at the target interval ± a signed cent deviation
 - **FR58:** Generalizes FR3: user answers whether the second note was higher or lower than the correct interval pitch
-- **FR59:** FR4, FR5, FR7, FR7a, and FR8 apply to interval comparison identically as to unison comparison
+- **FR59:** FR4, FR5, FR7, FR7a, and FR8 apply to interval pitch comparison identically as to unison pitch comparison
 
 ### Interval Pitch Matching
 
@@ -448,7 +448,7 @@ Peach is a pitch ear training app for iOS. It trains musicians' pitch perception
 
 ### Start Screen Integration
 
-- **FR65:** Start Screen shows four training buttons: "Comparison", "Pitch Matching", "Interval Comparison", "Interval Pitch Matching"
+- **FR65:** Start Screen shows four training buttons: "Pitch Comparison", "Pitch Matching", "Interval Pitch Comparison", "Interval Pitch Matching"
 - **FR66:** Unison comparison and unison pitch matching behave identically to their interval variants with the interval fixed to prime (unison)
 
 ### Initial Scope Constraint

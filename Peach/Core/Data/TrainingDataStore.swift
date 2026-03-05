@@ -1,7 +1,7 @@
 import SwiftData
 import Foundation
 
-/// Pure persistence layer for ComparisonRecord and PitchMatchingRecord storage and retrieval
+/// Pure persistence layer for PitchComparisonRecord and PitchMatchingRecord storage and retrieval
 /// Responsibilities: CREATE, READ, DELETE operations only - no business logic
 final class TrainingDataStore {
     private let modelContext: ModelContext
@@ -13,25 +13,25 @@ final class TrainingDataStore {
     }
 
     /// Saves a comparison record to persistent storage
-    /// - Parameter record: The ComparisonRecord to save
+    /// - Parameter record: The PitchComparisonRecord to save
     /// - Throws: DataStoreError.saveFailed if save operation fails
-    func save(_ record: ComparisonRecord) throws {
+    func save(_ record: PitchComparisonRecord) throws {
         modelContext.insert(record)
         do {
             try modelContext.save()
         } catch {
-            throw DataStoreError.saveFailed("Failed to save ComparisonRecord: \(error.localizedDescription)")
+            throw DataStoreError.saveFailed("Failed to save PitchComparisonRecord: \(error.localizedDescription)")
         }
     }
 
     /// Fetches all comparison records from persistent storage
-    /// - Returns: All ComparisonRecord instances sorted by timestamp (oldest first)
+    /// - Returns: All PitchComparisonRecord instances sorted by timestamp (oldest first)
     /// - Throws: DataStoreError.fetchFailed if fetch operation fails
     /// - Note: Loads all records into memory at once. For MVP with expected low data volumes (hundreds to low thousands
     ///   of records), this is acceptable. Future optimization: implement batched iteration if data volume becomes large
     ///   (tens of thousands of records or memory pressure observed).
-    func fetchAllComparisons() throws -> [ComparisonRecord] {
-        let descriptor = FetchDescriptor<ComparisonRecord>(
+    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] {
+        let descriptor = FetchDescriptor<PitchComparisonRecord>(
             sortBy: [SortDescriptor(\.timestamp, order: .forward)]
         )
         do {
@@ -42,9 +42,9 @@ final class TrainingDataStore {
     }
 
     /// Deletes a comparison record from persistent storage
-    /// - Parameter record: The ComparisonRecord to delete
+    /// - Parameter record: The PitchComparisonRecord to delete
     /// - Throws: DataStoreError.deleteFailed if delete operation fails
-    func delete(_ record: ComparisonRecord) throws {
+    func delete(_ record: PitchComparisonRecord) throws {
         modelContext.delete(record)
         do {
             try modelContext.save()
@@ -59,7 +59,7 @@ final class TrainingDataStore {
     func deleteAll() throws {
         do {
             try modelContext.transaction {
-                try modelContext.delete(model: ComparisonRecord.self)
+                try modelContext.delete(model: PitchComparisonRecord.self)
                 try modelContext.delete(model: PitchMatchingRecord.self)
             }
         } catch {
@@ -129,18 +129,18 @@ extension TrainingDataStore: PitchMatchingObserver {
     }
 }
 
-// MARK: - ComparisonObserver Conformance
+// MARK: - PitchComparisonObserver Conformance
 
-extension TrainingDataStore: ComparisonObserver {
-    /// Observes comparison completion and persists the result
-    /// - Parameter completed: The completed comparison with user's answer and result
-    func comparisonCompleted(_ completed: CompletedComparison) {
-        let comparison = completed.comparison
-        let interval = (try? Interval.between(comparison.referenceNote, comparison.targetNote.note))?.rawValue ?? 0
-        let record = ComparisonRecord(
-            referenceNote: comparison.referenceNote.rawValue,
-            targetNote: comparison.targetNote.note.rawValue,
-            centOffset: comparison.targetNote.offset.rawValue,
+extension TrainingDataStore: PitchComparisonObserver {
+    /// Observes pitch comparison completion and persists the result
+    /// - Parameter completed: The completed pitch comparison with user's answer and result
+    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
+        let pitchComparison = completed.pitchComparison
+        let interval = (try? Interval.between(pitchComparison.referenceNote, pitchComparison.targetNote.note))?.rawValue ?? 0
+        let record = PitchComparisonRecord(
+            referenceNote: pitchComparison.referenceNote.rawValue,
+            targetNote: pitchComparison.targetNote.note.rawValue,
+            centOffset: pitchComparison.targetNote.offset.rawValue,
             isCorrect: completed.isCorrect,
             interval: interval,
             tuningSystem: completed.tuningSystem.identifier,

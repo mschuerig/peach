@@ -23,7 +23,7 @@ struct TrainingModeConfig {
 }
 
 extension TrainingModeConfig {
-    static let unisonComparison = TrainingModeConfig(
+    static let unisonPitchComparison = TrainingModeConfig(
         displayName: String(localized: "Hear & Compare – Single Notes"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(8.0),
@@ -31,7 +31,7 @@ extension TrainingModeConfig {
         sessionGap: .seconds(1800)
     )
 
-    static let intervalComparison = TrainingModeConfig(
+    static let intervalPitchComparison = TrainingModeConfig(
         displayName: String(localized: "Hear & Compare – Intervals"),
         unitLabel: String(localized: "cents"),
         optimalBaseline: Cents(12.0),

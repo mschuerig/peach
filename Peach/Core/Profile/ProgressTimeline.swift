@@ -16,15 +16,15 @@ enum Trend: Equatable {
 
 /// The four training mode categories tracked independently.
 enum TrainingMode: CaseIterable {
-    case unisonComparison
-    case intervalComparison
+    case unisonPitchComparison
+    case intervalPitchComparison
     case unisonMatching
     case intervalMatching
 
     var config: TrainingModeConfig {
         switch self {
-        case .unisonComparison: .unisonComparison
-        case .intervalComparison: .intervalComparison
+        case .unisonPitchComparison: .unisonPitchComparison
+        case .intervalPitchComparison: .intervalPitchComparison
         case .unisonMatching: .unisonMatching
         case .intervalMatching: .intervalMatching
         }
@@ -32,15 +32,15 @@ enum TrainingMode: CaseIterable {
 
     /// Extracts metric points for this mode from raw training records.
     func extractMetrics(
-        comparisonRecords: [ComparisonRecord],
+        pitchComparisonRecords: [PitchComparisonRecord],
         pitchMatchingRecords: [PitchMatchingRecord]
     ) -> [(timestamp: Date, value: Double)] {
         switch self {
-        case .unisonComparison:
-            comparisonRecords.filter { $0.interval == 0 }
+        case .unisonPitchComparison:
+            pitchComparisonRecords.filter { $0.interval == 0 }
                 .map { (timestamp: $0.timestamp, value: abs($0.centOffset)) }
-        case .intervalComparison:
-            comparisonRecords.filter { $0.interval != 0 }
+        case .intervalPitchComparison:
+            pitchComparisonRecords.filter { $0.interval != 0 }
                 .map { (timestamp: $0.timestamp, value: abs($0.centOffset)) }
         case .unisonMatching:
             pitchMatchingRecords.filter { $0.interval == 0 }
@@ -52,14 +52,14 @@ enum TrainingMode: CaseIterable {
     }
 
     /// Returns a metric if this completed comparison belongs to this mode, nil otherwise.
-    func metric(from completed: CompletedComparison) -> (timestamp: Date, value: Double)? {
-        let interval = (try? Interval.between(completed.comparison.referenceNote, completed.comparison.targetNote.note))?.rawValue ?? 0
+    func metric(from completed: CompletedPitchComparison) -> (timestamp: Date, value: Double)? {
+        let interval = (try? Interval.between(completed.pitchComparison.referenceNote, completed.pitchComparison.targetNote.note))?.rawValue ?? 0
         let isUnison = interval == 0
         switch self {
-        case .unisonComparison where isUnison:
-            return (timestamp: completed.timestamp, value: completed.comparison.targetNote.offset.magnitude)
-        case .intervalComparison where !isUnison:
-            return (timestamp: completed.timestamp, value: completed.comparison.targetNote.offset.magnitude)
+        case .unisonPitchComparison where isUnison:
+            return (timestamp: completed.timestamp, value: completed.pitchComparison.targetNote.offset.magnitude)
+        case .intervalPitchComparison where !isUnison:
+            return (timestamp: completed.timestamp, value: completed.pitchComparison.targetNote.offset.magnitude)
         default:
             return nil
         }
@@ -126,13 +126,13 @@ final class ProgressTimeline {
     private var modeData: [TrainingMode: ModeState] = [:]
 
     init(
-        comparisonRecords: [ComparisonRecord] = [],
+        pitchComparisonRecords: [PitchComparisonRecord] = [],
         pitchMatchingRecords: [PitchMatchingRecord] = []
     ) {
         for mode in TrainingMode.allCases {
             modeData[mode] = ModeState()
         }
-        rebuild(comparisonRecords: comparisonRecords, pitchMatchingRecords: pitchMatchingRecords)
+        rebuild(pitchComparisonRecords: pitchComparisonRecords, pitchMatchingRecords: pitchMatchingRecords)
     }
 
     // MARK: - Public API
@@ -179,11 +179,11 @@ final class ProgressTimeline {
     // MARK: - Rebuild
 
     /// Replaces all data and recomputes statistics from the given records.
-    func rebuild(comparisonRecords: [ComparisonRecord], pitchMatchingRecords: [PitchMatchingRecord]) {
+    func rebuild(pitchComparisonRecords: [PitchComparisonRecord], pitchMatchingRecords: [PitchMatchingRecord]) {
         let now = Date()
         for mode in TrainingMode.allCases {
             let metrics = mode.extractMetrics(
-                comparisonRecords: comparisonRecords,
+                pitchComparisonRecords: pitchComparisonRecords,
                 pitchMatchingRecords: pitchMatchingRecords
             ).map { MetricPoint(timestamp: $0.timestamp, value: $0.value) }
             modeData[mode] = buildModeState(from: metrics, config: mode.config, now: now)
@@ -460,10 +460,10 @@ private extension Duration {
     }
 }
 
-// MARK: - ComparisonObserver Conformance
+// MARK: - PitchComparisonObserver Conformance
 
-extension ProgressTimeline: ComparisonObserver {
-    func comparisonCompleted(_ completed: CompletedComparison) {
+extension ProgressTimeline: PitchComparisonObserver {
+    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
         for mode in TrainingMode.allCases {
             if let metric = mode.metric(from: completed) {
                 addMetric(MetricPoint(timestamp: metric.timestamp, value: metric.value), to: mode)

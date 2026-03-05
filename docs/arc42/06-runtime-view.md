@@ -1,13 +1,13 @@
 # 6. Runtime View
 
-## Comparison Training Loop
+## Pitch Comparison Training Loop
 
 The core training interaction — the user answers a stream of pitch comparisons.
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant CS as ComparisonSession
+    participant CS as PitchComparisonSession
     participant Strategy as KazezNoteStrategy
     participant Profile as PerceptualProfile
     participant NP as SoundFontNotePlayer
@@ -16,10 +16,10 @@ sequenceDiagram
     User->>CS: start(intervals)
     activate CS
 
-    loop Each comparison
-        CS->>Strategy: nextComparison(profile, settings, lastComparison, interval)
+    loop Each pitch comparison
+        CS->>Strategy: nextPitchComparison(profile, settings, lastPitchComparison, interval)
         Strategy->>Profile: read weak spots, mean threshold
-        Strategy-->>CS: Comparison(referenceNote, targetNote)
+        Strategy-->>CS: PitchComparison(referenceNote, targetNote)
 
         CS->>CS: state = playingNote1
         CS->>NP: play(frequency1, duration)
@@ -31,7 +31,7 @@ sequenceDiagram
 
         User->>CS: handleAnswer(isHigher: true/false)
         CS->>CS: compute isCorrect
-        CS->>Observers: comparisonCompleted(result)
+        CS->>Observers: pitchComparisonCompleted(result)
         Note over Observers: DataStore persists record<br>Profile updates statistics<br>HapticManager buzzes on wrong<br>TrendAnalyzer/Timeline update
 
         CS->>CS: state = showingFeedback (400ms)
@@ -111,17 +111,17 @@ sequenceDiagram
     participant Trend as TrendAnalyzer
     participant Timeline as ThresholdTimeline
 
-    App->>App: Create ModelContainer<br>(ComparisonRecord + PitchMatchingRecord)
+    App->>App: Create ModelContainer<br>(PitchComparisonRecord + PitchMatchingRecord)
     App->>DS: init(modelContext)
     App->>Profile: init()
 
-    App->>DS: fetchAllComparisons()
-    DS-->>App: [ComparisonRecord]
+    App->>DS: fetchAllPitchComparisons()
+    DS-->>App: [PitchComparisonRecord]
 
     loop Each historical record
         App->>Profile: update(note, centOffset, isCorrect)
-        App->>Trend: comparisonCompleted(record)
-        App->>Timeline: comparisonCompleted(record)
+        App->>Trend: pitchComparisonCompleted(record)
+        App->>Timeline: pitchComparisonCompleted(record)
     end
 
     App->>DS: fetchAllPitchMatchings()
@@ -146,7 +146,7 @@ stateDiagram-v2
 
     state Interrupted {
         [*] --> StopCurrentNote : AudioSessionInterruptionMonitor<br>fires onStopRequired
-        StopCurrentNote --> DiscardIncomplete : Incomplete comparison/<br>match discarded
+        StopCurrentNote --> DiscardIncomplete : Incomplete pitch comparison/<br>match discarded
         DiscardIncomplete --> ReturnToStart : state = idle
     }
 

@@ -27,12 +27,12 @@ struct StartScreenTests {
 
     @Test("Comparison Screen can be instantiated with prime intervals")
     func comparisonScreenCanBeInstantiated() {
-        _ = ComparisonScreen(intervals: [.prime])
+        _ = PitchComparisonScreen(intervals: [.prime])
     }
 
     @Test("Comparison Screen can be instantiated with perfectFifth intervals")
     func comparisonScreenCanBeInstantiatedWithPerfectFifth() async {
-        _ = ComparisonScreen(intervals: [.up(.perfectFifth)])
+        _ = PitchComparisonScreen(intervals: [.up(.perfectFifth)])
     }
 
     @Test("Pitch Matching Screen can be instantiated with perfectFifth intervals")
@@ -68,8 +68,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination enum has comparison case with intervals")
     func navigationDestinationHasComparison() {
-        let destination = NavigationDestination.comparison(intervals: [.prime])
-        #expect(destination == NavigationDestination.comparison(intervals: [.prime]))
+        let destination = NavigationDestination.pitchComparison(intervals: [.prime])
+        #expect(destination == NavigationDestination.pitchComparison(intervals: [.prime]))
     }
 
     @Test("NavigationDestination enum has pitchMatching case with intervals")
@@ -92,8 +92,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination enum is Hashable")
     func navigationDestinationIsHashable() {
-        let destination1 = NavigationDestination.comparison(intervals: [.prime])
-        let destination2 = NavigationDestination.comparison(intervals: [.prime])
+        let destination1 = NavigationDestination.pitchComparison(intervals: [.prime])
+        let destination2 = NavigationDestination.pitchComparison(intervals: [.prime])
         let destination3 = NavigationDestination.settings
 
         #expect(destination1.hashValue == destination2.hashValue)
@@ -102,8 +102,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination comparison cases with different intervals are not equal")
     func navigationDestinationComparisonDifferentIntervals() {
-        let unison = NavigationDestination.comparison(intervals: [.prime])
-        let fifth = NavigationDestination.comparison(intervals: [.up(.perfectFifth)])
+        let unison = NavigationDestination.pitchComparison(intervals: [.prime])
+        let fifth = NavigationDestination.pitchComparison(intervals: [.up(.perfectFifth)])
         #expect(unison != fifth)
     }
 
@@ -116,10 +116,10 @@ struct StartScreenTests {
 
     @Test("NavigationDestination cases are not equal when different")
     func navigationDestinationCasesAreDistinct() {
-        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.settings)
+        #expect(NavigationDestination.pitchComparison(intervals: [.prime]) != NavigationDestination.settings)
         #expect(NavigationDestination.settings != NavigationDestination.profile)
-        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.profile)
-        #expect(NavigationDestination.comparison(intervals: [.prime]) != NavigationDestination.pitchMatching(intervals: [.prime]))
+        #expect(NavigationDestination.pitchComparison(intervals: [.prime]) != NavigationDestination.profile)
+        #expect(NavigationDestination.pitchComparison(intervals: [.prime]) != NavigationDestination.pitchMatching(intervals: [.prime]))
     }
 
     // MARK: - Info Screen Content Tests
@@ -197,8 +197,8 @@ struct StartScreenTests {
         // Verify that all destination screens can be instantiated
         // This ensures the hub-and-spoke pattern has all spokes available
 
-        let comparison = ComparisonScreen(intervals: [.prime])
-        let intervalComparison = ComparisonScreen(intervals: [.up(.perfectFifth)])
+        let comparison = PitchComparisonScreen(intervals: [.prime])
+        let intervalComparison = PitchComparisonScreen(intervals: [.up(.perfectFifth)])
         let pitchMatching = PitchMatchingScreen(intervals: [.prime])
         let intervalPitchMatching = PitchMatchingScreen(intervals: [.up(.perfectFifth)])
         let settings = SettingsScreen()

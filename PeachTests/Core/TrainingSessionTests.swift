@@ -5,9 +5,9 @@ import Testing
 @Suite("TrainingSession Protocol")
 struct TrainingSessionTests {
 
-    @Test("ComparisonSession conforms to TrainingSession")
-    func comparisonSessionConformsToTrainingSession() async {
-        let fixture = makeComparisonSession()
+    @Test("PitchComparisonSession conforms to TrainingSession")
+    func pitchComparisonSessionConformsToTrainingSession() async {
+        let fixture = makePitchComparisonSession()
         let trainingSession: TrainingSession = fixture.session
         #expect(trainingSession.isIdle)
     }
@@ -19,9 +19,9 @@ struct TrainingSessionTests {
         #expect(trainingSession.isIdle)
     }
 
-    @Test("ComparisonSession.isIdle returns false when active")
-    func comparisonSessionIsIdleFalseWhenActive() async throws {
-        let fixture = makeComparisonSession()
+    @Test("PitchComparisonSession.isIdle returns false when active")
+    func pitchComparisonSessionIsIdleFalseWhenActive() async throws {
+        let fixture = makePitchComparisonSession()
         fixture.session.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session
@@ -39,9 +39,9 @@ struct TrainingSessionTests {
         trainingSession.stop()
     }
 
-    @Test("stop() through TrainingSession protocol stops ComparisonSession")
-    func stopThroughProtocolStopsComparisonSession() async throws {
-        let fixture = makeComparisonSession()
+    @Test("stop() through TrainingSession protocol stops PitchComparisonSession")
+    func stopThroughProtocolStopsPitchComparisonSession() async throws {
+        let fixture = makePitchComparisonSession()
         fixture.session.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session
@@ -59,9 +59,9 @@ struct TrainingSessionTests {
         #expect(session.state == .idle)
     }
 
-    @Test("start() through TrainingSession protocol starts ComparisonSession")
-    func startThroughProtocolStartsComparisonSession() async throws {
-        let fixture = makeComparisonSession()
+    @Test("start() through TrainingSession protocol starts PitchComparisonSession")
+    func startThroughProtocolStartsPitchComparisonSession() async throws {
+        let fixture = makePitchComparisonSession()
         let trainingSession: TrainingSession = fixture.session
         trainingSession.start(intervals: [.prime])
         try await waitForState(fixture.session, .awaitingAnswer)

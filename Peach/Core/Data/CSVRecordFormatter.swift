@@ -2,11 +2,11 @@ import Foundation
 
 nonisolated enum CSVRecordFormatter {
 
-    // MARK: - Comparison Record Formatting
+    // MARK: - PitchComparison Record Formatting
 
-    static func format(_ record: ComparisonRecord) -> String {
+    static func format(_ record: PitchComparisonRecord) -> String {
         let fields: [String] = [
-            CSVExportSchema.TrainingType.comparison.csvValue,
+            CSVExportSchema.TrainingType.pitchComparison.csvValue,
             formatTimestamp(record.timestamp),
             "\(record.referenceNote)",
             formatNoteName(record.referenceNote),

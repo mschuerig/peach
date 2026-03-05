@@ -15,7 +15,7 @@ This documentation describes the software architecture of **Peach**, an iOS pitc
 | 3 | [Context and Scope](03-context-and-scope.md) | System boundary, business and technical context |
 | 4 | [Solution Strategy](04-solution-strategy.md) | Technology decisions, decomposition, quality strategies |
 | 5 | [Building Block View](05-building-block-view.md) | Static decomposition: Level 1 (features + core) and Level 2 (core internals) |
-| 6 | [Runtime View](06-runtime-view.md) | Comparison loop, pitch matching loop, startup, interruption handling |
+| 6 | [Runtime View](06-runtime-view.md) | Pitch comparison loop, pitch matching loop, startup, interruption handling |
 | 7 | [Deployment View](07-deployment-view.md) | iOS app sandbox, storage, distribution |
 | 8 | [Cross-cutting Concepts](08-crosscutting-concepts.md) | Two-world architecture, observer pattern, DI, settings propagation, error handling |
 | 9 | [Architecture Decisions](09-architecture-decisions.md) | Key ADRs: SwiftData, SoundFont, Kazez algorithm, PlaybackHandle, and more |

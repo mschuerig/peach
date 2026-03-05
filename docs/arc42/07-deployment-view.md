@@ -35,7 +35,7 @@ graph TB
 | Element | Description |
 |---|---|
 | **Peach.app** | Single iOS application binary. No extensions, no widgets, no background processes. |
-| **SwiftData store** | SQLite database in the app's Application Support directory. Contains `ComparisonRecord` and `PitchMatchingRecord` tables. Automatically created on first launch. |
+| **SwiftData store** | SQLite database in the app's Application Support directory. Contains `PitchComparisonRecord` and `PitchMatchingRecord` tables. Automatically created on first launch. |
 | **UserDefaults** | Standard preferences plist. Stores all user settings (note range, duration, reference pitch, sound source, intervals, tuning system, loudness variation). |
 | **GeneralUser GS.sf2** | SoundFont file bundled in the app. ~30 MB. Contains instrument presets parsed at startup by `SoundFontLibrary`. |
 | **Distribution** | App Store or TestFlight. Standard iOS distribution. No CI/CD pipeline for MVP. |

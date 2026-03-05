@@ -25,14 +25,14 @@ Both training sessions use a **synchronous observer fan-out** for side effects a
 
 ```mermaid
 graph LR
-    CS["ComparisonSession"] -->|"comparisonCompleted()"| DS["TrainingDataStore<br><i>persists record</i>"]
-    CS -->|"comparisonCompleted()"| PP["PerceptualProfile<br><i>updates statistics</i>"]
-    CS -->|"comparisonCompleted()"| HM["HapticFeedbackManager<br><i>buzzes on wrong</i>"]
-    CS -->|"comparisonCompleted()"| TA["TrendAnalyzer<br><i>updates trend</i>"]
-    CS -->|"comparisonCompleted()"| TL["ThresholdTimeline<br><i>updates chart data</i>"]
+    CS["PitchComparisonSession"] -->|"pitchComparisonCompleted()"| DS["TrainingDataStore<br><i>persists record</i>"]
+    CS -->|"pitchComparisonCompleted()"| PP["PerceptualProfile<br><i>updates statistics</i>"]
+    CS -->|"pitchComparisonCompleted()"| HM["HapticFeedbackManager<br><i>buzzes on wrong</i>"]
+    CS -->|"pitchComparisonCompleted()"| TA["TrendAnalyzer<br><i>updates trend</i>"]
+    CS -->|"pitchComparisonCompleted()"| TL["ThresholdTimeline<br><i>updates chart data</i>"]
 ```
 
-Observers are injected at construction time via `[ComparisonObserver]` and `[PitchMatchingObserver]` arrays. Each observer handles its own errors internally — a persistence failure does not break the training loop. This keeps the session as a clean orchestrator that delegates all side effects.
+Observers are injected at construction time via `[PitchComparisonObserver]` and `[PitchMatchingObserver]` arrays. Each observer handles its own errors internally — a persistence failure does not break the training loop. This keeps the session as a clean orchestrator that delegates all side effects.
 
 ## Protocol-First Design and Dependency Injection
 
@@ -42,12 +42,12 @@ Every service boundary is defined as a protocol before implementation:
 |---|---|---|
 | `NotePlayer` | `SoundFontNotePlayer` | `MockNotePlayer` |
 | `PlaybackHandle` | `SoundFontPlaybackHandle` | `MockPlaybackHandle` |
-| `NextComparisonStrategy` | `KazezNoteStrategy` | Inline closures |
-| `PitchDiscriminationProfile` | `PerceptualProfile` | `MockPitchDiscriminationProfile` |
+| `NextPitchComparisonStrategy` | `KazezNoteStrategy` | Inline closures |
+| `PitchComparisonProfile` | `PerceptualProfile` | `MockPitchComparisonProfile` |
 | `PitchMatchingProfile` | `PerceptualProfile` | `MockPitchMatchingProfile` |
 | `UserSettings` | `AppUserSettings` | `PreviewUserSettings` |
 | `SoundSourceProvider` | `SoundFontLibrary` | `PreviewSoundSourceProvider` |
-| `ComparisonRecordStoring` | `TrainingDataStore` | `MockTrainingDataStore` |
+| `PitchComparisonRecordStoring` | `TrainingDataStore` | `MockTrainingDataStore` |
 | `Resettable` | Various | `MockResettable` |
 
 **Composition root:** All wiring happens in `PeachApp.init()`. No service instantiates its own dependencies. Views receive services exclusively through the SwiftUI `@Environment`.
@@ -59,10 +59,10 @@ Every service boundary is defined as a protocol before implementation:
 Settings are stored in `UserDefaults` via `@AppStorage` in the `SettingsScreen`. The propagation path is intentionally indirect:
 
 ```
-SettingsScreen (@AppStorage) → UserDefaults → AppUserSettings (reads live) → Session (reads per comparison)
+SettingsScreen (@AppStorage) → UserDefaults → AppUserSettings (reads live) → Session (reads per pitch comparison)
 ```
 
-`AppUserSettings` reads `UserDefaults` on every property access — it never caches. Sessions read `userSettings` at the start of each comparison or pitch matching challenge. This means settings changes take effect on the **next** exercise automatically, with no explicit notification or refresh mechanism.
+`AppUserSettings` reads `UserDefaults` on every property access — it never caches. Sessions read `userSettings` at the start of each pitch comparison or pitch matching challenge. This means settings changes take effect on the **next** exercise automatically, with no explicit notification or refresh mechanism.
 
 ## Error Handling
 
@@ -72,7 +72,7 @@ Each service defines its own error type (`DataStoreError`, etc.) enabling exhaus
 
 **Session as error boundary:**
 
-Both `ComparisonSession` and `PitchMatchingSession` catch all service errors and handle them gracefully:
+Both `PitchComparisonSession` and `PitchMatchingSession` catch all service errors and handle them gracefully:
 - Audio failure → stop training silently
 - Data write failure → log internally, continue training (loss of one record is acceptable)
 - The user never sees an error screen during training

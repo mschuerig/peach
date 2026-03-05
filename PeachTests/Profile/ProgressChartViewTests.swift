@@ -95,7 +95,7 @@ struct ProgressChartViewTests {
             from: buckets,
             expandedIndex: nil,
             timeline: timeline,
-            mode: .unisonComparison
+            mode: .unisonPitchComparison
         )
         #expect(result.count == buckets.count)
     }
@@ -107,7 +107,7 @@ struct ProgressChartViewTests {
         let calendar = Calendar.current
         let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
         let records = (0..<20).map { i in
-            ComparisonRecord(
+            PitchComparisonRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: 10.0 + Double(i),
@@ -117,8 +117,8 @@ struct ProgressChartViewTests {
                 timestamp: monthStart.addingTimeInterval(Double(i % 28) * 86400 + Double(i) * 60)
             )
         }
-        let timeline = ProgressTimeline(comparisonRecords: records)
-        let baseBuckets = timeline.buckets(for: .unisonComparison)
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let baseBuckets = timeline.buckets(for: .unisonPitchComparison)
 
         guard let monthIndex = baseBuckets.firstIndex(where: { $0.bucketSize == .month }) else {
             Issue.record("Expected at least one month bucket")
@@ -129,7 +129,7 @@ struct ProgressChartViewTests {
             from: baseBuckets,
             expandedIndex: monthIndex,
             timeline: timeline,
-            mode: .unisonComparison
+            mode: .unisonPitchComparison
         )
         // Should have more buckets than base (month replaced by multiple weeks)
         #expect(result.count > baseBuckets.count)
@@ -143,7 +143,7 @@ struct ProgressChartViewTests {
             from: buckets,
             expandedIndex: 999,
             timeline: timeline,
-            mode: .unisonComparison
+            mode: .unisonPitchComparison
         )
         #expect(result.count == buckets.count)
     }

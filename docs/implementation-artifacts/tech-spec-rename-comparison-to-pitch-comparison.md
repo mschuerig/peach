@@ -2,7 +2,7 @@
 title: 'Rename Comparison to PitchComparison'
 slug: 'rename-comparison-to-pitch-comparison'
 created: '2026-03-05'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'SwiftUI', 'SwiftData', 'Swift Testing']
 files_to_modify:
@@ -271,11 +271,11 @@ Implementation is structured in 4 phases: (1) file/directory renames via git, (2
 
 All renames use `git mv`. Perform directory renames first, then individual file renames.
 
-- [ ] Task 1.1: Rename source directories
+- [x] Task 1.1: Rename source directories
   - Action: `git mv Peach/Comparison Peach/PitchComparison`
   - Notes: This moves all files in the directory. HapticFeedbackManager.swift moves but keeps its name.
 
-- [ ] Task 1.2: Rename source files in Core/
+- [x] Task 1.2: Rename source files in Core/
   - Action: `git mv` each file:
     - `Peach/Core/Training/Comparison.swift` -> `PitchComparison.swift`
     - `Peach/Core/Training/ComparisonObserver.swift` -> `PitchComparisonObserver.swift`
@@ -284,16 +284,16 @@ All renames use `git mv`. Perform directory renames first, then individual file 
     - `Peach/Core/Data/ComparisonRecord.swift` -> `PitchComparisonRecord.swift`
     - `Peach/Core/Data/ComparisonRecordStoring.swift` -> `PitchComparisonRecordStoring.swift`
 
-- [ ] Task 1.3: Rename source files in PitchComparison/ (already moved by 1.1)
+- [x] Task 1.3: Rename source files in PitchComparison/ (already moved by 1.1)
   - Action: `git mv` each file within `Peach/PitchComparison/`:
     - `ComparisonSession.swift` -> `PitchComparisonSession.swift`
     - `ComparisonScreen.swift` -> `PitchComparisonScreen.swift`
     - `ComparisonFeedbackIndicator.swift` -> `PitchComparisonFeedbackIndicator.swift`
 
-- [ ] Task 1.4: Rename test directories
+- [x] Task 1.4: Rename test directories
   - Action: `git mv PeachTests/Comparison PeachTests/PitchComparison`
 
-- [ ] Task 1.5: Rename test files in PitchComparison/ (already moved by 1.4)
+- [x] Task 1.5: Rename test files in PitchComparison/ (already moved by 1.4)
   - Action: `git mv` each file that needs a name change:
     - `ComparisonSessionTests.swift` -> `PitchComparisonSessionTests.swift`
     - `ComparisonSessionLifecycleTests.swift` -> `PitchComparisonSessionLifecycleTests.swift`
@@ -312,13 +312,13 @@ All renames use `git mv`. Perform directory renames first, then individual file 
     - `MockNextComparisonStrategy.swift` -> `MockNextPitchComparisonStrategy.swift`
   - Notes: MockTrainingDataStore.swift, MockHapticFeedbackManager.swift, MockNotePlayer.swift keep their names (not Comparison-specific).
 
-- [ ] Task 1.6: Rename other test files
+- [x] Task 1.6: Rename other test files
   - Action: `git mv` each file:
     - `PeachTests/Profile/MockPitchDiscriminationProfile.swift` -> `MockPitchComparisonProfile.swift`
     - `PeachTests/Core/Profile/PitchDiscriminationProfileTests.swift` -> `PitchComparisonProfileTests.swift`
     - `PeachTests/Core/Training/ComparisonTests.swift` -> `PitchComparisonTests.swift`
 
-- [ ] Task 1.7: Update Xcode project file
+- [x] Task 1.7: Update Xcode project file
   - File: `Peach.xcodeproj/project.pbxproj`
   - Action: After `git mv`, open Xcode or use `xcodebuild` to verify file references resolve. If Xcode auto-detects the moves, no manual pbxproj editing is needed. If references break, re-add files to the project in Xcode.
   - Notes: Modern Xcode with folder references may handle this automatically. Verify by building.
@@ -327,7 +327,7 @@ All renames use `git mv`. Perform directory renames first, then individual file 
 
 Apply all identifier renames from the Rename Reference Table to source files. Process bottom-up: value types and protocols first, then conformances, then consumers.
 
-- [ ] Task 2.1: Rename value types and protocols (leaf dependencies)
+- [x] Task 2.1: Rename value types and protocols (leaf dependencies)
   - Files:
     - `Peach/Core/Training/PitchComparison.swift`: Rename `Comparison` -> `PitchComparison`, `CompletedComparison` -> `CompletedPitchComparison`
     - `Peach/Core/Training/PitchComparisonObserver.swift`: Rename protocol `ComparisonObserver` -> `PitchComparisonObserver`, method `comparisonCompleted` -> `pitchComparisonCompleted`
@@ -336,7 +336,7 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - `Peach/Core/Data/PitchComparisonRecord.swift`: Rename class `ComparisonRecord` -> `PitchComparisonRecord`
     - `Peach/Core/Data/PitchComparisonRecordStoring.swift`: Rename protocol `ComparisonRecordStoring` -> `PitchComparisonRecordStoring`, method `fetchAllComparisons` -> `fetchAllPitchComparisons`, parameter types
 
-- [ ] Task 2.2: Rename conforming implementations
+- [x] Task 2.2: Rename conforming implementations
   - Files:
     - `Peach/PitchComparison/PitchComparisonSession.swift`: Rename class `ComparisonSession` -> `PitchComparisonSession`, enum `ComparisonSessionState` -> `PitchComparisonSessionState`, all properties (`currentComparison` -> `currentPitchComparison`, `lastCompletedComparison` -> `lastCompletedPitchComparison`), all private methods (`playNextComparison` -> `playNextPitchComparison`, `playComparisonNotes` -> `playPitchComparisonNotes`, `recordComparison` -> `recordPitchComparison`), all protocol references, logger messages
     - `Peach/Core/Algorithm/KazezNoteStrategy.swift`: Update conformance to `NextPitchComparisonStrategy`, method signature `nextPitchComparison(...)`, return type, parameter names
@@ -344,7 +344,7 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - `Peach/Core/Data/TrainingDataStore.swift`: Update conformances to `PitchComparisonRecordStoring` + `PitchComparisonObserver`, method signatures (`fetchAllPitchComparisons`, `pitchComparisonCompleted`), parameter types
     - `Peach/Core/Profile/ProgressTimeline.swift`: Rename `TrainingMode` cases `.unisonComparison` -> `.unisonPitchComparison`, `.intervalComparison` -> `.intervalPitchComparison`, update all references and switch statements
 
-- [ ] Task 2.3: Rename CSV/import/export layer
+- [x] Task 2.3: Rename CSV/import/export layer
   - Files:
     - `Peach/Core/Data/CSVExportSchema.swift`: Rename `TrainingType.comparison` -> `.pitchComparison`, `comparisonColumns` -> `pitchComparisonColumns`, string literal `"comparison"` -> `"pitchComparison"`
     - `Peach/Core/Data/CSVRecordFormatter.swift`: Update type references (`PitchComparisonRecord`, `.pitchComparison`)
@@ -353,7 +353,7 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - `Peach/Core/Data/TrainingDataExporter.swift`: Update type references
     - `Peach/Core/Data/TrainingDataTransferService.swift`: Update type references
 
-- [ ] Task 2.4: Rename UI layer
+- [x] Task 2.4: Rename UI layer
   - Files:
     - `Peach/PitchComparison/PitchComparisonScreen.swift`: Rename struct `ComparisonScreen` -> `PitchComparisonScreen`, `@Environment(\.comparisonSession)` -> `@Environment(\.pitchComparisonSession)`, property name `comparisonSession` -> `pitchComparisonSession`
     - `Peach/PitchComparison/PitchComparisonFeedbackIndicator.swift`: Rename struct `ComparisonFeedbackIndicator` -> `PitchComparisonFeedbackIndicator`, update all type references
@@ -363,29 +363,29 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - `Peach/App/TrainingStatsView.swift`: Update type references
     - `Peach/Profile/ProfileScreen.swift`: Update type references if any
 
-- [ ] Task 2.5: Rename composition root and environment
+- [x] Task 2.5: Rename composition root and environment
   - Files:
     - `Peach/App/EnvironmentKeys.swift`: Rename `@Entry var comparisonSession` -> `@Entry var pitchComparisonSession`, preview stub types (`PreviewComparisonStrategy` -> `PreviewPitchComparisonStrategy`, etc.), all protocol conformances and method signatures in preview stubs
     - `Peach/App/PeachApp.swift`: Update all type references, `ModelContainer` schema registration (`PitchComparisonRecord.self`), observer array types, session construction
 
-- [ ] Task 2.6: Build and fix
+- [x] Task 2.6: Build and fix
   - Action: Run `bin/build.sh`
   - Notes: Fix any remaining compile errors. The compiler will catch any missed renames. Iterate until clean build.
 
 #### Phase 3: Test Code Content Renames
 
-- [ ] Task 3.1: Rename test helpers and mocks
+- [x] Task 3.1: Rename test helpers and mocks
   - Files:
     - `PeachTests/PitchComparison/PitchComparisonTestHelpers.swift`: Rename `ComparisonSessionFixture` -> `PitchComparisonSessionFixture`, `makeComparisonSession` -> `makePitchComparisonSession`, all type references
     - `PeachTests/PitchComparison/MockNextPitchComparisonStrategy.swift`: Rename class `MockNextComparisonStrategy` -> `MockNextPitchComparisonStrategy`, method `nextComparison` -> `nextPitchComparison`, all property/parameter names
     - `PeachTests/Profile/MockPitchComparisonProfile.swift`: Rename class `MockPitchDiscriminationProfile` -> `MockPitchComparisonProfile`
     - `PeachTests/PitchComparison/MockTrainingDataStore.swift`: Update protocol conformances and method signatures (`PitchComparisonRecordStoring`, `PitchComparisonObserver`, `pitchComparisonCompleted`, `fetchAllPitchComparisons`)
 
-- [ ] Task 3.2: Rename all test suites in PeachTests/PitchComparison/
+- [x] Task 3.2: Rename all test suites in PeachTests/PitchComparison/
   - Files: All 14 test files in `PeachTests/PitchComparison/`
   - Action: For each file, update `@Suite` names, struct names (e.g., `ComparisonSessionTests` -> `PitchComparisonSessionTests`), all type references, factory method calls (`makePitchComparisonSession`), `waitForState` calls, property accesses
 
-- [ ] Task 3.3: Rename other test files
+- [x] Task 3.3: Rename other test files
   - Files:
     - `PeachTests/Core/Training/PitchComparisonTests.swift`: Rename suite and all type references
     - `PeachTests/Core/Profile/PitchComparisonProfileTests.swift`: Rename suite, update `MockPitchComparisonProfile` references
@@ -399,17 +399,17 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - `PeachTests/Settings/TrainingDataImportActionTests.swift`: Update type references
     - `PeachTests/Start/StartScreenTests.swift`: Update `.pitchComparison` navigation destination references
 
-- [ ] Task 3.4: Run full test suite
+- [x] Task 3.4: Run full test suite
   - Action: Run `bin/test.sh`
   - Notes: All tests must pass. Fix any remaining compile errors or test failures.
 
 #### Phase 4: Documentation Updates
 
-- [ ] Task 4.1: Update project-context.md
+- [x] Task 4.1: Update project-context.md
   - File: `docs/project-context.md`
   - Action: Replace all type name references per Rename Reference Table. Replace "discrimination" with "pitch comparison" in conceptual text. Update file paths (`Comparison/` -> `PitchComparison/`).
 
-- [ ] Task 4.2: Update glossary
+- [x] Task 4.2: Update glossary
   - File: `docs/planning-artifacts/glossary.md`
   - Action: Rename entries:
     - "Comparison" -> "Pitch Comparison"
@@ -424,51 +424,51 @@ Apply all identifier renames from the Rename Reference Table to source files. Pr
     - Update all type names in definitions (backtick references)
     - Replace "discrimination" with "pitch comparison" in definitions
 
-- [ ] Task 4.3: Update architecture doc
+- [x] Task 4.3: Update architecture doc
   - File: `docs/planning-artifacts/architecture.md`
   - Action: Replace all type names, directory references, concept text. This is the most extensive doc -- update systematically section by section.
 
-- [ ] Task 4.4: Update PRD
+- [x] Task 4.4: Update PRD
   - File: `docs/planning-artifacts/prd.md`
   - Action: Replace type names, "discrimination" -> "pitch comparison" in concept text, "comparison" -> "pitch comparison" where it refers to the training mode.
 
-- [ ] Task 4.5: Update epics
+- [x] Task 4.5: Update epics
   - File: `docs/planning-artifacts/epics.md`
   - Action: Update FR descriptions, epic titles, type name references.
 
-- [ ] Task 4.6: Update UX design spec
+- [x] Task 4.6: Update UX design spec
   - File: `docs/planning-artifacts/ux-design-specification.md`
   - Action: Update training mode names, user journey text, screen names.
 
-- [ ] Task 4.7: Update arc42 docs (all affected sections)
+- [x] Task 4.7: Update arc42 docs (all affected sections)
   - Files: `docs/arc42/02-constraints.md`, `03-context-and-scope.md`, `04-solution-strategy.md`, `05-building-block-view.md`, `06-runtime-view.md`, `07-deployment-view.md`, `08-crosscutting-concepts.md`, `09-architecture-decisions.md`, `10-quality-requirements.md`, `12-glossary.md`, `index.md`
   - Action: Replace all type names, directory references, diagram participant names, concept text per Rename Reference Table. Update Mermaid diagrams where type names appear as participants or labels.
 
-- [ ] Task 4.8: Update sprint-status and README
+- [x] Task 4.8: Update sprint-status and README
   - Files: `docs/implementation-artifacts/sprint-status.yaml`, `docs/README.md`
   - Action: Update type references, backlog item description, app description.
 
-- [ ] Task 4.9: Update localization strings
+- [x] Task 4.9: Update localization strings
   - File: `Peach/Localizable.xcstrings` (if applicable)
   - Action: Check for user-facing strings containing "comparison" or "discrimination" and update. Note: most UI strings may use generic terms ("higher"/"lower") rather than "comparison" -- verify before changing.
 
-- [ ] Task 4.10: Final verification
+- [x] Task 4.10: Final verification
   - Action: Run `grep -ri "Discrimination" --include="*.swift" --include="*.md"` excluding historical dirs. Run `grep -r "ComparisonSession\|ComparisonRecord\|ComparisonObserver\|ComparisonScreen\|NextComparisonStrategy\|ComparisonFeedbackIndicator" --include="*.swift"`. Verify zero matches outside historical docs.
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the full codebase, when searching for `PitchDiscriminationProfile` in all `.swift` files, then zero matches are found.
-- [ ] AC 2: Given the full codebase, when searching for `ComparisonSession` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
-- [ ] AC 3: Given the full codebase, when searching for `ComparisonRecord` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
-- [ ] AC 4: Given the full codebase, when searching for `ComparisonObserver` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
-- [ ] AC 5: Given the full codebase, when searching for `NextComparisonStrategy` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
-- [ ] AC 6: Given the project, when running `bin/build.sh`, then the build succeeds with zero errors.
-- [ ] AC 7: Given the project, when running `bin/test.sh`, then all tests pass.
-- [ ] AC 8: Given the active documentation files, when searching for "discrimination" (case-insensitive), then zero matches are found outside historical docs.
-- [ ] AC 9: Given the active documentation files, when searching for `ComparisonSession` or `ComparisonRecord` or `PitchDiscriminationProfile`, then zero matches are found outside historical docs.
-- [ ] AC 10: Given the `Peach/` directory structure, then directories `Peach/PitchComparison/` and `PeachTests/PitchComparison/` exist and `Peach/Comparison/` and `PeachTests/Comparison/` do not exist.
-- [ ] AC 11: Given the git log, then file renames are tracked via `git mv` (verifiable with `git log --follow`).
-- [ ] AC 12: Given historical docs (`docs/claude-audit/`, completed story files, brainstorming, research, validation reports), then none have been modified (verify with `git diff` on those paths).
+- [x] AC 1: Given the full codebase, when searching for `PitchDiscriminationProfile` in all `.swift` files, then zero matches are found.
+- [x] AC 2: Given the full codebase, when searching for `ComparisonSession` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
+- [x] AC 3: Given the full codebase, when searching for `ComparisonRecord` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
+- [x] AC 4: Given the full codebase, when searching for `ComparisonObserver` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
+- [x] AC 5: Given the full codebase, when searching for `NextComparisonStrategy` (without `PitchComparison` prefix) in all `.swift` files, then zero matches are found.
+- [x] AC 6: Given the project, when running `bin/build.sh`, then the build succeeds with zero errors.
+- [x] AC 7: Given the project, when running `bin/test.sh`, then all tests pass.
+- [x] AC 8: Given the active documentation files, when searching for "discrimination" (case-insensitive), then zero matches are found outside historical docs.
+- [x] AC 9: Given the active documentation files, when searching for `ComparisonSession` or `ComparisonRecord` or `PitchDiscriminationProfile`, then zero matches are found outside historical docs.
+- [x] AC 10: Given the `Peach/` directory structure, then directories `Peach/PitchComparison/` and `PeachTests/PitchComparison/` exist and `Peach/Comparison/` and `PeachTests/Comparison/` do not exist.
+- [x] AC 11: Given the git log, then file renames are tracked via `git mv` (verifiable with `git log --follow`).
+- [x] AC 12: Given historical docs (`docs/claude-audit/`, completed story files, brainstorming, research, validation reports), then none have been modified (verify with `git diff` on those paths).
 
 ## Additional Context
 

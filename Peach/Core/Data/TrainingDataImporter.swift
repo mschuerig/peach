@@ -8,14 +8,14 @@ enum TrainingDataImporter {
     }
 
     struct ImportSummary {
-        let comparisonsImported: Int
+        let pitchComparisonsImported: Int
         let pitchMatchingsImported: Int
-        let comparisonsSkipped: Int
+        let pitchComparisonsSkipped: Int
         let pitchMatchingsSkipped: Int
         let parseErrorCount: Int
 
-        var totalImported: Int { comparisonsImported + pitchMatchingsImported }
-        var totalSkipped: Int { comparisonsSkipped + pitchMatchingsSkipped }
+        var totalImported: Int { pitchComparisonsImported + pitchMatchingsImported }
+        var totalSkipped: Int { pitchComparisonsSkipped + pitchMatchingsSkipped }
     }
 
     static func importData(
@@ -41,7 +41,7 @@ enum TrainingDataImporter {
         // Acceptable for MVP — a future enhancement could wrap in a single transaction.
         try store.deleteAll()
 
-        for record in parseResult.comparisons {
+        for record in parseResult.pitchComparisons {
             try store.save(record)
         }
         for record in parseResult.pitchMatchings {
@@ -49,9 +49,9 @@ enum TrainingDataImporter {
         }
 
         return ImportSummary(
-            comparisonsImported: parseResult.comparisons.count,
+            pitchComparisonsImported: parseResult.pitchComparisons.count,
             pitchMatchingsImported: parseResult.pitchMatchings.count,
-            comparisonsSkipped: 0,
+            pitchComparisonsSkipped: 0,
             pitchMatchingsSkipped: 0,
             parseErrorCount: parseResult.errors.count
         )
@@ -63,7 +63,7 @@ enum TrainingDataImporter {
         _ parseResult: CSVImportParser.ImportResult,
         into store: TrainingDataStore
     ) throws -> ImportSummary {
-        let existingComparisons = try store.fetchAllComparisons()
+        let existingComparisons = try store.fetchAllPitchComparisons()
         let existingPitchMatchings = try store.fetchAllPitchMatchings()
 
         var existingKeys = Set<DuplicateKey>()
@@ -72,7 +72,7 @@ enum TrainingDataImporter {
                 timestamp: record.timestamp,
                 referenceNote: record.referenceNote,
                 targetNote: record.targetNote,
-                trainingType: TrainingType.comparison
+                trainingType: TrainingType.pitchComparison
             ))
         }
         for record in existingPitchMatchings {
@@ -84,21 +84,21 @@ enum TrainingDataImporter {
             ))
         }
 
-        var comparisonsImported = 0
-        var comparisonsSkipped = 0
-        for record in parseResult.comparisons {
+        var pitchComparisonsImported = 0
+        var pitchComparisonsSkipped = 0
+        for record in parseResult.pitchComparisons {
             let key = DuplicateKey(
                 timestamp: record.timestamp,
                 referenceNote: record.referenceNote,
                 targetNote: record.targetNote,
-                trainingType: TrainingType.comparison
+                trainingType: TrainingType.pitchComparison
             )
             if existingKeys.contains(key) {
-                comparisonsSkipped += 1
+                pitchComparisonsSkipped += 1
             } else {
                 try store.save(record)
                 existingKeys.insert(key)
-                comparisonsImported += 1
+                pitchComparisonsImported += 1
             }
         }
 
@@ -121,9 +121,9 @@ enum TrainingDataImporter {
         }
 
         return ImportSummary(
-            comparisonsImported: comparisonsImported,
+            pitchComparisonsImported: pitchComparisonsImported,
             pitchMatchingsImported: pitchMatchingsImported,
-            comparisonsSkipped: comparisonsSkipped,
+            pitchComparisonsSkipped: pitchComparisonsSkipped,
             pitchMatchingsSkipped: pitchMatchingsSkipped,
             parseErrorCount: parseResult.errors.count
         )
@@ -132,7 +132,7 @@ enum TrainingDataImporter {
     // MARK: - Duplicate Key
 
     private enum TrainingType {
-        static let comparison = "comparison"
+        static let pitchComparison = "pitchComparison"
         static let pitchMatching = "pitchMatching"
     }
 

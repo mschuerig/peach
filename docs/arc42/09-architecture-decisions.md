@@ -8,7 +8,7 @@ Key architecture decisions are documented in the [Architecture Decision Document
 
 **Decision:** Use SwiftData (iOS 17+, backed by SQLite via Core Data).
 
-**Rationale:** Native SwiftUI integration with `@Model` macro. Minimal boilerplate for flat record models (`ComparisonRecord`, `PitchMatchingRecord`). Atomic writes and crash resilience handled by the underlying SQLite engine. No need for Core Data's full complexity.
+**Rationale:** Native SwiftUI integration with `@Model` macro. Minimal boilerplate for flat record models (`PitchComparisonRecord`, `PitchMatchingRecord`). Atomic writes and crash resilience handled by the underlying SQLite engine. No need for Core Data's full complexity.
 
 **Consequences:** Tied to Apple's SwiftData evolution. Migration tooling is less mature than Core Data. Acceptable for a greenfield project with simple models.
 
@@ -28,7 +28,7 @@ Key architecture decisions are documented in the [Architecture Decision Document
 
 **Decision:** Implement a modified Kazez staircase method with asymmetric step sizes.
 
-**Rationale:** Correct answers narrow difficulty by `p * (1.0 - 0.05 * sqrt(p))`, wrong answers widen by `p * (1.0 + 0.09 * sqrt(p))`. The asymmetry prevents the algorithm from getting stuck at boundaries. Square-root scaling makes steps proportional to the current difficulty level. No session-level state — the algorithm reads the perceptual profile and last comparison only.
+**Rationale:** Correct answers narrow difficulty by `p * (1.0 - 0.05 * sqrt(p))`, wrong answers widen by `p * (1.0 + 0.09 * sqrt(p))`. The asymmetry prevents the algorithm from getting stuck at boundaries. Square-root scaling makes steps proportional to the current difficulty level. No session-level state — the algorithm reads the perceptual profile and last pitch comparison only.
 
 **Consequences:** Algorithm parameters are tunable but not configurable by the user. Convergence behavior validated through implementation testing.
 
@@ -36,7 +36,7 @@ Key architecture decisions are documented in the [Architecture Decision Document
 
 **Context:** The perceptual profile must be accurate, consistent, and resilient to data corruption.
 
-**Decision:** Never persist the `PerceptualProfile` to SwiftData. Rebuild it from all `ComparisonRecord` and `PitchMatchingRecord` entries on every app launch. Update incrementally during training.
+**Decision:** Never persist the `PerceptualProfile` to SwiftData. Rebuild it from all `PitchComparisonRecord` and `PitchMatchingRecord` entries on every app launch. Update incrementally during training.
 
 **Rationale:** Raw records are the single source of truth. Rebuilding eliminates consistency bugs between cached profile and stored records. Welford's algorithm makes incremental updates O(1). Full rebuild from thousands of records completes in milliseconds on modern hardware.
 
@@ -48,7 +48,7 @@ Key architecture decisions are documented in the [Architecture Decision Document
 
 **Decision:** Redesign `NotePlayer` to return a `PlaybackHandle` from `play()`. The handle owns the playing note and provides `stop()` and `adjustFrequency()`.
 
-**Rationale:** Makes note ownership explicit. The caller that starts a note controls that specific note's lifecycle. Supports both fixed-duration (comparison: play → wait → auto-stop) and indefinite (pitch matching: play → drag → commit → stop) patterns through the same protocol.
+**Rationale:** Makes note ownership explicit. The caller that starts a note controls that specific note's lifecycle. Supports both fixed-duration (pitch comparison: play → wait → auto-stop) and indefinite (pitch matching: play → drag → commit → stop) patterns through the same protocol.
 
 **Consequences:** All playback code uses handle-based lifecycle. Fixed-duration convenience method preserved via protocol extension. `stopAll()` retained for emergency cleanup only.
 
@@ -66,7 +66,7 @@ Key architecture decisions are documented in the [Architecture Decision Document
 
 **Context:** Need a project structure that scales with features and is navigable by both humans and AI agents.
 
-**Decision:** Organize by feature at the top level (`Comparison/`, `PitchMatching/`, `Profile/`, etc.) with shared code in `Core/` subdivided by concern (`Audio/`, `Algorithm/`, `Data/`, `Profile/`, `Training/`).
+**Decision:** Organize by feature at the top level (`PitchComparison/`, `PitchMatching/`, `Profile/`, etc.) with shared code in `Core/` subdivided by concern (`Audio/`, `Algorithm/`, `Data/`, `Profile/`, `Training/`).
 
 **Rationale:** Feature directories map directly to screens — easy to find code for any given functionality. `Core/` prevents duplication of shared logic. Test target mirrors source structure.
 

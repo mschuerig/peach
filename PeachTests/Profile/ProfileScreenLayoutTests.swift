@@ -10,7 +10,7 @@ struct ProfileScreenLayoutTests {
     @Test("Accessibility summary lists active modes")
     func accessibilitySummaryWithData() async throws {
         let records = (0..<25).map { i in
-            ComparisonRecord(
+            PitchComparisonRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: Double(30 + i),
@@ -20,11 +20,11 @@ struct ProfileScreenLayoutTests {
                 timestamp: Date().addingTimeInterval(Double(i - 25) * 3600)
             )
         }
-        let timeline = ProgressTimeline(comparisonRecords: records)
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
 
         let summary = ProfileScreen.accessibilitySummary(progressTimeline: timeline)
 
-        let expectedName = TrainingModeConfig.unisonComparison.displayName
+        let expectedName = TrainingModeConfig.unisonPitchComparison.displayName
         #expect(summary.contains(expectedName))
     }
 

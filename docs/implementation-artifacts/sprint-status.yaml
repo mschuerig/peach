@@ -52,7 +52,7 @@ development_status:
   2-2-support-configurable-note-duration-and-reference-pitch: done
   epic-2-retrospective: optional
 
-  # Epic 3: Train Your Ear - The Comparison Loop
+  # Epic 3: Train Your Ear - The Pitch Comparison Loop
   epic-3: done
   3-1-start-screen-and-navigation-shell: done
   3-2-trainingsession-state-machine-and-comparison-loop: done
@@ -310,5 +310,5 @@ development_status:
   38-4-focus-context-chart-interaction: wont-do
   38-5-start-screen-sparkline-and-training-screen-summary: done
 
-  # Cleanup: Consistent "Comparison" terminology
-  cleanup-rename-discrimination-to-comparison: backlog # Rename PitchDiscriminationProfile → PitchComparisonProfile, MockPitchDiscriminationProfile, test file, and all references; also audit docs for stale "discrimination" terminology
+  # Cleanup: Consistent "PitchComparison" terminology
+  cleanup-rename-discrimination-to-pitch-comparison: done # Completed naming-symmetry rename across ~70 source/test files and ~19 doc files

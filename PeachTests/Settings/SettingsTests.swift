@@ -341,7 +341,7 @@ struct SettingsTests {
     @Test("ProgressTimeline reset clears all data")
     func progressTimelineResetClearsData() {
         let records = (0..<30).map { i in
-            ComparisonRecord(
+            PitchComparisonRecord(
                 referenceNote: 60,
                 targetNote: 61,
                 centOffset: Double(i) + 1.0,
@@ -350,22 +350,22 @@ struct SettingsTests {
                 tuningSystem: "equalTemperament"
             )
         }
-        let timeline = ProgressTimeline(comparisonRecords: records)
-        #expect(timeline.state(for: .unisonComparison) != .noData)
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        #expect(timeline.state(for: .unisonPitchComparison) != .noData)
 
         timeline.reset()
 
-        #expect(timeline.state(for: .unisonComparison) == .noData)
+        #expect(timeline.state(for: .unisonPitchComparison) == .noData)
     }
 
     @Test("Reset deletes all records from SwiftData")
     func resetDeletesAllRecords() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        let container = try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
         let context = container.mainContext
 
         // Insert comparison records
-        let comparison1 = ComparisonRecord(
+        let comparison1 = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 61,
             centOffset: 2.0,
@@ -373,7 +373,7 @@ struct SettingsTests {
             interval: 1,
             tuningSystem: "equalTemperament"
         )
-        let comparison2 = ComparisonRecord(
+        let comparison2 = PitchComparisonRecord(
             referenceNote: 72,
             targetNote: 73,
             centOffset: 2.5,
@@ -397,7 +397,7 @@ struct SettingsTests {
         try context.save()
 
         // Verify records exist
-        let comparisonCountBefore = try context.fetchCount(FetchDescriptor<ComparisonRecord>())
+        let comparisonCountBefore = try context.fetchCount(FetchDescriptor<PitchComparisonRecord>())
         #expect(comparisonCountBefore == 2)
         let pitchCountBefore = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
         #expect(pitchCountBefore == 1)
@@ -407,7 +407,7 @@ struct SettingsTests {
         try dataStore.deleteAll()
 
         // Verify all records deleted
-        let comparisonCountAfter = try context.fetchCount(FetchDescriptor<ComparisonRecord>())
+        let comparisonCountAfter = try context.fetchCount(FetchDescriptor<PitchComparisonRecord>())
         #expect(comparisonCountAfter == 0)
         let pitchCountAfter = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
         #expect(pitchCountAfter == 0)

@@ -11,7 +11,7 @@ struct TrainingDataStoreEdgeCaseTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
     }
 
     // MARK: - Edge Case Tests
@@ -22,13 +22,13 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record1 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
-        let record2 = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record1 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record2 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(record1)
         try store.save(record2)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 2)
     }
 
@@ -38,13 +38,13 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let minRecord = ComparisonRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
-        let maxRecord = ComparisonRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
+        let minRecord = PitchComparisonRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let maxRecord = PitchComparisonRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(minRecord)
         try store.save(maxRecord)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 2)
         #expect(fetched.contains { $0.referenceNote == 0 })
         #expect(fetched.contains { $0.referenceNote == 127 })
@@ -56,7 +56,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 12.3,
@@ -67,7 +67,7 @@ struct TrainingDataStoreEdgeCaseTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAllComparisons()
+        let fetched = try store.fetchAllPitchComparisons()
         #expect(fetched.count == 1)
         #expect(fetched[0].centOffset == 12.3)
     }
@@ -80,11 +80,11 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {
-            _ = try store.fetchAllComparisons()
+            _ = try store.fetchAllPitchComparisons()
         } catch let error as Peach.DataStoreError {
             switch error {
             case .fetchFailed(let message):
@@ -101,7 +101,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         do {
             try store.save(record)
@@ -121,7 +121,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = ComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {

@@ -14,12 +14,12 @@ extension EnvironmentValues {
 // MARK: - Session Environment Keys
 
 extension EnvironmentValues {
-    @Entry var comparisonSession: ComparisonSession = {
-        let dataStore = PreviewDataStore()
+    @Entry var pitchComparisonSession: PitchComparisonSession = {
+        let dataStore = PreviewPitchComparisonDataStore()
         let profile = PerceptualProfile()
-        let strategy = PreviewComparisonStrategy()
-        let observers: [ComparisonObserver] = [dataStore, profile]
-        return ComparisonSession(
+        let strategy = PreviewPitchComparisonStrategy()
+        let observers: [PitchComparisonObserver] = [dataStore, profile]
+        return PitchComparisonSession(
             notePlayer: PreviewNotePlayer(),
             strategy: strategy,
             profile: profile,
@@ -53,22 +53,22 @@ private final class PreviewPlaybackHandle: PlaybackHandle {
     func adjustFrequency(_ frequency: Frequency) async throws {}
 }
 
-private final class PreviewDataStore: ComparisonRecordStoring, ComparisonObserver {
-    func save(_ record: ComparisonRecord) throws {}
-    func fetchAllComparisons() throws -> [ComparisonRecord] { [] }
-    func comparisonCompleted(_ completed: CompletedComparison) {}
+private final class PreviewPitchComparisonDataStore: PitchComparisonRecordStoring, PitchComparisonObserver {
+    func save(_ record: PitchComparisonRecord) throws {}
+    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] { [] }
+    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {}
 }
 
-private final class PreviewComparisonStrategy: NextComparisonStrategy {
-    func nextComparison(
-        profile: PitchDiscriminationProfile,
+private final class PreviewPitchComparisonStrategy: NextPitchComparisonStrategy {
+    func nextPitchComparison(
+        profile: PitchComparisonProfile,
         settings: TrainingSettings,
-        lastComparison: CompletedComparison?,
+        lastPitchComparison: CompletedPitchComparison?,
         interval: DirectedInterval
-    ) -> Comparison {
+    ) -> PitchComparison {
         let referenceNote = MIDINote(60)
         let targetBaseNote = referenceNote.transposed(by: interval)
-        return Comparison(referenceNote: referenceNote, targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(50.0)))
+        return PitchComparison(referenceNote: referenceNote, targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(50.0)))
     }
 }
 

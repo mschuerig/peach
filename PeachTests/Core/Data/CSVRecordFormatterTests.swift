@@ -14,11 +14,11 @@ struct CSVRecordFormatterTests {
         return calendar.date(from: components)!
     }
 
-    // MARK: - ComparisonRecord Formatting
+    // MARK: - PitchComparisonRecord Formatting
 
-    @Test("ComparisonRecord formatting produces correct CSV row with empty pitch-matching fields")
+    @Test("PitchComparisonRecord formatting produces correct CSV row with empty pitch-matching fields")
     func formatComparisonRecord() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 64,
             centOffset: 15.5,
@@ -31,7 +31,7 @@ struct CSVRecordFormatterTests {
         let row = CSVRecordFormatter.format(record)
         let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(fields[0] == "comparison")
+        #expect(fields[0] == "pitchComparison")
         #expect(fields[1] == "2026-03-03T14:30:00Z")
         #expect(fields[2] == "60")
         #expect(fields[3] == "C4")
@@ -81,7 +81,7 @@ struct CSVRecordFormatterTests {
     @Test("timestamp truncates sub-second precision for round-trip fidelity")
     func timestampTruncatesSubSeconds() async {
         let date = Date(timeIntervalSinceReferenceDate: 794_394_000.999)
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
             interval: 0, tuningSystem: "equalTemperament", timestamp: date
         )
@@ -98,7 +98,7 @@ struct CSVRecordFormatterTests {
 
     @Test("timestamp formatting is ISO 8601 UTC")
     func timestampFormatIsISO8601() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -118,7 +118,7 @@ struct CSVRecordFormatterTests {
 
     @Test("note name formatting for MIDI 0 produces C-1")
     func noteNameMIDI0() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 0,
             targetNote: 0,
             centOffset: 5.0,
@@ -137,7 +137,7 @@ struct CSVRecordFormatterTests {
 
     @Test("note name formatting for MIDI 127 produces G9")
     func noteNameMIDI127() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 127,
             targetNote: 127,
             centOffset: 5.0,
@@ -165,7 +165,7 @@ struct CSVRecordFormatterTests {
         ]
 
         for (semitones, expectedAbbrev) in expectedAbbreviations {
-            let record = ComparisonRecord(
+            let record = PitchComparisonRecord(
                 referenceNote: 60,
                 targetNote: 60 + semitones,
                 centOffset: 0.0,
@@ -184,7 +184,7 @@ struct CSVRecordFormatterTests {
 
     @Test("invalid interval rawValue produces empty string")
     func invalidIntervalProducesEmpty() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 84,
             centOffset: 0.0,
@@ -204,7 +204,7 @@ struct CSVRecordFormatterTests {
 
     @Test("field containing comma is wrapped in quotes")
     func commaFieldIsEscaped() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -220,7 +220,7 @@ struct CSVRecordFormatterTests {
 
     @Test("field containing quotes is properly escaped")
     func quotedFieldIsEscaped() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -236,7 +236,7 @@ struct CSVRecordFormatterTests {
 
     @Test("field containing newline is wrapped in quotes")
     func newlineFieldIsEscaped() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -252,7 +252,7 @@ struct CSVRecordFormatterTests {
 
     @Test("field without special characters is not quoted")
     func normalFieldNotEscaped() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -271,7 +271,7 @@ struct CSVRecordFormatterTests {
 
     @Test("negative cent offset formats correctly")
     func negativeCentOffset() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 69,
             targetNote: 62,
             centOffset: -8.3,
@@ -284,7 +284,7 @@ struct CSVRecordFormatterTests {
         let row = CSVRecordFormatter.format(record)
         let fields = row.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(fields[0] == "comparison")
+        #expect(fields[0] == "pitchComparison")
         #expect(fields[7] == "justIntonation")
         #expect(fields[8] == "-8.3")
         #expect(fields[9] == "false")
@@ -292,7 +292,7 @@ struct CSVRecordFormatterTests {
 
     @Test("zero cent offset formats as 0.0")
     func zeroCentOffset() async {
-        let record = ComparisonRecord(
+        let record = PitchComparisonRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 0.0,
@@ -310,11 +310,11 @@ struct CSVRecordFormatterTests {
 
     @Test("both tuning system identifiers format correctly")
     func tuningSystemIdentifiers() async {
-        let record1 = ComparisonRecord(
+        let record1 = PitchComparisonRecord(
             referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate()
         )
-        let record2 = ComparisonRecord(
+        let record2 = PitchComparisonRecord(
             referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
             interval: 0, tuningSystem: "justIntonation", timestamp: fixedDate()
         )

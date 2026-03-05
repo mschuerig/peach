@@ -3,7 +3,7 @@ import Foundation
 enum TrainingDataExporter {
 
     static func export(from store: TrainingDataStore) throws -> String {
-        let comparisons = try store.fetchAllComparisons()
+        let comparisons = try store.fetchAllPitchComparisons()
         let pitchMatchings = try store.fetchAllPitchMatchings()
 
         var merged: [(timestamp: Date, row: String)] = []

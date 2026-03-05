@@ -29,7 +29,7 @@ date: '2026-02-12'
 
 ### Project Vision
 
-Peach is a pitch discrimination ear training app for iOS built on the philosophy of "training, not testing." Where existing apps like InTune escalate difficulty until failure to produce a score, Peach builds a perceptual profile of the user's hearing and relentlessly targets weak spots. No scores, no gamification, no sessions. Every comparison makes the user better; no single answer matters.
+Peach is a pitch comparison ear training app for iOS built on the philosophy of "training, not testing." Where existing apps like InTune escalate difficulty until failure to produce a score, Peach builds a perceptual profile of the user's hearing and relentlessly targets weak spots. No scores, no gamification, no sessions. Every comparison makes the user better; no single answer matters.
 
 The interaction is radically simple: two notes play in sequence, the user taps higher or lower. The intelligence lives entirely in the adaptive algorithm, not the UI. The app is designed for incidental use — 30 seconds on the bus, a minute during a practice break — with zero friction between wanting to train and training.
 
@@ -61,7 +61,7 @@ Primary persona: a working musician who knows their intonation needs work, has t
 
 ### Defining Experience
 
-The core experience is the **comparison loop**: two notes play in sequence, the user taps higher or lower, feedback flashes, the next pair begins. This loop is the entire product. Everything else — the profile, the settings, the Start Screen — exists to support or reflect it.
+The core experience is the **pitch comparison loop**: two notes play in sequence, the user taps higher or lower, feedback flashes, the next pair begins. This loop is the entire product. Everything else — the profile, the settings, the Start Screen — exists to support or reflect it.
 
 The loop must feel **reflexive, not deliberative**. The user should be reacting to sounds, not thinking about an app. The ideal state is flow — a rhythmic back-and-forth between listening and tapping where the app disappears and only the sounds and responses remain. If the user is ever thinking about the UI during training, the design has failed.
 
@@ -221,7 +221,7 @@ Apps like Apple's Mindfulness (Breathe) demonstrate that a calm, minimal interfa
 ### Design Inspiration Strategy
 
 **Adopt:**
-- Zero-delay comparison looping — continuous flow with no dead time
+- Zero-delay pitch comparison looping — continuous flow with no dead time
 - Hub-and-spoke navigation from Start Screen — one tap to any destination
 - Eyes-optional training via audio-haptic feedback channels
 - Data-as-landscape visualization for the perceptual profile
@@ -282,21 +282,21 @@ These custom elements follow HIG principles (tap target sizes, accessibility lab
 
 **"Two notes. Higher or lower. Next."**
 
-The defining experience is the comparison loop — a continuous, rhythmic cycle of listening and responding. The user hears two sequential notes, judges whether the second was higher or lower than the first, and the next comparison follows. The intelligence is invisible; the interaction is instinctive.
+The defining experience is the pitch comparison loop — a continuous, rhythmic cycle of listening and responding. The user hears two sequential notes, judges whether the second was higher or lower than the first, and the next comparison follows. The intelligence is invisible; the interaction is instinctive.
 
 ### User Mental Model
 
-The user's mental model is **reflexive discrimination, not analytical comparison**. They are not thinking "that was 440Hz and that was 445Hz." They are hearing two sounds and reacting — higher or lower — the way a musician reacts to intonation in real time. The interaction should feel closer to catching a ball than solving a math problem.
+The user's mental model is **reflexive pitch comparison, not analytical comparison**. They are not thinking "that was 440Hz and that was 445Hz." They are hearing two sounds and reacting — higher or lower — the way a musician reacts to intonation in real time. The interaction should feel closer to catching a ball than solving a math problem.
 
 **What users bring from existing solutions:**
 - From InTune: the basic concept of comparing two pitches. But InTune wraps this in scoring and slow round-trips that interrupt the training flow. Users who've used InTune expect overhead between comparisons — Peach's rapid loop will feel surprisingly fast and liberating.
-- From musical practice: the concept of ear training as repetitive, focused listening. Musicians already understand that pitch discrimination improves through volume of exposure, not through testing.
+- From musical practice: the concept of ear training as repetitive, focused listening. Musicians already understand that pitch comparison improves through volume of exposure, not through testing.
 
 **Key mental model shift:** There is no "session" and no "result." The user is not completing something or achieving something — they are *doing* something. Training is the activity, not the means to an outcome.
 
 ### Success Criteria
 
-The comparison loop succeeds when:
+The pitch comparison loop succeeds when:
 
 1. **The user stops thinking about the app** — they are reacting to sounds, not operating a UI. The buttons, the feedback, the transitions all fade from conscious attention.
 2. **Throughput feels fast but not rushed** — comparisons flow at the pace of the user's reflexes, not faster and not slower. The app matches the user's rhythm, not the other way around.
@@ -306,7 +306,7 @@ The comparison loop succeeds when:
 
 ### Novel UX Patterns
 
-The comparison loop uses **established patterns combined in an uncommon way:**
+The pitch comparison loop uses **established patterns combined in an uncommon way:**
 
 - **Binary choice buttons** (established) — Higher/Lower is a simple A/B input, familiar from countless apps
 - **Continuous looping without session boundaries** (uncommon) — most training apps have sessions, rounds, or levels. Peach's sessionless continuous loop is unusual and requires no user education — it simply never stops until the user leaves
@@ -318,7 +318,7 @@ No novel patterns require user education. The interaction is self-evident: two s
 
 ### Experience Mechanics
 
-**The Comparison Loop — Step by Step:**
+**The Pitch Comparison Loop — Step by Step:**
 
 **1. Initiation:**
 - User taps Start Training Button on Start Screen
@@ -501,7 +501,7 @@ flowchart TD
     C -->|Tap Profile| E[Profile Screen - empty/cold start]
     C -->|Tap Settings| F[Settings Screen]
     C -->|Tap Info| G[Info Screen]
-    D --> H[Comparison loop begins immediately]
+    D --> H[Pitch comparison loop begins immediately]
     H --> I{User action during training}
     I -->|Higher/Lower| H
     I -->|Tap Settings| F
@@ -515,7 +515,7 @@ flowchart TD
 **Key UX decisions:**
 - No onboarding, no tutorial, no welcome screen. The Start Screen *is* the onboarding.
 - Profile Preview on Start Screen is visible but sparse (cold start state). Tapping it shows the full Profile Screen with honest empty-state presentation.
-- The user discovers the comparison loop by doing it. The first comparison is self-explanatory: two sounds, two buttons.
+- The user discovers the pitch comparison loop by doing it. The first comparison is self-explanatory: two sounds, two buttons.
 
 ### Journey 2: Daily Training
 
@@ -573,7 +573,7 @@ flowchart TD
     A[App opens after weeks] --> B[Start Screen - identical to last visit]
     B -->|Tap Start Training| C[Training Screen]
     C --> D[Algorithm uses existing profile]
-    D --> E[Comparisons calibrated to last known thresholds]
+    D --> E[Pitch comparisons calibrated to last known thresholds]
     E --> F{Performance}
     F -->|Some wrong answers| G[Algorithm widens intervals naturally]
     F -->|Correct answers| H[Algorithm continues narrowing]
@@ -624,7 +624,7 @@ Training Screen ──► Settings Screen ──► Start Screen
 App backgrounded during training ──► Start Screen
 ```
 
-**Feedback pattern:** The comparison loop uses a consistent feedback cycle: action → immediate feedback → brief hold → clear → next action. This pattern never varies — correct and incorrect answers follow the same timing, with the only difference being the haptic tick on incorrect.
+**Feedback pattern:** The pitch comparison loop uses a consistent feedback cycle: action → immediate feedback → brief hold → clear → next action. This pattern never varies — correct and incorrect answers follow the same timing, with the only difference being the haptic tick on incorrect.
 
 **Interruption pattern:** Any interruption during training (navigation, backgrounding, phone call, headphone disconnect) follows the same rule: stop audio, discard incomplete comparison, leave Training Screen. No special cases, no confirmation dialogs, no state to recover.
 
@@ -663,7 +663,7 @@ Every screen in Peach is built primarily from stock SwiftUI components. The foll
 
 #### Perceptual Profile Visualization
 
-**Purpose:** Display the user's pitch discrimination ability across their training range as an intuitive, glanceable landscape.
+**Purpose:** Display the user's pitch comparison ability across their training range as an intuitive, glanceable landscape.
 
 **Visual Design:**
 - **X-axis:** Piano keyboard representation — a horizontal strip of alternating white and black keys spanning the training range. Keys are stylized (not photorealistic) — simple rectangles with standard piano proportions. Note names shown at octave boundaries (C2, C3, C4, etc.).
@@ -770,14 +770,14 @@ Every screen in Peach is built primarily from stock SwiftUI components. The foll
 
 **Button state rules:**
 - Disabled buttons use stock SwiftUI `.disabled()` — no custom disabled appearance
-- Higher/Lower buttons transition between disabled and enabled states during the comparison loop. This is the only dynamic button state in the app.
+- Higher/Lower buttons transition between disabled and enabled states during the pitch comparison loop. This is the only dynamic button state in the app.
 - All other buttons are always enabled when visible
 
 ### Feedback Patterns
 
 Peach has exactly one feedback pattern, used consistently throughout:
 
-**Comparison feedback (the only feedback in the app):**
+**Pitch comparison feedback (the only feedback in the app):**
 
 | Aspect | Correct | Incorrect |
 |---|---|---|
@@ -834,7 +834,7 @@ This radical simplicity is intentional. The only feedback the user ever receives
 **Transition rules:**
 - All navigation uses stock SwiftUI transitions (push/pop, sheet present/dismiss)
 - No custom transition animations
-- No transition interrupts the comparison loop — navigation *is* stopping the loop
+- No transition interrupts the pitch comparison loop — navigation *is* stopping the loop
 
 ### Empty States
 
@@ -874,7 +874,7 @@ If app launch takes noticeable time as the dataset grows, the system splash scre
 - Data write failure → logged internally, training continues (one comparison's data may be lost)
 - The user never sees an error screen, error alert, or error message
 
-This is a deliberate design choice: errors are handled by the system (TrainingSession as error boundary), not by the user.
+This is a deliberate design choice: errors are handled by the system (PitchComparisonSession as error boundary), not by the user.
 
 ### Orientation & Device Patterns
 
@@ -926,7 +926,7 @@ The Training Screen is designed to work with eyes closed. This means it already 
 - No visual-only information during active training
 
 **3. Audio dependency:**
-Peach requires audio output to function. This is an inherent constraint — the app trains pitch discrimination through sound. Users who are deaf or hard of hearing cannot use the core training functionality. This is acknowledged as a fundamental limitation of the domain, not a design oversight.
+Peach requires audio output to function. This is an inherent constraint — the app trains pitch comparison through sound. Users who are deaf or hard of hearing cannot use the core training functionality. This is acknowledged as a fundamental limitation of the domain, not a design oversight.
 
 ### Accessibility Implementation
 
@@ -982,7 +982,7 @@ Peach requires audio output to function. This is an inherent constraint — the 
 
 ### Project Understanding
 
-Pitch Matching is a second training paradigm where the user tunes a note to match a reference pitch. It trains **active pitch production** rather than passive discrimination — a complementary skill that uses the same "training, not testing" philosophy.
+Pitch Matching is a second training paradigm where the user tunes a note to match a reference pitch. It trains **active pitch production** rather than passive pitch comparison — a complementary skill that uses the same "training, not testing" philosophy.
 
 ### Key Design Decisions
 
@@ -990,11 +990,11 @@ Pitch Matching is a second training paradigm where the user tunes a note to matc
 
 **No binary correct/incorrect.** Pitch matching results are continuous (signed cent offset), not binary. There is no concept of "right" or "wrong" — only proximity. This is consistent with Peach's anti-scoring philosophy.
 
-**Separate profile tracking.** Comparison training and pitch matching results are stored and tracked independently — both in the data store and in the perceptual profile. The two modes measure different skills (passive discrimination vs. active production) with potentially different thresholds.
+**Separate profile tracking.** Pitch comparison training and pitch matching results are stored and tracked independently — both in the data store and in the perceptual profile. The two modes measure different skills (passive pitch comparison vs. active production) with potentially different thresholds.
 
 ### Post-Release Feedback Design
 
-After the user releases the slider, feedback is displayed for the same duration as comparison training (~400ms):
+After the user releases the slider, feedback is displayed for the same duration as pitch comparison training (~400ms):
 
 **Directional arrow + signed cent offset:**
 
@@ -1014,7 +1014,7 @@ After the user releases the slider, feedback is displayed for the same duration 
 
 ### Design Challenges Identified
 
-1. **Different rhythm, same philosophy** — Pitch matching is slow and deliberate vs. comparison's fast reflexive loop. The UX must feel like the same app at a different tempo.
+1. **Different rhythm, same philosophy** — Pitch matching is slow and deliberate vs. pitch comparison's fast reflexive loop. The UX must feel like the same app at a different tempo.
 
 2. **Slider precision vs. ease** — Must span a meaningful pitch range while allowing fine-tuning to within a few cents. Tension between gross and fine motor control.
 
@@ -1038,28 +1038,28 @@ The critical skill being trained is **pitch memory and reproduction** — the us
 
 The user's mental model is **tuning by ear** — the same process a string player uses when matching a note to a tuning fork. The slider is the tuning peg. The ear is the only guide. The user is not looking for a visual target — they are listening for a sonic convergence.
 
-Key mental model shift from comparison training: in comparisons, the answer exists in the moment (the two notes are both audible). In pitch matching, the answer exists partly in memory (the reference note has stopped). This makes it cognitively harder and trains a different faculty.
+Key mental model shift from pitch comparison training: in comparisons, the answer exists in the moment (the two notes are both audible). In pitch matching, the answer exists partly in memory (the reference note has stopped). This makes it cognitively harder and trains a different faculty.
 
 **The Pitch Matching Loop — Step by Step:**
 
-1. **Reference note plays** — the configured duration (same as comparison note duration). Slider is visible at its fixed starting position but the tunable note is not yet playing. The user listens and memorizes.
+1. **Reference note plays** — the configured duration (same as pitch comparison note duration). Slider is visible at its fixed starting position but the tunable note is not yet playing. The user listens and memorizes.
 2. **Reference note stops, tunable note auto-starts** — the tunable note begins playing immediately at a random offset from the reference (±100 cents). The slider becomes active. The user hears the offset and begins orienting — "am I sharp or flat, and by how much?" This passive listening moment before the user touches the slider is training-valuable: the pitch memory is freshest here.
 3. **User tunes** — dragging the slider changes the pitch in real time. No visual feedback on proximity — the ear is the only guide. The user can take as long as needed. The slider always starts at the same physical position regardless of the pitch offset, supporting consistent eyes-closed operation.
 4. **User releases slider** — the tunable note stops immediately. The result is recorded: reference note, user's final pitch, signed cent error, timestamp.
-5. **Feedback** — directional arrow (or green dot) + signed cent offset displayed for ~400ms. Same duration as comparison feedback.
+5. **Feedback** — directional arrow (or green dot) + signed cent offset displayed for ~400ms. Same duration as pitch comparison feedback.
 6. **Next reference note plays** — return to step 1. The loop continues until the user navigates away.
 
 **Effortless Interactions:**
 
-1. **Start pitch matching** — one tap from Start Screen ("Pitch Matching" button). Same zero-friction philosophy as comparison training.
+1. **Start pitch matching** — one tap from Start Screen ("Pitch Matching" button). Same zero-friction philosophy as pitch comparison training.
 2. **Tune** — the slider is the only control during active tuning. No buttons, no confirmations. Drag and listen.
 3. **Commit** — releasing the slider is the commit gesture. No separate "submit" action. The physical act of letting go is the answer.
-4. **Stop** — same as comparison training. Navigate to Settings/Profile, or background the app. Incomplete attempts (slider still held) silently discarded.
+4. **Stop** — same as pitch comparison training. Navigate to Settings/Profile, or background the app. Incomplete attempts (slider still held) silently discarded.
 
 **Critical Success Moments:**
 
 1. **First tuning attempt** — the user drags the slider, hears the pitch change, and immediately understands the interaction. No explanation needed — the mapping from gesture to sound is intuitive.
-2. **First close match** — the user sees "+3 cents" with a short green arrow. The realization: "I can hear this." The same quiet satisfaction as comparison training, but earned through active effort.
+2. **First close match** — the user sees "+3 cents" with a short green arrow. The realization: "I can hear this." The same quiet satisfaction as pitch comparison training, but earned through active effort.
 3. **The memory challenge** — the user notices that holding the reference pitch in memory while tuning is hard. This difficulty is the training. The challenge is the point.
 4. **Improvement over time** — average cent error decreasing in the matching profile. The data confirms that pitch memory and reproduction are sharpening.
 
@@ -1067,16 +1067,16 @@ Key mental model shift from comparison training: in comparisons, the answer exis
 
 1. **The ear is the only instrument** — no visual tuning aids during active matching. The slider controls pitch; the eyes see nothing useful until after release. This is non-negotiable for training value.
 2. **Release is commitment** — the physical gesture of releasing the slider is the answer. This creates a natural, embodied "I'm done" moment without any UI friction.
-3. **Same app, different tempo** — pitch matching shares comparison training's visual language, navigation patterns, feedback duration, and interruption handling. The difference is purely in the interaction rhythm.
+3. **Same app, different tempo** — pitch matching shares pitch comparison training's visual language, navigation patterns, feedback duration, and interruption handling. The difference is purely in the interaction rhythm.
 4. **Memory is the challenge** — the gap between reference note stopping and the user finding the match is where training happens. This gap should not be shortened or assisted.
 
 ### Pitch Matching — Emotional Response
 
 **Primary Emotional Goals:**
 
-1. **Focused concentration** — During tuning, the user is deeply engaged with sound. This is more absorbing than comparison training — closer to playing an instrument than answering flash cards. The UX must support this concentration without interrupting it.
+1. **Focused concentration** — During tuning, the user is deeply engaged with sound. This is more absorbing than pitch comparison training — closer to playing an instrument than answering flash cards. The UX must support this concentration without interrupting it.
 
-2. **Honest curiosity after release** — "How close was I?" The moment of release carries genuine suspense that comparison training lacks. The user had to work for this answer. The feedback satisfies curiosity without judging.
+2. **Honest curiosity after release** — "How close was I?" The moment of release carries genuine suspense that pitch comparison training lacks. The user had to work for this answer. The feedback satisfies curiosity without judging.
 
 3. **Acceptance of the spectrum** — There's no binary correct/incorrect. The user sees they were 18 cents sharp, yellow arrow. That's information, not failure. Over time, the numbers get smaller. The emotional relationship is with the trend, not any single attempt.
 
@@ -1096,14 +1096,14 @@ Key mental model shift from comparison training: in comparisons, the answer exis
 **Micro-Emotions to Cultivate:**
 
 - **Patience** — pitch matching rewards patience. Rushing the slider produces worse results. The UX must not create time pressure.
-- **Embodied awareness** — the user is listening to their own judgment in real time. This builds a proprioceptive relationship with pitch that comparison training doesn't reach.
+- **Embodied awareness** — the user is listening to their own judgment in real time. This builds a proprioceptive relationship with pitch that pitch comparison training doesn't reach.
 - **Equanimity toward results** — the color spectrum (green/yellow/red) must feel informational, not judgmental. A red arrow means "far off," not "you failed."
 
 **Micro-Emotions to Prevent:**
 
 - **Slider frustration** — if the slider is too sensitive or too coarse, the user blames the tool instead of training the skill. The slider must feel like an extension of intent.
 - **Memory anxiety** — "I already forgot the reference note" is a real experience, especially early on. This should feel like part of the training challenge, not a design failure.
-- **Comparison-mode impatience** — users coming from the fast comparison loop may initially find pitch matching slow. The different tempo is a feature, not a bug.
+- **Pitch-comparison-mode impatience** — users coming from the fast pitch comparison loop may initially find pitch matching slow. The different tempo is a feature, not a bug.
 
 **Design Implications:**
 
@@ -1143,13 +1143,13 @@ For v0.2, pitch matching uses the simplest possible selection:
 
 **Rationale:**
 
-- The comparison training experience showed that pitch discrimination is largely one unified skill across frequencies. The same likely applies to pitch matching — per-note adaptation may not add value.
+- The pitch comparison training experience showed that pitch comparison is largely one unified skill across frequencies. The same likely applies to pitch matching — per-note adaptation may not add value.
 - Random selection is stateless and simple. It provides variety (preventing habituation) and profile coverage (collecting data across the range).
 - The ±100 cent offset range is a tunable parameter, expected to need adjustment based on real usage.
 
 **Future considerations (not for v0.2):**
 
-- The offset range could be informed by the user's comparison profile — if their detection threshold is ~15 cents, starting offsets of ±30-50 cents would put them in a range where orientation is achievable but not trivial.
+- The offset range could be informed by the user's pitch comparison profile — if their detection threshold is ~15 cents, starting offsets of ±30-50 cents would put them in a range where orientation is achievable but not trivial.
 - Adaptive note selection could target notes where matching accuracy is weakest, if the matching profile reveals meaningful per-note variation.
 - Adaptive offset selection could scale difficulty based on the user's matching history — smaller offsets for advanced users.
 - These enhancements require real usage data to validate whether they're needed. Build simple, observe, adapt.
@@ -1193,7 +1193,7 @@ flowchart TD
 - Tunable note **auto-starts** after the reference note stops — no user action needed to begin the tuning phase.
 - **No visual feedback during tuning** — the user tunes purely by ear.
 - **Release = commit** — the note stops and the result is recorded in one gesture.
-- Same interruption pattern as comparison training: any interruption discards incomplete attempts, backgrounding returns to Start Screen.
+- Same interruption pattern as pitch comparison training: any interruption discards incomplete attempts, backgrounding returns to Start Screen.
 
 #### Updated Navigation Model
 
@@ -1256,7 +1256,7 @@ App backgrounded during pitch matching ──► Start Screen
 
 #### Journey Pattern Consistency
 
-| Pattern | Comparison Training | Pitch Matching |
+| Pattern | Pitch Comparison Training | Pitch Matching |
 |---|---|---|
 | Entry point | "Start Training" on Start Screen | "Pitch Matching" on Start Screen |
 | Core loop | Sound → react → feedback → repeat | Sound → search → release → feedback → repeat |
@@ -1314,10 +1314,10 @@ The Pitch Matching button sits below Start Training on the Start Screen. It shou
   - Long arrow (red) — far off (>30 cents)
 - **Green dot:** SF Symbol (`circle.fill`) in green when the match is dead center (≈0 cents)
 - **Cent offset text:** Signed number displayed alongside or below the arrow (e.g., "+4 cents", "-27 cents", "0 cents")
-- Centered on screen, same general position as the comparison Feedback Indicator
+- Centered on screen, same general position as the Pitch Comparison Feedback Indicator
 - Brief appearance (~400ms), then clears
 
-**Implementation:** SF Symbols for arrow/dot, system green/yellow/red colors, `Text` for cent offset. Shown/hidden via SwiftUI state. Same transition pattern as the comparison Feedback Indicator (`.transition(.opacity)`).
+**Implementation:** SF Symbols for arrow/dot, system green/yellow/red colors, `Text` for cent offset. Shown/hidden via SwiftUI state. Same transition pattern as the Pitch Comparison Feedback Indicator (`.transition(.opacity)`).
 
 **States:**
 - Hidden (default during reference note and tuning)
@@ -1329,13 +1329,13 @@ The Pitch Matching button sits below Start Training on the Start Screen. It shou
 **Accessibility:**
 - VoiceOver announcement: "4 cents sharp" or "27 cents flat" or "Dead center" — the arrow direction and magnitude are communicated verbally
 
-**Haptic feedback:** None for pitch matching. The comparison training's haptic contract (haptic on incorrect only) remains unique to comparison mode. Pitch matching feedback is purely visual. This may be revisited based on usage experience.
+**Haptic feedback:** None for pitch matching. The pitch comparison training's haptic contract (haptic on incorrect only) remains unique to pitch comparison mode. Pitch matching feedback is purely visual. This may be revisited based on usage experience.
 
 #### Component Implementation Strategy
 
 **Principle: stock first, custom only when forced** — same as MVP. Custom components use first-party frameworks only and follow stock patterns (system colors, Dynamic Type, standard accessibility APIs).
 
-**Shared patterns:** Settings and Profile navigation buttons on the Pitch Matching Screen reuse the exact same components and placement as the Training Screen. The Pitch Matching Feedback Indicator shares the same screen position, timing, and transition pattern as the comparison Feedback Indicator, differing only in content (arrow+cents vs. thumbs up/down).
+**Shared patterns:** Settings and Profile navigation buttons on the Pitch Matching Screen reuse the exact same components and placement as the Training Screen. The Pitch Matching Feedback Indicator shares the same screen position, timing, and transition pattern as the Pitch Comparison Feedback Indicator, differing only in content (arrow+cents vs. thumbs up/down).
 
 #### Implementation Roadmap
 
@@ -1363,7 +1363,7 @@ The Start Training button retains its hero status. Pitch Matching is clearly a s
 
 Peach now has **two feedback patterns** instead of one. They share timing and screen position but differ in content:
 
-| Aspect | Comparison Training | Pitch Matching |
+| Aspect | Pitch Comparison Training | Pitch Matching |
 |---|---|---|
 | Visual | Thumbs up/down (SF Symbol) | Directional arrow or green dot + cent offset |
 | Color | Green (correct) / Red (incorrect) | Green (<10¢) / Yellow (10-30¢) / Red (>30¢) |
@@ -1386,7 +1386,7 @@ Pitch Matching Screen follows the identical hub-and-spoke pattern. Settings and 
 
 #### Interruption Pattern — No Change
 
-| Interruption | Comparison Training | Pitch Matching |
+| Interruption | Pitch Comparison Training | Pitch Matching |
 |---|---|---|
 | Navigate to Settings/Profile | Stop training, discard incomplete | Stop training, discard incomplete |
 | App backgrounded | Stop, discard, return to Start Screen | Stop, discard, return to Start Screen |
@@ -1397,13 +1397,13 @@ Identical behavior. The interruption contract is universal across all training m
 #### Empty States — Pitch Matching Addition
 
 **Pitch matching profile — cold start (no matching data):**
-- If the Profile Screen evolves to show matching data separately, it needs an empty state for matching accuracy when the user has only done comparison training (and vice versa)
-- Same treatment as the existing comparison profile empty state: honest absence of data, "Start pitch matching to build your matching profile" or similar
+- If the Profile Screen evolves to show matching data separately, it needs an empty state for matching accuracy when the user has only done pitch comparison training (and vice versa)
+- Same treatment as the existing pitch comparison profile empty state: honest absence of data, "Start pitch matching to build your matching profile" or similar
 - No call-to-action button in the empty state
 
 #### Loading & Error States — No Change
 
-Same as comparison training: no loading states (everything local), no user-visible error states (PitchMatchingSession as error boundary, same pattern as TrainingSession).
+Same as pitch comparison training: no loading states (everything local), no user-visible error states (PitchMatchingSession as error boundary, same pattern as PitchComparisonSession).
 
 ### Pitch Matching — Responsive & Accessibility
 
@@ -1434,7 +1434,7 @@ Same as comparison training: no loading states (everything local), no user-visib
 The biggest accessibility challenge is that pitch matching is fundamentally a continuous-adjustment interaction. VoiceOver users cannot drag a custom slider the same way sighted users can. The `accessibilityAdjustableAction` provides increment/decrement as an alternative, stepping the pitch in small increments. This is functional but changes the experience — from continuous tuning to stepped tuning. This is an acceptable trade-off; the core training value (listening and judging pitch) is preserved.
 
 **Eyes-closed operation for pitch matching:**
-Unlike comparison training (where eyes-closed is fully supported via haptic), pitch matching relies on visual feedback (arrow + cents) for results. Without haptic feedback, a fully eyes-closed pitch matching session provides no result feedback. This is acceptable for v0.2 — the tuning exercise itself (listening and adjusting) works eyes-closed; only the result display requires sight. If haptic feedback is added later, it could enable fully eyes-closed pitch matching.
+Unlike pitch comparison training (where eyes-closed is fully supported via haptic), pitch matching relies on visual feedback (arrow + cents) for results. Without haptic feedback, a fully eyes-closed pitch matching session provides no result feedback. This is acceptable for v0.2 — the tuning exercise itself (listening and adjusting) works eyes-closed; only the result display requires sight. If haptic feedback is added later, it could enable fully eyes-closed pitch matching.
 
 #### Testing — Pitch Matching Additions
 
@@ -1455,23 +1455,23 @@ Interval training generalizes both existing training modes from unison to musica
 - The target interval is displayed at the top of the training screen because it varies per exercise — the system randomly selects from the user's configured interval set
 - For v0.3, the interval is fixed to a single value: perfect fifth up (700 cents in 12-TET). Future iterations will add user-configurable interval sets (up to octave, both directions) and random selection from the configured set
 - Existing unison modes are the prime (unison) case of the interval variants — same underlying sessions, same screens, with interval fixed to prime
-- Screens are reused, not duplicated — the Comparison Screen and Pitch Matching Screen gain an interval indicator; in unison mode, no interval indicator is shown
+- Screens are reused, not duplicated — the Pitch Comparison Screen and Pitch Matching Screen gain an interval indicator; in unison mode, no interval indicator is shown
 
 ### Key Design Decisions
 
-**Target interval display at top of screen.** Both Interval Comparison and Interval Pitch Matching show the current target interval prominently at the top of the training screen. This is essential information, not decorative context — once multiple intervals are in rotation, the user must know which interval they're judging or tuning toward before the exercise begins. For v0.3 (fixed perfect fifth), the display is static. The UX is designed for the future where it changes per exercise.
+**Target interval display at top of screen.** Both Interval Pitch Comparison and Interval Pitch Matching show the current target interval prominently at the top of the training screen. This is essential information, not decorative context — once multiple intervals are in rotation, the user must know which interval they're judging or tuning toward before the exercise begins. For v0.3 (fixed perfect fifth), the display is static. The UX is designed for the future where it changes per exercise.
 
-**Flat vertical stack for Start Screen buttons.** Four training buttons arranged vertically with visual grouping to separate unison modes from interval modes. The zero-friction philosophy is preserved — the primary actions (Comparison, Pitch Matching) retain their current prominence and position, with interval variants appearing below a subtle visual separator.
+**Flat vertical stack for Start Screen buttons.** Four training buttons arranged vertically with visual grouping to separate unison modes from interval modes. The zero-friction philosophy is preserved — the primary actions (Pitch Comparison, Pitch Matching) retain their current prominence and position, with interval variants appearing below a subtle visual separator.
 
-**Screen reuse with conditional interval context.** The Comparison Screen and Pitch Matching Screen are extended, not duplicated. When entered in interval mode, a target interval label appears at the top. When entered in unison mode, no interval indicator is shown — the screen looks exactly as it does today. This keeps the codebase lean and ensures consistency.
+**Screen reuse with conditional interval context.** The Pitch Comparison Screen and Pitch Matching Screen are extended, not duplicated. When entered in interval mode, a target interval label appears at the top. When entered in unison mode, no interval indicator is shown — the screen looks exactly as it does today. This keeps the codebase lean and ensures consistency.
 
 **No interval settings UI for v0.3.** The PRD defers interval selection settings to a subsequent iteration. The current fixed interval (perfect fifth up) requires no configuration UI. When interval selection is added, it will appear in the Settings Screen as a new section.
 
 ### Interval Training — Core Experience
 
-**Defining Interaction — Interval Comparison: "Two notes. Is that fifth in tune?"**
+**Defining Interaction — Interval Pitch Comparison: "Two notes. Is that fifth in tune?"**
 
-The interval comparison loop is structurally identical to unison comparison. Two notes play in sequence. The user taps higher or lower. But the question is different: instead of "was the second note higher or lower than the first?", the user is answering "was the second note higher or lower than a perfect fifth above the first?"
+The interval pitch comparison loop is structurally identical to unison pitch comparison. Two notes play in sequence. The user taps higher or lower. But the question is different: instead of "was the second note higher or lower than the first?", the user is answering "was the second note higher or lower than a perfect fifth above the first?"
 
 This is a higher-order listening task. The user must hold the concept of the target interval in their mind and evaluate the second note against that internal reference — not against the first note directly. The target interval label at the top of the screen anchors this mental model.
 
@@ -1495,7 +1495,7 @@ Key mental model elements:
 
 1. **The interval is the frame** — the target interval label at the top of the screen is not informational chrome; it's the exercise definition. The user must internalize it before listening. As intervals rotate randomly in future versions, glancing at this label becomes part of the exercise ritual.
 2. **Same muscles, different skill** — the buttons, slider, feedback, and timing are identical. What's different is inside the user's head. The UX must not add complexity to support a more complex listening task — the simplicity of the interaction is more important than ever when the cognitive load is higher.
-3. **Unison is just prime** — there is no conceptual wall between unison and interval training. The user who has been doing unison comparison has been doing interval comparison at prime all along. The interval modes are a generalization, not a separate feature.
+3. **Unison is just prime** — there is no conceptual wall between unison and interval training. The user who has been doing unison pitch comparison has been doing interval pitch comparison at prime all along. The interval modes are a generalization, not a separate feature.
 
 ### Interval Training — Emotional Response
 
@@ -1513,19 +1513,19 @@ Key mental model elements:
 |---|---|---|
 | **Choosing interval mode** | Curiosity — "let me try this" | Intimidation, "advanced mode" framing |
 | **Seeing target interval label** | Orientation — "got it, perfect fifth" | Confusion about what the label means |
-| **First interval comparison** | Familiar interaction, new challenge — same buttons, different listening | Overwhelm from the harder task |
+| **First interval pitch comparison** | Familiar interaction, new challenge — same buttons, different listening | Overwhelm from the harder task |
 | **First wrong answer** | Same neutral acceptance as unison — just a haptic tick | Frustration from failing at a "harder" mode |
 | **First interval pitch matching** | Absorbed concentration — constructing an interval by ear | Anxiety about the dual cognitive task |
 | **Improvement over time** | Deep satisfaction — "I can hear intervals better" | Comparison to unison performance |
 
 ### Interval Training — User Journey Flows
 
-#### Journey 7: Interval Comparison
+#### Journey 7: Interval Pitch Comparison
 
 ```mermaid
 flowchart TD
     A[App opens] --> B[Start Screen]
-    B -->|Tap Interval Comparison| C[Comparison Screen with interval indicator]
+    B -->|Tap Interval Pitch Comparison| C[Pitch Comparison Screen with interval indicator]
     C --> D[Target interval shown: Perfect Fifth Up]
     D --> E[Note 1 plays - buttons disabled]
     E --> F[Note 2 plays at interval ± deviation - buttons enabled]
@@ -1542,10 +1542,10 @@ flowchart TD
 ```
 
 **Key UX decisions:**
-- The Comparison Screen is the same screen used for unison comparison, with the addition of a target interval label at the top
+- The Pitch Comparison Screen is the same screen used for unison pitch comparison, with the addition of a target interval label at the top
 - The target interval label reads "Perfect Fifth Up" (for v0.3). In future versions with multiple intervals, this label updates per comparison as the system randomly selects from the configured set
 - Higher/Lower buttons have the same meaning but a different reference: "higher/lower than the correct interval pitch"
-- All feedback, haptic, interruption, and navigation patterns are identical to unison comparison
+- All feedback, haptic, interruption, and navigation patterns are identical to unison pitch comparison
 
 #### Journey 8: Interval Pitch Matching
 
@@ -1593,7 +1593,7 @@ flowchart TD
 
 **Visual Design:**
 - Text label displaying the interval name: "Perfect Fifth Up" (v0.3)
-- Positioned at the top of the Comparison Screen or Pitch Matching Screen, below the navigation buttons and above the training interaction area
+- Positioned at the top of the Pitch Comparison Screen or Pitch Matching Screen, below the navigation buttons and above the training interaction area
 - Uses standard SwiftUI text styling (`.headline` or `.title3`) — prominent enough to read at a glance but not competing with the training interaction
 - In future versions with random interval selection, this label updates per exercise. The label change should be immediate and non-animated — no transition effects that draw attention away from the sounds
 
@@ -1613,25 +1613,25 @@ flowchart TD
 
 | Button | Style | Position |
 |---|---|---|
-| Comparison | `.borderedProminent` | Top (hero action, unchanged) |
-| Pitch Matching | `.bordered` | Below Comparison (unchanged) |
+| Pitch Comparison | `.borderedProminent` | Top (hero action, unchanged) |
+| Pitch Matching | `.bordered` | Below Pitch Comparison (unchanged) |
 | *Visual separator* | Subtle divider or spacing | — |
-| Interval Comparison | `.bordered` | Below separator |
-| Interval Pitch Matching | `.bordered` | Below Interval Comparison |
+| Interval Pitch Comparison | `.bordered` | Below separator |
+| Interval Pitch Matching | `.bordered` | Below Interval Pitch Comparison |
 
 **Design rationale:**
-- Comparison retains `.borderedProminent` as the hero action — it's the entry point for new users and the most-used mode
+- Pitch Comparison retains `.borderedProminent` as the hero action — it's the entry point for new users and the most-used mode
 - Pitch Matching retains its current secondary position
 - A subtle visual separator (extra spacing, a thin divider, or a section label like "Intervals") groups the interval modes
-- Interval buttons use `.bordered` style — same prominence as Pitch Matching, visually subordinate to Comparison
+- Interval buttons use `.bordered` style — same prominence as Pitch Matching, visually subordinate to Pitch Comparison
 - The vertical stack preserves the one-handed, thumb-friendly layout
 - Four buttons is the maximum for this design. If future modes are added beyond interval training, a different organizational pattern would be needed
 
-**Naming:** The PRD specifies button labels as "Comparison", "Pitch Matching", "Interval Comparison", "Interval Pitch Matching". These are clear and descriptive. No abbreviation needed.
+**Naming:** The PRD specifies button labels as "Pitch Comparison", "Pitch Matching", "Interval Pitch Comparison", "Interval Pitch Matching". These are clear and descriptive. No abbreviation needed.
 
 #### Feedback Indicators — No Change
 
-Both feedback indicators (comparison thumbs up/down and pitch matching arrow+cents) work identically in interval mode. The comparison feedback still shows correct/incorrect. The pitch matching feedback still shows signed cent offset and directional arrow. The only difference is that the deviation is measured relative to the correct interval pitch rather than unison — but this is a calculation difference, not a UX difference.
+Both feedback indicators (pitch comparison thumbs up/down and pitch matching arrow+cents) work identically in interval mode. The pitch comparison feedback still shows correct/incorrect. The pitch matching feedback still shows signed cent offset and directional arrow. The only difference is that the deviation is measured relative to the correct interval pitch rather than unison — but this is a calculation difference, not a UX difference.
 
 ### Interval Training — UX Consistency Patterns
 
@@ -1641,34 +1641,34 @@ The Start Screen now has one primary action and three secondary actions:
 
 | Tier | Buttons | Style |
 |---|---|---|
-| Primary | Comparison | `.borderedProminent` |
+| Primary | Pitch Comparison | `.borderedProminent` |
 | Secondary (unison) | Pitch Matching | `.bordered` |
-| Secondary (interval) | Interval Comparison, Interval Pitch Matching | `.bordered` |
+| Secondary (interval) | Interval Pitch Comparison, Interval Pitch Matching | `.bordered` |
 
 Settings, Profile, and Info remain tertiary icon-only buttons in their current positions.
 
 #### Feedback Patterns — No Change
 
-The same two feedback patterns (comparison: thumbs up/down with haptic; pitch matching: arrow+cents, no haptic) apply to both unison and interval variants. No new feedback patterns are introduced.
+The same two feedback patterns (pitch comparison: thumbs up/down with haptic; pitch matching: arrow+cents, no haptic) apply to both unison and interval variants. No new feedback patterns are introduced.
 
 #### Navigation Pattern — Extended
 
 ```
-Start Screen ──► Comparison Screen (via Comparison)
-Start Screen ──► Comparison Screen with interval (via Interval Comparison)
+Start Screen ──► Pitch Comparison Screen (via Pitch Comparison)
+Start Screen ──► Pitch Comparison Screen with interval (via Interval Pitch Comparison)
 Start Screen ──► Pitch Matching Screen (via Pitch Matching)
 Start Screen ──► Pitch Matching Screen with interval (via Interval Pitch Matching)
 Start Screen ──► Profile Screen ──► Start Screen
 Start Screen ──► Settings Screen ──► Start Screen
 Start Screen ──► Info Screen ──► Start Screen
-Comparison Screen ──► Profile Screen ──► Start Screen
-Comparison Screen ──► Settings Screen ──► Start Screen
+Pitch Comparison Screen ──► Profile Screen ──► Start Screen
+Pitch Comparison Screen ──► Settings Screen ──► Start Screen
 Pitch Matching Screen ──► Profile Screen ──► Start Screen
 Pitch Matching Screen ──► Settings Screen ──► Start Screen
 App backgrounded during any training ──► Start Screen
 ```
 
-Key point: "Interval Comparison" navigates to the same Comparison Screen as "Comparison" — with the interval parameter set. The navigation model gains two new entry paths but no new screens or depth.
+Key point: "Interval Pitch Comparison" navigates to the same Pitch Comparison Screen as "Pitch Comparison" — with the interval parameter set. The navigation model gains two new entry paths but no new screens or depth.
 
 #### Updated Navigation Diagram
 
@@ -1676,21 +1676,21 @@ Key point: "Interval Comparison" navigates to the same Comparison Screen as "Com
                     ┌──────────────────────────┐
                     │      Start Screen        │
                     │                          │
-                    │ [Comparison]             │
+                    │ [Pitch Comparison]       │
                     │ [Pitch Matching]         │
                     │ ── ── ── ── ── ── ──    │
-                    │ [Interval Comparison]    │
+                    │ [Interval Pitch Comparison]    │
                     │ [Interval Pitch Matching]│
                     │                          │
                     │ [Settings] [Profile]     │
                     │ [Info]                   │
                     └┬──┬──┬──┬──┬──┬──┬──┬──┘
                      │  │  │  │  │  │  │  │
-        Comparison───┘  │  │  │  │  │  │  └───Interval PM
-        Pitch Match─────┘  │  │  │  │  └──────Interval Comp
+   Pitch Comparison──┘  │  │  │  │  │  │  └───Interval PM
+        Pitch Match─────┘  │  │  │  │  └──────Interval PC
                            │  │  │  │
                     ┌──────▼──▼──▼──▼──────────┐
-                    │   Comparison Screen      │
+                    │   Pitch Comparison Screen      │
                     │   (± interval indicator) │
                     │   [Higher] [Lower]       │
                     │   [Settings] [Profile]   │
@@ -1736,10 +1736,10 @@ The rest of the accessibility story is identical to unison modes — no new acce
 
 #### Testing — Interval Training Additions
 
-- VoiceOver walkthrough of Comparison Screen with interval indicator — verify label is read
+- VoiceOver walkthrough of Pitch Comparison Screen with interval indicator — verify label is read
 - VoiceOver walkthrough of Pitch Matching Screen with interval indicator — verify label is read
 - Test target interval label with Dynamic Type at accessibility sizes
 - Verify Start Screen four-button layout in portrait and landscape on iPhone and iPad
 - Verify interval indicator is hidden in unison mode on both training screens
-- Complete an interval comparison session — verify feedback patterns match unison comparison
+- Complete an interval pitch comparison session — verify feedback patterns match unison pitch comparison
 - Complete an interval pitch matching session — verify feedback patterns match unison pitch matching
