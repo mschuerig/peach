@@ -100,6 +100,12 @@ His commands:
 
 Adam is most valuable during planning sessions, where he can review stories, epics, and specifications before implementation begins. He catches domain-level errors that developers wouldn't know to look for.
 
+## Feature Flags
+
+| Flag | Location | Default | Description |
+|------|----------|---------|-------------|
+| `chartExpansionEnabled` | `ProgressChartView` | `false` | Tap-to-expand chart buckets into finer granularity. Disabled because the interaction lacks visual feedback — the chart changes shape on tap without indicating what expanded or why. The data layer (`subBuckets` API) is fully implemented and tested. Re-enable when a clear UX direction is established. |
+
 ## License
 
 Source code is licensed under the [MIT License](LICENSE).

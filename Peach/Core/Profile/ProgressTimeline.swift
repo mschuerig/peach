@@ -160,6 +160,23 @@ final class ProgressTimeline {
         modeData[mode]?.ewma
     }
 
+    /// Returns sub-buckets at finer granularity for a given parent bucket.
+    ///
+    /// Splits a month bucket into weeks, a week into days, or a day into sessions.
+    /// Returns an empty array for session buckets (finest granularity).
+    func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket] {
+        guard bucket.bucketSize != .session else { return [] }
+        guard let data = modeData[mode] else { return [] }
+
+        let metrics = data.allMetrics.filter {
+            $0.timestamp >= bucket.periodStart && $0.timestamp < bucket.periodEnd
+        }
+        guard !metrics.isEmpty else { return [] }
+
+        let sessionGap = mode.config.sessionGap.timeIntervalSeconds
+        return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: sessionGap)
+    }
+
     /// Returns the trend direction for a mode, or nil if below the trend threshold.
     func trend(for mode: TrainingMode) -> Trend? {
         guard let data = modeData[mode] else { return nil }
@@ -202,11 +219,11 @@ final class ProgressTimeline {
         var ewma: Double?
         var recordCount: Int = 0
         var computedTrend: Trend?
-        var allValues: [Double] = []
+        var allMetrics: [MetricPoint] = []
 
         mutating func addPoint(_ point: MetricPoint, config: TrainingModeConfig) {
             recordCount += 1
-            allValues.append(point.value)
+            allMetrics.append(point)
 
             let sessionGapSeconds = config.sessionGap.timeIntervalSeconds
 
@@ -267,6 +284,7 @@ final class ProgressTimeline {
                 return
             }
 
+            let allValues = allMetrics.map(\.value)
             let midpoint = allValues.count / 2
             let earlierHalf = allValues[..<midpoint]
             let laterHalf = allValues[midpoint...]
@@ -296,7 +314,7 @@ final class ProgressTimeline {
 
         let sorted = metrics.sorted { $0.timestamp < $1.timestamp }
         state.recordCount = sorted.count
-        state.allValues = sorted.map(\.value)
+        state.allMetrics = sorted
         state.buckets = assignBuckets(sorted, now: now, sessionGap: config.sessionGap.timeIntervalSeconds)
         state.recomputeEWMA(config: config)
         state.recomputeTrend(config: config)
@@ -361,6 +379,71 @@ final class ProgressTimeline {
                 periodStart: group.key,
                 periodEnd: group.end,
                 bucketSize: group.size,
+                mean: mean,
+                stddev: stddev,
+                recordCount: group.points.count
+            )
+        }
+    }
+    // MARK: - Sub-Bucket Assignment
+
+    private func assignSubBuckets(_ metrics: [MetricPoint], parentSize: BucketSize, sessionGap: TimeInterval) -> [TimeBucket] {
+        let calendar = Calendar.current
+        let childSize: BucketSize
+        switch parentSize {
+        case .month: childSize = .week
+        case .week: childSize = .day
+        case .day: childSize = .session
+        case .session: return []
+        }
+
+        var groups: [(key: Date, end: Date, points: [Double])] = []
+
+        for metric in metrics {
+            let groupInfo: (key: Date, end: Date)
+
+            switch childSize {
+            case .week:
+                if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: metric.timestamp) {
+                    groupInfo = (key: weekInterval.start, end: weekInterval.end)
+                } else {
+                    continue
+                }
+            case .day:
+                let dayStart = calendar.startOfDay(for: metric.timestamp)
+                groupInfo = (key: dayStart, end: dayStart.addingTimeInterval(86400))
+            case .session:
+                if let lastGroup = groups.last,
+                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGap {
+                    groups[groups.count - 1].points.append(metric.value)
+                    groups[groups.count - 1].end = metric.timestamp
+                    continue
+                }
+                groupInfo = (key: metric.timestamp, end: metric.timestamp)
+            case .month:
+                return []
+            }
+
+            if let idx = groups.firstIndex(where: { $0.key == groupInfo.key }) {
+                groups[idx].points.append(metric.value)
+            } else {
+                groups.append((key: groupInfo.key, end: groupInfo.end, points: [metric.value]))
+            }
+        }
+
+        return groups.sorted { $0.key < $1.key }.map { group in
+            let mean = group.points.reduce(0.0, +) / Double(group.points.count)
+            let stddev: Double
+            if group.points.count > 1 {
+                let variance = group.points.map { pow($0 - mean, 2) }.reduce(0.0, +) / Double(group.points.count)
+                stddev = sqrt(variance)
+            } else {
+                stddev = 0
+            }
+            return TimeBucket(
+                periodStart: group.key,
+                periodEnd: group.end,
+                bucketSize: childSize,
                 mean: mean,
                 stddev: stddev,
                 recordCount: group.points.count

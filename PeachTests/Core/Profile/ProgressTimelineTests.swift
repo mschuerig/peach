@@ -438,4 +438,132 @@ struct ProgressTimelineTests {
         let trend = timeline.trend(for: .unisonComparison)
         #expect(trend == nil)
     }
+
+    // MARK: - Sub-Bucket Tests
+
+    @Test("subBuckets returns week-level buckets for a month bucket")
+    func subBucketsMonthToWeek() async {
+        // Create records spanning ~45 days ago (will be month-bucketed)
+        // Spread across multiple weeks within the same month
+        let calendar = Calendar.current
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
+        let records = (0..<20).map { i in
+            // Spread records across 4 weeks within the month
+            let dayOffset = Double(i % 28)
+            let timestamp = monthStart.addingTimeInterval(dayOffset * 86400 + Double(i) * 60)
+            return ComparisonRecord(
+                referenceNote: 60,
+                targetNote: 60,
+                centOffset: 10.0 + Double(i),
+                isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
+                timestamp: timestamp
+            )
+        }
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let buckets = timeline.buckets(for: .unisonComparison)
+        // Find a month bucket
+        guard let monthBucket = buckets.first(where: { $0.bucketSize == .month }) else {
+            Issue.record("Expected at least one month bucket")
+            return
+        }
+        let subs = timeline.subBuckets(for: .unisonComparison, expanding: monthBucket)
+        #expect(!subs.isEmpty)
+        for sub in subs {
+            #expect(sub.bucketSize == .week)
+        }
+    }
+
+    @Test("subBuckets returns day-level buckets for a week bucket")
+    func subBucketsWeekToDay() async {
+        // Create records ~10 days ago (will be week-bucketed)
+        let records = (0..<10).map { i in
+            // Spread across different days within the same week
+            let hoursAgo = 24.0 * 8.0 + Double(i) * 12.0  // 8-13 days ago, within week range
+            return makeComparisonRecord(centOffset: 10.0 + Double(i), hoursAgo: hoursAgo)
+        }
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let buckets = timeline.buckets(for: .unisonComparison)
+        guard let weekBucket = buckets.first(where: { $0.bucketSize == .week }) else {
+            Issue.record("Expected at least one week bucket")
+            return
+        }
+        let subs = timeline.subBuckets(for: .unisonComparison, expanding: weekBucket)
+        #expect(!subs.isEmpty)
+        for sub in subs {
+            #expect(sub.bucketSize == .day)
+        }
+    }
+
+    @Test("subBuckets returns session-level buckets for a day bucket")
+    func subBucketsDayToSession() async {
+        // Create records ~2 days ago (will be day-bucketed)
+        // Multiple sessions on the same day with gaps > sessionGap (1800s)
+        let baseDateHoursAgo = 36.0  // 1.5 days ago
+        let records = [
+            makeComparisonRecord(centOffset: 10.0, hoursAgo: baseDateHoursAgo),
+            makeComparisonRecord(centOffset: 12.0, hoursAgo: baseDateHoursAgo - 0.01),
+            // 2 hours later = different session
+            makeComparisonRecord(centOffset: 8.0, hoursAgo: baseDateHoursAgo - 2.0),
+            makeComparisonRecord(centOffset: 9.0, hoursAgo: baseDateHoursAgo - 2.01),
+        ]
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let buckets = timeline.buckets(for: .unisonComparison)
+        guard let dayBucket = buckets.first(where: { $0.bucketSize == .day }) else {
+            Issue.record("Expected at least one day bucket")
+            return
+        }
+        let subs = timeline.subBuckets(for: .unisonComparison, expanding: dayBucket)
+        #expect(!subs.isEmpty)
+        for sub in subs {
+            #expect(sub.bucketSize == .session)
+        }
+    }
+
+    @Test("subBuckets returns empty for session buckets (finest level)")
+    func subBucketsSessionEmpty() async {
+        // Create records within 24h (will be session-bucketed)
+        let records = [
+            makeComparisonRecord(centOffset: 10.0, hoursAgo: 1.0),
+            makeComparisonRecord(centOffset: 12.0, hoursAgo: 0.99),
+        ]
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let buckets = timeline.buckets(for: .unisonComparison)
+        guard let sessionBucket = buckets.first(where: { $0.bucketSize == .session }) else {
+            Issue.record("Expected at least one session bucket")
+            return
+        }
+        let subs = timeline.subBuckets(for: .unisonComparison, expanding: sessionBucket)
+        #expect(subs.isEmpty)
+    }
+
+    @Test("sub-bucket record counts are consistent with parent bucket")
+    func subBucketRecordCountConsistency() async {
+        // Create records spanning weeks within a month bucket
+        let calendar = Calendar.current
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
+        let records = (0..<15).map { i in
+            let dayOffset = Double(i * 2)  // Every 2 days
+            let timestamp = monthStart.addingTimeInterval(dayOffset * 86400 + Double(i) * 60)
+            return ComparisonRecord(
+                referenceNote: 60,
+                targetNote: 60,
+                centOffset: 10.0,
+                isCorrect: true,
+                interval: 0,
+                tuningSystem: "equalTemperament",
+                timestamp: timestamp
+            )
+        }
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let buckets = timeline.buckets(for: .unisonComparison)
+        guard let monthBucket = buckets.first(where: { $0.bucketSize == .month }) else {
+            Issue.record("Expected at least one month bucket")
+            return
+        }
+        let subs = timeline.subBuckets(for: .unisonComparison, expanding: monthBucket)
+        let subRecordCount = subs.reduce(0) { $0 + $1.recordCount }
+        #expect(subRecordCount == monthBucket.recordCount)
+    }
 }

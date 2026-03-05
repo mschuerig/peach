@@ -9,5 +9,8 @@ DerivedData/
 *.sf2
 .cache/
 
+# Generated test data
+test-data.csv
+
 # macOS
 .DS_Store

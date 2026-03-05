@@ -4,8 +4,15 @@ import Charts
 struct ProgressChartView: View {
     let mode: TrainingMode
 
+    // Tap-to-expand interaction disabled pending UX evaluation.
+    // The subBuckets API and displayBuckets logic remain tested and ready.
+    // Re-enable when we have a clear UX direction for drill-down.
+    private static let chartExpansionEnabled = false
+
     @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    @State private var expandedBucketIndex: Int?
 
     private var config: TrainingModeConfig { mode.config }
 
@@ -42,10 +49,20 @@ struct ProgressChartView: View {
     // MARK: - Active Card
 
     private var activeCard: some View {
-        let buckets = progressTimeline.buckets(for: mode)
+        let baseBuckets = progressTimeline.buckets(for: mode)
+        let buckets: [TimeBucket] = if Self.chartExpansionEnabled {
+            Self.displayBuckets(
+                from: baseBuckets,
+                expandedIndex: expandedBucketIndex,
+                timeline: progressTimeline,
+                mode: mode
+            )
+        } else {
+            baseBuckets
+        }
         let ewma = progressTimeline.currentEWMA(for: mode)
         let trend = progressTimeline.trend(for: mode)
-        let stddev = buckets.last?.stddev ?? 0
+        let stddev = baseBuckets.last?.stddev ?? 0
 
         return VStack(alignment: .leading, spacing: 12) {
             headlineRow(ewma: ewma, stddev: stddev, trend: trend)
@@ -131,6 +148,27 @@ struct ProgressChartView: View {
 
     private var chartHeight: CGFloat {
         horizontalSizeClass == .compact ? 180 : 240
+    }
+
+    // MARK: - Expansion Helpers (gated by chartExpansionEnabled)
+
+    static func displayBuckets(
+        from baseBuckets: [TimeBucket],
+        expandedIndex: Int?,
+        timeline: ProgressTimeline,
+        mode: TrainingMode
+    ) -> [TimeBucket] {
+        guard let expandedIndex,
+              expandedIndex < baseBuckets.count else {
+            return baseBuckets
+        }
+        let expandedBucket = baseBuckets[expandedIndex]
+        let subs = timeline.subBuckets(for: mode, expanding: expandedBucket)
+        guard !subs.isEmpty else { return baseBuckets }
+
+        var result = baseBuckets
+        result.replaceSubrange(expandedIndex...expandedIndex, with: subs)
+        return result
     }
 
     // MARK: - Static Helpers
