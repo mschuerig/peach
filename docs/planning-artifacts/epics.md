@@ -3510,7 +3510,7 @@ So that I can focus on training rather than figuring out the interface.
 
 ---
 
-## Epic 38: See Your Strengths — Perceptual Profile Visualization
+## Epic 38: See Your Strengths — Perceptual Profile Visualization ✅ Done
 
 Users see a useful and easily understandable visualization of their perceptual profile that encourages them by showing progress and highlights weak spots where further training would give the most improvement.
 
