@@ -1,6 +1,6 @@
 # Story 38.4: Focus+Context Chart Interaction
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -31,16 +31,16 @@ So that I can explore specific periods of my training history.
   - [x] 2.2 Compute `displayBuckets: [TimeBucket]` from the original buckets: if an index is expanded, replace that single bucket with its sub-buckets from `ProgressTimeline.subBuckets(for:expanding:)`; keep all other buckets unchanged
   - [x] 2.3 Animate the bucket transition with `.animation(.easeInOut(duration: 0.3), value: expandedBucketIndex)`
 
-- [x] Task 3: Add tap gesture to chart (AC: #1, #2)
-  - [x] 3.1 Add `.chartOverlay` with `GeometryReader` + `ChartProxy` to detect taps
-  - [x] 3.2 On tap: use `chart.value(atX: location.x)` to find the tapped `Date`, then find the nearest bucket by `periodStart`
-  - [x] 3.3 If tapped bucket is already expanded -> collapse (set `expandedBucketIndex = nil`)
-  - [x] 3.4 If tapped bucket is a different bucket -> expand it (replace previous expansion)
-  - [x] 3.5 If tapped bucket is `.session` granularity -> no-op (cannot expand further)
+- [ ] Task 3: Add tap gesture to chart (AC: #1, #2) — **Disabled:** implemented then reverted; UX unclear without visual feedback for expanded regions
+  - [ ] 3.1 Add `.chartOverlay` with `GeometryReader` + `ChartProxy` to detect taps
+  - [ ] 3.2 On tap: use `chart.value(atX: location.x)` to find the tapped `Date`, then find the nearest bucket by `periodStart`
+  - [ ] 3.3 If tapped bucket is already expanded -> collapse (set `expandedBucketIndex = nil`)
+  - [ ] 3.4 If tapped bucket is a different bucket -> expand it (replace previous expansion)
+  - [ ] 3.5 If tapped bucket is `.session` granularity -> no-op (cannot expand further)
 
-- [x] Task 4: Accessibility for expanded state (AC: #3)
-  - [x] 4.1 Update chart accessibility label to announce when a region is expanded: "Expanded view of [bucket label]"
-  - [x] 4.2 Add accessibility action "Collapse expanded region" when a bucket is expanded
+- [ ] Task 4: Accessibility for expanded state (AC: #3) — **Disabled:** blocked by Task 3 (gesture not active)
+  - [ ] 4.1 Update chart accessibility label to announce when a region is expanded: "Expanded view of [bucket label]"
+  - [ ] 4.2 Add accessibility action "Collapse expanded region" when a bucket is expanded
   - [x] 4.3 Add localization strings for expanded state announcements (English + German)
 
 - [x] Task 5: Write tests (AC: #1, #2, #3)
@@ -281,6 +281,7 @@ None needed.
 
 - 2026-03-05: Implemented focus+context chart interaction — tap to expand buckets into finer granularity, tap again to collapse
 - 2026-03-05: Disabled tap-to-expand behind feature flag (`chartExpansionEnabled`) — UX unclear without visual feedback for expanded regions; data layer retained for future use
+- 2026-03-05: Code review — updated tasks 3/4 to reflect disabled state, added 3 missing files to File List, fixed docstring path in generate-test-data.py, fixed style in ProgressTimeline.swift
 
 ### File List
 
@@ -290,3 +291,6 @@ None needed.
 - Modified: `PeachTests/Core/Profile/ProgressTimelineTests.swift`
 - Modified: `PeachTests/Profile/ProgressChartViewTests.swift`
 - Modified: `docs/implementation-artifacts/sprint-status.yaml`
+- Modified: `.gitignore` (added `test-data.csv` ignore)
+- Modified: `README.md` (added Feature Flags table documenting `chartExpansionEnabled`)
+- Added: `bin/generate-test-data.py` (test data generator for chart expansion testing)

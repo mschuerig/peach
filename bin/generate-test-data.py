@@ -8,8 +8,8 @@ Creates comparison records at multiple time ranges so all bucket types appear:
   - Today           -> session buckets (finest level, not expandable)
 
 Usage:
-    python3 tools/generate-test-data.py              # writes to tools/test-data.csv
-    python3 tools/generate-test-data.py output.csv   # writes to custom path
+    python3 bin/generate-test-data.py              # writes to test-data.csv
+    python3 bin/generate-test-data.py output.csv   # writes to custom path
 
 Then import the CSV in the app via Settings > Import Training Data (merge mode).
 """

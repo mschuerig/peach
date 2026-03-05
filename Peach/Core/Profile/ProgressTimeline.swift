@@ -385,6 +385,7 @@ final class ProgressTimeline {
             )
         }
     }
+
     // MARK: - Sub-Bucket Assignment
 
     private func assignSubBuckets(_ metrics: [MetricPoint], parentSize: BucketSize, sessionGap: TimeInterval) -> [TimeBucket] {
