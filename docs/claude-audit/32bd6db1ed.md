@@ -1,33 +1,90 @@
 ---
-commit: "cc07c3b0e7b9d7fd69912c4c9deb5ffe71402814"
-date: "2026-03-05T01:56:04+01:00"
+commit: "32bd6db1ed7eaa0eaf35edc3199a47ca468a2e8a"
+date: "2026-03-05T01:57:50+01:00"
 author: "Michael Schürig <michael@schuerig.de>"
-subject: "Review story 37.3: Add missing translations and mark epic 37 done"
+subject: "Update docs/claude-audit."
 sessions: ["6fd717a2-5c43-415c-a061-956ffdc2817d"]
-prev: "32bd6db1ed.md"
-next: "1dce2139ba.md"
+prev: "e634db0f62.md"
+next: "cc07c3b0e7.md"
 ---
 
-[← Previous (32bd6db1ed)](32bd6db1ed.md) | [Index](index.md) | [Next (1dce2139ba) →](1dce2139ba.md)
+[← Previous (e634db0f62)](e634db0f62.md) | [Index](index.md) | [Next (cc07c3b0e7) →](cc07c3b0e7.md)
 
-# Commit cc07c3b0e7
+# Commit 32bd6db1ed
 
-**Date:** 2026-03-05T01:56  
+**Date:** 2026-03-05T01:57  
 **Author:** Michael Schürig <michael@schuerig.de>
 
 ## Commit message
 
-Review story 37.3: Add missing translations and mark epic 37 done
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Update docs/claude-audit.
 
 ## Changed files
 
 ```
-Peach/Resources/Localizable.xcstrings                | 20 ++++++++++++++++++++
- .../37-3-training-screen-help.md                     |  7 ++++---
- docs/implementation-artifacts/sprint-status.yaml     |  4 ++--
- 3 files changed, 26 insertions(+), 5 deletions(-)
+docs/claude-audit/0433d10855.md | 3587 ++++++++++++++++++++++++++++++++
+ docs/claude-audit/06b6e6291c.md | 2504 ++++++++++++++++++++++
+ docs/claude-audit/07a527e284.md | 1147 ++++++++++
+ docs/claude-audit/0c66c03e32.md | 2736 ++++++++++++++++++++++++
+ docs/claude-audit/0db340b6d0.md | 1615 +++++++++++++++
+ docs/claude-audit/0ef06f5b09.md | 3613 ++++++++++++++++++++++++++++++++
+ docs/claude-audit/0f7feed5ba.md | 3999 +++++++++++++++++++++++++++++++++++
+ docs/claude-audit/1246a1f0ff.md | 2152 +++++++++++++++++++
+ docs/claude-audit/195e0ab297.md | 2000 ++++++++++++++++++
+ docs/claude-audit/1cee06b38e.md | 3017 +++++++++++++++++++++++++++
+ docs/claude-audit/1dce2139ba.md | 1848 +++++++++++++++++
+ docs/claude-audit/263a345d75.md | 4371 +++++++++++++++++++++++++++++++++++++++
+ docs/claude-audit/2a15e61e9b.md | 1745 ++++++++++++++++
+ docs/claude-audit/2d6175baa0.md | 2284 ++++++++++++++++++++
+ docs/claude-audit/2e6d8a7393.md | 1328 ++++++++++++
+ docs/claude-audit/3170a45f6c.md | 2311 +++++++++++++++++++++
+ docs/claude-audit/33e1bfb2f9.md | 1941 +++++++++++++++++
+ docs/claude-audit/37740cc887.md | 2117 +++++++++++++++++++
+ docs/claude-audit/38848ae306.md | 2361 +++++++++++++++++++++
+ docs/claude-audit/38ebd7704b.md | 2054 ++++++++++++++++++
+ docs/claude-audit/42d24b7522.md | 4065 ++++++++++++++++++++++++++++++++++++
+ docs/claude-audit/4eacf691ea.md | 1786 ++++++++++++++++
+ docs/claude-audit/5274fac384.md | 2013 ++++++++++++++++++
+ docs/claude-audit/542c272d1a.md | 3033 +++++++++++++++++++++++++++
+ docs/claude-audit/57294047b7.md | 1228 +++++++++++
+ docs/claude-audit/581b342e6e.md | 3363 ++++++++++++++++++++++++++++++
+ docs/claude-audit/59ce0ba268.md | 1751 ++++++++++++++++
+ docs/claude-audit/671eddfa9f.md | 2565 +++++++++++++++++++++++
+ docs/claude-audit/72137aeb83.md | 2532 +++++++++++++++++++++++
+ docs/claude-audit/74fb0fe6e3.md | 1035 +++++++++
+ docs/claude-audit/779c7556fc.md | 1701 +++++++++++++++
+ docs/claude-audit/79553b0147.md | 2137 +++++++++++++++++++
+ docs/claude-audit/7e20a3babd.md | 2764 +++++++++++++++++++++++++
+ docs/claude-audit/7ed9617a73.md |    5 +-
+ docs/claude-audit/7f6cde20e8.md | 2287 ++++++++++++++++++++
+ docs/claude-audit/838084ea6f.md | 1964 ++++++++++++++++++
+ docs/claude-audit/89e81622bc.md | 1827 ++++++++++++++++
+ docs/claude-audit/8f9419b0ce.md | 2334 +++++++++++++++++++++
+ docs/claude-audit/956ccede1d.md | 1202 +++++++++++
+ docs/claude-audit/9a84829db8.md | 2274 ++++++++++++++++++++
+ docs/claude-audit/a1d7320b62.md | 1191 +++++++++++
+ docs/claude-audit/accc939168.md | 1810 ++++++++++++++++
+ docs/claude-audit/be98e8ddd8.md | 2057 ++++++++++++++++++
+ docs/claude-audit/c24790dc71.md | 3167 ++++++++++++++++++++++++++++
+ docs/claude-audit/c2fbce5e53.md | 1799 ++++++++++++++++
+ docs/claude-audit/c6c8b64210.md | 1985 ++++++++++++++++++
+ docs/claude-audit/c80f8c43cf.md | 1442 +++++++++++++
+ docs/claude-audit/c92dfbe3b0.md | 2302 +++++++++++++++++++++
+ docs/claude-audit/cc07c3b0e7.md | 1421 +++++++++++++
+ docs/claude-audit/cda92e19d9.md | 1539 ++++++++++++++
+ docs/claude-audit/ceb95235e7.md | 1895 +++++++++++++++++
+ docs/claude-audit/d49b7f66c4.md | 2142 +++++++++++++++++++
+ docs/claude-audit/db0f60c3ea.md | 1309 ++++++++++++
+ docs/claude-audit/e1ef035a44.md | 1330 ++++++++++++
+ docs/claude-audit/e395498d34.md | 3620 ++++++++++++++++++++++++++++++++
+ docs/claude-audit/e554593bab.md | 2069 ++++++++++++++++++
+ docs/claude-audit/e9a714b866.md | 3172 ++++++++++++++++++++++++++++
+ docs/claude-audit/ea19c274b1.md | 1158 +++++++++++
+ docs/claude-audit/f2b6804a19.md | 2873 +++++++++++++++++++++++++
+ docs/claude-audit/f5e4bdae85.md | 1600 ++++++++++++++
+ docs/claude-audit/fefc0f64c9.md | 1388 +++++++++++++
+ docs/claude-audit/index.md      |   70 +-
+ 62 files changed, 131928 insertions(+), 7 deletions(-)
 ```
 
 ## Session `6fd717a2…`
@@ -1419,4 +1476,4 @@ Done. Committed `cc07c3b` — added missing "Feedback" and "Help" German transla
 
 ---
 
-[← Previous (32bd6db1ed)](32bd6db1ed.md) | [Index](index.md) | [Next (1dce2139ba) →](1dce2139ba.md)
+[← Previous (e634db0f62)](e634db0f62.md) | [Index](index.md) | [Next (cc07c3b0e7) →](cc07c3b0e7.md)

@@ -1,19 +1,55 @@
 ---
 repo: "/Users/michael/Projekte/peach"
-total_commits: 433
-audited_commits: 425
+total_commits: 469
+audited_commits: 461
 detail: "full"
-generated: "2026-03-05T00:57:13.375437+00:00"
+generated: "2026-03-05T23:29:30.819889+00:00"
 ---
 
 # Claude Code Audit Log
 
 Repository: `/Users/michael/Projekte/peach`  
-Total commits: 433  
-Commits with Claude Code sessions: 425
+Total commits: 469  
+Commits with Claude Code sessions: 461
 
 ## Commits
 
+- [5a9e548ae8](5a9e548ae8.md) — 2026-03-06T00:21 — Update docs and fix logging from code review findings (1 session, 808 messages)
+- [11772e7e10](11772e7e10.md) — 2026-03-06T00:14 — Extract constants and thread domain types through interfaces (1 session, 711 messages)
+- [1ec8c33e85](1ec8c33e85.md) — 2026-03-05T22:52 — Add lifecycle logging to PitchMatchingSession (1 session, 85 messages)
+- [38f0b4af15](38f0b4af15.md) — 2026-03-05T22:37 — Create tech-spec: Add logging to PitchMatchingSession (2 sessions, 110 messages)
+- [146f57d64e](146f57d64e.md) — 2026-03-05T22:27 — Fix pitch matching slider-tap-perfect-score regression (2 sessions, 142 messages)
+- [cf7f2328ce](cf7f2328ce.md) — 2026-03-05T22:05 — Create tech-spec: Fix pitch matching slider-tap-perfect-score regression (2 sessions, 121 messages)
+- [be2ce4e347](be2ce4e347.md) — 2026-03-05T21:50 — Extend generate-test-data.py for all training modes (1 session, 115 messages)
+- [4b725855d8](4b725855d8.md) — 2026-03-05T21:39 — Create tech-spec: Extend generate-test-data.py for all training modes (2 sessions, 103 messages)
+- [733d99ab74](733d99ab74.md) — 2026-03-05T21:28 — Rename Comparison to PitchComparison across entire codebase (1 session, 1123 messages)
+- [013b29b8f7](013b29b8f7.md) — 2026-03-05T19:40 — Create tech-spec: Rename Comparison to PitchComparison (3 sessions, 490 messages)
+- [9344c43bca](9344c43bca.md) — 2026-03-05T18:40 — Mark epic 38 as done (2 sessions, 500 messages)
+- [0d1b2efd71](0d1b2efd71.md) — 2026-03-05T18:39 — Remove stale story 38.6 file and epics entry (2 sessions, 496 messages)
+- [ca0bc39f43](ca0bc39f43.md) — 2026-03-05T18:33 — Implement story 38.6: Fix trend arrow with stddev-based computation (2 sessions, 458 messages)
+- [a2b1283809](a2b1283809.md) — 2026-03-05T18:19 — Create story 38.6: Fix trend arrow with stddev-based computation (3 sessions, 486 messages)
+- [596ccb2f2a](596ccb2f2a.md) — 2026-03-05T17:44 — Review story 38.5: fix unit spacing, strengthen tests, deduplicate helpers (2 sessions, 474 messages)
+- [f8e6a3195f](f8e6a3195f.md) — 2026-03-05T17:28 — Implement story 38.5: Start Screen sparklines, training stats redesign (1 session, 331 messages)
+- [8d6e031bab](8d6e031bab.md) — 2026-03-05T16:19 — Create story 38.5: Start Screen Sparkline and Training Screen Summary (2 sessions, 123 messages)
+- [281284639d](281284639d.md) — 2026-03-05T16:12 — Mark story 38.4 as wont-do: drill-down UX shelved after user testing (1 session, 122 messages)
+- [1ab3a51222](1ab3a51222.md) — 2026-03-05T16:11 — Review story 38.4: fix false task completions, missing file list, docstring path (1 session, 110 messages)
+- [28bf684202](28bf684202.md) — 2026-03-05T15:55 — Implement story 38.4: Focus+Context Chart Interaction (1 session, 308 messages)
+- [53b5c4b542](53b5c4b542.md) — 2026-03-05T15:12 — Create story 38.4: Focus+Context Chart Interaction (2 sessions, 144 messages)
+- [f4179b4e36](f4179b4e36.md) — 2026-03-05T15:03 — Review story 38.3: fix display names, redundant queries, and performance (2 sessions, 217 messages)
+- [8a4d66e19e](8a4d66e19e.md) — 2026-03-05T14:02 — Implement story 38.3: ProgressChartView, Profile Screen redesign, and review fixes (1 session, 422 messages)
+- [7e9d163fc2](7e9d163fc2.md) — 2026-03-05T12:50 — Create story 38.3: ProgressChartView and Profile Screen Redesign (2 sessions, 140 messages)
+- [526f969d81](526f969d81.md) — 2026-03-05T11:59 — Review story 38.2: fix incremental trend, session bucketing, and magic numbers (2 sessions, 210 messages)
+- [d873d97fc0](d873d97fc0.md) — 2026-03-05T11:40 — Implement story 38.2: ProgressTimeline Core — EWMA, Adaptive Buckets, and TrainingModeConfig (2 sessions, 294 messages)
+- [a3f01707fc](a3f01707fc.md) — 2026-03-05T11:19 — Create story 38.2: ProgressTimeline Core — EWMA, Adaptive Buckets, and TrainingModeConfig (1 session, 80 messages)
+- [74870705f2](74870705f2.md) — 2026-03-05T11:08 — Mark story 38.1 done: design approved, no code implementation needed (1 session, 112 messages)
+- [e4096859bf](e4096859bf.md) — 2026-03-05T11:05 — Create story 38.1: Brainstorm and Design Profile Visualization (1 session, 103 messages)
+- [0125cfcea2](0125cfcea2.md) — 2026-03-05T10:17 — Update tech spec with review notes and completion status (1 session, 323 messages)
+- [b9b2425695](b9b2425695.md) — 2026-03-05T10:16 — Fix review findings: export errors, localization, security scoping (1 session, 321 messages)
+- [308cf9ccf3](308cf9ccf3.md) — 2026-03-05T10:10 — Extract sound source validation into SettingsKeys (1 session, 266 messages)
+- [393c1330f5](393c1330f5.md) — 2026-03-05T10:06 — Extract TrainingDataTransferService from SettingsScreen (1 session, 231 messages)
+- [30605dc19c](30605dc19c.md) — 2026-03-05T09:50 — Create tech-spec: Extract training data transfer logic from SettingsScreen (2 sessions, 147 messages)
+- [e634db0f62](e634db0f62.md) — 2026-03-05T09:31 — Fix CSV export: replace ShareLink with fileExporter for reliable file sharing (1 session, 218 messages)
+- [32bd6db1ed](32bd6db1ed.md) — 2026-03-05T01:57 — Update docs/claude-audit. (1 session, 100 messages)
 - [cc07c3b0e7](cc07c3b0e7.md) — 2026-03-05T01:56 — Review story 37.3: Add missing translations and mark epic 37 done (1 session, 100 messages)
 - [1dce2139ba](1dce2139ba.md) — 2026-03-05T01:48 — Implement story 37.3: Training Screen Help (1 session, 133 messages)
 - [33e1bfb2f9](33e1bfb2f9.md) — 2026-03-05T01:39 — Create story 37.3: Training Screen Help (2 sessions, 138 messages)
