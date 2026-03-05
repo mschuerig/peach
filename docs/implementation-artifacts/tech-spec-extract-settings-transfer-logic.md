@@ -2,7 +2,7 @@
 title: 'Extract Training Data Transfer Logic from SettingsScreen'
 slug: 'extract-settings-transfer-logic'
 created: '2026-03-05'
-status: 'ready-for-dev'
+status: 'done'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'SwiftUI', 'SwiftData', 'Swift Testing']
 files_to_modify: ['Peach/Core/Data/TrainingDataTransferService.swift (new)', 'PeachTests/Core/Data/TrainingDataTransferServiceTests.swift (new)', 'Peach/Settings/SettingsScreen.swift', 'Peach/App/PeachApp.swift', 'Peach/App/EnvironmentKeys.swift', 'Peach/Settings/SettingsKeys.swift', 'PeachTests/Settings/SettingsKeysTests.swift (new)']
@@ -86,7 +86,7 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
 
 #### Commit 1: Extract TrainingDataTransferService
 
-- [ ] Task 1: Create `TrainingDataTransferService` in `Peach/Core/Data/TrainingDataTransferService.swift`
+- [x] Task 1: Create `TrainingDataTransferService` in `Peach/Core/Data/TrainingDataTransferService.swift`
   - File: `Peach/Core/Data/TrainingDataTransferService.swift` (new)
   - Action: Create a `final class TrainingDataTransferService` with `@Observable` macro.
   - **Init dependencies:** `dataStore: TrainingDataStore`, `profile: PerceptualProfile`, `trendAnalyzer: TrendAnalyzer`, `thresholdTimeline: ThresholdTimeline`
@@ -99,7 +99,7 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
   - **Nested type:** `enum FileReadResult { case success(CSVImportParser.ImportResult), failure(String) }`
   - Notes: No `import SwiftUI`. The class is implicitly `@MainActor` (project default). `@Observable` because `exportCSV` needs to drive view reactivity.
 
-- [ ] Task 2: Write tests for `TrainingDataTransferService`
+- [x] Task 2: Write tests for `TrainingDataTransferService`
   - File: `PeachTests/Core/Data/TrainingDataTransferServiceTests.swift` (new)
   - Action: Create `@Suite("TrainingDataTransferService")` struct with tests:
     - `refreshExport` returns CSV string when records exist
@@ -116,13 +116,13 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     - `formatImportSummary` with parse errors
   - Notes: Use in-memory `ModelContainer` + real `TrainingDataStore` (same pattern as `TrainingDataImporterTests`). Create real `PerceptualProfile`, `TrendAnalyzer`, `ThresholdTimeline` instances — these are lightweight value-like objects that don't need mocking.
 
-- [ ] Task 3: Add `@Entry` for `TrainingDataTransferService` in `EnvironmentKeys.swift`
+- [x] Task 3: Add `@Entry` for `TrainingDataTransferService` in `EnvironmentKeys.swift`
   - File: `Peach/App/EnvironmentKeys.swift`
   - Action: Add `@Entry var trainingDataTransferService: TrainingDataTransferService = TrainingDataTransferService(dataStore: TrainingDataStore(modelContext: ...), ...)` — the default needs a valid preview stub. Since `TrainingDataTransferService` requires init dependencies, create a minimal static factory `TrainingDataTransferService.preview()` or use an inline construction with preview stubs.
   - **Also remove:** `@Entry var trainingDataExportAction`, `@Entry var csvExportDocumentAction`, `@Entry var trainingDataImportAction` — all three replaced by the service.
   - Notes: Keep `dataStoreResetter` — it's still used by `resetAllTrainingData` in the view.
 
-- [ ] Task 4: Wire `TrainingDataTransferService` in `PeachApp.swift`
+- [x] Task 4: Wire `TrainingDataTransferService` in `PeachApp.swift`
   - File: `Peach/App/PeachApp.swift`
   - Action:
     - Create `TrainingDataTransferService` instance in `init()`, passing `dataStore`, `profile`, `trendAnalyzer`, `thresholdTimeline`.
@@ -130,7 +130,7 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     - Inject via `.environment(\.trainingDataTransferService, transferService)`.
     - **Remove:** the `csvExportDocumentAction` closure (lines 89-93), the `trainingDataImportAction` closure (lines 94-109), and the `trainingDataExportAction` closure (lines 86-88).
 
-- [ ] Task 5: Refactor `SettingsScreen` to use `TrainingDataTransferService`
+- [x] Task 5: Refactor `SettingsScreen` to use `TrainingDataTransferService`
   - File: `Peach/Settings/SettingsScreen.swift`
   - Action:
     - **Add:** `@Environment(\.trainingDataTransferService) private var transferService`
@@ -145,12 +145,12 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     - **Keep:** all `@State` UI flags (`showExporter`, `showImportModeChoice`, etc.), `importParseResult` (still needed between file read and mode choice). The `fileImporter` result handler shrinks to: extract URL from result, call service, map result to UI state.
   - Notes: The `.fileImporter` closure receives `Result<URL, Error>`. The `.failure` case is still handled in the view (just `break`). The `.success` case extracts the URL and delegates to the service.
 
-- [ ] Task 6: Run full test suite and verify
+- [x] Task 6: Run full test suite and verify
   - Action: Run `bin/test.sh`, verify all tests pass including the new `TrainingDataTransferServiceTests`.
 
 #### Commit 2: Extract Sound Source Validation
 
-- [ ] Task 7: Add `SettingsKeys.validateSoundSource(against:userDefaults:)` static function
+- [x] Task 7: Add `SettingsKeys.validateSoundSource(against:userDefaults:)` static function
   - File: `Peach/Settings/SettingsKeys.swift`
   - Action: Add a static function:
     ```
@@ -166,7 +166,7 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     ```
   - Notes: Takes `UserDefaults` parameter for testability. Reads the raw key, not `@AppStorage`. The `SoundSourceProvider` parameter uses `some` (opaque type) to accept both `SoundFontLibrary` and test mocks.
 
-- [ ] Task 8: Write tests for `validateSoundSource`
+- [x] Task 8: Write tests for `validateSoundSource`
   - File: `PeachTests/Settings/SettingsKeysTests.swift` (new)
   - Action: Create `@Suite("SettingsKeys")` struct with:
     - A `MockSoundSourceProvider` (private to test file) returning configurable `availableSources`
@@ -175,7 +175,7 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     - Test: missing key (nil) is set to default
   - Notes: Use a custom `UserDefaults(suiteName:)` per test to avoid polluting real defaults. Remove suite in test cleanup.
 
-- [ ] Task 9: Call `validateSoundSource` in `PeachApp.init()` and clean up `SettingsScreen`
+- [x] Task 9: Call `validateSoundSource` in `PeachApp.init()` and clean up `SettingsScreen`
   - File: `Peach/App/PeachApp.swift`
   - Action: Add `SettingsKeys.validateSoundSource(against: soundFontLibrary)` in `init()`, after `SoundFontLibrary` is created (after line 27).
   - File: `Peach/Settings/SettingsScreen.swift`
@@ -184,37 +184,37 @@ test_patterns: ['struct-based @Suite', 'factory methods for fixtures', 'in-memor
     - **Replace** `Picker` selection from `validatedSoundSource` to `$soundSource` (direct binding).
     - **Remove** the sound source validation from `.onAppear` (lines 110-112). The `.onAppear` should only contain `transferService.refreshExport()` after commit 1.
 
-- [ ] Task 10: Run full test suite and verify
+- [x] Task 10: Run full test suite and verify
   - Action: Run `bin/test.sh`, verify all tests pass including the new `SettingsKeysTests`.
 
 ### Acceptance Criteria
 
 #### Export Extraction
 
-- [ ] AC 1: Given the app has training data, when SettingsScreen appears, then `transferService.exportCSV` is non-nil and the Export button is enabled.
-- [ ] AC 2: Given the app has no training data, when SettingsScreen appears, then `transferService.exportCSV` is nil and the Export button is disabled.
-- [ ] AC 3: Given the user taps Export, when the file exporter is presented, then a `CSVDocument` is created from `transferService.exportCSV` with the correct filename.
+- [x] AC 1: Given the app has training data, when SettingsScreen appears, then `transferService.exportCSV` is non-nil and the Export button is enabled.
+- [x] AC 2: Given the app has no training data, when SettingsScreen appears, then `transferService.exportCSV` is nil and the Export button is disabled.
+- [x] AC 3: Given the user taps Export, when the file exporter is presented, then a `CSVDocument` is created from `transferService.exportCSV` with the correct filename.
 
 #### Import Extraction
 
-- [ ] AC 4: Given the user selects a valid CSV file, when `transferService.readFileForImport(url:)` is called, then it returns `.success` with parsed comparisons and pitch matchings.
-- [ ] AC 5: Given the user selects a file with no valid records (only parse errors), when `readFileForImport` is called, then it returns `.failure` with a message containing up to 5 error descriptions.
-- [ ] AC 6: Given the user selects a file with no valid records and no errors, when `readFileForImport` is called, then it returns `.failure` with "The file contains no valid training data."
-- [ ] AC 7: Given a successful file read, when the user chooses Replace mode, then `performImport` deletes existing data, imports new records, rebuilds profile/trend/timeline, refreshes export, and returns a summary.
-- [ ] AC 8: Given a successful file read, when the user chooses Merge mode, then `performImport` keeps existing data, imports non-duplicate records, rebuilds profile/trend/timeline, refreshes export, and returns a summary.
-- [ ] AC 9: Given an import summary with 10 imported, 3 skipped, 2 errors, when `formatImportSummary` is called, then it returns "10 records imported, 3 duplicates skipped, 2 errors."
+- [x] AC 4: Given the user selects a valid CSV file, when `transferService.readFileForImport(url:)` is called, then it returns `.success` with parsed comparisons and pitch matchings.
+- [x] AC 5: Given the user selects a file with no valid records (only parse errors), when `readFileForImport` is called, then it returns `.failure` with a message containing up to 5 error descriptions.
+- [x] AC 6: Given the user selects a file with no valid records and no errors, when `readFileForImport` is called, then it returns `.failure` with "The file contains no valid training data."
+- [x] AC 7: Given a successful file read, when the user chooses Replace mode, then `performImport` deletes existing data, imports new records, rebuilds profile/trend/timeline, refreshes export, and returns a summary.
+- [x] AC 8: Given a successful file read, when the user chooses Merge mode, then `performImport` keeps existing data, imports non-duplicate records, rebuilds profile/trend/timeline, refreshes export, and returns a summary.
+- [x] AC 9: Given an import summary with 10 imported, 3 skipped, 2 errors, when `formatImportSummary` is called, then it returns "10 records imported, 3 duplicates skipped, 2 errors."
 
 #### Sound Source Validation
 
-- [ ] AC 10: Given `soundSource` in UserDefaults is "sf2:99:99" (not in available sources), when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is reset to `defaultSoundSource`.
-- [ ] AC 11: Given `soundSource` in UserDefaults is "sf2:8:80" (a valid source), when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is unchanged.
-- [ ] AC 12: Given `soundSource` is not set in UserDefaults, when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is set to `defaultSoundSource`.
+- [x] AC 10: Given `soundSource` in UserDefaults is "sf2:99:99" (not in available sources), when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is reset to `defaultSoundSource`.
+- [x] AC 11: Given `soundSource` in UserDefaults is "sf2:8:80" (a valid source), when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is unchanged.
+- [x] AC 12: Given `soundSource` is not set in UserDefaults, when `SettingsKeys.validateSoundSource(against:)` runs, then `soundSource` is set to `defaultSoundSource`.
 
 #### Cleanup
 
-- [ ] AC 13: Given the refactoring is complete, then `SettingsScreen` no longer contains `handleFileSelection`, `performImport`, `importSummaryMessage`, `refreshExportDocument`, or `validatedSoundSource`.
-- [ ] AC 14: Given the refactoring is complete, then `EnvironmentKeys.swift` no longer contains `trainingDataExportAction`, `csvExportDocumentAction`, or `trainingDataImportAction`.
-- [ ] AC 15: Given the refactoring is complete, then `SettingsScreen` has no business logic beyond UI state management — all data operations are delegated to `TrainingDataTransferService` or environment closures.
+- [x] AC 13: Given the refactoring is complete, then `SettingsScreen` no longer contains `handleFileSelection`, `performImport`, `importSummaryMessage`, `refreshExportDocument`, or `validatedSoundSource`.
+- [x] AC 14: Given the refactoring is complete, then `EnvironmentKeys.swift` no longer contains `trainingDataExportAction`, `csvExportDocumentAction`, or `trainingDataImportAction`.
+- [x] AC 15: Given the refactoring is complete, then `SettingsScreen` has no business logic beyond UI state management — all data operations are delegated to `TrainingDataTransferService` or environment closures.
 
 ## Additional Context
 

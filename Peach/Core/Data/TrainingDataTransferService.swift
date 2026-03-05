@@ -44,8 +44,10 @@ final class TrainingDataTransferService {
     }
 
     func readFileForImport(url: URL) -> FileReadResult {
-        let hasAccess = url.startAccessingSecurityScopedResource()
-        defer { if hasAccess { url.stopAccessingSecurityScopedResource() } }
+        guard url.startAccessingSecurityScopedResource() else {
+            return .failure(String(localized: "Could not access the selected file."))
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
         do {
             let csvString = try String(contentsOf: url, encoding: .utf8)
             let parseResult = CSVImportParser.parse(csvString)
@@ -91,7 +93,9 @@ final class TrainingDataTransferService {
 
     static func preview() -> TrainingDataTransferService {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
+        guard let container = try? ModelContainer(for: ComparisonRecord.self, PitchMatchingRecord.self, configurations: config) else {
+            fatalError("Failed to create preview ModelContainer for TrainingDataTransferService")
+        }
         let dataStore = TrainingDataStore(modelContext: container.mainContext)
         return TrainingDataTransferService(
             dataStore: dataStore,
@@ -105,12 +109,15 @@ final class TrainingDataTransferService {
 
     func formatImportSummary(_ summary: TrainingDataImporter.ImportSummary) -> String {
         var parts: [String] = []
-        parts.append("\(summary.totalImported) " + String(localized: "records imported"))
+        let imported = summary.totalImported
+        parts.append(String(localized: "\(imported) records imported"))
         if summary.totalSkipped > 0 {
-            parts.append("\(summary.totalSkipped) " + String(localized: "duplicates skipped"))
+            let skipped = summary.totalSkipped
+            parts.append(String(localized: "\(skipped) duplicates skipped"))
         }
         if summary.parseErrorCount > 0 {
-            parts.append("\(summary.parseErrorCount) " + String(localized: "errors"))
+            let errors = summary.parseErrorCount
+            parts.append(String(localized: "\(errors) errors"))
         }
         return parts.joined(separator: ", ") + "."
     }

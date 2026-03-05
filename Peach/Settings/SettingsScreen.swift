@@ -106,6 +106,9 @@ struct SettingsScreen: View {
         }
         .onAppear {
             transferService.refreshExport()
+            if transferService.exportError != nil {
+                showExportError = true
+            }
         }
         .fileExporter(
             isPresented: $showExporter,
@@ -252,7 +255,9 @@ struct SettingsScreen: View {
         Section("Data") {
             Button {
                 transferService.refreshExport()
-                if transferService.exportCSV != nil {
+                if transferService.exportError != nil {
+                    showExportError = true
+                } else if transferService.exportCSV != nil {
                     showExporter = true
                 }
             } label: {
