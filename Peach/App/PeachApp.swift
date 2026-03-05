@@ -86,6 +86,11 @@ struct PeachApp: App {
                 .environment(\.trainingDataExportAction, { [dataStore] in
                     try TrainingDataExporter.export(from: dataStore)
                 })
+                .environment(\.csvExportDocumentAction, { [dataStore] in
+                    let csv = try TrainingDataExporter.export(from: dataStore)
+                    guard csv != CSVExportSchema.headerRow else { return nil }
+                    return CSVDocument(csvString: csv)
+                })
                 .environment(\.trainingDataImportAction, { [dataStore, profile, trendAnalyzer, thresholdTimeline] parseResult, mode in
                     let summary = try TrainingDataImporter.importData(parseResult, mode: mode, into: dataStore)
                     let allComparisons = try dataStore.fetchAllComparisons()

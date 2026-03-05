@@ -28,13 +28,14 @@ struct SettingsScreen: View {
 
     @Environment(\.dataStoreResetter) private var dataStoreResetter
     @Environment(\.soundSourceProvider) private var soundSourceProvider
-    @Environment(\.trainingDataExportAction) private var trainingDataExportAction
+    @Environment(\.csvExportDocumentAction) private var csvExportDocumentAction
     @Environment(\.trainingDataImportAction) private var trainingDataImportAction
 
     @State private var showHelpSheet = false
     @State private var showResetConfirmation = false
     @State private var showResetError = false
-    @State private var csvExportItem: CSVExportItem?
+    @State private var csvDocument: CSVDocument?
+    @State private var showExporter = false
     @State private var showExportError = false
     @State private var showFileImporter = false
     @State private var importParseResult: CSVImportParser.ImportResult?
@@ -109,7 +110,17 @@ struct SettingsScreen: View {
             if !soundSourceProvider.availableSources.contains(where: { $0.rawValue == soundSource }) {
                 soundSource = SettingsKeys.defaultSoundSource
             }
-            prepareExport()
+            refreshExportDocument()
+        }
+        .fileExporter(
+            isPresented: $showExporter,
+            document: csvDocument,
+            contentType: .commaSeparatedText,
+            defaultFilename: CSVDocument.exportFileName()
+        ) { result in
+            if case .failure = result {
+                showExportError = true
+            }
         }
         .alert("Reset Failed", isPresented: $showResetError) {
             Button("OK") { }
@@ -247,17 +258,16 @@ struct SettingsScreen: View {
 
     private var dataSection: some View {
         Section("Data") {
-            if let csvExportItem {
-                ShareLink(
-                    item: csvExportItem,
-                    preview: SharePreview("Peach Training Data", image: Image(systemName: "doc.text"))
-                ) {
-                    Label("Export Training Data", systemImage: "square.and.arrow.up")
+            Button {
+                refreshExportDocument()
+                if csvDocument != nil {
+                    showExporter = true
                 }
-            } else {
+            } label: {
                 Label("Export Training Data", systemImage: "square.and.arrow.up")
-                    .foregroundStyle(.secondary)
             }
+            .disabled(csvDocument == nil)
+            .foregroundStyle(csvDocument == nil ? .secondary : .primary)
 
             Button {
                 showFileImporter = true
@@ -287,7 +297,7 @@ struct SettingsScreen: View {
     private func resetAllTrainingData() {
         do {
             try dataStoreResetter?()
-            csvExportItem = nil
+            refreshExportDocument()
         } catch {
             showResetError = true
         }
@@ -332,7 +342,7 @@ struct SettingsScreen: View {
             let summary = try trainingDataImportAction?(parseResult, mode)
             importSummary = summary
             showImportSummary = true
-            prepareExport()
+            refreshExportDocument()
         } catch {
             importErrorMessage = String(localized: "Could not import the training data. Please try again.")
             showImportError = true
@@ -352,14 +362,9 @@ struct SettingsScreen: View {
         return parts.joined(separator: ", ") + "."
     }
 
-    private func prepareExport() {
+    private func refreshExportDocument() {
         do {
-            guard let csv = try trainingDataExportAction?() else { return }
-            if csv != CSVExportSchema.headerRow {
-                csvExportItem = CSVExportItem(csvString: csv, fileName: CSVExportItem.exportFileName())
-            } else {
-                csvExportItem = nil
-            }
+            csvDocument = try csvExportDocumentAction?()
         } catch {
             showExportError = true
         }

@@ -2,7 +2,7 @@
 title: 'Fix CSV Export File Sharing'
 slug: 'fix-csv-export-file-sharing'
 created: '2026-03-04'
-status: 'ready-for-dev'
+status: 'implementation-complete'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['Swift 6.2', 'SwiftUI', 'UniformTypeIdentifiers']
 files_to_modify: ['Peach/Settings/SettingsScreen.swift', 'Peach/Settings/CSVExportItem.swift', 'PeachTests/Settings/CSVExportItemTests.swift']
@@ -70,7 +70,7 @@ Replace the `ShareLink` + `CSVExportItem` (Transferable) approach with a `.fileE
 
 ### Tasks
 
-- [ ] Task 1: Replace `CSVExportItem` with `CSVDocument` conforming to `FileDocument`
+- [x] Task 1: Replace `CSVExportItem` with `CSVDocument` conforming to `FileDocument`
   - File: `Peach/Settings/CSVExportItem.swift` (rename to `CSVDocument.swift`)
   - Action: Replace `Transferable` conformance with `FileDocument` conformance
   - Details:
@@ -83,7 +83,7 @@ Replace the `ShareLink` + `CSVExportItem` (Transferable) approach with a `.fileE
     - Keep `static func exportFileName() -> String` unchanged
     - Remove `Transferable` conformance, `transferRepresentation`, and `writeToTemporaryFile()` method
 
-- [ ] Task 2: Update `SettingsScreen` to use `.fileExporter` instead of `ShareLink`
+- [x] Task 2: Update `SettingsScreen` to use `.fileExporter` instead of `ShareLink`
   - File: `Peach/Settings/SettingsScreen.swift`
   - Action: Replace `ShareLink` with `Button` + `.fileExporter` modifier
   - Details:
@@ -96,7 +96,7 @@ Replace the `ShareLink` + `CSVExportItem` (Transferable) approach with a `.fileE
     - Update `resetAllTrainingData()` to nil out `csvDocument`
     - Remove eager `prepareExport()` from `.onAppear` — prepare on button tap instead
 
-- [ ] Task 3: Update tests for `CSVDocument`
+- [x] Task 3: Update tests for `CSVDocument`
   - File: `PeachTests/Settings/CSVExportItemTests.swift` (rename to `CSVDocumentTests.swift`)
   - Action: Adapt existing tests for the new `FileDocument` API
   - Details:
@@ -107,7 +107,7 @@ Replace the `ShareLink` + `CSVExportItem` (Transferable) approach with a `.fileE
     - Add test: `CSVDocument` `readableContentTypes` contains `.commaSeparatedText`
     - Add test: round-trip — create `CSVDocument` with string, write via `fileWrapper`, read back via `init(configuration:)`, verify content matches
 
-- [ ] Task 4: Verify no other references to `CSVExportItem` remain
+- [x] Task 4: Verify no other references to `CSVExportItem` remain
   - Action: Search codebase for `CSVExportItem` references after rename
   - Verify: Zero references remain outside of git history
 
