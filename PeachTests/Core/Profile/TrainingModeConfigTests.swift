@@ -10,8 +10,7 @@ struct TrainingModeConfigTests {
         let config = TrainingModeConfig.unisonComparison
         #expect(config.optimalBaseline == Cents(8.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
-        #expect(config.coldStartThreshold == 20)
-        #expect(config.trendThreshold == 100)
+
         #expect(config.trendChangeThreshold == 0.05)
         #expect(config.sessionGap == .seconds(1800))
     }
@@ -21,8 +20,7 @@ struct TrainingModeConfigTests {
         let config = TrainingModeConfig.intervalComparison
         #expect(config.optimalBaseline == Cents(12.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
-        #expect(config.coldStartThreshold == 20)
-        #expect(config.trendThreshold == 100)
+
         #expect(config.trendChangeThreshold == 0.05)
         #expect(config.sessionGap == .seconds(1800))
     }
@@ -32,8 +30,7 @@ struct TrainingModeConfigTests {
         let config = TrainingModeConfig.unisonMatching
         #expect(config.optimalBaseline == Cents(5.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
-        #expect(config.coldStartThreshold == 20)
-        #expect(config.trendThreshold == 100)
+
         #expect(config.trendChangeThreshold == 0.05)
         #expect(config.sessionGap == .seconds(1800))
     }
@@ -43,8 +40,7 @@ struct TrainingModeConfigTests {
         let config = TrainingModeConfig.intervalMatching
         #expect(config.optimalBaseline == Cents(8.0))
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
-        #expect(config.coldStartThreshold == 20)
-        #expect(config.trendThreshold == 100)
+
         #expect(config.trendChangeThreshold == 0.05)
         #expect(config.sessionGap == .seconds(1800))
     }

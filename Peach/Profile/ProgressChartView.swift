@@ -22,28 +22,9 @@ struct ProgressChartView: View {
         switch state {
         case .noData:
             EmptyView()
-        case .coldStart(let recordsNeeded):
-            coldStartCard(recordsNeeded: recordsNeeded)
         case .active:
             activeCard
         }
-    }
-
-    // MARK: - Cold Start
-
-    private func coldStartCard(recordsNeeded: Int) -> some View {
-        VStack(spacing: 8) {
-            Text(config.displayName)
-                .font(.headline)
-            Text(Self.coldStartMessage(recordsNeeded: recordsNeeded))
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Active Card
@@ -217,15 +198,11 @@ struct ProgressChartView: View {
     }
 
     static func formatEWMA(_ value: Double) -> String {
-        String(format: "%.1f", value)
+        TrainingStatsView.formattedCents(value)
     }
 
     static func formatStdDev(_ value: Double) -> String {
-        "±\(String(format: "%.1f", value))"
-    }
-
-    static func coldStartMessage(recordsNeeded: Int) -> String {
-        String(localized: "Keep going! \(recordsNeeded) more sessions to see your trend")
+        "±\(TrainingStatsView.formattedCents(value))"
     }
 
     static func chartAccessibilityValue(ewma: Double?, trend: Trend?, unitLabel: String) -> String {

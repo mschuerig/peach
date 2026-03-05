@@ -104,6 +104,10 @@ final class ComparisonSession: TrainingSession {
         currentComparison?.targetNote.offset.magnitude
     }
 
+    var lastCompletedCentDifference: Double? {
+        lastCompletedComparison?.comparison.targetNote.offset.magnitude
+    }
+
     func start(intervals: Set<DirectedInterval>) {
         guard state == .idle else {
             logger.warning("start() called but state is \(String(describing: self.state)), not idle")

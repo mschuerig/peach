@@ -1733,6 +1733,86 @@
           }
         }
       }
+    },
+    "improving": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "verbessernd"
+          }
+        }
+      }
+    },
+    "stable": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stabil"
+          }
+        }
+      }
+    },
+    "declining": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nachlassend"
+          }
+        }
+      }
+    },
+    "Current accuracy: %@ %@ (%@)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuelle Genauigkeit: %@ %@ (%@)"
+          }
+        }
+      }
+    },
+    "Latest: %@ ¢": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zuletzt: %@ ¢"
+          }
+        }
+      }
+    },
+    "Best: %@ ¢": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestmarke: %@ ¢"
+          }
+        }
+      }
+    },
+    "Latest result: %@ cents": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letztes Ergebnis: %@ Cent"
+          }
+        }
+      }
+    },
+    "Best result: %@ cents": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestmarke: %@ Cent"
+          }
+        }
+      }
     }
   },
   "version": "1.1"

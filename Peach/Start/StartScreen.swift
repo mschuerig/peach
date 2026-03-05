@@ -88,12 +88,12 @@ struct StartScreen: View {
                 .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: [.prime])) {
-                trainingCard("Hear & Compare", systemImage: "ear")
+                trainingCard("Hear & Compare", systemImage: "ear", mode: .unisonComparison)
             }
             .buttonStyle(TrainingCardButtonStyle())
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: [.prime])) {
-                trainingCard("Tune & Match", systemImage: "target")
+                trainingCard("Tune & Match", systemImage: "target", mode: .unisonMatching)
             }
             .buttonStyle(TrainingCardButtonStyle())
         }
@@ -106,12 +106,12 @@ struct StartScreen: View {
                 .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.comparison(intervals: intervalSelection.intervals)) {
-                trainingCard("Hear & Compare", systemImage: "ear")
+                trainingCard("Hear & Compare", systemImage: "ear", mode: .intervalComparison)
             }
             .buttonStyle(TrainingCardButtonStyle())
 
             NavigationLink(value: NavigationDestination.pitchMatching(intervals: intervalSelection.intervals)) {
-                trainingCard("Tune & Match", systemImage: "target")
+                trainingCard("Tune & Match", systemImage: "target", mode: .intervalMatching)
             }
             .buttonStyle(TrainingCardButtonStyle())
         }
@@ -121,17 +121,21 @@ struct StartScreen: View {
 
     private func trainingCard(
         _ title: LocalizedStringKey,
-        systemImage: String
+        systemImage: String,
+        mode: TrainingMode
     ) -> some View {
-        Label(title, systemImage: systemImage)
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .foregroundStyle(.primary)
-            .background(
-                RoundedRectangle(cornerRadius: Self.cardCornerRadius)
-                    .fill(.regularMaterial)
-            )
+        VStack(alignment: .leading, spacing: 4) {
+            Label(title, systemImage: systemImage)
+            ProgressSparklineView(mode: mode)
+        }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .foregroundStyle(.primary)
+        .background(
+            RoundedRectangle(cornerRadius: Self.cardCornerRadius)
+                .fill(.regularMaterial)
+        )
     }
 }
 

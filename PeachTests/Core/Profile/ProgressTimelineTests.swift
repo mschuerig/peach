@@ -65,27 +65,15 @@ struct ProgressTimelineTests {
         #expect(timeline.state(for: .intervalMatching) == .noData)
     }
 
-    @Test("fewer than 20 records reports coldStart")
-    func coldStart() async {
-        let records = makeComparisonRecords(count: 10)
-        let timeline = ProgressTimeline(comparisonRecords: records)
-        let state = timeline.state(for: .unisonComparison)
-        if case .coldStart(let needed) = state {
-            #expect(needed == 10)
-        } else {
-            Issue.record("Expected coldStart, got \(state)")
-        }
-    }
-
-    @Test("exactly 20 records transitions to active without trend")
-    func activeWithoutTrend() async {
-        let records = makeComparisonRecords(count: 20)
+    @Test("any records transitions to active")
+    func activeWithAnyData() async {
+        let records = makeComparisonRecords(count: 1)
         let timeline = ProgressTimeline(comparisonRecords: records)
         let state = timeline.state(for: .unisonComparison)
         #expect(state == .active)
     }
 
-    @Test("100+ records is active with trend available")
+    @Test("2+ records have trend available")
     func activeWithTrend() async {
         let records = makeComparisonRecords(count: 100)
         let timeline = ProgressTimeline(comparisonRecords: records)
@@ -431,12 +419,20 @@ struct ProgressTimelineTests {
         #expect(trend == .stable)
     }
 
-    @Test("no trend available below 100 records")
-    func noTrendBelow100() async {
-        let records = makeComparisonRecords(count: 50)
+    @Test("no trend available with single record")
+    func noTrendWithSingleRecord() async {
+        let records = makeComparisonRecords(count: 1)
         let timeline = ProgressTimeline(comparisonRecords: records)
         let trend = timeline.trend(for: .unisonComparison)
         #expect(trend == nil)
+    }
+
+    @Test("trend available with 2+ records")
+    func trendWithTwoRecords() async {
+        let records = makeComparisonRecords(count: 2)
+        let timeline = ProgressTimeline(comparisonRecords: records)
+        let trend = timeline.trend(for: .unisonComparison)
+        #expect(trend != nil)
     }
 
     // MARK: - Sub-Bucket Tests

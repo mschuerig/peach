@@ -22,6 +22,7 @@ final class PitchMatchingSession: TrainingSession {
     private(set) var state: PitchMatchingSessionState = .idle
     private(set) var currentChallenge: PitchMatchingChallenge?
     private(set) var lastResult: CompletedPitchMatching?
+    private(set) var sessionBestCentError: Double?
 
     // MARK: - Dependencies
 
@@ -148,6 +149,7 @@ final class PitchMatchingSession: TrainingSession {
             tuningSystem: sessionTuningSystem
         )
         lastResult = result
+        trackSessionBest(abs(userCentError))
 
         observers.forEach { $0.pitchMatchingCompleted(result) }
 
@@ -181,6 +183,7 @@ final class PitchMatchingSession: TrainingSession {
         referenceFrequency = nil
         currentChallenge = nil
         lastResult = nil
+        sessionBestCentError = nil
         currentInterval = nil
         sessionIntervals = []
         sessionTuningSystem = .equalTemperament
@@ -219,6 +222,14 @@ final class PitchMatchingSession: TrainingSession {
         let targetNote = note.transposed(by: interval)
         let offset = Double.random(in: Self.initialCentOffsetRange)
         return PitchMatchingChallenge(referenceNote: note, targetNote: targetNote, initialCentOffset: offset)
+    }
+
+    private func trackSessionBest(_ absCentError: Double) {
+        if let best = sessionBestCentError {
+            if absCentError < best { sessionBestCentError = absCentError }
+        } else {
+            sessionBestCentError = absCentError
+        }
     }
 
     // MARK: - Training Loop

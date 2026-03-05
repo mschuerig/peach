@@ -73,14 +73,6 @@ struct ProgressChartViewTests {
         #expect(formatted.contains("±"))
     }
 
-    // MARK: - Cold Start Message
-
-    @Test("cold start message includes records needed count")
-    func coldStartMessage() async {
-        let message = ProgressChartView.coldStartMessage(recordsNeeded: 15)
-        #expect(message.contains("15"))
-    }
-
     // MARK: - Accessibility
 
     @Test("chart accessibility value includes EWMA and trend")
