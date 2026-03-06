@@ -279,6 +279,13 @@ struct SettingsTests {
         #expect(bodyLower.contains("equal temperament") || bodyLower.contains("gleichstufig"))
     }
 
+    // MARK: - Sound Preview
+
+    @Test("previewDuration is 2 seconds")
+    func previewDurationValue() async {
+        #expect(TrainingConstants.previewDuration == 2.0)
+    }
+
     // MARK: - Task 2: Note Range Validation
 
     @Test("Lower bound range enforces minimum gap from upper bound")

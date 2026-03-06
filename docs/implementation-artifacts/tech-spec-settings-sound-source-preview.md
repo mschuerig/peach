@@ -2,7 +2,7 @@
 title: 'Settings Sound Source Preview Button'
 slug: 'settings-sound-source-preview'
 created: '2026-03-06'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['SwiftUI', 'AVAudioEngine', 'SF2', 'Swift Testing']
 files_to_modify: ['Peach/Core/Training/TrainingConstants.swift', 'Peach/App/EnvironmentKeys.swift', 'Peach/App/PeachApp.swift', 'Peach/Settings/SettingsScreen.swift']
@@ -84,12 +84,12 @@ Add a `speaker.wave.2` icon button to the right of the Sound picker in the Setti
 
 ### Tasks
 
-- [ ] Task 1: Add `previewDuration` constant to `TrainingConstants`
+- [x] Task 1: Add `previewDuration` constant to `TrainingConstants`
   - File: `Peach/Core/Training/TrainingConstants.swift`
   - Action: Add `static let previewDuration: TimeInterval = 2.0` to the `TrainingConstants` enum
   - Notes: Uses `TimeInterval` (not `Duration`) because `NotePlayer.play(frequency:duration:)` takes `TimeInterval`
 
-- [ ] Task 2: Add environment keys for preview closures
+- [x] Task 2: Add environment keys for preview closures
   - File: `Peach/App/EnvironmentKeys.swift`
   - Action: Add two `@Entry` keys to the Core Environment Keys section:
     ```swift
@@ -98,7 +98,7 @@ Add a `speaker.wave.2` icon button to the right of the Sound picker in the Setti
     ```
   - Notes: Optional closures, defaulting to `nil` (safe for previews). Follows `dataStoreResetter` pattern
 
-- [ ] Task 3: Wire preview closures in composition root
+- [x] Task 3: Wire preview closures in composition root
   - File: `Peach/App/PeachApp.swift`
   - Action: Add `.environment(\.soundPreviewPlay, ...)` and `.environment(\.soundPreviewStop, ...)` to the `ContentView()` environment chain. The play closure:
     1. Reads `referencePitch` from `userSettings` (already captured as `AppUserSettings`)
@@ -107,7 +107,7 @@ Add a `speaker.wave.2` icon button to the right of the Sound picker in the Setti
     The stop closure calls `notePlayer.stopAll()`
   - Notes: `notePlayer` and `userSettings` are already local variables in `PeachApp.init()`. The closures need to capture them. Since `notePlayer` is created as a local `let` in `init()`, store it as a `@State` property or capture it directly in the closure. Looking at the code, `notePlayer` is a local `let` — it needs to be stored. Create a `@State private var notePlayer: NotePlayer` property to make it available in `body`. Alternatively, create the closures in `init()` and store them as `@State`
 
-- [ ] Task 4: Add preview button to `SettingsScreen`
+- [x] Task 4: Add preview button to `SettingsScreen`
   - File: `Peach/Settings/SettingsScreen.swift`
   - Action:
     1. Add `@Environment(\.soundPreviewPlay) private var soundPreviewPlay`
@@ -150,12 +150,12 @@ Add a `speaker.wave.2` icon button to the right of the Sound picker in the Setti
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the Settings screen is showing, when the user looks at the Sound section, then a `speaker.wave.2` icon button is visible to the right of the Sound picker
-- [ ] AC 2: Given no preview is playing, when the user taps the preview button, then a 2-second note plays using the currently selected sound source at the current concert pitch
-- [ ] AC 3: Given a preview is playing, when the user taps the preview button again, then the playing sound stops immediately
-- [ ] AC 4: Given a preview is playing, when the user changes the sound source in the picker, then the playing preview stops
-- [ ] AC 5: Given a preview is playing, when the user navigates away from Settings, then the playing preview stops
-- [ ] AC 6: Given the preview button is tapped and the note finishes its 2-second duration naturally, then the button returns to its default `speaker.wave.2` icon (not stuck in stop state)
+- [x] AC 1: Given the Settings screen is showing, when the user looks at the Sound section, then a `speaker.wave.2` icon button is visible to the right of the Sound picker
+- [x] AC 2: Given no preview is playing, when the user taps the preview button, then a 2-second note plays using the currently selected sound source at the current concert pitch
+- [x] AC 3: Given a preview is playing, when the user taps the preview button again, then the playing sound stops immediately
+- [x] AC 4: Given a preview is playing, when the user changes the sound source in the picker, then the playing preview stops
+- [x] AC 5: Given a preview is playing, when the user navigates away from Settings, then the playing preview stops
+- [x] AC 6: Given the preview button is tapped and the note finishes its 2-second duration naturally, then the button returns to its default `speaker.wave.2` icon (not stuck in stop state)
 
 ## Additional Context
 

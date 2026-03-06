@@ -8,6 +8,8 @@ extension EnvironmentValues {
     @Entry var activeSession: (any TrainingSession)? = nil
     @Entry var perceptualProfile = PerceptualProfile()
     @Entry var dataStoreResetter: (() throws -> Void)? = nil
+    @Entry var soundPreviewPlay: (() async -> Void)? = nil
+    @Entry var soundPreviewStop: (() async -> Void)? = nil
     @Entry var trainingDataTransferService: TrainingDataTransferService = TrainingDataTransferService.preview()
 }
 

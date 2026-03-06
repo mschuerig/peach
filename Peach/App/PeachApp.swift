@@ -12,6 +12,7 @@ struct PeachApp: App {
     @State private var progressTimeline: ProgressTimeline
     @State private var soundFontLibrary: SoundFontLibrary
     @State private var transferService: TrainingDataTransferService
+    @State private var notePlayer: any NotePlayer
     @State private var activeSession: (any TrainingSession)?
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
@@ -29,7 +30,8 @@ struct PeachApp: App {
             SettingsKeys.validateSoundSource(against: soundFontLibrary)
 
             let userSettings = AppUserSettings()
-            let notePlayer = try SoundFontNotePlayer(userSettings: userSettings, stopPropagationDelay: .zero)
+            let notePlayer: any NotePlayer = try SoundFontNotePlayer(userSettings: userSettings, stopPropagationDelay: .zero)
+            _notePlayer = State(wrappedValue: notePlayer)
 
             let existingRecords = try dataStore.fetchAllPitchComparisons()
             let pitchMatchingRecords = try dataStore.fetchAllPitchMatchings()
@@ -93,6 +95,21 @@ struct PeachApp: App {
                 .environment(\.perceptualProfile, profile)
                 .environment(\.progressTimeline, progressTimeline)
                 .environment(\.soundSourceProvider, soundFontLibrary)
+                .environment(\.soundPreviewPlay, { [notePlayer] in
+                    let frequency = TuningSystem.equalTemperament.frequency(
+                        for: MIDINote(69),
+                        referencePitch: AppUserSettings().referencePitch
+                    )
+                    try? await notePlayer.play(
+                        frequency: frequency,
+                        duration: TrainingConstants.previewDuration,
+                        velocity: TrainingConstants.velocity,
+                        amplitudeDB: AmplitudeDB(0)
+                    )
+                })
+                .environment(\.soundPreviewStop, { [notePlayer] in
+                    try? await notePlayer.stopAll()
+                })
                 .environment(\.dataStoreResetter, { [dataStore, pitchComparisonSession, profile] in
                     try dataStore.deleteAll()
                     try pitchComparisonSession.resetTrainingData()
