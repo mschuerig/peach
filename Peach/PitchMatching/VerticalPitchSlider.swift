@@ -32,6 +32,11 @@ struct VerticalPitchSlider: View {
                     .fill(Color.clear)
                     .contentShape(Rectangle())
 
+                // Range indicator line
+                Capsule()
+                    .fill(.separator)
+                    .frame(width: 2)
+
                 // Thumb handle
                 RoundedRectangle(cornerRadius: 12)
                     .fill(.tint)
