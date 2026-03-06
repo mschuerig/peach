@@ -10,18 +10,13 @@ struct PitchMatchingFeedbackIndicator: View {
         case far
     }
 
-    private static let defaultIconSize: CGFloat = 100
-    private static let closeIconSize: CGFloat = 40
-    private static let moderateIconSize: CGFloat = 70
-    private static let farIconSize: CGFloat = defaultIconSize
-
     var body: some View {
         if let centError {
             let error = centError.rawValue
             let band = Self.band(centError: error)
-            VStack(spacing: 4) {
+            HStack(spacing: 4) {
                 Image(systemName: Self.arrowSymbolName(centError: error))
-                    .font(.system(size: Self.iconSizeForBand(band)))
+                    .font(.title2)
                     .foregroundStyle(Self.feedbackColor(band: band))
                     .accessibilityRemoveTraits(.isImage)
 
@@ -31,6 +26,14 @@ struct PitchMatchingFeedbackIndicator: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(Self.accessibilityLabel(centError: error))
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: "circle.fill")
+                    .font(.title2)
+                Text("0 " + String(localized: "cents"))
+                    .font(.title2)
+            }
+            .hidden()
         }
     }
 
@@ -87,17 +90,6 @@ struct PitchMatchingFeedbackIndicator: View {
             return "\(abs(rounded)) " + String(localized: "cents flat")
         } else {
             return String(localized: "Dead center")
-        }
-    }
-
-    // MARK: - Private
-
-    private static func iconSizeForBand(_ band: FeedbackBand) -> CGFloat {
-        switch band {
-        case .deadCenter: return defaultIconSize
-        case .close: return closeIconSize
-        case .moderate: return moderateIconSize
-        case .far: return farIconSize
         }
     }
 }

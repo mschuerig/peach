@@ -2,7 +2,7 @@
 title: 'Compact Pitch Matching Feedback Layout'
 slug: 'compact-pitch-matching-feedback-layout'
 created: '2026-03-06'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['SwiftUI', 'Swift 6.2']
 files_to_modify: ['Peach/PitchMatching/PitchMatchingScreen.swift', 'Peach/PitchMatching/PitchMatchingFeedbackIndicator.swift']
@@ -70,7 +70,7 @@ Restructure the top area of `PitchMatchingScreen` so the feedback indicator sits
 
 ### Tasks
 
-- [ ] Task 1: Redesign `PitchMatchingFeedbackIndicator` to compact horizontal layout
+- [x] Task 1: Redesign `PitchMatchingFeedbackIndicator` to compact horizontal layout
   - File: `Peach/PitchMatching/PitchMatchingFeedbackIndicator.swift`
   - Action: Change the view body from a VStack (large icon stacked above text) to an HStack (icon beside text). Replace the four fixed icon size constants and `iconSizeForBand()` with a single `.font(.title2)` on the arrow image. Keep all static logic methods (`band()`, `centOffsetText()`, `arrowSymbolName()`, `feedbackColor()`, `accessibilityLabel()`) unchanged.
   - Details:
@@ -81,7 +81,7 @@ Restructure the top area of `PitchMatchingScreen` so the feedback indicator sits
     - Keep: all accessibilityElement/accessibilityLabel modifiers
     - Update previews to remove `.padding()` frame if desired
 
-- [ ] Task 2: Restructure `PitchMatchingScreen` top area layout
+- [x] Task 2: Restructure `PitchMatchingScreen` top area layout
   - File: `Peach/PitchMatching/PitchMatchingScreen.swift`
   - Action: Replace the current sequential VStack (TrainingStatsView → interval label → feedback indicator → slider) with a two-column top area (left: stats + interval label, right: feedback) above the slider.
   - Details:
@@ -121,3 +121,16 @@ None — pure UI layout change with no service or data model impacts.
 - The `feedbackAnimation` static method and its tests in `PitchMatchingScreenTests` remain unchanged
 - The `helpSections` tests in `PitchMatchingScreenTests` remain unchanged
 - If the compact feedback feels too small visually, `.title2` can be adjusted to `.title3` or a custom size — but start with `.title2` to match the text beside it
+
+## Review Notes
+
+- Adversarial review completed
+- Findings: 7 total, 4 fixed, 3 skipped
+- Resolution approach: auto-fix
+- F1 (High, fixed): Added hidden placeholder in feedback indicator to prevent layout jump on first feedback
+- F2 (Medium, fixed): Added `HStack(alignment: .top)` for proper vertical alignment
+- F3 (Medium, skipped): Icon size variation removal is intentional per spec
+- F4 (Medium, fixed): Added `.leading` alignment to interval VStack
+- F5 (Low, skipped): Padding equivalence verified — no change needed
+- F6 (Low, skipped): No tests reference `feedbackIndicatorHeight` — confirmed safe
+- F7 (Low, fixed): Removed extra blank line
