@@ -2,7 +2,7 @@
 title: 'Vertical Range Indicator Line for Pitch Slider'
 slug: 'pitch-slider-range-line'
 created: '2026-03-06'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: [SwiftUI]
 files_to_modify: [Peach/PitchMatching/VerticalPitchSlider.swift]
@@ -61,7 +61,7 @@ Add a thin vertical line behind the slider thumb spanning the full track height,
 
 ### Tasks
 
-- [ ] Task 1: Add vertical range indicator line to `VerticalPitchSlider`
+- [x] Task 1: Add vertical range indicator line to `VerticalPitchSlider`
   - File: `Peach/PitchMatching/VerticalPitchSlider.swift`
   - Action: Inside the `ZStack` in `body`, add a `Rectangle` between the existing clear hit-test rectangle and the thumb `RoundedRectangle`. The line should be:
     - Width: 2pt, full height of the track (no explicit height — let it fill the `ZStack`)
@@ -72,10 +72,10 @@ Add a thin vertical line behind the slider thumb spanning the full track height,
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the pitch matching screen is displayed, when the slider is active (awaiting touch or playing tunable), then a thin vertical line is visible spanning the full height of the slider track area
-- [ ] AC 2: Given the slider is inactive (not in an active state), when the screen renders, then the vertical line is visible but dimmed (same opacity as the thumb)
-- [ ] AC 3: Given light mode or dark mode, when the slider renders, then the line color adapts appropriately (uses `.separator` system color)
-- [ ] AC 4: Given the slider thumb is dragged, when it moves along the track, then the vertical line remains stationary behind the thumb as a fixed reference
+- [x] AC 1: Given the pitch matching screen is displayed, when the slider is active (awaiting touch or playing tunable), then a thin vertical line is visible spanning the full height of the slider track area
+- [x] AC 2: Given the slider is inactive (not in an active state), when the screen renders, then the vertical line is visible but dimmed (same opacity as the thumb)
+- [x] AC 3: Given light mode or dark mode, when the slider renders, then the line color adapts appropriately (uses `.separator` system color)
+- [x] AC 4: Given the slider thumb is dragged, when it moves along the track, then the vertical line remains stationary behind the thumb as a fixed reference
 
 ## Additional Context
 
@@ -91,4 +91,10 @@ None — purely visual change using built-in SwiftUI primitives and system color
 ### Notes
 
 - The line width of 2pt is a starting point — may need visual tuning after seeing it on device. Adjust if it looks too thick or too thin relative to the thumb (80x60pt).
-- Future enhancement (out of scope): could add rounded caps to the line ends, or small endpoint indicators. Keep it simple for now.
+- Future enhancement (out of scope): could add small endpoint indicators. Keep it simple for now.
+
+## Review Notes
+- Adversarial review completed
+- Findings: 6 total, 1 fixed, 5 skipped
+- Resolution approach: auto-fix
+- F1 (fixed): Changed `Rectangle` to `Capsule` for rounded line ends matching the thumb's rounded style
