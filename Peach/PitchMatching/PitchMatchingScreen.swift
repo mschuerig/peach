@@ -7,6 +7,7 @@ struct PitchMatchingScreen: View {
     @Environment(\.pitchMatchingSession) private var pitchMatchingSession
     @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     @State private var showHelpSheet = false
 
@@ -19,7 +20,7 @@ struct PitchMatchingScreen: View {
         ),
         HelpSection(
             title: String(localized: "Controls"),
-            body: String(localized: "**Touch** the slider to hear your note, then **drag** up or down to adjust the pitch. When you think you've matched the reference, **release** the slider to lock in your answer.")
+            body: String(localized: "**Touch** the slider to hear your note, then **drag** to adjust the pitch. When you think you've matched the reference, **release** the slider to lock in your answer.")
         ),
         HelpSection(
             title: String(localized: "Feedback"),
@@ -30,6 +31,10 @@ struct PitchMatchingScreen: View {
             body: String(localized: "In interval mode, your target pitch is a specific **musical interval** away from the reference note. Instead of matching the same note, you're matching a note that's a certain distance above or below it.")
         ),
     ]
+
+    private var isCompactHeight: Bool {
+        verticalSizeClass == .compact
+    }
 
     private var trainingMode: TrainingMode {
         Self.trainingMode(for: intervals)
@@ -69,7 +74,8 @@ struct PitchMatchingScreen: View {
             }
             .padding(.horizontal)
 
-            VerticalPitchSlider(
+            PitchSlider(
+                isHorizontal: isCompactHeight,
                 isActive: pitchMatchingSession.state == .awaitingSliderTouch || pitchMatchingSession.state == .playingTunable,
                 onValueChange: { value in
                     pitchMatchingSession.adjustPitch(value)
