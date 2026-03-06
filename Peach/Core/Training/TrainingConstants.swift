@@ -17,4 +17,7 @@ enum TrainingConstants {
     /// 63 is approximately mezzo-piano -- loud enough to hear clearly
     /// without fatiguing the listener during extended sessions.
     static let velocity: MIDIVelocity = 63
+
+    /// Duration for the sound source preview in Settings.
+    static let previewDuration: TimeInterval = 2.0
 }

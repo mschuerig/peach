@@ -28,6 +28,8 @@ struct SettingsScreen: View {
 
     @Environment(\.dataStoreResetter) private var dataStoreResetter
     @Environment(\.soundSourceProvider) private var soundSourceProvider
+    @Environment(\.soundPreviewPlay) private var soundPreviewPlay
+    @Environment(\.soundPreviewStop) private var soundPreviewStop
     @Environment(\.trainingDataTransferService) private var transferService
 
     @State private var showHelpSheet = false
@@ -35,6 +37,7 @@ struct SettingsScreen: View {
     @State private var showResetError = false
     @State private var showExporter = false
     @State private var showExportError = false
+    @State private var previewTask: Task<Void, Never>?
     @State private var showFileImporter = false
     @State private var importParseResult: CSVImportParser.ImportResult?
     @State private var showImportModeChoice = false
@@ -205,12 +208,22 @@ struct SettingsScreen: View {
         }
     }
 
+    private var isPreviewPlaying: Bool { previewTask != nil }
+
     private var soundSection: some View {
         Section {
-            Picker(String(localized: "Sound"), selection: $soundSource) {
-                ForEach(soundSourceProvider.availableSources, id: \.self) { source in
-                    Text(soundSourceProvider.displayName(for: source)).tag(source.rawValue)
+            HStack {
+                Picker(String(localized: "Sound"), selection: $soundSource) {
+                    ForEach(soundSourceProvider.availableSources, id: \.self) { source in
+                        Text(soundSourceProvider.displayName(for: source)).tag(source.rawValue)
+                    }
                 }
+                Button {
+                    togglePreview()
+                } label: {
+                    Image(systemName: isPreviewPlaying ? "stop.fill" : "speaker.wave.2")
+                }
+                .buttonStyle(.bordered)
             }
             Stepper(
                 "Duration: \(noteDuration, specifier: "%.1f")s",
@@ -233,6 +246,12 @@ struct SettingsScreen: View {
             Text(String(localized: "Sound"))
         } footer: {
             Text(String(localized: "Select how intervals are tuned. Equal Temperament divides the octave into 12 equal steps. Just Intonation uses pure frequency ratios."))
+        }
+        .onChange(of: soundSource) {
+            stopPreview()
+        }
+        .onDisappear {
+            stopPreview()
         }
     }
 
@@ -290,6 +309,26 @@ struct SettingsScreen: View {
     }
 
     // MARK: - Actions
+
+    private func togglePreview() {
+        if let task = previewTask {
+            task.cancel()
+            previewTask = nil
+            Task { await soundPreviewStop?() }
+        } else {
+            previewTask = Task {
+                await soundPreviewPlay?()
+                previewTask = nil
+            }
+        }
+    }
+
+    private func stopPreview() {
+        guard previewTask != nil else { return }
+        previewTask?.cancel()
+        previewTask = nil
+        Task { await soundPreviewStop?() }
+    }
 
     private func resetAllTrainingData() {
         do {
