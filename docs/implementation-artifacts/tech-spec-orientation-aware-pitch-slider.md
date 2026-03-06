@@ -2,7 +2,7 @@
 title: 'Orientation-Aware Pitch Slider'
 slug: 'orientation-aware-pitch-slider'
 created: '2026-03-06'
-status: 'ready-for-dev'
+status: 'completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['SwiftUI', 'Swift 6.2', 'Swift Testing']
 files_to_modify: ['Peach/PitchMatching/VerticalPitchSlider.swift → PitchSlider.swift', 'Peach/PitchMatching/PitchMatchingScreen.swift', 'PeachTests/PitchMatching/VerticalPitchSliderTests.swift → PitchSliderTests.swift']
@@ -80,15 +80,15 @@ Rename `VerticalPitchSlider` to `PitchSlider` and make it orientation-aware: ver
 
 ### Tasks
 
-- [ ] Task 1: Rename `VerticalPitchSlider` to `PitchSlider`
+- [x] Task 1: Rename `VerticalPitchSlider` to `PitchSlider`
   - File: `Peach/PitchMatching/VerticalPitchSlider.swift` → rename to `PitchSlider.swift`
   - Action: Rename file. Rename `struct VerticalPitchSlider` to `struct PitchSlider`. No logic changes yet.
 
-- [ ] Task 2: Change thumb from rounded rectangle to circle
+- [x] Task 2: Change thumb from rounded rectangle to circle
   - File: `Peach/PitchMatching/PitchSlider.swift`
   - Action: Replace `RoundedRectangle(cornerRadius: 12).frame(width: 80, height: 60)` with `Circle().frame(width: 70, height: 70)`. Remove the separate `thumbWidth`/`thumbHeight` constants, replace with single `thumbDiameter: CGFloat = 70`.
 
-- [ ] Task 3: Add `isHorizontal` parameter and orientation-aware layout to `PitchSlider`
+- [x] Task 3: Add `isHorizontal` parameter and orientation-aware layout to `PitchSlider`
   - File: `Peach/PitchMatching/PitchSlider.swift`
   - Action:
     - Add `var isHorizontal: Bool` property
@@ -100,7 +100,7 @@ Rename `VerticalPitchSlider` to `PitchSlider` and make it orientation-aware: ver
     - `DragGesture` reads `value.location.x` when horizontal, `.y` when vertical
     - Accessibility label: update to mention direction ("left to right" vs "up and down")
 
-- [ ] Task 4: Add `verticalSizeClass` detection to `PitchMatchingScreen`
+- [x] Task 4: Add `verticalSizeClass` detection to `PitchMatchingScreen`
   - File: `Peach/PitchMatching/PitchMatchingScreen.swift`
   - Action:
     - Add `@Environment(\.verticalSizeClass) private var verticalSizeClass`
@@ -108,7 +108,7 @@ Rename `VerticalPitchSlider` to `PitchSlider` and make it orientation-aware: ver
     - Pass `isHorizontal: isCompactHeight` to `PitchSlider`
     - Update `VerticalPitchSlider` reference to `PitchSlider`
 
-- [ ] Task 5: Adjust `PitchMatchingScreen` layout for landscape
+- [x] Task 5: Adjust `PitchMatchingScreen` layout for landscape
   - File: `Peach/PitchMatching/PitchMatchingScreen.swift`
   - Action:
     - Portrait (current): `VStack { HStack(stats, feedback) ; PitchSlider(isHorizontal: false) }`
@@ -116,11 +116,11 @@ Rename `VerticalPitchSlider` to `PitchSlider` and make it orientation-aware: ver
     - The existing HStack with stats (left) and feedback (right) already works for both orientations — no structural change needed there
     - Help text in `helpSections` referencing "up or down" should be updated to mention both directions
 
-- [ ] Task 6: Rename test file and update references
+- [x] Task 6: Rename test file and update references
   - File: `PeachTests/PitchMatching/VerticalPitchSliderTests.swift` → rename to `PitchSliderTests.swift`
   - Action: Rename file. Rename `@Suite("VerticalPitchSlider")` to `@Suite("PitchSlider")`. Replace all `VerticalPitchSlider.` calls with `PitchSlider.`. Update existing test calls to pass `isHorizontal: false` (preserving current vertical behavior tests).
 
-- [ ] Task 7: Add horizontal-axis tests
+- [x] Task 7: Add horizontal-axis tests
   - File: `PeachTests/PitchMatching/PitchSliderTests.swift`
   - Action: Add new test section `// MARK: - Horizontal value Tests` mirroring existing vertical tests:
     - Center drag yields zero: `value(dragPosition: 200, trackLength: 400, isHorizontal: true)` → 0
@@ -134,17 +134,17 @@ Rename `VerticalPitchSlider` to `PitchSlider` and make it orientation-aware: ver
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the app in portrait orientation, when the pitch matching screen is displayed, then the slider is vertical with the thumb moving top (sharper) to bottom (flatter) — identical to current behavior.
-- [ ] AC 2: Given the app in landscape orientation, when the pitch matching screen is displayed, then the slider is horizontal with the thumb moving left (flatter) to right (sharper).
-- [ ] AC 3: Given the app in landscape orientation, when viewing the pitch matching screen, then training stats appear at the top-left and the feedback indicator appears at the top-right, with the horizontal slider filling the space below.
-- [ ] AC 4: Given the slider in horizontal mode, when the user drags to the left edge, then `onValueChange` receives -1.0 (flatter).
-- [ ] AC 5: Given the slider in horizontal mode, when the user drags to the right edge, then `onValueChange` receives +1.0 (sharper).
-- [ ] AC 6: Given the slider in horizontal mode, when the user drags to the center, then `onValueChange` receives 0.0.
-- [ ] AC 7: Given the slider in either orientation, when the user drags beyond the track bounds, then the value clamps to -1.0 or +1.0 respectively.
-- [ ] AC 8: Given the slider in horizontal mode, when `thumbPosition` is computed and then fed back through `value`, then the round-trip produces the original value (within floating point tolerance).
-- [ ] AC 9: Given the type has been renamed, when searching the codebase for `VerticalPitchSlider`, then zero references remain.
-- [ ] AC 10: Given either orientation, when viewing the slider, then the thumb is a circle of ~70pt diameter.
-- [ ] AC 11: Given the slider in horizontal mode, when viewing the range indicator, then it is a horizontal capsule line (height: 2pt) instead of a vertical one.
+- [x] AC 1: Given the app in portrait orientation, when the pitch matching screen is displayed, then the slider is vertical with the thumb moving top (sharper) to bottom (flatter) — identical to current behavior.
+- [x] AC 2: Given the app in landscape orientation, when the pitch matching screen is displayed, then the slider is horizontal with the thumb moving left (flatter) to right (sharper).
+- [x] AC 3: Given the app in landscape orientation, when viewing the pitch matching screen, then training stats appear at the top-left and the feedback indicator appears at the top-right, with the horizontal slider filling the space below.
+- [x] AC 4: Given the slider in horizontal mode, when the user drags to the left edge, then `onValueChange` receives -1.0 (flatter).
+- [x] AC 5: Given the slider in horizontal mode, when the user drags to the right edge, then `onValueChange` receives +1.0 (sharper).
+- [x] AC 6: Given the slider in horizontal mode, when the user drags to the center, then `onValueChange` receives 0.0.
+- [x] AC 7: Given the slider in either orientation, when the user drags beyond the track bounds, then the value clamps to -1.0 or +1.0 respectively.
+- [x] AC 8: Given the slider in horizontal mode, when `thumbPosition` is computed and then fed back through `value`, then the round-trip produces the original value (within floating point tolerance).
+- [x] AC 9: Given the type has been renamed, when searching the codebase for `VerticalPitchSlider`, then zero references remain.
+- [x] AC 10: Given either orientation, when viewing the slider, then the thumb is a circle of ~70pt diameter.
+- [x] AC 11: Given the slider in horizontal mode, when viewing the range indicator, then it is a horizontal capsule line (height: 2pt) instead of a vertical one.
 
 ## Additional Context
 
@@ -164,3 +164,8 @@ None — pure UI change, no new services or models.
 - In vertical mode: bottom = flatter (-1.0), top = sharper (+1.0)
 - The existing portrait layout (`VStack { HStack(stats, feedback) ; slider }`) works for landscape too — the main change is the slider's internal axis, not the screen's top-level structure
 - Help text in the help sheet currently says "drag up or down" — should be updated to reflect both orientations
+
+## Review Notes
+- Adversarial review completed
+- Findings: 7 total, 1 fixed, 6 skipped (pre-existing/by-design/noise)
+- Resolution approach: auto-fix

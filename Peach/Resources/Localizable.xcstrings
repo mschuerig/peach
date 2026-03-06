@@ -1574,12 +1574,12 @@
         }
       }
     },
-    "**Touch** the slider to hear your note, then **drag** up or down to adjust the pitch. When you think you've matched the reference, **release** the slider to lock in your answer.": {
+    "**Touch** the slider to hear your note, then **drag** to adjust the pitch. When you think you've matched the reference, **release** the slider to lock in your answer.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "**Berühre** den Regler, um deinen Ton zu hören, dann **ziehe** nach oben oder unten, um die Tonhöhe anzupassen. Wenn du glaubst, den Referenzton getroffen zu haben, **lasse** den Regler los, um deine Antwort zu bestätigen."
+            "value": "**Berühre** den Regler, um deinen Ton zu hören, dann **ziehe**, um die Tonhöhe anzupassen. Wenn du glaubst, den Referenzton getroffen zu haben, **lasse** den Regler los, um deine Antwort zu bestätigen."
           }
         }
       }
