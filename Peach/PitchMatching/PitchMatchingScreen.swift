@@ -37,33 +37,37 @@ struct PitchMatchingScreen: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            TrainingStatsView(
-                latestValue: pitchMatchingSession.lastResult.map { Cents($0.userCentError.magnitude) },
-                sessionBest: pitchMatchingSession.sessionBestCentError,
-                trend: progressTimeline.trend(for: trainingMode)
-            )
-            .padding(.horizontal)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading) {
+                    TrainingStatsView(
+                        latestValue: pitchMatchingSession.lastResult.map { Cents($0.userCentError.magnitude) },
+                        sessionBest: pitchMatchingSession.sessionBestCentError,
+                        trend: progressTimeline.trend(for: trainingMode)
+                    )
 
-            if pitchMatchingSession.isIntervalMode, let interval = pitchMatchingSession.currentInterval {
-                VStack(spacing: 2) {
-                    Text(interval.displayName)
-                        .font(.title3)
-                    Text(pitchMatchingSession.sessionTuningSystem.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if pitchMatchingSession.isIntervalMode, let interval = pitchMatchingSession.currentInterval {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(interval.displayName)
+                                .font(.title3)
+                            Text(pitchMatchingSession.sessionTuningSystem.displayName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(String(localized: "Target interval: \(interval.displayName), \(pitchMatchingSession.sessionTuningSystem.displayName)"))
+                    }
                 }
-                .padding(.horizontal)
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(localized: "Target interval: \(interval.displayName), \(pitchMatchingSession.sessionTuningSystem.displayName)"))
-            }
 
-            PitchMatchingFeedbackIndicator(
-                centError: pitchMatchingSession.lastResult?.userCentError
-            )
-            .frame(height: Self.feedbackIndicatorHeight)
-            .opacity(pitchMatchingSession.state == .showingFeedback ? 1 : 0)
-            .accessibilityHidden(pitchMatchingSession.state != .showingFeedback)
-            .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: pitchMatchingSession.state == .showingFeedback)
+                Spacer()
+
+                PitchMatchingFeedbackIndicator(
+                    centError: pitchMatchingSession.lastResult?.userCentError
+                )
+                .opacity(pitchMatchingSession.state == .showingFeedback ? 1 : 0)
+                .accessibilityHidden(pitchMatchingSession.state != .showingFeedback)
+                .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: pitchMatchingSession.state == .showingFeedback)
+            }
+            .padding(.horizontal)
 
             VerticalPitchSlider(
                 isActive: pitchMatchingSession.state == .awaitingSliderTouch || pitchMatchingSession.state == .playingTunable,
@@ -146,8 +150,6 @@ struct PitchMatchingScreen: View {
     }
 
     // MARK: - Layout Parameters (extracted for testability)
-
-    static let feedbackIndicatorHeight: CGFloat = 130
 
     static func feedbackAnimation(reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : .easeInOut(duration: 0.2)
