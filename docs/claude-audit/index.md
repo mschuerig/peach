@@ -1,19 +1,30 @@
 ---
 repo: "/Users/michael/Projekte/peach"
-total_commits: 469
-audited_commits: 461
+total_commits: 480
+audited_commits: 472
 detail: "full"
-generated: "2026-03-05T23:29:30.819889+00:00"
+generated: "2026-03-07T00:52:31.898483+00:00"
 ---
 
 # Claude Code Audit Log
 
 Repository: `/Users/michael/Projekte/peach`  
-Total commits: 469  
-Commits with Claude Code sessions: 461
+Total commits: 480  
+Commits with Claude Code sessions: 472
 
 ## Commits
 
+- [89bcbb3024](89bcbb3024.md) — 2026-03-06T21:25 — Implement settings-sound-source-preview: Add preview button to Settings sound picker (1 session, 182 messages)
+- [c5ae1bdda4](c5ae1bdda4.md) — 2026-03-06T20:58 — Create tech-spec: Settings Sound Source Preview Button (2 sessions, 134 messages)
+- [801cc76296](801cc76296.md) — 2026-03-06T20:02 — Implement pitch-comparison-feedback-checkmark-top-right: Replace thumbs icons with checkmark/X and move feedback to top-right (1 session, 123 messages)
+- [2308ec67bd](2308ec67bd.md) — 2026-03-06T19:40 — Create tech-spec: Pitch Comparison Feedback Checkmark/X Icons in Top-Right (2 sessions, 143 messages)
+- [bb02157f1f](bb02157f1f.md) — 2026-03-06T19:12 — Implement orientation-aware-pitch-slider: Rename VerticalPitchSlider to PitchSlider with horizontal/vertical support (1 session, 158 messages)
+- [9ce44fb753](9ce44fb753.md) — 2026-03-06T18:56 — Create tech-spec: Orientation-Aware Pitch Slider (2 sessions, 137 messages)
+- [1cbf33606e](1cbf33606e.md) — 2026-03-06T18:38 — Implement pitch-slider-range-line: Add vertical range indicator to pitch slider (1 session, 89 messages)
+- [426ded5693](426ded5693.md) — 2026-03-06T18:08 — Create tech-spec: Vertical Range Indicator Line for Pitch Slider (2 sessions, 118 messages)
+- [232223f19b](232223f19b.md) — 2026-03-06T17:18 — Implement compact pitch matching feedback layout (1 session, 102 messages)
+- [14eb317169](14eb317169.md) — 2026-03-06T16:53 — Create tech-spec: Compact Pitch Matching Feedback Layout (2 sessions, 113 messages)
+- [5f178714c2](5f178714c2.md) — 2026-03-06T00:30 — Update docs/claude-audit. (1 session, 812 messages)
 - [5a9e548ae8](5a9e548ae8.md) — 2026-03-06T00:21 — Update docs and fix logging from code review findings (1 session, 808 messages)
 - [11772e7e10](11772e7e10.md) — 2026-03-06T00:14 — Extract constants and thread domain types through interfaces (1 session, 711 messages)
 - [1ec8c33e85](1ec8c33e85.md) — 2026-03-05T22:52 — Add lifecycle logging to PitchMatchingSession (1 session, 85 messages)
