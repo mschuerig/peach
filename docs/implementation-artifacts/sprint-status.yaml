@@ -319,4 +319,4 @@ development_status:
 
   # Epic 40: Version Your Data — CSV Export Format Versioning
   epic-40: in-progress
-  40-1-add-csv-format-version-metadata: ready-for-dev
+  40-1-add-csv-format-version-metadata: review

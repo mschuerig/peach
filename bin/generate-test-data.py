@@ -28,6 +28,8 @@ import csv
 import random
 from datetime import datetime, timedelta, timezone
 
+METADATA_LINE = "# peach-export-format:1"
+
 HEADER = [
     "trainingType", "timestamp",
     "referenceNote", "referenceNoteName",
@@ -222,6 +224,7 @@ def main():
     rows = generate_records(modes, args.count)
 
     with open(args.output, "w", newline="") as f:
+        f.write(METADATA_LINE + "\n")
         writer = csv.writer(f)
         writer.writerow(HEADER)
         writer.writerows(rows)

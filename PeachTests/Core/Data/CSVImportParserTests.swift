@@ -8,7 +8,7 @@ struct CSVImportParserTests {
     // MARK: - Test Helpers
 
     private func makeCSV(_ rows: [String]) -> String {
-        ([CSVExportSchema.headerRow] + rows).joined(separator: "\n")
+        ([CSVExportSchema.metadataLine, CSVExportSchema.headerRow] + rows).joined(separator: "\n")
     }
 
     private func fixedDate() -> Date {
@@ -44,6 +44,31 @@ struct CSVImportParserTests {
         #expect(description.contains("referenceNote"))
         #expect(description.contains("abc"))
         #expect(description.contains("not a valid integer"))
+    }
+
+    // MARK: - Version Error Cases
+
+    @Test("missingVersion error provides a description")
+    func missingVersionErrorDescription() async {
+        let error = CSVImportError.missingVersion
+        #expect(error.errorDescription != nil)
+        #expect(!error.errorDescription!.isEmpty)
+    }
+
+    @Test("unsupportedVersion error description contains the version number")
+    func unsupportedVersionErrorDescription() async {
+        let error = CSVImportError.unsupportedVersion(version: 99)
+        let description = error.errorDescription
+        #expect(description != nil)
+        #expect(description!.contains("99"))
+    }
+
+    @Test("invalidFormatMetadata error description contains the malformed line")
+    func invalidFormatMetadataErrorDescription() async {
+        let error = CSVImportError.invalidFormatMetadata(line: "# peach-export-format:abc")
+        let description = error.errorDescription
+        #expect(description != nil)
+        #expect(description!.contains("# peach-export-format:abc"))
     }
 
     // MARK: - Task 2: CSVImportResult
@@ -102,7 +127,7 @@ struct CSVImportParserTests {
     @Test("missing column fails validation")
     func missingColumnFailsValidation() async {
         let incompleteHeader = "trainingType,timestamp,referenceNote"
-        let csv = incompleteHeader + "\n" + validComparisonRow
+        let csv = CSVExportSchema.metadataLine + "\n" + incompleteHeader + "\n" + validComparisonRow
         let result = CSVImportParser.parse(csv)
         #expect(result.errors.contains { error in
             if case .invalidHeader = error { return true }
@@ -115,7 +140,7 @@ struct CSVImportParserTests {
     @Test("wrong column name fails validation")
     func wrongColumnFailsValidation() async {
         let wrongHeader = CSVExportSchema.headerRow.replacingOccurrences(of: "trainingType", with: "type")
-        let csv = wrongHeader + "\n" + validComparisonRow
+        let csv = CSVExportSchema.metadataLine + "\n" + wrongHeader + "\n" + validComparisonRow
         let result = CSVImportParser.parse(csv)
         #expect(result.errors.contains { error in
             if case .invalidHeader = error { return true }
@@ -126,7 +151,7 @@ struct CSVImportParserTests {
     @Test("extra column fails validation")
     func extraColumnFailsValidation() async {
         let extraHeader = CSVExportSchema.headerRow + ",extraColumn"
-        let csv = extraHeader + "\n" + validComparisonRow
+        let csv = CSVExportSchema.metadataLine + "\n" + extraHeader + "\n" + validComparisonRow
         let result = CSVImportParser.parse(csv)
         #expect(result.errors.contains { error in
             if case .invalidHeader = error { return true }
@@ -156,8 +181,9 @@ struct CSVImportParserTests {
 
     @Test("handles Windows-style CRLF line endings")
     func handlesCRLFLineEndings() async {
+        let meta = CSVExportSchema.metadataLine
         let header = CSVExportSchema.headerRow
-        let csv = header + "\r\n" + validComparisonRow + "\r\n" + validPitchMatchingRow
+        let csv = meta + "\r\n" + header + "\r\n" + validComparisonRow + "\r\n" + validPitchMatchingRow
         let result = CSVImportParser.parse(csv)
         #expect(result.pitchComparisons.count == 1)
         #expect(result.pitchMatchings.count == 1)
@@ -285,7 +311,7 @@ struct CSVImportParserTests {
 
     @Test("header-only CSV returns empty result")
     func headerOnlyCSVReturnsEmptyResult() async {
-        let csv = CSVExportSchema.headerRow
+        let csv = CSVExportSchema.metadataLine + "\n" + CSVExportSchema.headerRow
         let result = CSVImportParser.parse(csv)
         #expect(result.pitchComparisons.isEmpty)
         #expect(result.pitchMatchings.isEmpty)
@@ -294,7 +320,7 @@ struct CSVImportParserTests {
 
     @Test("invalid header CSV returns error with no records")
     func invalidHeaderCSVReturnsError() async {
-        let csv = "wrong,headers\ndata,here"
+        let csv = CSVExportSchema.metadataLine + "\nwrong,headers\ndata,here"
         let result = CSVImportParser.parse(csv)
         #expect(result.pitchComparisons.isEmpty)
         #expect(result.pitchMatchings.isEmpty)
@@ -311,12 +337,15 @@ struct CSVImportParserTests {
         #expect(result.errors.count == 1)
     }
 
-    @Test("empty string input returns empty result with no errors")
-    func emptyStringReturnsEmptyResult() async {
+    @Test("empty string input returns missingVersion error")
+    func emptyStringReturnsMissingVersionError() async {
         let result = CSVImportParser.parse("")
         #expect(result.pitchComparisons.isEmpty)
         #expect(result.pitchMatchings.isEmpty)
-        #expect(!result.errors.isEmpty)
+        #expect(result.errors.count == 1)
+        if case .missingVersion = result.errors.first {} else {
+            Issue.record("Expected missingVersion error")
+        }
     }
 
     @Test("MIDI note 0 is valid")
@@ -416,5 +445,39 @@ struct CSVImportParserTests {
         let result = CSVImportParser.parse(csv)
         #expect(result.pitchComparisons.count == 1)
         #expect(result.pitchComparisons[0].tuningSystem == "justIntonation")
+    }
+
+    // MARK: - Orchestrator: Version Dispatch
+
+    @Test("missing version metadata line is rejected")
+    func missingVersionRejected() async {
+        let csv = CSVExportSchema.headerRow + "\n" + validComparisonRow
+        let result = CSVImportParser.parse(csv)
+        #expect(result.pitchComparisons.isEmpty)
+        #expect(result.errors.count == 1)
+        if case .missingVersion = result.errors.first {} else {
+            Issue.record("Expected missingVersion error")
+        }
+    }
+
+    @Test("unknown version number is rejected")
+    func unknownVersionRejected() async {
+        let csv = "# peach-export-format:99\n" + CSVExportSchema.headerRow + "\n" + validComparisonRow
+        let result = CSVImportParser.parse(csv)
+        #expect(result.pitchComparisons.isEmpty)
+        #expect(result.errors.count == 1)
+        if case .unsupportedVersion(let version) = result.errors.first {
+            #expect(version == 99)
+        } else {
+            Issue.record("Expected unsupportedVersion error")
+        }
+    }
+
+    @Test("version 1 dispatches to v1 parser")
+    func version1DispatchesToV1Parser() async {
+        let csv = makeCSV([validComparisonRow])
+        let result = CSVImportParser.parse(csv)
+        #expect(result.pitchComparisons.count == 1)
+        #expect(result.errors.isEmpty)
     }
 }

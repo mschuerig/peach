@@ -47,12 +47,13 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 3)
-        #expect(lines[0] == CSVExportSchema.headerRow)
+        #expect(lines.count == 4)
+        #expect(lines[0] == CSVExportSchema.metadataLine)
+        #expect(lines[1] == CSVExportSchema.headerRow)
         #expect(!csv.hasSuffix("\n"))
 
         // Verify pitch matching row (earlier timestamp — first data row)
-        let pmFields = lines[1].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        let pmFields = lines[2].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
         #expect(pmFields[0] == "pitchMatching")
         #expect(pmFields[2] == "69")
         #expect(pmFields[3] == "A4")
@@ -60,7 +61,7 @@ struct TrainingDataExporterTests {
         #expect(pmFields[11] == "3.2")
 
         // Verify comparison row (later timestamp — second data row)
-        let compFields = lines[2].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        let compFields = lines[3].split(separator: ",", omittingEmptySubsequences: false).map(String.init)
         #expect(compFields[0] == "pitchComparison")
         #expect(compFields[2] == "60")
         #expect(compFields[3] == "C4")
@@ -83,9 +84,10 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 2)
-        #expect(lines[0] == CSVExportSchema.headerRow)
-        #expect(lines[1].hasPrefix("pitchComparison"))
+        #expect(lines.count == 3)
+        #expect(lines[0] == CSVExportSchema.metadataLine)
+        #expect(lines[1] == CSVExportSchema.headerRow)
+        #expect(lines[2].hasPrefix("pitchComparison"))
     }
 
     // MARK: - Pitch Matching Only Tests
@@ -103,20 +105,21 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 2)
-        #expect(lines[0] == CSVExportSchema.headerRow)
-        #expect(lines[1].hasPrefix("pitchMatching"))
+        #expect(lines.count == 3)
+        #expect(lines[0] == CSVExportSchema.metadataLine)
+        #expect(lines[1] == CSVExportSchema.headerRow)
+        #expect(lines[2].hasPrefix("pitchMatching"))
     }
 
     // MARK: - Empty Store Tests
 
-    @Test("export with no records returns header row only")
+    @Test("export with no records returns metadata line and header row")
     func exportEmptyStore() async throws {
         let store = try makeStore()
 
         let csv = try TrainingDataExporter.export(from: store)
 
-        #expect(csv == CSVExportSchema.headerRow)
+        #expect(csv == CSVExportSchema.metadataLine + "\n" + CSVExportSchema.headerRow)
     }
 
     // MARK: - Timestamp Ordering Tests
@@ -150,11 +153,11 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 5)
-        #expect(lines[1].hasPrefix("pitchMatching"))
-        #expect(lines[2].hasPrefix("pitchComparison"))
-        #expect(lines[3].hasPrefix("pitchMatching"))
-        #expect(lines[4].hasPrefix("pitchComparison"))
+        #expect(lines.count == 6)
+        #expect(lines[2].hasPrefix("pitchMatching"))
+        #expect(lines[3].hasPrefix("pitchComparison"))
+        #expect(lines[4].hasPrefix("pitchMatching"))
+        #expect(lines[5].hasPrefix("pitchComparison"))
     }
 
     // MARK: - Stable Sort Tests
@@ -178,15 +181,15 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 3)
-        #expect(lines[1].hasPrefix("pitchComparison"))
-        #expect(lines[2].hasPrefix("pitchMatching"))
+        #expect(lines.count == 4)
+        #expect(lines[2].hasPrefix("pitchComparison"))
+        #expect(lines[3].hasPrefix("pitchMatching"))
     }
 
     // MARK: - Header Row Tests
 
-    @Test("CSV output starts with the correct header row")
-    func csvStartsWithHeader() async throws {
+    @Test("CSV output starts with metadata line followed by header row")
+    func csvStartsWithMetadataAndHeader() async throws {
         let store = try makeStore()
 
         let record = PitchComparisonRecord(
@@ -199,13 +202,14 @@ struct TrainingDataExporterTests {
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
         #expect(!lines.isEmpty)
-        #expect(lines[0] == CSVExportSchema.headerRow)
+        #expect(lines[0] == CSVExportSchema.metadataLine)
+        #expect(lines[1] == CSVExportSchema.headerRow)
     }
 
     // MARK: - Row Count Tests
 
-    @Test("row count equals record count plus one for header")
-    func rowCountEqualsRecordsPlusHeader() async throws {
+    @Test("row count equals record count plus metadata and header")
+    func rowCountEqualsRecordsPlusMetadataAndHeader() async throws {
         let store = try makeStore()
 
         let comp = PitchComparisonRecord(
@@ -228,6 +232,45 @@ struct TrainingDataExporterTests {
         let csv = try TrainingDataExporter.export(from: store)
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        #expect(lines.count == 4)
+        #expect(lines.count == 5)
+    }
+
+    // MARK: - Round-Trip Test
+
+    @Test("exported CSV can be imported back and produces matching records")
+    func roundTripExportImport() async throws {
+        let store = try makeStore()
+
+        let comparison = PitchComparisonRecord(
+            referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
+            interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
+        )
+        let pitchMatching = PitchMatchingRecord(
+            referenceNote: 69, targetNote: 72, initialCentOffset: 25.0, userCentError: 3.2,
+            interval: 3, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 1)
+        )
+        try store.save(comparison)
+        try store.save(pitchMatching)
+
+        let csv = try TrainingDataExporter.export(from: store)
+        let result = CSVImportParser.parse(csv)
+
+        #expect(result.errors.isEmpty)
+        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchMatchings.count == 1)
+
+        let importedComp = result.pitchComparisons[0]
+        #expect(importedComp.referenceNote == 60)
+        #expect(importedComp.targetNote == 64)
+        #expect(importedComp.centOffset == 15.5)
+        #expect(importedComp.isCorrect == true)
+        #expect(importedComp.interval == 4)
+        #expect(importedComp.tuningSystem == "equalTemperament")
+
+        let importedPM = result.pitchMatchings[0]
+        #expect(importedPM.referenceNote == 69)
+        #expect(importedPM.targetNote == 72)
+        #expect(importedPM.initialCentOffset == 25.0)
+        #expect(importedPM.userCentError == 3.2)
     }
 }

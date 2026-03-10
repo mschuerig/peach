@@ -22,7 +22,8 @@ final class TrainingDataTransferService {
     func refreshExport() {
         do {
             let csv = try TrainingDataExporter.export(from: dataStore)
-            exportCSV = csv == CSVExportSchema.headerRow ? nil : csv
+            let emptyExport = CSVExportSchema.metadataLine + "\n" + CSVExportSchema.headerRow
+            exportCSV = csv == emptyExport ? nil : csv
             exportError = nil
         } catch {
             exportCSV = nil

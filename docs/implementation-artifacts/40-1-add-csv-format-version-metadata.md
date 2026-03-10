@@ -1,6 +1,6 @@
 # Story 40.1: Add CSV Format Version Metadata
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -23,77 +23,77 @@ so that future versions of the app can correctly interpret and import my data ev
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add format version constants to CSVExportSchema (AC: #1, #2)
-  - [ ] Add `static let formatVersion = 1` to `CSVExportSchema`
-  - [ ] Add `static let metadataPrefix = "# peach-export-format:"` for parsing
-  - [ ] Add `static let metadataLine` derived from prefix + formatVersion
-  - [ ] Write tests: metadata line format, prefix derivation
+- [x] Task 1: Add format version constants to CSVExportSchema (AC: #1, #2)
+  - [x] Add `static let formatVersion = 1` to `CSVExportSchema`
+  - [x] Add `static let metadataPrefix = "# peach-export-format:"` for parsing
+  - [x] Add `static let metadataLine` derived from prefix + formatVersion
+  - [x] Write tests: metadata line format, prefix derivation
 
-- [ ] Task 2: Add new error cases to CSVImportError (AC: #4, #5)
-  - [ ] Add `case missingVersion` — "This file does not contain format version metadata. It may have been created by an older version of Peach. Please re-export your data with the current version."
-  - [ ] Add `case unsupportedVersion(version: Int)` — "This file uses export format version {version}, which is not supported by this version of Peach. Please update the app to import this file."
-  - [ ] Add `case invalidFormatMetadata(line: String)` — "The file contains an unreadable format metadata line: '{line}'."
-  - [ ] Add German translations for all three error messages
-  - [ ] Write tests: all three error descriptions contain their respective dynamic values
+- [x] Task 2: Add new error cases to CSVImportError (AC: #4, #5)
+  - [x] Add `case missingVersion` — "This file does not contain format version metadata. It may have been created by an older version of Peach. Please re-export your data with the current version."
+  - [x] Add `case unsupportedVersion(version: Int)` — "This file uses export format version {version}, which is not supported by this version of Peach. Please update the app to import this file."
+  - [x] Add `case invalidFormatMetadata(line: String)` — "The file contains an unreadable format metadata line: '{line}'."
+  - [x] Add German translations for all three error messages
+  - [x] Write tests: all three error descriptions contain their respective dynamic values
 
-- [ ] Task 3: Create CSVFormatVersionReader (AC: #3, #4)
-  - [ ] Create new file `Peach/Core/Data/CSVFormatVersionReader.swift`
-  - [ ] `nonisolated enum CSVFormatVersionReader` with a `VersionResult` type and a `static func readVersion(from csvContent: String)` method
-  - [ ] `VersionResult` returns either `.success(version: Int, remainingLines: [String])` or `.error(CSVImportError)`
-  - [ ] Move `splitIntoLines(_:)` from `CSVImportParser` into this type (it's the line-splitting consumer at this level)
-  - [ ] Logic: split content into lines → check first line starts with `CSVExportSchema.metadataPrefix` → extract substring after prefix → parse as `Int` → return version + remaining lines (from line 2 onward, including header)
-  - [ ] If first line does not start with prefix → return `.error(.missingVersion)`
-  - [ ] If version is not a valid integer → return `.error(.invalidFormatMetadata(line:))`
-  - [ ] Write tests in `CSVFormatVersionReaderTests.swift`: valid version line, missing version, malformed version, empty input, version with data lines preserved
+- [x] Task 3: Create CSVFormatVersionReader (AC: #3, #4)
+  - [x] Create new file `Peach/Core/Data/CSVFormatVersionReader.swift`
+  - [x] `nonisolated enum CSVFormatVersionReader` with a `VersionResult` type and a `static func readVersion(from csvContent: String)` method
+  - [x] `VersionResult` returns either `.success(version: Int, remainingLines: [String])` or `.error(CSVImportError)`
+  - [x] Move `splitIntoLines(_:)` from `CSVImportParser` into this type (it's the line-splitting consumer at this level)
+  - [x] Logic: split content into lines → check first line starts with `CSVExportSchema.metadataPrefix` → extract substring after prefix → parse as `Int` → return version + remaining lines (from line 2 onward, including header)
+  - [x] If first line does not start with prefix → return `.error(.missingVersion)`
+  - [x] If version is not a valid integer → return `.error(.invalidFormatMetadata(line:))`
+  - [x] Write tests in `CSVFormatVersionReaderTests.swift`: valid version line, missing version, malformed version, empty input, version with data lines preserved
 
-- [ ] Task 4: Create CSVVersionedParser protocol (AC: #6, #7)
-  - [ ] Create new file `Peach/Core/Data/CSVVersionedParser.swift`
-  - [ ] Protocol with two requirements:
+- [x] Task 4: Create CSVVersionedParser protocol (AC: #6, #7)
+  - [x] Create new file `Peach/Core/Data/CSVVersionedParser.swift`
+  - [x] Protocol with two requirements:
     ```swift
     nonisolated protocol CSVVersionedParser {
         var supportedVersion: Int { get }
         func parse(lines: [String]) -> CSVImportParser.ImportResult
     }
     ```
-  - [ ] `lines` parameter receives everything after the metadata line (i.e., header + data rows)
-  - [ ] No tests needed for the protocol itself
+  - [x] `lines` parameter receives everything after the metadata line (i.e., header + data rows)
+  - [x] No tests needed for the protocol itself
 
-- [ ] Task 5: Extract CSVImportParserV1 from current CSVImportParser (AC: #6, #8)
-  - [ ] Create new file `Peach/Core/Data/CSVImportParserV1.swift`
-  - [ ] `nonisolated struct CSVImportParserV1: CSVVersionedParser` with `supportedVersion = 1`
-  - [ ] Move all current parsing logic from `CSVImportParser` into this struct: `validateHeader`, `parseCSVLine`, `parseRow`, `parseISO8601`, interval reverse lookup, `RowResult` enum
-  - [ ] The `parse(lines:)` method receives pre-split lines (header + data). First line is the header — validate it. Remaining lines are data rows — parse each one. Return `ImportResult`
-  - [ ] `splitIntoLines` does NOT move here (it moved to `CSVFormatVersionReader` in Task 3)
-  - [ ] Write tests in `CSVImportParserV1Tests.swift` — port the subset of current `CSVImportParserTests` that test header validation and row parsing (these now operate on pre-split line arrays rather than full CSV strings)
+- [x] Task 5: Extract CSVImportParserV1 from current CSVImportParser (AC: #6, #8)
+  - [x] Create new file `Peach/Core/Data/CSVImportParserV1.swift`
+  - [x] `nonisolated struct CSVImportParserV1: CSVVersionedParser` with `supportedVersion = 1`
+  - [x] Move all current parsing logic from `CSVImportParser` into this struct: `validateHeader`, `parseCSVLine`, `parseRow`, `parseISO8601`, interval reverse lookup, `RowResult` enum
+  - [x] The `parse(lines:)` method receives pre-split lines (header + data). First line is the header — validate it. Remaining lines are data rows — parse each one. Return `ImportResult`
+  - [x] `splitIntoLines` does NOT move here (it moved to `CSVFormatVersionReader` in Task 3)
+  - [x] Write tests in `CSVImportParserV1Tests.swift` — port the subset of current `CSVImportParserTests` that test header validation and row parsing (these now operate on pre-split line arrays rather than full CSV strings)
 
-- [ ] Task 6: Refactor CSVImportParser into thin orchestrator (AC: #3, #5, #6, #7)
-  - [ ] Gut `CSVImportParser.swift` — remove all parsing logic (now in V1 parser)
-  - [ ] Keep: `ImportResult` struct definition (public API stays here)
-  - [ ] Add `private static let parsers: [any CSVVersionedParser] = [CSVImportParserV1()]`
-  - [ ] Rewrite `parse(_:)`:
+- [x] Task 6: Refactor CSVImportParser into thin orchestrator (AC: #3, #5, #6, #7)
+  - [x] Gut `CSVImportParser.swift` — remove all parsing logic (now in V1 parser)
+  - [x] Keep: `ImportResult` struct definition (public API stays here)
+  - [x] Add `private static let parsers: [any CSVVersionedParser] = [CSVImportParserV1()]`
+  - [x] Rewrite `parse(_:)`:
     1. Call `CSVFormatVersionReader.readVersion(from: csvContent)`
     2. On error → return `ImportResult(errors: [error])`
     3. On success → find first parser where `supportedVersion == version`
     4. If no parser found → return `ImportResult(errors: [.unsupportedVersion(version:)])`
     5. Delegate to matched parser's `parse(lines:)`
-  - [ ] Update `CSVImportParserTests.swift`: prepend `# peach-export-format:1\n` to all existing test CSV strings (they now go through the full orchestrator pipeline). Add new tests: missing version rejected, unknown version rejected, version dispatch works
+  - [x] Update `CSVImportParserTests.swift`: prepend `# peach-export-format:1\n` to all existing test CSV strings (they now go through the full orchestrator pipeline). Add new tests: missing version rejected, unknown version rejected, version dispatch works
 
-- [ ] Task 7: Update TrainingDataExporter to prepend metadata line (AC: #1, #2)
-  - [ ] Prepend `CSVExportSchema.metadataLine + "\n"` before the header row in `export(from:)`
-  - [ ] Empty-store case: return `metadataLine + "\n" + headerRow` (not just `headerRow`)
-  - [ ] Update ALL existing exporter tests — metadata line shifts every line index by +1 (see Exporter Test Update Guide below)
-  - [ ] Add round-trip test: export records → `CSVImportParser.parse()` the output → verify parsed records match originals
+- [x] Task 7: Update TrainingDataExporter to prepend metadata line (AC: #1, #2)
+  - [x] Prepend `CSVExportSchema.metadataLine + "\n"` before the header row in `export(from:)`
+  - [x] Empty-store case: return `metadataLine + "\n" + headerRow` (not just `headerRow`)
+  - [x] Update ALL existing exporter tests — metadata line shifts every line index by +1 (see Exporter Test Update Guide below)
+  - [x] Add round-trip test: export records → `CSVImportParser.parse()` the output → verify parsed records match originals
 
-- [ ] Task 8: Update test data generator script (AC: #2)
-  - [ ] In `bin/generate-test-data.py`, write the metadata line `# peach-export-format:1` as the first line of the output file, before the CSV header
-  - [ ] The `METADATA_LINE` constant should be defined near the existing `HEADER` constant
-  - [ ] Write the metadata line directly with `f.write()` before `csv.writer` takes over (the `#` line is not a CSV row, so it bypasses the csv writer)
-  - [ ] Verify generated file imports successfully in the app
+- [x] Task 8: Update test data generator script (AC: #2)
+  - [x] In `bin/generate-test-data.py`, write the metadata line `# peach-export-format:1` as the first line of the output file, before the CSV header
+  - [x] The `METADATA_LINE` constant should be defined near the existing `HEADER` constant
+  - [x] Write the metadata line directly with `f.write()` before `csv.writer` takes over (the `#` line is not a CSV row, so it bypasses the csv writer)
+  - [x] Verify generated file imports successfully in the app
 
-- [ ] Task 9: Verify no UI changes needed (AC: #4, #5)
-  - [ ] Confirm the existing import error alert in `SettingsScreen` displays all three new error messages correctly
-  - [ ] The existing path calls `.errorDescription` on `CSVImportError` — new cases flow through automatically
-  - [ ] No code changes needed in UI layer
+- [x] Task 9: Verify no UI changes needed (AC: #4, #5)
+  - [x] Confirm the existing import error alert in `SettingsScreen` displays all three new error messages correctly
+  - [x] The existing path calls `.errorDescription` on `CSVImportError` — new cases flow through automatically
+  - [x] No code changes needed in UI layer
 
 ## Dev Notes
 
@@ -224,8 +224,46 @@ All existing `CSVImportParserTests` construct CSV strings via the `makeCSV()` he
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+- Fixed `CSVVersionedParser` Sendable conformance: protocol needed `Sendable` constraint for `nonisolated` static parser array
+- Fixed `TrainingDataTransferService.refreshExport()`: empty-export comparison needed updating from `headerRow` to `metadataLine + "\n" + headerRow`
+- Error description tests: adjusted `missingVersion` test to be language-independent (simulator may run in German locale)
 
 ### Completion Notes List
 
+- Task 1: Added `formatVersion`, `metadataPrefix`, `metadataLine` constants to `CSVExportSchema` with 3 tests
+- Task 2: Added `missingVersion`, `unsupportedVersion(version:)`, `invalidFormatMetadata(line:)` to `CSVImportError` with `String(localized:)` for German translations. Added 3 error description tests
+- Task 3: Created `CSVFormatVersionReader` with `VersionResult` enum and `splitIntoLines` (moved from `CSVImportParser`). 8 tests covering valid/missing/malformed versions, CRLF, empty input
+- Task 4: Created `CSVVersionedParser` protocol with `Sendable` conformance
+- Task 5: Created `CSVImportParserV1` struct containing all extracted parsing logic. 7 unit tests operating on pre-split line arrays
+- Task 6: Refactored `CSVImportParser` to thin orchestrator (~30 lines). Updated all `CSVImportParserTests` to prepend version metadata. Added 3 orchestrator tests (missing version, unknown version, v1 dispatch)
+- Task 7: Updated `TrainingDataExporter` to prepend metadata line. Updated all 8 exporter tests for shifted indices. Added round-trip export→import test. Fixed `TrainingDataTransferService.refreshExport()` empty-export check
+- Task 8: Updated `bin/generate-test-data.py` with `METADATA_LINE` constant and `f.write()` before CSV writer
+- Task 9: Verified UI layer needs no changes — `errorDescription` path handles new cases automatically
+
 ### File List
+
+- `Peach/Core/Data/CSVExportSchema.swift` — Modified: added format version constants
+- `Peach/Core/Data/CSVImportError.swift` — Modified: added 3 new localized error cases
+- `Peach/Core/Data/CSVFormatVersionReader.swift` — **Created**: version reader with `splitIntoLines`
+- `Peach/Core/Data/CSVVersionedParser.swift` — **Created**: protocol definition
+- `Peach/Core/Data/CSVImportParserV1.swift` — **Created**: V1 parsing logic extracted from CSVImportParser
+- `Peach/Core/Data/CSVImportParser.swift` — Modified: refactored to thin orchestrator
+- `Peach/Core/Data/TrainingDataExporter.swift` — Modified: prepend metadata line
+- `Peach/Core/Data/TrainingDataTransferService.swift` — Modified: updated empty-export check
+- `Peach/Resources/Localizable.xcstrings` — Modified: German translations for 3 error messages
+- `PeachTests/Core/Data/CSVExportSchemaTests.swift` — Modified: added 3 format version tests
+- `PeachTests/Core/Data/CSVFormatVersionReaderTests.swift` — **Created**: 8 version reader tests
+- `PeachTests/Core/Data/CSVImportParserV1Tests.swift` — **Created**: 7 V1 parser unit tests
+- `PeachTests/Core/Data/CSVImportParserTests.swift` — Modified: updated for versioned pipeline, added 3 orchestrator tests
+- `PeachTests/Core/Data/TrainingDataExporterTests.swift` — Modified: updated all indices, added round-trip test
+- `bin/generate-test-data.py` — Modified: prepend metadata line
+- `docs/implementation-artifacts/sprint-status.yaml` — Modified: story status tracking
+- `docs/implementation-artifacts/40-1-add-csv-format-version-metadata.md` — Modified: task checkboxes, Dev Agent Record, status
+
+## Change Log
+
+- 2026-03-10: Implemented CSV format version metadata with versioned import architecture (chain of responsibility). Added `CSVFormatVersionReader`, `CSVVersionedParser` protocol, `CSVImportParserV1`. Refactored `CSVImportParser` to thin orchestrator. Updated exporter, import tests, and test data generator. 1000 tests pass, 0 regressions.

@@ -1,5 +1,11 @@
 nonisolated enum CSVExportSchema {
 
+    // MARK: - Format Version
+
+    static let formatVersion = 1
+    static let metadataPrefix = "# peach-export-format:"
+    static let metadataLine = metadataPrefix + "\(formatVersion)"
+
     // MARK: - Column Names
 
     static let columnTrainingType = "trainingType"

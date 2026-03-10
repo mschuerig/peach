@@ -17,12 +17,12 @@ enum TrainingDataExporter {
         }
 
         guard !merged.isEmpty else {
-            return CSVExportSchema.headerRow
+            return CSVExportSchema.metadataLine + "\n" + CSVExportSchema.headerRow
         }
 
         merged.sort { $0.timestamp < $1.timestamp }
 
         let rows = merged.map(\.row)
-        return CSVExportSchema.headerRow + "\n" + rows.joined(separator: "\n")
+        return CSVExportSchema.metadataLine + "\n" + CSVExportSchema.headerRow + "\n" + rows.joined(separator: "\n")
     }
 }

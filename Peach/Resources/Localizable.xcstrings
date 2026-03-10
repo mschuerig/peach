@@ -1616,6 +1616,17 @@
         }
       }
     },
+    "The file contains an unreadable format metadata line: '%@'." : {
+      "comment" : "Error when the format metadata line in a CSV file cannot be parsed",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei enthält eine nicht lesbare Format-Metadatenzeile: '%@'."
+          }
+        }
+      }
+    },
     "The file contains no valid training data." : {
       "localizations" : {
         "de" : {
@@ -1643,6 +1654,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dasselbe Prinzip, aber mit musikalischen Intervallen zwischen den Tönen."
+          }
+        }
+      }
+    },
+    "This file does not contain format version metadata. It may have been created by an older version of Peach. Please re-export your data with the current version." : {
+      "comment" : "Error when importing a CSV file that lacks the format version metadata line",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Datei enthält keine Formatversions-Metadaten. Sie wurde möglicherweise mit einer älteren Version von Peach erstellt. Bitte exportieren Sie Ihre Daten erneut mit der aktuellen Version."
+          }
+        }
+      }
+    },
+    "This file uses export format version %lld, which is not supported by this version of Peach. Please update the app to import this file." : {
+      "comment" : "Error when importing a CSV file with an unrecognized format version",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Datei verwendet das Exportformat Version %lld, das von dieser Version von Peach nicht unterstützt wird. Bitte aktualisieren Sie die App, um diese Datei zu importieren."
           }
         }
       }

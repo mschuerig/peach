@@ -71,6 +71,23 @@ struct CSVExportSchemaTests {
         #expect(columns.contains("userCentError"))
     }
 
+    // MARK: - Format Version Tests
+
+    @Test("formatVersion is 1")
+    func formatVersionIsOne() async {
+        #expect(CSVExportSchema.formatVersion == 1)
+    }
+
+    @Test("metadataPrefix is '# peach-export-format:'")
+    func metadataPrefixValue() async {
+        #expect(CSVExportSchema.metadataPrefix == "# peach-export-format:")
+    }
+
+    @Test("metadataLine combines prefix and version")
+    func metadataLineDerived() async {
+        #expect(CSVExportSchema.metadataLine == "# peach-export-format:1")
+    }
+
     // MARK: - Extensibility Tests (Task 3.8)
 
     @Test("adding a column after existing ones doesn't break header order")
