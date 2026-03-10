@@ -318,5 +318,5 @@ development_status:
   39-1-app-icon-redesign: ready-for-dev
 
   # Epic 40: Version Your Data — CSV Export Format Versioning
-  epic-40: in-progress
-  40-1-add-csv-format-version-metadata: review
+  epic-40: done
+  40-1-add-csv-format-version-metadata: done

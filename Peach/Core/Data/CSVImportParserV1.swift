@@ -14,10 +14,6 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
         return map
     }()
 
-    private static func intervalRawValue(from abbreviation: String) -> Int? {
-        abbreviationToRawValue[abbreviation]
-    }
-
     // MARK: - Parse
 
     func parse(lines: [String]) -> CSVImportParser.ImportResult {
@@ -163,7 +159,7 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
             return .error(.invalidRowData(row: rowNumber, column: "targetNote", value: targetNoteStr, reason: "must be an integer 0-127"))
         }
 
-        guard let intervalRaw = Self.intervalRawValue(from: intervalStr) else {
+        guard let intervalRaw = Self.abbreviationToRawValue[intervalStr] else {
             return .error(.invalidRowData(row: rowNumber, column: "interval", value: intervalStr, reason: "not a valid interval abbreviation"))
         }
 

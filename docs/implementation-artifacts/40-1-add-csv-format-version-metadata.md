@@ -1,6 +1,6 @@
 # Story 40.1: Add CSV Format Version Metadata
 
-Status: review
+Status: done
 
 ## Story
 
@@ -246,6 +246,7 @@ Claude Opus 4.6
 
 ### File List
 
+- `Peach.xcodeproj/project.pbxproj` — Modified: added 3 new source files to Xcode project
 - `Peach/Core/Data/CSVExportSchema.swift` — Modified: added format version constants
 - `Peach/Core/Data/CSVImportError.swift` — Modified: added 3 new localized error cases
 - `Peach/Core/Data/CSVFormatVersionReader.swift` — **Created**: version reader with `splitIntoLines`
@@ -267,3 +268,4 @@ Claude Opus 4.6
 ## Change Log
 
 - 2026-03-10: Implemented CSV format version metadata with versioned import architecture (chain of responsibility). Added `CSVFormatVersionReader`, `CSVVersionedParser` protocol, `CSVImportParserV1`. Refactored `CSVImportParser` to thin orchestrator. Updated exporter, import tests, and test data generator. 1000 tests pass, 0 regressions.
+- 2026-03-10: Code review fixes — made `splitIntoLines` private, renamed `VersionResult.error` to `.failure` for Swift convention, inlined `intervalRawValue(from:)` wrapper, added `project.pbxproj` to File List. 1000 tests pass.

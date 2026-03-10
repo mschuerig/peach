@@ -2,24 +2,24 @@ nonisolated enum CSVFormatVersionReader {
 
     enum VersionResult {
         case success(version: Int, remainingLines: [String])
-        case error(CSVImportError)
+        case failure(CSVImportError)
     }
 
     static func readVersion(from csvContent: String) -> VersionResult {
         let lines = splitIntoLines(csvContent)
 
         guard let firstLine = lines.first, !firstLine.isEmpty else {
-            return .error(.missingVersion)
+            return .failure(.missingVersion)
         }
 
         guard firstLine.hasPrefix(CSVExportSchema.metadataPrefix) else {
-            return .error(.missingVersion)
+            return .failure(.missingVersion)
         }
 
         let versionString = String(firstLine.dropFirst(CSVExportSchema.metadataPrefix.count))
 
         guard let version = Int(versionString) else {
-            return .error(.invalidFormatMetadata(line: firstLine))
+            return .failure(.invalidFormatMetadata(line: firstLine))
         }
 
         let remainingLines = Array(lines.dropFirst())
@@ -28,7 +28,7 @@ nonisolated enum CSVFormatVersionReader {
 
     // MARK: - Line Splitting (Handles Quoted Newlines)
 
-    static func splitIntoLines(_ content: String) -> [String] {
+    private static func splitIntoLines(_ content: String) -> [String] {
         var lines: [String] = []
         var current = ""
         var inQuotes = false

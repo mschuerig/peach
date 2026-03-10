@@ -14,7 +14,7 @@ nonisolated enum CSVImportParser {
         let versionResult = CSVFormatVersionReader.readVersion(from: csvContent)
 
         switch versionResult {
-        case .error(let error):
+        case .failure(let error):
             return ImportResult(pitchComparisons: [], pitchMatchings: [], errors: [error])
 
         case .success(let version, let remainingLines):

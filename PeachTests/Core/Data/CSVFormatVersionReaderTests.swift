@@ -14,7 +14,7 @@ struct CSVFormatVersionReaderTests {
         case .success(let version, let remainingLines):
             #expect(version == 1)
             #expect(remainingLines == ["header", "data"])
-        case .error:
+        case .failure:
             Issue.record("Expected success but got error")
         }
     }
@@ -28,7 +28,7 @@ struct CSVFormatVersionReaderTests {
         case .success(let version, let remainingLines):
             #expect(version == 42)
             #expect(remainingLines.count == 2)
-        case .error:
+        case .failure:
             Issue.record("Expected success but got error")
         }
     }
@@ -41,7 +41,7 @@ struct CSVFormatVersionReaderTests {
         switch result {
         case .success:
             Issue.record("Expected error but got success")
-        case .error(let error):
+        case .failure(let error):
             if case .missingVersion = error {
                 // Expected
             } else {
@@ -58,7 +58,7 @@ struct CSVFormatVersionReaderTests {
         switch result {
         case .success:
             Issue.record("Expected error but got success")
-        case .error(let error):
+        case .failure(let error):
             if case .invalidFormatMetadata(let line) = error {
                 #expect(line == "# peach-export-format:abc")
             } else {
@@ -74,7 +74,7 @@ struct CSVFormatVersionReaderTests {
         switch result {
         case .success:
             Issue.record("Expected error but got success")
-        case .error(let error):
+        case .failure(let error):
             if case .missingVersion = error {
                 // Expected
             } else {
@@ -96,7 +96,7 @@ struct CSVFormatVersionReaderTests {
             #expect(remainingLines.count == 2)
             #expect(remainingLines[0] == header)
             #expect(remainingLines[1] == dataRow)
-        case .error:
+        case .failure:
             Issue.record("Expected success but got error")
         }
     }
@@ -110,7 +110,7 @@ struct CSVFormatVersionReaderTests {
         case .success(let version, let remainingLines):
             #expect(version == 1)
             #expect(remainingLines == ["header", "data"])
-        case .error:
+        case .failure:
             Issue.record("Expected success but got error")
         }
     }
@@ -123,7 +123,7 @@ struct CSVFormatVersionReaderTests {
         switch result {
         case .success:
             Issue.record("Expected error but got success")
-        case .error(let error):
+        case .failure(let error):
             if case .invalidFormatMetadata = error {
                 // Expected
             } else {
