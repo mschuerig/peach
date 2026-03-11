@@ -73,31 +73,16 @@ struct ProgressChartView: View {
 
     // MARK: - Chart Layout
 
+    @ViewBuilder
     private func chartLayout(buckets: [TimeBucket]) -> some View {
         let yDomain = Self.yDomain(for: buckets)
         let needsScrolling = buckets.count > Self.visibleBucketCount
 
-        return HStack(spacing: 0) {
-            yAxisChart(yDomain: yDomain)
-                .frame(width: Self.yAxisWidth)
-
-            if needsScrolling {
-                scrollableChartBody(buckets: buckets, yDomain: yDomain)
-            } else {
-                staticChartBody(buckets: buckets, yDomain: yDomain)
-            }
+        if needsScrolling {
+            scrollableChartBody(buckets: buckets, yDomain: yDomain)
+        } else {
+            staticChartBody(buckets: buckets, yDomain: yDomain)
         }
-    }
-
-    private func yAxisChart(yDomain: ClosedRange<Double>) -> some View {
-        Chart {
-            RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
-                .foregroundStyle(.green.opacity(0.6))
-        }
-        .chartXAxis(.hidden)
-        .chartYScale(domain: yDomain)
-        .chartYAxisLabel(config.unitLabel)
     }
 
     private func scrollableChartBody(buckets: [TimeBucket], yDomain: ClosedRange<Double>) -> some View {
@@ -108,8 +93,9 @@ struct ProgressChartView: View {
             domainLength: domainLength,
             buffer: 5
         )
+        let separatorData = Self.zoneSeparatorData(for: buckets)
 
-        return chartContent(buckets: visibleSlice, yDomain: yDomain)
+        return chartContent(buckets: visibleSlice, yDomain: yDomain, separatorData: separatorData)
             .chartScrollableAxes(.horizontal)
             .chartXVisibleDomain(length: domainLength)
             .chartScrollPosition(x: $scrollPosition)
@@ -122,16 +108,33 @@ struct ProgressChartView: View {
     }
 
     private func staticChartBody(buckets: [TimeBucket], yDomain: ClosedRange<Double>) -> some View {
-        chartContent(buckets: buckets, yDomain: yDomain)
+        let separatorData = Self.zoneSeparatorData(for: buckets)
+        return chartContent(buckets: buckets, yDomain: yDomain, separatorData: separatorData)
     }
 
-    private func chartContent(buckets: [TimeBucket], yDomain: ClosedRange<Double>) -> some View {
+    private func chartContent(
+        buckets: [TimeBucket],
+        yDomain: ClosedRange<Double>,
+        separatorData: ZoneSeparatorData
+    ) -> some View {
         let bucketSizeByDate = Dictionary(
             buckets.map { ($0.periodStart, $0.bucketSize) },
             uniquingKeysWith: { _, last in last }
         )
 
         return Chart {
+            // Zone background tints (alternating for visual contrast)
+            ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { index, zone in
+                RectangleMark(
+                    xStart: .value("ZoneStart", zone.startDate),
+                    xEnd: .value("ZoneEnd", zone.endDate),
+                    yStart: .value("YMin", yDomain.lowerBound),
+                    yEnd: .value("YMax", yDomain.upperBound)
+                )
+                .foregroundStyle(index.isMultiple(of: 2) ? .clear : Color.white.opacity(0.06))
+            }
+
+            // Data: stddev band
             ForEach(buckets, id: \.periodStart) { bucket in
                 AreaMark(
                     x: .value("Time", bucket.periodStart),
@@ -141,6 +144,7 @@ struct ProgressChartView: View {
                 .foregroundStyle(.blue.opacity(0.15))
             }
 
+            // Data: EWMA line
             ForEach(buckets, id: \.periodStart) { bucket in
                 LineMark(
                     x: .value("Time", bucket.periodStart),
@@ -149,12 +153,20 @@ struct ProgressChartView: View {
                 .foregroundStyle(.blue)
             }
 
+            // Baseline
             RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                 .foregroundStyle(.green.opacity(0.6))
+
+            // Zone divider lines
+            ForEach(separatorData.dividerDates, id: \.self) { date in
+                RuleMark(x: .value("Zone", date))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(.secondary)
+            }
         }
-        .chartYAxis(.hidden)
         .chartYScale(domain: yDomain)
+        .chartYAxisLabel(config.unitLabel)
         .chartXAxis {
             AxisMarks { value in
                 AxisGridLine()
@@ -162,6 +174,19 @@ struct ProgressChartView: View {
                     if let date = value.as(Date.self) {
                         let size = bucketSizeByDate[date] ?? .day
                         Text(Self.formatAxisLabel(date, size: size))
+                    }
+                }
+            }
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                let plotFrame = geometry[proxy.plotFrame!]
+                ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
+                    if let xPos = proxy.position(forX: zone.startDate) {
+                        Text(zone.label)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .position(x: plotFrame.origin.x + xPos + 24, y: plotFrame.origin.y + 8)
                     }
                 }
             }
@@ -180,12 +205,57 @@ struct ProgressChartView: View {
         .session: SessionZoneConfig(),
     ]
 
+    // MARK: - Zone Separator Data
+
+    struct ZoneInfo {
+        let bucketSize: BucketSize
+        let label: String
+        let startDate: Date
+        let endDate: Date
+    }
+
+    struct ZoneSeparatorData {
+        let zones: [ZoneInfo]
+        let dividerDates: [Date]
+    }
+
+    static func zoneSeparatorData(for buckets: [TimeBucket]) -> ZoneSeparatorData {
+        let boundaries = ChartLayoutCalculator.zoneBoundaries(for: buckets)
+
+        guard boundaries.count > 1 else {
+            return ZoneSeparatorData(zones: [], dividerDates: [])
+        }
+
+        let zones = boundaries.map { boundary in
+            ZoneInfo(
+                bucketSize: boundary.bucketSize,
+                label: zoneLabel(for: boundary.bucketSize),
+                startDate: buckets[boundary.startIndex].periodStart,
+                endDate: buckets[boundary.endIndex].periodStart
+            )
+        }
+
+        let dividerDates = boundaries.dropFirst().map { boundary in
+            buckets[boundary.startIndex].periodStart
+        }
+
+        return ZoneSeparatorData(zones: zones, dividerDates: dividerDates)
+    }
+
+    private static func zoneLabel(for bucketSize: BucketSize) -> String {
+        switch bucketSize {
+        case .month: String(localized: "Monthly")
+        case .day: String(localized: "Daily")
+        case .session: String(localized: "Sessions")
+        case .week: String(localized: "Weekly")
+        }
+    }
+
     static func yDomain(for buckets: [TimeBucket]) -> ClosedRange<Double> {
         guard !buckets.isEmpty else { return 0...1 }
-        let yMin = buckets.map { max(0, $0.mean - $0.stddev) }.min() ?? 0
         let rawMax = buckets.map { $0.mean + $0.stddev }.max() ?? 1
-        let yMax = max(yMin + 1, rawMax)
-        return yMin...yMax
+        let yMax = max(1, rawMax)
+        return 0...yMax
     }
 
     static func windowedBuckets(from buckets: [TimeBucket], visibleRange: Range<Int>, buffer: Int) -> [TimeBucket] {
@@ -209,8 +279,6 @@ struct ProgressChartView: View {
     }
 
     private static let visibleBucketCount = 12
-
-    private static let yAxisWidth: CGFloat = 50
 
     /// Computes the time span to show in the visible window (~12 buckets worth).
     private static func visibleDomainLength(for buckets: [TimeBucket]) -> TimeInterval {

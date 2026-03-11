@@ -7,7 +7,7 @@ struct ProgressChartViewTests {
 
     // MARK: - Y-Domain Computation
 
-    @Test("computes Y domain from bucket min/max with stddev")
+    @Test("computes Y domain from zero to max with stddev")
     func yDomainFromBuckets() async {
         let buckets = [
             TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .month, mean: 20.0, stddev: 5.0, recordCount: 10),
@@ -15,19 +15,19 @@ struct ProgressChartViewTests {
             TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .session, mean: 30.0, stddev: 8.0, recordCount: 3),
         ]
         let domain = ProgressChartView.yDomain(for: buckets)
-        // yMin = max(0, min(20-5, 10-3, 30-8)) = max(0, 7) = 7
+        // yMin = 0 (always pinned)
         // yMax = max(20+5, 10+3, 30+8) = 38
-        #expect(domain.lowerBound == 7.0)
+        #expect(domain.lowerBound == 0.0)
         #expect(domain.upperBound == 38.0)
     }
 
-    @Test("Y domain clamps lower bound to zero")
-    func yDomainClampsToZero() async {
+    @Test("Y domain always starts at zero")
+    func yDomainAlwaysStartsAtZero() async {
         let buckets = [
             TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .month, mean: 2.0, stddev: 5.0, recordCount: 10),
         ]
         let domain = ProgressChartView.yDomain(for: buckets)
-        // yMin = max(0, 2-5) = max(0, -3) = 0
+        // yMin = 0 (always pinned)
         // yMax = 2+5 = 7
         #expect(domain.lowerBound == 0.0)
         #expect(domain.upperBound == 7.0)
@@ -46,8 +46,8 @@ struct ProgressChartViewTests {
             TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .day, mean: 15.0, stddev: 0.0, recordCount: 1),
         ]
         let domain = ProgressChartView.yDomain(for: buckets)
-        #expect(domain.lowerBound == 15.0)
-        #expect(domain.upperBound == 16.0)
+        #expect(domain.lowerBound == 0.0)
+        #expect(domain.upperBound == 15.0)
     }
 
     // MARK: - Data Windowing
@@ -219,6 +219,74 @@ struct ProgressChartViewTests {
             unitLabel: "cents"
         )
         #expect(!value.isEmpty)
+    }
+
+    // MARK: - Zone Separator Metadata
+
+    @Test("returns zone separator data for three-zone buckets")
+    func zoneSeparatorsThreeZones() async {
+        let base = Date(timeIntervalSinceReferenceDate: 0)
+        let buckets = [
+            TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(3600), bucketSize: .month, mean: 10, stddev: 1, recordCount: 5),
+            TimeBucket(periodStart: base.addingTimeInterval(86400), periodEnd: base.addingTimeInterval(86400 + 3600), bucketSize: .month, mean: 12, stddev: 1, recordCount: 5),
+            TimeBucket(periodStart: base.addingTimeInterval(86400 * 2), periodEnd: base.addingTimeInterval(86400 * 2 + 3600), bucketSize: .day, mean: 8, stddev: 1, recordCount: 3),
+            TimeBucket(periodStart: base.addingTimeInterval(86400 * 3), periodEnd: base.addingTimeInterval(86400 * 3 + 3600), bucketSize: .day, mean: 9, stddev: 1, recordCount: 3),
+            TimeBucket(periodStart: base.addingTimeInterval(86400 * 4), periodEnd: base.addingTimeInterval(86400 * 4 + 3600), bucketSize: .session, mean: 7, stddev: 1, recordCount: 1),
+        ]
+
+        let separators = ProgressChartView.zoneSeparatorData(for: buckets)
+
+        #expect(separators.zones.count == 3)
+        #expect(separators.dividerDates.count == 2)
+
+        #expect(separators.zones[0].bucketSize == .month)
+        #expect(separators.zones[0].label == String(localized: "Monthly"))
+        #expect(separators.zones[1].bucketSize == .day)
+        #expect(separators.zones[1].label == String(localized: "Daily"))
+        #expect(separators.zones[2].bucketSize == .session)
+        #expect(separators.zones[2].label == String(localized: "Sessions"))
+
+        // Divider dates should be at the first bucket of each new zone
+        #expect(separators.dividerDates[0] == base.addingTimeInterval(86400 * 2))
+        #expect(separators.dividerDates[1] == base.addingTimeInterval(86400 * 4))
+    }
+
+    @Test("returns no zone separators for single-zone buckets")
+    func zoneSeparatorsSingleZone() async {
+        let base = Date(timeIntervalSinceReferenceDate: 0)
+        let buckets = [
+            TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(3600), bucketSize: .day, mean: 10, stddev: 1, recordCount: 5),
+            TimeBucket(periodStart: base.addingTimeInterval(86400), periodEnd: base.addingTimeInterval(86400 + 3600), bucketSize: .day, mean: 12, stddev: 1, recordCount: 5),
+        ]
+
+        let separators = ProgressChartView.zoneSeparatorData(for: buckets)
+
+        #expect(separators.zones.isEmpty)
+        #expect(separators.dividerDates.isEmpty)
+    }
+
+    @Test("returns zone separator data for two-zone buckets")
+    func zoneSeparatorsTwoZones() async {
+        let base = Date(timeIntervalSinceReferenceDate: 0)
+        let buckets = [
+            TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(3600), bucketSize: .month, mean: 10, stddev: 1, recordCount: 5),
+            TimeBucket(periodStart: base.addingTimeInterval(86400), periodEnd: base.addingTimeInterval(86400 + 3600), bucketSize: .day, mean: 8, stddev: 1, recordCount: 3),
+            TimeBucket(periodStart: base.addingTimeInterval(86400 * 2), periodEnd: base.addingTimeInterval(86400 * 2 + 3600), bucketSize: .day, mean: 9, stddev: 1, recordCount: 3),
+        ]
+
+        let separators = ProgressChartView.zoneSeparatorData(for: buckets)
+
+        #expect(separators.zones.count == 2)
+        #expect(separators.dividerDates.count == 1)
+        #expect(separators.zones[0].bucketSize == .month)
+        #expect(separators.zones[1].bucketSize == .day)
+    }
+
+    @Test("returns no zone separators for empty buckets")
+    func zoneSeparatorsEmpty() async {
+        let separators = ProgressChartView.zoneSeparatorData(for: [])
+        #expect(separators.zones.isEmpty)
+        #expect(separators.dividerDates.isEmpty)
     }
 
     // MARK: - Helpers

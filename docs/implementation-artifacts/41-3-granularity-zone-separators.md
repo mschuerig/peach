@@ -1,6 +1,6 @@
 # Story 41.3: Granularity Zone Separators
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,33 +22,33 @@ so that I understand the time scale changes as I scroll through my history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Compute zone geometry from bucket data (AC: #1, #4)
-  - [ ] 1.1 Write tests first: given multi-zone buckets and `ChartLayoutCalculator.zoneBoundaries(for:)`, verify zone boundary dates and bucket sizes are extracted correctly for rendering
-  - [ ] 1.2 Write tests: given single-zone buckets, verify empty/single zone boundary means no separators rendered
-  - [ ] 1.3 Create a static helper method on `ProgressChartView` that takes `[TimeBucket]` and returns zone rendering metadata (boundary dates, zone labels, zone tint colors) — only include separators when 2+ zones exist
+- [x] Task 1: Compute zone geometry from bucket data (AC: #1, #4)
+  - [x] 1.1 Write tests first: given multi-zone buckets and `ChartLayoutCalculator.zoneBoundaries(for:)`, verify zone boundary dates and bucket sizes are extracted correctly for rendering
+  - [x] 1.2 Write tests: given single-zone buckets, verify empty/single zone boundary means no separators rendered
+  - [x] 1.3 Create a static helper method on `ProgressChartView` that takes `[TimeBucket]` and returns zone rendering metadata (boundary dates, zone labels, zone tint colors) — only include separators when 2+ zones exist
 
-- [ ] Task 2: Add zone background tints (AC: #1, #2)
-  - [ ] 2.1 Map `BucketSize` to semantic `Color` in the UI layer (not in Core/) — e.g., `.month` → `Color(.systemBackground)`, `.day` → `Color(.secondarySystemBackground)`, `.session` → `Color(.systemBackground)` — alternating pattern for visual distinction
-  - [ ] 2.2 Add `RectangleMark` entries in `chartContent` for each zone span, positioned behind data marks using `.foregroundStyle` with low opacity semantic colors
-  - [ ] 2.3 Verify Dark Mode adaptation — semantic colors auto-adapt, no hardcoded values
-  - [ ] 2.4 Verify stddev band visibility — the existing `AreaMark` stddev band uses `blue.opacity(0.15)` which is very subtle; zone background tints must not wash it out. Keep tint opacity low enough (≤ 0.05–0.08) or choose tint colors that contrast with the blue band. Visually verify in both Light and Dark Mode that the stddev band remains clearly distinguishable from the zone background
+- [x] Task 2: Add zone background tints (AC: #1, #2)
+  - [x] 2.1 Map `BucketSize` to semantic `Color` in the UI layer (not in Core/) — e.g., `.month` → `Color(.systemBackground)`, `.day` → `Color(.secondarySystemBackground)`, `.session` → `Color(.systemBackground)` — alternating pattern for visual distinction
+  - [x] 2.2 Add `RectangleMark` entries in `chartContent` for each zone span, positioned behind data marks using `.foregroundStyle` with low opacity semantic colors
+  - [x] 2.3 Verify Dark Mode adaptation — semantic colors auto-adapt, no hardcoded values
+  - [x] 2.4 Verify stddev band visibility — the existing `AreaMark` stddev band uses `blue.opacity(0.15)` which is very subtle; zone background tints must not wash it out. Keep tint opacity low enough (≤ 0.05–0.08) or choose tint colors that contrast with the blue band. Visually verify in both Light and Dark Mode that the stddev band remains clearly distinguishable from the zone background
 
-- [ ] Task 3: Add vertical divider lines at zone boundaries (AC: #1, #3)
-  - [ ] 3.1 Add `RuleMark(x:)` at each zone boundary date — thin vertical line marking the transition
-  - [ ] 3.2 Style with `StrokeStyle(lineWidth: 1)` and `.secondary` foreground — visible but not dominant
+- [x] Task 3: Add vertical divider lines at zone boundaries (AC: #1, #3)
+  - [x] 3.1 Add `RuleMark(x:)` at each zone boundary date — thin vertical line marking the transition
+  - [x] 3.2 Style with `StrokeStyle(lineWidth: 1)` and `.secondary` foreground — visible but not dominant
 
-- [ ] Task 4: Add zone caption labels (AC: #1, #3)
-  - [ ] 4.1 Add localized zone label strings: "Monthly"/"Monatlich", "Daily"/"Täglich", "Sessions"/"Sitzungen" via `bin/add-localization.py`
-  - [ ] 4.2 Render zone labels as `.annotation(position: .top)` on the first data point of each zone, or as a `Text` overlay positioned at the zone start — use `.font(.caption2)` and `.foregroundStyle(.secondary)`
-  - [ ] 4.3 Ensure labels appear in both scrollable and static chart modes
+- [x] Task 4: Add zone caption labels (AC: #1, #3)
+  - [x] 4.1 Add localized zone label strings: "Monthly"/"Monatlich", "Daily"/"Täglich", "Sessions"/"Sitzungen" via `bin/add-localization.py`
+  - [x] 4.2 Render zone labels as `.annotation(position: .top)` on the first data point of each zone, or as a `Text` overlay positioned at the zone start — use `.font(.caption2)` and `.foregroundStyle(.secondary)`
+  - [x] 4.3 Ensure labels appear in both scrollable and static chart modes
 
-- [ ] Task 5: Handle single-zone edge case (AC: #4)
-  - [ ] 5.1 Write test: given buckets all of the same `BucketSize`, verify no `RectangleMark` tints, no `RuleMark` dividers, and no zone labels are rendered (i.e., the helper returns empty zone separator data)
-  - [ ] 5.2 Guard in the zone rendering logic: skip all zone separator rendering when `ChartLayoutCalculator.zoneBoundaries(for:)` returns a single boundary
+- [x] Task 5: Handle single-zone edge case (AC: #4)
+  - [x] 5.1 Write test: given buckets all of the same `BucketSize`, verify no `RectangleMark` tints, no `RuleMark` dividers, and no zone labels are rendered (i.e., the helper returns empty zone separator data)
+  - [x] 5.2 Guard in the zone rendering logic: skip all zone separator rendering when `ChartLayoutCalculator.zoneBoundaries(for:)` returns a single boundary
 
-- [ ] Task 6: Run full test suite
-  - [ ] 6.1 Run `bin/test.sh` — all existing + new tests pass
-  - [ ] 6.2 Run `bin/check-dependencies.sh` — no import rule violations
+- [x] Task 6: Run full test suite
+  - [x] 6.1 Run `bin/test.sh` — all existing + new tests pass
+  - [x] 6.2 Run `bin/check-dependencies.sh` — no import rule violations
 
 ## Dev Notes
 
@@ -184,10 +184,30 @@ Recent commits follow `Implement story {id}: {description}` and `Review story {i
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6 (claude-opus-4-6)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Implemented `zoneSeparatorData(for:)` static helper that computes zone rendering metadata from bucket array via `ChartLayoutCalculator.zoneBoundaries(for:)` — returns empty data for single-zone (no separators needed)
+- Added `ZoneInfo` and `ZoneSeparatorData` structs for zone rendering data
+- Added `zoneTint(for:)` mapping `BucketSize` → semantic `Color` (alternating `.systemBackground`/`.secondarySystemBackground`) at 0.06 opacity
+- Added `zoneLabel(for:)` mapping `BucketSize` → localized label strings
+- Threaded `ZoneSeparatorData` through `scrollableChartBody` and `staticChartBody` to `chartContent` — zone boundaries computed from FULL bucket array (not windowed slice)
+- Added `RectangleMark` for zone background tints (rendered first, behind data marks)
+- Added `RuleMark(x:)` for vertical divider lines at zone boundaries with `.secondary` foreground
+- Added `PointMark` with `.annotation(position: .top)` for zone caption labels (`.caption2`, `.secondary`)
+- Added 4 localization keys: Monthly/Monatlich, Daily/Täglich, Sessions/Sitzungen, Weekly/Wöchentlich
+- Added 4 tests: three-zone, two-zone, single-zone, and empty bucket scenarios
+- All 1039 tests pass, no regressions; dependency check passes
+
 ### File List
+
+- Peach/Profile/ProgressChartView.swift (modified)
+- PeachTests/Profile/ProgressChartViewTests.swift (modified)
+- Peach/Localizable.xcstrings (modified)
+
+### Change Log
+
+- 2026-03-11: Implemented granularity zone separators — background tints, vertical divider lines, and zone caption labels in ProgressChartView. Added 4 zone separator tests and DE+EN localization strings.
