@@ -426,10 +426,10 @@ final class ProgressTimeline {
             let bucketInfo: (key: Date, end: Date, size: BucketSize)
 
             if age < Self.recentThreshold {
-                // Session zone: merge records within sessionGap
+                // Session zone: merge records within sessionGap of the most recent record
                 if let lastGroup = groups.last,
                    lastGroup.size == .session,
-                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGap {
+                   metric.timestamp.timeIntervalSince(lastGroup.end) < sessionGap {
                     groups[groups.count - 1].points.append(metric.value)
                     groups[groups.count - 1].end = metric.timestamp
                     continue

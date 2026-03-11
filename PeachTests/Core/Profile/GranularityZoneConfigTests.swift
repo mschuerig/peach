@@ -21,10 +21,10 @@ struct GranularityZoneConfigTests {
 
     // MARK: - MonthlyZoneConfig Tests
 
-    @Test("monthly config returns expected pointWidth")
+    @Test("monthly config returns expected pointWidth of 30")
     func monthlyPointWidth() async {
         let config = MonthlyZoneConfig()
-        #expect(config.pointWidth > 0)
+        #expect(config.pointWidth == 30)
     }
 
     @Test("monthly axis label formats as abbreviated month name")
@@ -35,7 +35,7 @@ struct GranularityZoneConfigTests {
         components.month = 1
         components.day = 15
         let date = Calendar.current.date(from: components)!
-        let label = config.axisLabelFormatter(date)
+        let label = config.formatAxisLabel(date)
         #expect(label == abbreviatedMonthName(for: date))
     }
 
@@ -56,8 +56,8 @@ struct GranularityZoneConfigTests {
         junComponents.day = 15
         let junDate = calendar.date(from: junComponents)!
 
-        let janLabel = config.axisLabelFormatter(janDate)
-        let junLabel = config.axisLabelFormatter(junDate)
+        let janLabel = config.formatAxisLabel(janDate)
+        let junLabel = config.formatAxisLabel(junDate)
         #expect(janLabel != junLabel)
         #expect(!janLabel.isEmpty)
         #expect(!junLabel.isEmpty)
@@ -65,10 +65,10 @@ struct GranularityZoneConfigTests {
 
     // MARK: - DailyZoneConfig Tests
 
-    @Test("daily config returns expected pointWidth")
+    @Test("daily config returns expected pointWidth of 40")
     func dailyPointWidth() async {
         let config = DailyZoneConfig()
-        #expect(config.pointWidth > 0)
+        #expect(config.pointWidth == 40)
     }
 
     @Test("daily axis label formats as abbreviated weekday name")
@@ -79,7 +79,7 @@ struct GranularityZoneConfigTests {
         components.month = 3
         components.day = 9
         let date = Calendar.current.date(from: components)!
-        let label = config.axisLabelFormatter(date)
+        let label = config.formatAxisLabel(date)
         #expect(label == abbreviatedWeekdayName(for: date))
     }
 
@@ -102,8 +102,8 @@ struct GranularityZoneConfigTests {
         friComponents.day = 13
         let friDate = calendar.date(from: friComponents)!
 
-        let monLabel = config.axisLabelFormatter(monDate)
-        let friLabel = config.axisLabelFormatter(friDate)
+        let monLabel = config.formatAxisLabel(monDate)
+        let friLabel = config.formatAxisLabel(friDate)
         #expect(monLabel != friLabel)
         #expect(!monLabel.isEmpty)
         #expect(!friLabel.isEmpty)
@@ -111,17 +111,17 @@ struct GranularityZoneConfigTests {
 
     // MARK: - SessionZoneConfig Tests
 
-    @Test("session config returns expected pointWidth")
+    @Test("session config returns expected pointWidth of 50")
     func sessionPointWidth() async {
         let config = SessionZoneConfig()
-        #expect(config.pointWidth > 0)
+        #expect(config.pointWidth == 50)
     }
 
     @Test("session axis label formats as time string")
     func sessionAxisLabel() async {
         let config = SessionZoneConfig()
         let now = Date()
-        let label = config.axisLabelFormatter(now)
+        let label = config.formatAxisLabel(now)
         #expect(!label.isEmpty)
     }
 

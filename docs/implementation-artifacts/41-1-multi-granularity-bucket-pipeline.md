@@ -1,6 +1,6 @@
 # Story 41.1: Multi-Granularity Bucket Pipeline
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -174,8 +174,28 @@ Claude Opus 4.6 (claude-opus-4-6)
 - Created `ChartLayoutCalculator` as pure static enum with `totalWidth(for:configs:)` and `zoneBoundaries(for:)`. Returns `[ZoneBoundary]` with `startIndex`, `endIndex`, `bucketSize`.
 - All 1027 tests pass (1010 existing + 17 new). No regressions. `bin/check-dependencies.sh` passes.
 
+### Senior Developer Review (AI)
+
+**Reviewer:** Michael (code-review workflow) — 2026-03-11
+**Outcome:** Approved with fixes applied
+
+**4 MEDIUM issues found and fixed:**
+- M1: DateFormatter created on every `axisLabelFormatter` call — replaced with `static let` cached formatters
+- M2: Closure property `axisLabelFormatter` replaced with method `formatAxisLabel(_:)` — simpler, no closure allocation
+- M3: Session merging in `assignMultiGranularityBuckets` compared against session start (`key`) instead of last record (`end`) — fixed to use `end` for correct gap detection (pre-existing bug in `assignBuckets` not fixed to respect story constraint of not modifying existing methods)
+- M4: Tests asserted `pointWidth > 0` instead of exact values (30, 40, 50) — strengthened to exact assertions
+
+**6 LOW issues noted (not fixed — acceptable):**
+- L1: Code duplication in bucket aggregation between `assignBuckets` and `assignMultiGranularityBuckets` (constrained by story)
+- L2: Linear scan for group lookup in `assignMultiGranularityBuckets` (acceptable for <2K data points)
+- L3: Silent zero-width for unknown `BucketSize` in `ChartLayoutCalculator.totalWidth`
+- L4: Session axis label test only asserts non-empty
+- L5: `ZoneBoundary` should conform to `Equatable`
+- L6: `allGranularityBuckets` hardcodes `Date()` instead of accepting parameter
+
 ### Change Log
 
+- 2026-03-11: Code review — fixed 4 MEDIUM issues (cached DateFormatters, method API, session gap detection, exact pointWidth tests)
 - 2026-03-11: Implemented story 41.1 — multi-granularity bucket pipeline with GranularityZoneConfig protocol and ChartLayoutCalculator
 
 ### File List

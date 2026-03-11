@@ -14,19 +14,21 @@ protocol GranularityZoneConfig {
     var pointWidth: CGFloat { get }
 
     /// Formats a date into an axis label appropriate for this granularity.
-    var axisLabelFormatter: (Date) -> String { get }
+    func formatAxisLabel(_ date: Date) -> String
 }
 
 /// Zone configuration for monthly granularity.
 struct MonthlyZoneConfig: GranularityZoneConfig {
     let pointWidth: CGFloat = 30
 
-    var axisLabelFormatter: (Date) -> String {
-        { date in
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM"
-            return formatter.string(from: date)
-        }
+    private static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter
+    }()
+
+    func formatAxisLabel(_ date: Date) -> String {
+        Self.formatter.string(from: date)
     }
 }
 
@@ -34,12 +36,14 @@ struct MonthlyZoneConfig: GranularityZoneConfig {
 struct DailyZoneConfig: GranularityZoneConfig {
     let pointWidth: CGFloat = 40
 
-    var axisLabelFormatter: (Date) -> String {
-        { date in
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEE"
-            return formatter.string(from: date)
-        }
+    private static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        return formatter
+    }()
+
+    func formatAxisLabel(_ date: Date) -> String {
+        Self.formatter.string(from: date)
     }
 }
 
@@ -47,12 +51,14 @@ struct DailyZoneConfig: GranularityZoneConfig {
 struct SessionZoneConfig: GranularityZoneConfig {
     let pointWidth: CGFloat = 50
 
-    var axisLabelFormatter: (Date) -> String {
-        { date in
-            let formatter = DateFormatter()
-            formatter.dateStyle = .none
-            formatter.timeStyle = .short
-            return formatter.string(from: date)
-        }
+    private static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    func formatAxisLabel(_ date: Date) -> String {
+        Self.formatter.string(from: date)
     }
 }
