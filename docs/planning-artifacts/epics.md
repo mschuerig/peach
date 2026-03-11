@@ -1,6 +1,6 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation', 'v0.3-step-01-validate-prerequisites', 'v0.3-step-02-design-epics', 'v0.3-step-03-create-stories', 'v0.3-step-04-final-validation']
-inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation', 'v0.3-step-01-validate-prerequisites', 'v0.3-step-02-design-epics', 'v0.3-step-03-create-stories', 'v0.3-step-04-final-validation', 'v0.4-step-01-validate-prerequisites', 'v0.4-step-02-design-epics', 'v0.4-step-03-create-stories', 'v0.4-step-04-final-validation']
+inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md', 'docs/planning-artifacts/research/technical-profile-screen-chart-ux-research-2026-03-11.md']
 ---
 
 # Peach - Epic Breakdown
@@ -3687,5 +3687,375 @@ So that I feel encouraged without navigating to the full Profile Screen.
 - Training screen text derived from `ProgressTimeline` EWMA value and trend
 - Keep views thin — all computation in Core
 - Reference approved UX concept in `docs/implementation-artifacts/38-1-brainstorm-and-design-profile-visualization.md`
+
+---
+
+## Epic 39 Requirements (Profile Screen Chart UX Redesign)
+
+**Source:** `docs/planning-artifacts/research/technical-profile-screen-chart-ux-research-2026-03-11.md`
+**Context:** Third iteration of profile visualization. Research supersedes older planning artifacts for profile chart UX.
+
+### Functional Requirements
+
+FR1: Horizontally scrollable chart with multi-granularity timeline (months → days → sessions left-to-right)
+FR2: Fixed Y-axis that remains visible while scrolling the chart body
+FR3: Chart pinned to the right edge (most recent data) on initial display
+FR4: Granularity zone separators with background tint, vertical dividers, and zone labels
+FR5: Tap-to-select data points showing detail annotation (EWMA, stddev, date, record count)
+FR6: TipKit help overlay system with sequential tips for chart elements (EWMA line, stddev band, baseline, zones)
+FR7: Persistent "?" button in card header to replay all tips on demand
+FR8: Narrative headlines above each chart ("Improved by 2.3¢ this week", variability callouts, baseline proximity)
+FR9: Multi-granularity bucket concatenation from ProgressTimeline (monthly + daily + session-level)
+FR10: Session-level markers in the rightmost zone for individual recent practice sessions
+
+### Non-Functional Requirements
+
+NFR1: WCAG 1.4.1 compliance — color must not be the sole information carrier for granularity zones
+NFR2: VoiceOver accessibility — each zone needs an accessibility container with summary label
+NFR3: Dynamic Type support — axis labels and headlines must use scaled fonts; Y-axis column width expands with font size
+NFR4: Reduce Motion respect — scroll-to-position animation must check isReduceMotionEnabled
+NFR5: Increase Contrast support — semantic colors and stronger contrast variants for chart elements
+NFR6: Swift Charts performance — total data points must stay well under 2K; session-level data limited to 2-3 days
+
+### Additional Requirements
+
+- Use `.chartGesture` with `SpatialTapGesture` instead of `.chartOverlay` + `.onTapGesture` (iOS 18 scroll+tap conflict workaround)
+- Data windowing for visible data slice to mitigate iOS 18 redraw loop with synchronized scroll positions
+- Protocol-based `GranularityZoneConfig` following chain-of-responsibility pattern (new zones are additive, no changes to existing code)
+- `NarrativeFormatter` and `ChartLayoutCalculator` as pure Core-layer functions (no UI dependencies, fully testable)
+
+### FR Coverage Map
+
+FR1: Epic 39, Story 39.2 — Horizontally scrollable multi-granularity timeline
+FR2: Epic 39, Story 39.2 — Fixed Y-axis visible while scrolling
+FR3: Epic 39, Story 39.2 — Chart pinned to right edge on load
+FR4: Epic 39, Stories 39.1/39.3 — Granularity zone separators (tint + dividers + labels)
+FR5: Epic 39, Story 39.4 — Tap-to-select data point annotations
+FR6: Epic 39, Story 39.6 — TipKit sequential help overlay system
+FR7: Epic 39, Story 39.7 — Persistent "?" button to replay tips
+FR8: Epic 39, Story 39.8 — Narrative headlines above charts
+FR9: Epic 39, Story 39.1 — Multi-granularity bucket concatenation from ProgressTimeline
+FR10: Epic 39, Story 39.9 — Session-level markers for recent sessions
+
+## Epic 39: Read Your Chart — Profile Screen Chart UX Redesign
+
+Users can understand their training progress at a glance through a scrollable multi-granularity chart, contextual TipKit help overlays, narrative headlines, and session-level detail markers. The fixed Y-axis stays visible while scrolling, granularity zones are clearly labeled, and the chart opens pinned to the most recent data.
+
+### Story 39.1: Multi-Granularity Bucket Pipeline
+
+As a **developer**,
+I want `ProgressTimeline` to produce concatenated multi-granularity buckets and a layout calculator to compute zone geometry,
+So that the scrollable chart has a clean, testable data source with all granularity zones in a single ordered array.
+
+**Acceptance Criteria:**
+
+**Given** `ProgressTimeline` with training data spanning multiple months
+**When** `allGranularityBuckets(for:)` is called
+**Then** it returns `[TimeBucket]` ordered chronologically with months for data >30 days, days for 1–30 days, and sessions for <24 hours — all concatenated left-to-right
+**And** each bucket retains its `BucketSize` tag so the UI can distinguish zones
+
+**Given** the concatenated bucket array
+**When** passed to `ChartLayoutCalculator`
+**Then** it computes total chart width from bucket count x per-granularity point widths
+**And** it returns zone boundary indices marking where granularity transitions occur
+
+**Given** a `GranularityZoneConfig` protocol
+**When** concrete conformances exist for `MonthlyZoneConfig`, `DailyZoneConfig`, `SessionZoneConfig`
+**Then** each provides `pointWidth: CGFloat`, `backgroundTint: Color`, and `axisLabelFormatter: (Date) -> String`
+**And** adding a new granularity (e.g., weekly) requires only a new conformance — no changes to existing code
+
+**Given** a user with only 1 day of training data
+**When** `allGranularityBuckets(for:)` is called
+**Then** it returns only session-granularity buckets (no empty month/day zones)
+
+**Given** the existing `buckets(for:)` API
+**When** the new method is added
+**Then** the existing API continues to work unchanged (no breaking changes)
+
+**Technical hints:**
+- Extend `ProgressTimeline` with `allGranularityBuckets(for:)` — do not modify `buckets(for:)`
+- New files: `Core/Profile/ChartLayoutCalculator.swift`, `Core/Profile/GranularityZoneConfig.swift`
+- `ChartLayoutCalculator` and `GranularityZoneConfig` conformances are pure Core (no SwiftUI import except `Color` in the config — or use a wrapper)
+- TDD: write tests first in `PeachTests/Core/Profile/`
+
+### Story 39.2: Scrollable Chart with Fixed Y-Axis
+
+As a **user**,
+I want to scroll horizontally through my training history with the Y-axis always visible,
+So that I can explore my full progress timeline without losing context for what the numbers mean.
+
+**Depends on:** Story 39.1
+
+**Acceptance Criteria:**
+
+**Given** the Profile Screen with a progress card
+**When** the chart renders
+**Then** it displays as an HStack with a fixed-width non-scrolling Y-axis on the left and a horizontally scrollable chart body on the right
+**And** both share the same Y domain (`chartYScale(domain:)`) so vertical scales match
+
+**Given** the scrollable chart
+**When** it first appears
+**Then** it is pinned to the right edge (most recent data) via `chartScrollPosition(initialX:)`
+
+**Given** the scrollable chart with many months of data
+**When** the user scrolls left
+**Then** older data (monthly buckets) becomes visible
+**And** scrolling is smooth with no frame drops on supported devices
+
+**Given** the data for the visible viewport
+**When** the chart renders
+**Then** only the visible data slice plus a small buffer is passed to the chart (data windowing)
+**And** this mitigates the known iOS 18 redraw loop with synchronized scroll positions
+
+**Given** the fixed Y-axis
+**When** the chart is scrolled
+**Then** the Y-axis remains stationary and aligned with the scrollable chart body
+
+**Technical hints:**
+- Replace current `ProgressChartView` chart section with new HStack layout
+- Fixed Y-axis: narrow `Chart` with `.chartXAxis(.hidden)` or plain `VStack` of labels
+- Scrollable body: `Chart` with `.chartScrollableAxes(.horizontal)`, `.chartXVisibleDomain(length:)`, `.chartYAxis(.hidden)`
+- Keep headline row (EWMA, stddev, trend arrow) unchanged for now
+- Retain existing `AreaMark` (stddev band), `LineMark` (EWMA), `RuleMark` (baseline)
+
+### Story 39.3: Granularity Zone Separators
+
+As a **user**,
+I want to see clear visual boundaries between monthly, daily, and session-level zones on my chart,
+So that I understand the time scale changes as I scroll through my history.
+
+**Depends on:** Story 39.2
+
+**Acceptance Criteria:**
+
+**Given** a chart with multiple granularity zones
+**When** the chart renders
+**Then** each zone has a subtle background tint using semantic colors (`Color(.systemBackground)` vs `Color(.secondarySystemBackground)`)
+**And** a thin vertical divider line marks each zone boundary
+**And** a small caption label at the top of each zone identifies it (e.g., "Monthly", "Daily", "Sessions" — localized DE+EN)
+
+**Given** the zone separators
+**When** viewed in Dark Mode
+**Then** semantic colors adapt automatically with no hardcoded color values
+
+**Given** the zone separators
+**When** evaluated for WCAG 1.4.1 compliance
+**Then** color is not the sole information carrier — the vertical divider line and zone label text also communicate the transition (NFR1)
+
+**Given** a chart with only one granularity zone (e.g., new user with sessions only)
+**When** the chart renders
+**Then** no zone separators or labels are shown (nothing to separate)
+
+**Technical hints:**
+- Use `GranularityZoneConfig.backgroundTint` from 39.1 for zone tints
+- Zone boundaries from `ChartLayoutCalculator` zone boundary indices
+- Localize zone labels via `add-localization.py`
+- `RectangleMark` or background `Rectangle` for tint areas; `RuleMark` for vertical dividers
+
+### Story 39.4: Tap-to-Select Data Points
+
+As a **user**,
+I want to tap any data point on my chart to see its details,
+So that I can inspect specific periods of my training history.
+
+**Depends on:** Story 39.2
+
+**Acceptance Criteria:**
+
+**Given** the scrollable chart
+**When** the user taps on or near a data point
+**Then** a vertical selection indicator (`RuleMark`) appears at the selected X position
+**And** an annotation popover shows: EWMA value, ± stddev, date/period label, and record count
+
+**Given** a selected data point
+**When** the user taps a different data point
+**Then** the selection moves to the new point
+
+**Given** a selected data point
+**When** the user taps empty space or scrolls
+**Then** the selection is dismissed
+
+**Given** the annotation popover near a chart edge
+**When** it renders
+**Then** it uses `.overflowResolution(.fitToChart)` to prevent clipping
+
+**Given** the scrollable chart
+**When** the user drags to scroll
+**Then** scrolling works normally — tap gestures do not block scroll gestures
+**And** this uses `.chartGesture` with `SpatialTapGesture` (not `.chartOverlay` + `.onTapGesture`)
+
+**Technical hints:**
+- Use `.chartGesture` modifier (iOS 18+ safe, avoids scroll+tap conflict)
+- `@State private var selectedBucketIndex: Int?` for selection state
+- Annotation content: reuse `formatEWMA`, `formatStdDev`, `bucketLabel` from existing helpers
+- Remove the disabled `chartExpansionEnabled` code path — this replaces that interaction model
+
+### Story 39.5: Accessibility and Performance Hardening
+
+As a **user with accessibility needs**,
+I want the redesigned chart to work well with VoiceOver, Dynamic Type, Increase Contrast, and Reduce Motion,
+So that the chart is usable regardless of my accessibility settings.
+
+**Depends on:** Stories 39.2–39.4
+
+**Acceptance Criteria:**
+
+**Given** VoiceOver is active
+**When** the user navigates to a progress card
+**Then** each granularity zone has an accessibility container with a summary label (e.g., "Monthly view: November through January, pitch trend from 15 to 11 cents") (NFR2)
+
+**Given** Dynamic Type is set to an accessibility size
+**When** the chart renders
+**Then** axis labels and headline text use scaled fonts
+**And** the fixed Y-axis column width expands to accommodate larger text (NFR3)
+
+**Given** Reduce Motion is enabled
+**When** the chart appears with scroll-to-position
+**Then** no scroll animation plays — the chart starts at the right edge without animating (NFR4)
+
+**Given** Increase Contrast is enabled
+**When** the chart renders
+**Then** the EWMA line, stddev band, and baseline use stronger contrast variants via `UIAccessibility.darkerSystemColorsEnabled` (NFR5)
+
+**Given** a user with extensive training history
+**When** the chart renders with all granularity zones
+**Then** total data point count stays well under 2,000 (NFR6)
+**And** session-level data is limited to the last 2-3 days as defined by `allGranularityBuckets(for:)`
+
+**Technical hints:**
+- VoiceOver: `.accessibilityElement(children: .contain)` on zone containers with `.accessibilityLabel`
+- Dynamic Type: use `.font(.caption)` (already scaled) for axis labels; test with `sizeCategory` environment override
+- Reduce Motion: check `AccessibilityEnvironment.reduceMotion` or `UIAccessibility.isReduceMotionEnabled`
+- Increase Contrast: conditional color modifiers checking `colorSchemeContrast` environment value
+
+### Story 39.6: TipKit Help Overlay System
+
+As a **first-time user**,
+I want guided explanations of each chart element to appear one at a time,
+So that I understand what the EWMA line, stddev band, baseline, and granularity zones mean without needing external documentation.
+
+**Depends on:** Story 39.2
+
+**Acceptance Criteria:**
+
+**Given** the user views a progress card for the first time
+**When** the card appears
+**Then** an inline tip card displays above the chart: "This chart shows how your pitch perception is developing over time"
+
+**Given** the user dismisses the first tip
+**When** the next profile visit occurs
+**Then** the next tip in the ordered sequence appears (EWMA line → stddev band → baseline → granularity zones)
+**And** tips are managed via `TipGroup(.ordered)` so only one displays at a time
+
+**Given** a tip is dismissed
+**When** the user revisits the profile later
+**Then** TipKit's built-in persistence ensures dismissed tips do not reappear
+**And** display frequency is configured to avoid tip fatigue (e.g., `.weekly`)
+
+**Given** VoiceOver is active
+**When** a tip is displayed
+**Then** the tip content is accessible and announced appropriately
+
+**Technical hints:**
+- Define tip structs: `ChartOverviewTip`, `EWMALineTip`, `StdDevBandTip`, `BaselineTip`, `GranularityZoneTip`
+- Use `TipGroup(.ordered)` (iOS 18+)
+- Inline tip: `TipView` above chart; popover tips: `.popoverTip()` on relevant chart elements
+- New file: `Profile/ChartTips.swift`
+- Localize all tip titles and messages (DE+EN) via `add-localization.py`
+
+### Story 39.7: Help Button with Tip Reset
+
+As a **returning user**,
+I want a "?" button on each progress card that replays all chart help tips,
+So that I can re-read the explanations whenever I need a refresher.
+
+**Depends on:** Story 39.6
+
+**Acceptance Criteria:**
+
+**Given** a progress card header
+**When** the card renders
+**Then** a "?" button is visible in the card header area
+
+**Given** all tips have been previously dismissed
+**When** the user taps the "?" button
+**Then** all chart tips are reset and the sequential tip flow restarts from the first tip
+
+**Given** the "?" button
+**When** VoiceOver is active
+**Then** the button has an accessibility label "Show chart help"
+
+**Technical hints:**
+- Add "?" button to card header row (alongside mode title and trend arrow)
+- On tap: call `Tips.resetDatastore()` scoped to chart tips, or invalidate display rules
+- SF Symbol: `questionmark.circle`
+
+### Story 39.8: Narrative Headlines
+
+As a **user**,
+I want plain-language progress summaries above my chart instead of just raw numbers,
+So that I can understand whether I'm improving without interpreting the chart myself.
+
+**Depends on:** Story 39.2
+
+**Acceptance Criteria:**
+
+**Given** the user's EWMA trend is improving
+**When** the progress card headline renders
+**Then** it shows a sentence like "Improved by 2.3¢ this week" (using the actual delta)
+
+**Given** the user's stddev has widened significantly compared to prior periods
+**When** the headline renders
+**Then** it includes a variability callout like "More variable this week — fatigue or new difficulty?"
+
+**Given** the user's EWMA approaches `optimalBaseline`
+**When** the headline renders
+**Then** it includes a proximity callout like "Approaching expert level (8¢)"
+
+**Given** a stable trend with no notable variability change
+**When** the headline renders
+**Then** it shows a neutral summary like "Consistent at 10.1¢"
+
+**Given** the `NarrativeFormatter`
+**When** tested with all combinations of trend × variability × baseline proximity
+**Then** it produces correct localized strings (DE+EN) for every combination
+**And** it lives in Core with no UI dependencies
+
+**Technical hints:**
+- New file: `Core/Profile/NarrativeFormatter.swift` — pure function taking EWMA, stddev, trend, baseline, locale
+- Integrates with existing `TrainingModeConfig` metadata (baseline values, unit labels) and `ProgressTimeline` trend
+- Replace or augment current headline row in `ProgressChartView`
+- TDD: write tests first in `PeachTests/Core/Profile/NarrativeFormatterTests.swift`
+- Localize via `add-localization.py`
+
+### Story 39.9: Session-Level Detail Markers
+
+As a **user**,
+I want to see individual recent practice sessions as distinct markers on the rightmost chart zone,
+So that I can reflect on specific sessions and understand what caused variability in my recent performance.
+
+**Depends on:** Story 39.2
+
+**Acceptance Criteria:**
+
+**Given** session-granularity buckets in the rightmost chart zone
+**When** individual sessions contain only 1 record group (single session)
+**Then** a visible marker symbol (e.g., `PointMark` or `LineMark` with `.symbol()`) appears at each session data point
+**And** markers are visually distinct from the EWMA line (different shape or emphasis)
+
+**Given** a session marker
+**When** the user taps it (using the existing tap-to-select from 39.4)
+**Then** the annotation popover shows session-specific detail: date/time, duration, record count, mean accuracy
+
+**Given** session-level data
+**When** the chart renders
+**Then** session markers only appear in the session-granularity zone (last 2-3 days)
+**And** monthly and daily zones show only the EWMA line and stddev band as before
+
+**Technical hints:**
+- Add `PointMark` or symbol annotation within the session zone in the scrollable chart
+- Session duration derivable from first-to-last record timestamp within the session bucket
+- Reuse existing `TimeBucket` data — no new data source needed
+- The existing tap-to-select (39.4) already handles annotation display
 
 ---
