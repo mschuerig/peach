@@ -1,6 +1,6 @@
 # Story 41.2: Scrollable Chart with Fixed Y-Axis
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,43 +24,43 @@ so that I can explore my full progress timeline without losing context for what 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Switch data source to multi-granularity buckets (AC: #1)
-  - [ ] 1.1 In `ProgressChartView`, replace `progressTimeline.buckets(for: mode)` with `progressTimeline.allGranularityBuckets(for: mode)` for the chart body
-  - [ ] 1.2 Remove or gate the `chartExpansionEnabled` flag and `displayBuckets` expansion logic — this story replaces that interaction model entirely
-  - [ ] 1.3 Remove `@State private var expandedBucketIndex: Int?` — no longer needed
+- [x] Task 1: Switch data source to multi-granularity buckets (AC: #1)
+  - [x] 1.1 In `ProgressChartView`, replace `progressTimeline.buckets(for: mode)` with `progressTimeline.allGranularityBuckets(for: mode)` for the chart body
+  - [x] 1.2 Remove or gate the `chartExpansionEnabled` flag and `displayBuckets` expansion logic — this story replaces that interaction model entirely
+  - [x] 1.3 Remove `@State private var expandedBucketIndex: Int?` — no longer needed
 
-- [ ] Task 2: Implement HStack layout with fixed Y-axis + scrollable chart (AC: #1, #5)
-  - [ ] 2.1 Write tests first: static layout helper tests for Y-domain computation — given buckets with known min/max means and stddevs, verify computed Y domain range
-  - [ ] 2.2 Split current `chart(buckets:)` into two sibling views inside an `HStack`:
+- [x] Task 2: Implement HStack layout with fixed Y-axis + scrollable chart (AC: #1, #5)
+  - [x] 2.1 Write tests first: static layout helper tests for Y-domain computation — given buckets with known min/max means and stddevs, verify computed Y domain range
+  - [x] 2.2 Split current `chart(buckets:)` into two sibling views inside an `HStack`:
     - Left: Fixed-width Y-axis column (narrow `Chart` with `.chartXAxis(.hidden)` or a plain `VStack` of labels)
     - Right: Horizontally scrollable chart body (main `Chart` with `.chartYAxis(.hidden)`)
-  - [ ] 2.3 Both views must share the same Y domain via `.chartYScale(domain: yMin...yMax)` — compute `yMin` and `yMax` from bucket data (min of `mean - stddev` clamped to 0, max of `mean + stddev`)
-  - [ ] 2.4 Fixed Y-axis must show the `config.unitLabel` and tick marks matching the scrollable chart
+  - [x] 2.3 Both views must share the same Y domain via `.chartYScale(domain: yMin...yMax)` — compute `yMin` and `yMax` from bucket data (min of `mean - stddev` clamped to 0, max of `mean + stddev`)
+  - [x] 2.4 Fixed Y-axis must show the `config.unitLabel` and tick marks matching the scrollable chart
 
-- [ ] Task 3: Add horizontal scrolling with right-edge pinning (AC: #2, #3)
-  - [ ] 3.1 Add `.chartScrollableAxes(.horizontal)` to the scrollable chart body
-  - [ ] 3.2 Add `.chartXVisibleDomain(length:)` to control how many data points are visible at once — use `ChartLayoutCalculator.totalWidth` to determine if scrolling is needed, and set a reasonable visible domain (e.g., ~10-15 bucket widths)
-  - [ ] 3.3 Add `.chartScrollPosition(initialX:)` set to the latest bucket's `periodStart` date to pin the right edge on load
-  - [ ] 3.4 Use total chart width from `ChartLayoutCalculator.totalWidth(for:configs:)` with the zone config dictionary to size the scrollable content
+- [x] Task 3: Add horizontal scrolling with right-edge pinning (AC: #2, #3)
+  - [x] 3.1 Add `.chartScrollableAxes(.horizontal)` to the scrollable chart body
+  - [x] 3.2 Add `.chartXVisibleDomain(length:)` to control how many data points are visible at once — use `ChartLayoutCalculator.totalWidth` to determine if scrolling is needed, and set a reasonable visible domain (e.g., ~10-15 bucket widths)
+  - [x] 3.3 Add `.chartScrollPosition(initialX:)` set to the latest bucket's `periodStart` date to pin the right edge on load
+  - [x] 3.4 Use total chart width from `ChartLayoutCalculator.totalWidth(for:configs:)` with the zone config dictionary to size the scrollable content
 
-- [ ] Task 4: Implement data windowing for performance (AC: #4)
-  - [ ] 4.1 Write tests first: given a large bucket array and a visible range, verify windowed slice returns correct subset with buffer
-  - [ ] 4.2 Track the current scroll position via `@State` bound to `.chartScrollPosition`
-  - [ ] 4.3 Compute visible data window: filter buckets to those within the visible X domain + a buffer of ~5 extra buckets on each side
-  - [ ] 4.4 Pass only the windowed slice to the `Chart` to avoid iOS 18 redraw loop with large datasets
+- [x] Task 4: Implement data windowing for performance (AC: #4)
+  - [x] 4.1 Write tests first: given a large bucket array and a visible range, verify windowed slice returns correct subset with buffer
+  - [x] 4.2 Track the current scroll position via `@State` bound to `.chartScrollPosition`
+  - [x] 4.3 Compute visible data window: filter buckets to those within the visible X domain + a buffer of ~5 extra buckets on each side
+  - [x] 4.4 Pass only the windowed slice to the `Chart` to avoid iOS 18 redraw loop with large datasets
 
-- [ ] Task 5: Update X-axis labels for multi-granularity (AC: #1)
-  - [ ] 5.1 Replace current `bucketLabel` X-axis formatting with `GranularityZoneConfig.formatAxisLabel` — each bucket's label is formatted according to its `BucketSize` using the matching zone config's `formatAxisLabel(_:)` method
-  - [ ] 5.2 Build zone config lookup dictionary: `[BucketSize: any GranularityZoneConfig]` mapping `.month` to `MonthlyZoneConfig()`, `.day` to `DailyZoneConfig()`, `.session` to `SessionZoneConfig()`
+- [x] Task 5: Update X-axis labels for multi-granularity (AC: #1)
+  - [x] 5.1 Replace current `bucketLabel` X-axis formatting with `GranularityZoneConfig.formatAxisLabel` — each bucket's label is formatted according to its `BucketSize` using the matching zone config's `formatAxisLabel(_:)` method
+  - [x] 5.2 Build zone config lookup dictionary: `[BucketSize: any GranularityZoneConfig]` mapping `.month` to `MonthlyZoneConfig()`, `.day` to `DailyZoneConfig()`, `.session` to `SessionZoneConfig()`
 
-- [ ] Task 6: Preserve existing chart marks and headline (AC: #1)
-  - [ ] 6.1 Keep `AreaMark` (stddev band), `LineMark` (EWMA), `RuleMark` (baseline) — same visual rendering, just inside the scrollable chart body
-  - [ ] 6.2 Keep headline row (`headlineRow`) unchanged — still shows mode name, EWMA, stddev, trend arrow
-  - [ ] 6.3 Retain existing accessibility labels and value descriptions
+- [x] Task 6: Preserve existing chart marks and headline (AC: #1)
+  - [x] 6.1 Keep `AreaMark` (stddev band), `LineMark` (EWMA), `RuleMark` (baseline) — same visual rendering, just inside the scrollable chart body
+  - [x] 6.2 Keep headline row (`headlineRow`) unchanged — still shows mode name, EWMA, stddev, trend arrow
+  - [x] 6.3 Retain existing accessibility labels and value descriptions
 
-- [ ] Task 7: Run full test suite
-  - [ ] 7.1 Run `bin/test.sh` — all existing + new tests pass
-  - [ ] 7.2 Run `bin/check-dependencies.sh` — no import rule violations
+- [x] Task 7: Run full test suite
+  - [x] 7.1 Run `bin/test.sh` — all existing + new tests pass
+  - [x] 7.2 Run `bin/check-dependencies.sh` — no import rule violations
 
 ## Dev Notes
 
@@ -221,10 +221,36 @@ Recent commit pattern: `Implement story {id}: {description}` for implementation,
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Build error: `Date?` does not conform to `Plottable` — resolved by using non-optional `@State private var scrollPosition = Date()` and setting initial position via `.onAppear`
+- Build error: conditional binding on non-optional — resolved by removing `guard let` pattern after switching to non-optional scroll state
+
 ### Completion Notes List
 
+- Switched data source from `buckets(for:)` to `allGranularityBuckets(for:)` for multi-granularity chart data
+- Removed dead code: `chartExpansionEnabled` flag, `displayBuckets` static method, `expandedBucketIndex` state, `bucketLabel` formatter, `relativeFormatter`
+- Implemented HStack layout: fixed-width Y-axis `Chart` (50pt) with `.chartXAxis(.hidden)` + scrollable chart body with `.chartYAxis(.hidden)`, both sharing same `yDomain`
+- Y-domain computed from ALL buckets (not just visible) to prevent axis shifting during scroll: `yMin = max(0, min(mean-stddev))`, `yMax = max(mean+stddev)`
+- Added horizontal scrolling with `.chartScrollableAxes(.horizontal)`, `.chartXVisibleDomain(length:)`, and scroll position binding pinned to most recent bucket on appear
+- Implemented data windowing: tracks scroll position, computes visible range, slices bucket array with 5-bucket buffer on each side to mitigate iOS 18 redraw loop
+- Built zone config dictionary `[BucketSize: any GranularityZoneConfig]` for month/day/session (no `.week`)
+- Replaced `bucketLabel` with `GranularityZoneConfig.formatAxisLabel` for X-axis labels
+- Preserved all existing chart marks (AreaMark, LineMark, RuleMark) and headline row unchanged
+- Retained all accessibility labels and value descriptions
+- Added 12 new tests: Y-domain computation (4), data windowing (5), zone config dictionary (3)
+- Removed 7 obsolete tests: bucket label formatting (4), display buckets (3)
+- 1029 tests pass, `check-dependencies.sh` clean
+
+### Change Log
+
+- 2026-03-11: Implemented scrollable chart with fixed Y-axis, data windowing, and multi-granularity X-axis labels
+
 ### File List
+
+- `Peach/Profile/ProgressChartView.swift` — Major rework: HStack layout, scrollable body, data windowing, zone config dictionary
+- `PeachTests/Profile/ProgressChartViewTests.swift` — Updated: replaced bucket label and display bucket tests with Y-domain, windowing, and zone config tests
+- `docs/implementation-artifacts/sprint-status.yaml` — Updated story status
+- `docs/implementation-artifacts/41-2-scrollable-chart-with-fixed-y-axis.md` — Updated story status and dev agent record

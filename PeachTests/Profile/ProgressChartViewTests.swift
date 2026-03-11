@@ -5,35 +5,133 @@ import Foundation
 @Suite("ProgressChartView Tests")
 struct ProgressChartViewTests {
 
-    // MARK: - Bucket Label Formatting
+    // MARK: - Y-Domain Computation
 
-    @Test("session bucket formats as relative time")
-    func sessionBucketLabel() async {
+    @Test("computes Y domain from bucket min/max with stddev")
+    func yDomainFromBuckets() async {
+        let buckets = [
+            TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .month, mean: 20.0, stddev: 5.0, recordCount: 10),
+            TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .day, mean: 10.0, stddev: 3.0, recordCount: 5),
+            TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .session, mean: 30.0, stddev: 8.0, recordCount: 3),
+        ]
+        let domain = ProgressChartView.yDomain(for: buckets)
+        // yMin = max(0, min(20-5, 10-3, 30-8)) = max(0, 7) = 7
+        // yMax = max(20+5, 10+3, 30+8) = 38
+        #expect(domain.lowerBound == 7.0)
+        #expect(domain.upperBound == 38.0)
+    }
+
+    @Test("Y domain clamps lower bound to zero")
+    func yDomainClampsToZero() async {
+        let buckets = [
+            TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .month, mean: 2.0, stddev: 5.0, recordCount: 10),
+        ]
+        let domain = ProgressChartView.yDomain(for: buckets)
+        // yMin = max(0, 2-5) = max(0, -3) = 0
+        // yMax = 2+5 = 7
+        #expect(domain.lowerBound == 0.0)
+        #expect(domain.upperBound == 7.0)
+    }
+
+    @Test("Y domain for empty buckets returns 0...1")
+    func yDomainEmptyBuckets() async {
+        let domain = ProgressChartView.yDomain(for: [])
+        #expect(domain.lowerBound == 0.0)
+        #expect(domain.upperBound == 1.0)
+    }
+
+    @Test("Y domain for single bucket with zero stddev")
+    func yDomainSingleBucketZeroStddev() async {
+        let buckets = [
+            TimeBucket(periodStart: Date(), periodEnd: Date(), bucketSize: .day, mean: 15.0, stddev: 0.0, recordCount: 1),
+        ]
+        let domain = ProgressChartView.yDomain(for: buckets)
+        #expect(domain.lowerBound == 15.0)
+        #expect(domain.upperBound == 15.0)
+    }
+
+    // MARK: - Data Windowing
+
+    @Test("windowed slice returns correct subset with buffer")
+    func windowedSliceWithBuffer() async {
+        let buckets = makeBucketArray(count: 50)
+        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 30..<40, buffer: 5)
+        // Should include indices 25..<45
+        #expect(result.count == 20)
+        #expect(result.first?.mean == 25.0)
+        #expect(result.last?.mean == 44.0)
+    }
+
+    @Test("windowed slice clamps at start boundary")
+    func windowedSliceClampsAtStart() async {
+        let buckets = makeBucketArray(count: 50)
+        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 0..<5, buffer: 5)
+        // Should include indices 0..<10
+        #expect(result.count == 10)
+        #expect(result.first?.mean == 0.0)
+    }
+
+    @Test("windowed slice clamps at end boundary")
+    func windowedSliceClampsAtEnd() async {
+        let buckets = makeBucketArray(count: 50)
+        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 45..<50, buffer: 5)
+        // Should include indices 40..<50
+        #expect(result.count == 10)
+        #expect(result.last?.mean == 49.0)
+    }
+
+    @Test("windowed slice with fewer buckets than buffer returns all")
+    func windowedSliceFewBuckets() async {
+        let buckets = makeBucketArray(count: 8)
+        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 2..<6, buffer: 5)
+        // Buffer would extend beyond bounds, so clamp: 0..<8 = all
+        #expect(result.count == 8)
+    }
+
+    @Test("windowed slice with empty buckets returns empty")
+    func windowedSliceEmpty() async {
+        let result = ProgressChartView.windowedBuckets(from: [], visibleRange: 0..<0, buffer: 5)
+        #expect(result.isEmpty)
+    }
+
+    // MARK: - Zone Config Dictionary
+
+    @Test("zone configs contains month, day, and session")
+    func zoneConfigsContainsExpectedKeys() async {
+        let configs = ProgressChartView.zoneConfigs
+        #expect(configs[.month] != nil)
+        #expect(configs[.day] != nil)
+        #expect(configs[.session] != nil)
+    }
+
+    @Test("zone configs does not contain week")
+    func zoneConfigsExcludesWeek() async {
+        let configs = ProgressChartView.zoneConfigs
+        #expect(configs[.week] == nil)
+    }
+
+    @Test("zone config point widths match expected values")
+    func zoneConfigPointWidths() async {
+        let configs = ProgressChartView.zoneConfigs
+        #expect(configs[.month]?.pointWidth == 30)
+        #expect(configs[.day]?.pointWidth == 40)
+        #expect(configs[.session]?.pointWidth == 50)
+    }
+
+    // MARK: - Initial Scroll Position
+
+    @Test("initial scroll position places latest data at right edge")
+    func initialScrollPositionPinsRight() async {
         let now = Date()
-        let twoHoursAgo = now.addingTimeInterval(-2 * 3600)
-        let label = ProgressChartView.bucketLabel(for: twoHoursAgo, size: .session, relativeTo: now)
-        #expect(!label.isEmpty)
-    }
-
-    @Test("day bucket formats as weekday abbreviation")
-    func dayBucketLabel() async {
-        let monday = dateFromComponents(year: 2026, month: 3, day: 2) // Monday
-        let label = ProgressChartView.bucketLabel(for: monday, size: .day, relativeTo: Date())
-        #expect(!label.isEmpty)
-    }
-
-    @Test("week bucket formats as month and day")
-    func weekBucketLabel() async {
-        let date = dateFromComponents(year: 2026, month: 3, day: 1)
-        let label = ProgressChartView.bucketLabel(for: date, size: .week, relativeTo: Date())
-        #expect(label.contains("Mar") || label.contains("Mär"))
-    }
-
-    @Test("month bucket formats as month abbreviation")
-    func monthBucketLabel() async {
-        let date = dateFromComponents(year: 2026, month: 1, day: 15)
-        let label = ProgressChartView.bucketLabel(for: date, size: .month, relativeTo: Date())
-        #expect(label.contains("Jan"))
+        let buckets = [
+            TimeBucket(periodStart: now.addingTimeInterval(-86400 * 30), periodEnd: now.addingTimeInterval(-86400 * 29), bucketSize: .month, mean: 10.0, stddev: 1.0, recordCount: 5),
+            TimeBucket(periodStart: now, periodEnd: now, bucketSize: .session, mean: 15.0, stddev: 2.0, recordCount: 3),
+        ]
+        let domainLength: TimeInterval = 86400 * 10
+        let position = ProgressChartView.initialScrollPosition(for: buckets, visibleDomainLength: domainLength)
+        // Left edge should be latestDate - domainLength
+        let expected = now.addingTimeInterval(-domainLength)
+        #expect(abs(position.timeIntervalSince(expected)) < 0.001)
     }
 
     // MARK: - Trend Display
@@ -85,78 +183,21 @@ struct ProgressChartViewTests {
         #expect(!value.isEmpty)
     }
 
-    // MARK: - Display Buckets
+    // MARK: - Helpers
 
-    @Test("displayBuckets returns original buckets when no expansion")
-    func displayBucketsNoExpansion() async {
-        let timeline = ProgressTimeline()
-        let buckets = makeSampleBuckets()
-        let result = ProgressChartView.displayBuckets(
-            from: buckets,
-            expandedIndex: nil,
-            timeline: timeline,
-            mode: .unisonPitchComparison
-        )
-        #expect(result.count == buckets.count)
-    }
-
-    @Test("displayBuckets replaces expanded bucket with sub-buckets")
-    func displayBucketsWithExpansion() async {
-        // Create records spanning ~45 days ago (month bucket) with multiple weeks
+    private func makeBucketArray(count: Int) -> [TimeBucket] {
         let now = Date()
-        let calendar = Calendar.current
-        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
-        let records = (0..<20).map { i in
-            PitchComparisonRecord(
-                referenceNote: 60,
-                targetNote: 60,
-                centOffset: 10.0 + Double(i),
-                isCorrect: true,
-                interval: 0,
-                tuningSystem: "equalTemperament",
-                timestamp: monthStart.addingTimeInterval(Double(i % 28) * 86400 + Double(i) * 60)
+        return (0..<count).map { i in
+            TimeBucket(
+                periodStart: now.addingTimeInterval(Double(i) * -86400),
+                periodEnd: now.addingTimeInterval(Double(i) * -86400 + 3600),
+                bucketSize: .day,
+                mean: Double(i),
+                stddev: 1.0,
+                recordCount: 5
             )
         }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
-        let baseBuckets = timeline.buckets(for: .unisonPitchComparison)
-
-        guard let monthIndex = baseBuckets.firstIndex(where: { $0.bucketSize == .month }) else {
-            Issue.record("Expected at least one month bucket")
-            return
-        }
-
-        let result = ProgressChartView.displayBuckets(
-            from: baseBuckets,
-            expandedIndex: monthIndex,
-            timeline: timeline,
-            mode: .unisonPitchComparison
-        )
-        // Should have more buckets than base (month replaced by multiple weeks)
-        #expect(result.count > baseBuckets.count)
     }
-
-    @Test("displayBuckets with out-of-range index returns original buckets")
-    func displayBucketsOutOfRange() async {
-        let timeline = ProgressTimeline()
-        let buckets = makeSampleBuckets()
-        let result = ProgressChartView.displayBuckets(
-            from: buckets,
-            expandedIndex: 999,
-            timeline: timeline,
-            mode: .unisonPitchComparison
-        )
-        #expect(result.count == buckets.count)
-    }
-
-    private func makeSampleBuckets() -> [TimeBucket] {
-        let now = Date()
-        return [
-            TimeBucket(periodStart: now.addingTimeInterval(-86400), periodEnd: now.addingTimeInterval(-43200), bucketSize: .day, mean: 10.0, stddev: 2.0, recordCount: 5),
-            TimeBucket(periodStart: now.addingTimeInterval(-43200), periodEnd: now, bucketSize: .day, mean: 8.0, stddev: 1.5, recordCount: 3),
-        ]
-    }
-
-    // MARK: - Helpers
 
     private func dateFromComponents(year: Int, month: Int, day: Int) -> Date {
         var components = DateComponents()
