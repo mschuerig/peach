@@ -142,28 +142,32 @@ struct ProgressChartView: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Layer 3: Stddev band
+            // Layer 3: Stddev band (month + day only — sessions use dots)
             ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
-                let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
-                AreaMark(
-                    x: .value("Index", Double(globalIndex)),
-                    yStart: .value("Low", max(0, bucket.mean - bucket.stddev)),
-                    yEnd: .value("High", bucket.mean + bucket.stddev)
-                )
-                .foregroundStyle(.blue.opacity(0.15))
+                if bucket.bucketSize != .session {
+                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
+                    AreaMark(
+                        x: .value("Index", Double(globalIndex)),
+                        yStart: .value("Low", max(0, bucket.mean - bucket.stddev)),
+                        yEnd: .value("High", bucket.mean + bucket.stddev)
+                    )
+                    .foregroundStyle(.blue.opacity(0.15))
+                }
             }
 
-            // Layer 4: EWMA line
+            // Layer 4: EWMA line (month + day only — sessions are disconnected dots)
             ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
-                let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
-                LineMark(
-                    x: .value("Index", Double(globalIndex)),
-                    y: .value("EWMA", bucket.mean)
-                )
-                .foregroundStyle(.blue)
+                if bucket.bucketSize != .session {
+                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
+                    LineMark(
+                        x: .value("Index", Double(globalIndex)),
+                        y: .value("EWMA", bucket.mean)
+                    )
+                    .foregroundStyle(.blue)
+                }
             }
 
-            // Layer 5: Session dots
+            // Layer 5: Session dots (disconnected, no line)
             ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
                 if bucket.bucketSize == .session {
                     let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
@@ -198,17 +202,6 @@ struct ProgressChartView: View {
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 let plotFrame = geometry[proxy.plotFrame!]
-
-                // Zone caption labels
-                ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
-                    let centerIndex = Double(zone.startIndex + zone.endIndex) / 2.0
-                    if let xPos = proxy.position(forX: centerIndex) {
-                        Text(zone.label)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .position(x: plotFrame.origin.x + xPos, y: plotFrame.origin.y + 8)
-                    }
-                }
 
                 // Year labels below X-axis
                 ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
@@ -367,8 +360,14 @@ struct ProgressChartView: View {
     }
 
     private static func formatAxisLabel(_ date: Date, size: BucketSize) -> String {
+        if size == .session { return "" }
         guard let config = zoneConfigs[size] else { return "" }
-        return config.formatAxisLabel(date)
+        var label = config.formatAxisLabel(date)
+        // Strip trailing dot from German abbreviations (e.g., "Dez." → "Dez", "Mo." → "Mo")
+        if label.hasSuffix(".") {
+            label.removeLast()
+        }
+        return label
     }
 
     static func trendSymbol(_ trend: Trend) -> String {

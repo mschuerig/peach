@@ -197,17 +197,14 @@ struct ProgressChartViewTests {
         #expect(separators.zones[0].bucketSize == .month)
         #expect(separators.zones[0].startIndex == 0)
         #expect(separators.zones[0].endIndex == 1)
-        #expect(separators.zones[0].label == String(localized: "Monthly"))
 
         #expect(separators.zones[1].bucketSize == .day)
         #expect(separators.zones[1].startIndex == 2)
         #expect(separators.zones[1].endIndex == 3)
-        #expect(separators.zones[1].label == String(localized: "Daily"))
 
         #expect(separators.zones[2].bucketSize == .session)
         #expect(separators.zones[2].startIndex == 4)
         #expect(separators.zones[2].endIndex == 4)
-        #expect(separators.zones[2].label == String(localized: "Sessions"))
 
         // Divider indices at zone transitions
         #expect(separators.dividerIndices[0] == 2)
