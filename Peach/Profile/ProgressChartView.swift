@@ -173,7 +173,8 @@ struct ProgressChartView: View {
             GeometryReader { geometry in
                 let plotFrame = geometry[proxy.plotFrame!]
 
-                // Year labels below X-axis
+                // Year labels below X-axis — positioned relative to full chart height
+                // so they adapt automatically when Dynamic Type changes axis label size
                 ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
                     if let xFirst = proxy.position(forX: Double(label.firstIndex)),
                        let xLast = proxy.position(forX: Double(label.lastIndex)) {
@@ -182,7 +183,7 @@ struct ProgressChartView: View {
                             .foregroundStyle(.secondary)
                             .position(
                                 x: plotFrame.origin.x + (xFirst + xLast) / 2.0,
-                                y: plotFrame.maxY + Self.yearLabelYOffset
+                                y: geometry.size.height + Self.yearLabelBottomPadding
                             )
                     }
                 }
@@ -299,10 +300,9 @@ struct ProgressChartView: View {
 
     // MARK: - Layout Constants
 
-    /// Vertical offset for year labels below the X-axis.
-    /// Approximation — Swift Charts does not expose axis label height.
-    /// See Story 41.10 for a planned AnnotationMark-based alternative.
-    private static let yearLabelYOffset: CGFloat = 28
+    /// Padding below the chart's rendered content (including axis labels) for year label positioning.
+    /// Uses geometry.size.height as anchor, which adapts to Dynamic Type automatically.
+    private static let yearLabelBottomPadding: CGFloat = 8
 
     // MARK: - Static Helpers
 
