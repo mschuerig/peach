@@ -8,6 +8,7 @@ struct ProgressChartView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var scrollPosition: Double = .infinity
+    @State private var selectedBucketIndex: Int?
 
     private var config: TrainingModeConfig { mode.config }
 
@@ -98,6 +99,19 @@ struct ProgressChartView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: Self.visibleBucketCount)
         .chartScrollPosition(x: $scrollPosition)
+        .chartGesture { proxy in
+            SpatialTapGesture()
+                .onEnded { value in
+                    guard let x: Double = proxy.value(atX: value.location.x) else {
+                        selectedBucketIndex = nil
+                        return
+                    }
+                    selectedBucketIndex = Self.findNearestBucketIndex(atX: x, bucketCount: buckets.count)
+                }
+        }
+        .onChange(of: scrollPosition) { _, _ in
+            selectedBucketIndex = nil
+        }
         .onAppear {
             scrollPosition = Self.initialScrollPosition(for: buckets)
         }
@@ -112,6 +126,16 @@ struct ProgressChartView: View {
             separatorData: separatorData,
             yearLabels: labels
         )
+        .chartGesture { proxy in
+            SpatialTapGesture()
+                .onEnded { value in
+                    guard let x: Double = proxy.value(atX: value.location.x) else {
+                        selectedBucketIndex = nil
+                        return
+                    }
+                    selectedBucketIndex = Self.findNearestBucketIndex(atX: x, bucketCount: buckets.count)
+                }
+        }
     }
 
     private func chartContent(
@@ -174,6 +198,13 @@ struct ProgressChartView: View {
             RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                 .foregroundStyle(.green.opacity(0.6))
+
+            // Layer 7: Selection indicator
+            if let selectedIndex = selectedBucketIndex, selectedIndex < buckets.count {
+                RuleMark(x: .value("Selected", Double(selectedIndex)))
+                    .foregroundStyle(.gray.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
+            }
         }
         .chartXScale(domain: -0.5...Double(buckets.count) - 0.5)
         .chartYScale(domain: yDomain)
@@ -198,6 +229,18 @@ struct ProgressChartView: View {
             GeometryReader { geometry in
                 let plotFrame = geometry[proxy.plotFrame!]
 
+                // Selection annotation popover
+                if let selectedIndex = selectedBucketIndex,
+                   selectedIndex < buckets.count,
+                   let xPos = proxy.position(forX: Double(selectedIndex)) {
+                    let clampedX = min(max(plotFrame.origin.x + xPos, plotFrame.origin.x + 40), plotFrame.maxX - 40)
+                    annotationView(for: buckets[selectedIndex])
+                        .position(
+                            x: clampedX,
+                            y: plotFrame.origin.y - 4
+                        )
+                }
+
                 // Year labels below X-axis
                 ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
                     if let xFirst = proxy.position(forX: Double(label.firstIndex)),
@@ -214,6 +257,24 @@ struct ProgressChartView: View {
             }
         }
         .padding(.bottom, yearLabels.isEmpty ? 0 : 16)
+    }
+
+    private func annotationView(for bucket: TimeBucket) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(Self.annotationDateLabel(bucket.periodStart, size: bucket.bucketSize))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(Self.formatEWMA(bucket.mean))
+                .font(.caption.bold())
+            Text(Self.formatStdDev(bucket.stddev))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(String(localized: "\(bucket.recordCount) records"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(6)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
     }
 
     private var chartHeight: CGFloat {
@@ -367,6 +428,25 @@ struct ProgressChartView: View {
     static func initialScrollPosition(for buckets: [TimeBucket]) -> Double {
         guard !buckets.isEmpty else { return 0 }
         return max(0, Double(buckets.count) - Double(visibleBucketCount))
+    }
+
+    static func annotationDateLabel(_ date: Date, size: BucketSize) -> String {
+        let formatter = DateFormatter()
+        switch size {
+        case .month:
+            formatter.setLocalizedDateFormatFromTemplate("MMM yyyy")
+        case .day, .week:
+            formatter.setLocalizedDateFormatFromTemplate("E MMM d")
+        case .session:
+            formatter.setLocalizedDateFormatFromTemplate("HH:mm")
+        }
+        return formatter.string(from: date)
+    }
+
+    static func findNearestBucketIndex(atX x: Double, bucketCount: Int) -> Int? {
+        let index = Int(x.rounded(.toNearestOrEven))
+        guard index >= 0, index < bucketCount else { return nil }
+        return index
     }
 
     static func formatAxisLabel(_ date: Date, size: BucketSize, index: Int, buckets: [TimeBucket]) -> String {

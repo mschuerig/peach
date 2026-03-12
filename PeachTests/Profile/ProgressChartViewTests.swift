@@ -351,6 +351,74 @@ struct ProgressChartViewTests {
         #expect(!label.hasSuffix("."))
     }
 
+    // MARK: - annotationDateLabel
+
+    @Test("annotation date label for month shows abbreviated month and year")
+    func annotationDateLabelMonth() async {
+        let calendar = Calendar.current
+        let jan2026 = calendar.date(from: DateComponents(year: 2026, month: 1, day: 15))!
+        let label = ProgressChartView.annotationDateLabel(jan2026, size: .month)
+        #expect(label.contains("2026"))
+        #expect(label.contains("Jan"))
+    }
+
+    @Test("annotation date label for day shows weekday and date")
+    func annotationDateLabelDay() async {
+        let calendar = Calendar.current
+        // March 5, 2026 is a Thursday
+        let mar5 = calendar.date(from: DateComponents(year: 2026, month: 3, day: 5))!
+        let label = ProgressChartView.annotationDateLabel(mar5, size: .day)
+        #expect(label.contains("5"))
+        #expect(!label.isEmpty)
+    }
+
+    @Test("annotation date label for session shows time")
+    func annotationDateLabelSession() async {
+        let calendar = Calendar.current
+        let date = calendar.date(from: DateComponents(year: 2026, month: 3, day: 5, hour: 14, minute: 30))!
+        let label = ProgressChartView.annotationDateLabel(date, size: .session)
+        #expect(label.contains("14") || label.contains("2:30"))
+    }
+
+    // MARK: - findNearestBucketIndex
+
+    @Test("snaps to exact bucket index when tapping directly on it")
+    func findNearestBucketIndexExact() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 0.0, bucketCount: 5) == 0)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 3.0, bucketCount: 5) == 3)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 4.0, bucketCount: 5) == 4)
+    }
+
+    @Test("snaps to nearest bucket index when tapping between data points")
+    func findNearestBucketIndexRounds() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 1.3, bucketCount: 5) == 1)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 1.7, bucketCount: 5) == 2)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 2.6, bucketCount: 5) == 3)
+    }
+
+    @Test("returns nil for negative X outside valid range")
+    func findNearestBucketIndexNegative() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: -1.0, bucketCount: 5) == nil)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: -0.6, bucketCount: 5) == nil)
+    }
+
+    @Test("returns zero for X at -0.5 boundary (rounds to 0)")
+    func findNearestBucketIndexAtBoundary() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: -0.5, bucketCount: 5) == 0)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: -0.4, bucketCount: 5) == 0)
+    }
+
+    @Test("returns nil for X at or beyond bucket count")
+    func findNearestBucketIndexBeyondCount() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 5.0, bucketCount: 5) == nil)
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 10.0, bucketCount: 5) == nil)
+    }
+
+    @Test("returns nil for empty bucket count")
+    func findNearestBucketIndexEmpty() async {
+        #expect(ProgressChartView.findNearestBucketIndex(atX: 0.0, bucketCount: 0) == nil)
+    }
+
     // MARK: - Helpers
 
     private func makeBucketArray(count: Int) -> [TimeBucket] {

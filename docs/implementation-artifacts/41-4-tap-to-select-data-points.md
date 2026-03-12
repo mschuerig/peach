@@ -1,6 +1,6 @@
 # Story 41.4: Tap-to-Select Data Points
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,28 +24,28 @@ so that I can inspect specific periods of my training history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Selection state and gesture handling (AC: #1, #2, #3, #5)
-  - [ ] 1.1 Write tests: tapping at an index X sets `selectedBucketIndex` to the nearest bucket index. Use `findNearestBucketIndex(atX:bucketCount:)` static helper.
-  - [ ] 1.2 Write tests: tapping at X < -0.5 or X >= bucketCount returns nil (empty space dismissal)
-  - [ ] 1.3 Add `@State private var selectedBucketIndex: Int?` to `ProgressChartView`
-  - [ ] 1.4 Add `.chartGesture { proxy in SpatialTapGesture().onEnded { ... } }` modifier to chart. Resolve tap X coordinate via `proxy.value(atX:)`, snap to nearest bucket index using `findNearestBucketIndex(atX:bucketCount:)`. Set `selectedBucketIndex` or nil.
-  - [ ] 1.5 Dismiss selection on scroll: add `.onChange(of: scrollPosition) { selectedBucketIndex = nil }`
+- [x] Task 1: Selection state and gesture handling (AC: #1, #2, #3, #5)
+  - [x] 1.1 Write tests: tapping at an index X sets `selectedBucketIndex` to the nearest bucket index. Use `findNearestBucketIndex(atX:bucketCount:)` static helper.
+  - [x] 1.2 Write tests: tapping at X < -0.5 or X >= bucketCount returns nil (empty space dismissal)
+  - [x] 1.3 Add `@State private var selectedBucketIndex: Int?` to `ProgressChartView`
+  - [x] 1.4 Add `.chartGesture { proxy in SpatialTapGesture().onEnded { ... } }` modifier to chart. Resolve tap X coordinate via `proxy.value(atX:)`, snap to nearest bucket index using `findNearestBucketIndex(atX:bucketCount:)`. Set `selectedBucketIndex` or nil.
+  - [x] 1.5 Dismiss selection on scroll: add `.onChange(of: scrollPosition) { selectedBucketIndex = nil }`
 
-- [ ] Task 2: Selection indicator RuleMark (AC: #1)
-  - [ ] 2.1 Add conditional `RuleMark(x: .value("Selected", Double(selectedIndex)))` inside the `Chart` block, after data marks (Layer 7). Style: `.foregroundStyle(.gray.opacity(0.5))`, `.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))`.
+- [x] Task 2: Selection indicator RuleMark (AC: #1)
+  - [x] 2.1 Add conditional `RuleMark(x: .value("Selected", Double(selectedIndex)))` inside the `Chart` block, after data marks (Layer 7). Style: `.foregroundStyle(.gray.opacity(0.5))`, `.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))`.
 
-- [ ] Task 3: Annotation popover (AC: #1, #4)
-  - [ ] 3.1 Write tests: `annotationDateLabel(_:size:)` returns descriptive date strings: months → "Jan 2026", days → "Mon, Mar 5", sessions → time "14:30"
-  - [ ] 3.2 Implement `annotationDateLabel(_:size:)` static helper using `DateFormatter` with appropriate format per `BucketSize`
-  - [ ] 3.3 Add `.annotation(position: .top, overflowResolution: .fitToChart)` on the selection RuleMark. Content: VStack with EWMA (`formatEWMA`), stddev (`formatStdDev`), date label (`annotationDateLabel`), and record count. Style: `.font(.caption)`, compact padding, rounded background.
+- [x] Task 3: Annotation popover (AC: #1, #4)
+  - [x] 3.1 Write tests: `annotationDateLabel(_:size:)` returns descriptive date strings: months → "Jan 2026", days → "Mon, Mar 5", sessions → time "14:30"
+  - [x] 3.2 Implement `annotationDateLabel(_:size:)` static helper using `DateFormatter` with appropriate format per `BucketSize`
+  - [x] 3.3 Add `.annotation(position: .top, overflowResolution: .fitToChart)` on the selection RuleMark. Content: VStack with EWMA (`formatEWMA`), stddev (`formatStdDev`), date label (`annotationDateLabel`), and record count. Style: `.font(.caption)`, compact padding, rounded background.
 
-- [ ] Task 4: Static chart support (AC: #1, #3)
-  - [ ] 4.1 Pass `selectedBucketIndex` binding through to `chartContent` (or capture via closure) so selection works on both scrollable and static charts
-  - [ ] 4.2 For static charts (no scroll), add the same `.chartGesture` modifier. No `.onChange(of: scrollPosition)` needed since static charts don't scroll — tap empty space dismissal is handled by `findNearestBucketIndex` returning nil.
+- [x] Task 4: Static chart support (AC: #1, #3)
+  - [x] 4.1 Pass `selectedBucketIndex` binding through to `chartContent` (or capture via closure) so selection works on both scrollable and static charts
+  - [x] 4.2 For static charts (no scroll), add the same `.chartGesture` modifier. No `.onChange(of: scrollPosition)` needed since static charts don't scroll — tap empty space dismissal is handled by `findNearestBucketIndex` returning nil.
 
-- [ ] Task 5: Run full test suite (AC: all)
-  - [ ] 5.1 Run `bin/test.sh` — all existing + new tests pass
-  - [ ] 5.2 Verify no dependency violations with `bin/check-dependencies.sh`
+- [x] Task 5: Run full test suite (AC: all)
+  - [x] 5.1 Run `bin/test.sh` — all existing + new tests pass
+  - [x] 5.2 Verify no dependency violations with `bin/check-dependencies.sh`
 
 ## Dev Notes
 
@@ -289,10 +289,31 @@ All recent work on Story 41.3. Code patterns: commit messages follow `{Verb} sto
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Swift Charts type-checker timeout when 7 chart layers + `.annotation()` modifier inside `Chart` block — resolved by placing annotation popover in `.chartOverlay` with proxy-based positioning instead of `.annotation(position:overflowResolution:)` on the RuleMark
+- `round(-0.5)` uses `.toNearestOrAwayFromZero` by default (rounds to -1); switched to `.toNearestOrEven` so -0.5 rounds to 0 as specified
+
 ### Completion Notes List
 
+- Implemented tap-to-select via `.chartGesture` with `SpatialTapGesture` on both scrollable and static chart bodies — does not interfere with scroll gestures
+- Added `findNearestBucketIndex(atX:bucketCount:)` static helper with banker's rounding for index snapping
+- Added `annotationDateLabel(_:size:)` static helper with format per bucket granularity (month/day/session)
+- Selection indicator: dashed `RuleMark` at selected X position (Layer 7, distinct from zone dividers)
+- Annotation popover positioned via `.chartOverlay` proxy with horizontal clamping to prevent clipping
+- Selection dismissed on scroll via `.onChange(of: scrollPosition)`
+- Added German localization for record count string
+- 6 new tests: findNearestBucketIndex (exact, rounding, negative, boundary, beyond count, empty) + annotationDateLabel (month, day, session)
+- All 1053 tests pass, no dependency violations
+
+### Change Log
+
+- 2026-03-12: Implemented tap-to-select data points with selection indicator and annotation popover
+
 ### File List
+
+- Peach/Profile/ProgressChartView.swift (modified)
+- PeachTests/Profile/ProgressChartViewTests.swift (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
