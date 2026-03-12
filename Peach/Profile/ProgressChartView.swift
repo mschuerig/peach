@@ -6,11 +6,14 @@ struct ProgressChartView: View {
 
     @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     @State private var scrollPosition: Double = .infinity
     @State private var selectedBucketIndex: Int?
 
     private var config: TrainingModeConfig { mode.config }
+    private var isIncreaseContrast: Bool { colorSchemeContrast == .increased }
 
     var body: some View {
         let state = progressTimeline.state(for: mode)
@@ -38,7 +41,7 @@ struct ProgressChartView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(String(localized: "Progress chart for \(config.displayName)"))
         .accessibilityValue(Self.chartAccessibilityValue(
             ewma: ewma,
@@ -136,12 +139,12 @@ struct ProgressChartView: View {
             // Layer 6: Baseline
             RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
-                .foregroundStyle(.green.opacity(0.6))
+                .foregroundStyle(.green.opacity(Self.contrastAdjustedOpacity(base: 0.6, increased: 0.9, isIncreaseContrast: isIncreaseContrast)))
 
             // Layer 7: Selection indicator with annotation
             if let selectedIndex = selectedBucketIndex, selectedIndex < buckets.count {
                 RuleMark(x: .value("Selected", Double(selectedIndex)))
-                    .foregroundStyle(Color.gray.opacity(0.5))
+                    .foregroundStyle(Color.gray.opacity(Self.contrastAdjustedOpacity(base: 0.5, increased: 0.8, isIncreaseContrast: isIncreaseContrast)))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                     .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                         annotationView(for: buckets[selectedIndex])
@@ -184,6 +187,21 @@ struct ProgressChartView: View {
                             )
                     }
                 }
+
+                // Zone accessibility containers
+                ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
+                    if let summary = Self.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config),
+                       let xStart = proxy.position(forX: Double(zone.startIndex) - 0.5),
+                       let xEnd = proxy.position(forX: Double(zone.endIndex) + 0.5) {
+                        let zoneWidth = xEnd - xStart
+                        let zoneCenterX = plotFrame.origin.x + (xStart + xEnd) / 2.0
+                        Color.clear
+                            .frame(width: zoneWidth, height: plotFrame.height)
+                            .position(x: zoneCenterX, y: plotFrame.midY)
+                            .accessibilityElement()
+                            .accessibilityLabel(summary)
+                    }
+                }
             }
         }
         .padding(.bottom, yearLabels.isEmpty ? 0 : 16)
@@ -212,7 +230,7 @@ struct ProgressChartView: View {
                 yStart: .value("Y0", yDomain.lowerBound),
                 yEnd: .value("Y1", yDomain.upperBound)
             )
-            .foregroundStyle(Self.zoneTint(for: zone.bucketSize).opacity(0.06))
+            .foregroundStyle(Self.zoneTint(for: zone.bucketSize).opacity(Self.contrastAdjustedOpacity(base: 0.06, increased: 0.12, isIncreaseContrast: isIncreaseContrast)))
         }
     }
 
@@ -220,7 +238,7 @@ struct ProgressChartView: View {
         ForEach(separatorData.dividerIndices, id: \.self) { idx in
             RuleMark(x: .value("Div", Double(idx) - 0.5))
                 .lineStyle(StrokeStyle(lineWidth: 1))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isIncreaseContrast ? .primary : .secondary)
         }
     }
 
@@ -231,7 +249,7 @@ struct ProgressChartView: View {
                 yStart: .value("Low", max(0, point.mean - point.stddev)),
                 yEnd: .value("High", point.mean + point.stddev)
             )
-            .foregroundStyle(.blue.opacity(0.15))
+            .foregroundStyle(.blue.opacity(Self.contrastAdjustedOpacity(base: 0.15, increased: 0.3, isIncreaseContrast: isIncreaseContrast)))
         }
     }
 
@@ -494,6 +512,36 @@ struct ProgressChartView: View {
 
     static func formatStdDev(_ value: Double) -> String {
         "±\(TrainingStatsView.formattedCents(value))"
+    }
+
+    static func zoneAccessibilitySummary(buckets: [TimeBucket], zone: ZoneInfo, config: TrainingModeConfig) -> String? {
+        guard zone.startIndex >= 0, zone.endIndex < buckets.count, zone.startIndex <= zone.endIndex else { return nil }
+
+        let zoneBuckets = Array(buckets[zone.startIndex...zone.endIndex])
+        guard !zoneBuckets.isEmpty else { return nil }
+
+        let zoneName: String
+        switch zone.bucketSize {
+        case .month: zoneName = String(localized: "Monthly")
+        case .day: zoneName = String(localized: "Daily")
+        case .session: zoneName = String(localized: "Session")
+        case .week: zoneName = String(localized: "Weekly")
+        }
+
+        let firstDate = annotationDateLabel(zoneBuckets.first!.periodStart, size: zone.bucketSize)
+        let lastDate = annotationDateLabel(zoneBuckets.last!.periodStart, size: zone.bucketSize)
+        let firstMean = formatEWMA(zoneBuckets.first!.mean)
+        let lastMean = formatEWMA(zoneBuckets.last!.mean)
+        let count = zoneBuckets.count
+
+        if count == 1 {
+            return String(localized: "\(zoneName) zone: \(firstDate), pitch trend \(firstMean) \(config.unitLabel), \(count) data points")
+        }
+        return String(localized: "\(zoneName) zone: \(firstDate) through \(lastDate), pitch trend from \(firstMean) to \(lastMean) \(config.unitLabel), \(count) data points")
+    }
+
+    static func contrastAdjustedOpacity(base: Double, increased: Double, isIncreaseContrast: Bool) -> Double {
+        isIncreaseContrast ? increased : base
     }
 
     static func chartAccessibilityValue(ewma: Double?, trend: Trend?, unitLabel: String) -> String {

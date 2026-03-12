@@ -422,6 +422,119 @@ struct ProgressChartViewTests {
         #expect(ProgressChartView.findNearestBucketIndex(atX: 0.0, bucketCount: 0) == nil)
     }
 
+    // MARK: - Zone Accessibility Summary
+
+    @Test("produces VoiceOver summary for monthly zone")
+    func zoneAccessibilitySummaryMonthly() async {
+        let calendar = Calendar.current
+        let nov2025 = calendar.date(from: DateComponents(year: 2025, month: 11, day: 1))!
+        let dec2025 = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        let jan2026 = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1))!
+        let feb2026 = calendar.date(from: DateComponents(year: 2026, month: 2, day: 1))!
+
+        let buckets = [
+            TimeBucket(periodStart: nov2025, periodEnd: dec2025, bucketSize: .month, mean: 15.2, stddev: 2.0, recordCount: 10),
+            TimeBucket(periodStart: dec2025, periodEnd: jan2026, bucketSize: .month, mean: 13.0, stddev: 1.5, recordCount: 8),
+            TimeBucket(periodStart: jan2026, periodEnd: feb2026, bucketSize: .month, mean: 11.0, stddev: 1.0, recordCount: 12),
+        ]
+        let zone = ProgressChartView.ZoneInfo(bucketSize: .month, startIndex: 0, endIndex: 2)
+        let config = TrainingModeConfig.unisonPitchComparison
+
+        let summary = ProgressChartView.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config)
+
+        #expect(summary != nil)
+        #expect(summary!.contains("15.2") || summary!.contains("15,2"))
+        #expect(summary!.contains("11") || summary!.contains("11,0"))
+        #expect(summary!.contains("3"))
+    }
+
+    @Test("produces VoiceOver summary for daily zone")
+    func zoneAccessibilitySummaryDaily() async {
+        let calendar = Calendar.current
+        let mar5 = calendar.date(from: DateComponents(year: 2026, month: 3, day: 5))!
+        let mar6 = calendar.date(from: DateComponents(year: 2026, month: 3, day: 6))!
+        let mar7 = calendar.date(from: DateComponents(year: 2026, month: 3, day: 7))!
+
+        let buckets = [
+            TimeBucket(periodStart: mar5, periodEnd: mar6, bucketSize: .day, mean: 10.0, stddev: 1.0, recordCount: 5),
+            TimeBucket(periodStart: mar6, periodEnd: mar7, bucketSize: .day, mean: 9.0, stddev: 0.5, recordCount: 3),
+        ]
+        let zone = ProgressChartView.ZoneInfo(bucketSize: .day, startIndex: 0, endIndex: 1)
+        let config = TrainingModeConfig.unisonPitchComparison
+
+        let summary = ProgressChartView.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config)
+
+        #expect(summary != nil)
+        #expect(summary!.contains("2"))
+    }
+
+    @Test("single-zone data returns one summary")
+    func zoneAccessibilitySummarySingleBucket() async {
+        let date = Date()
+        let buckets = [
+            TimeBucket(periodStart: date, periodEnd: date.addingTimeInterval(3600), bucketSize: .session, mean: 8.5, stddev: 0.5, recordCount: 3),
+        ]
+        let zone = ProgressChartView.ZoneInfo(bucketSize: .session, startIndex: 0, endIndex: 0)
+        let config = TrainingModeConfig.unisonPitchComparison
+
+        let summary = ProgressChartView.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config)
+
+        #expect(summary != nil)
+        #expect(summary!.contains("1"))
+    }
+
+    @Test("empty zone returns nil accessibility summary")
+    func zoneAccessibilitySummaryEmptyZone() async {
+        let buckets: [TimeBucket] = []
+        let zone = ProgressChartView.ZoneInfo(bucketSize: .month, startIndex: 0, endIndex: -1)
+        let config = TrainingModeConfig.unisonPitchComparison
+
+        let summary = ProgressChartView.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config)
+
+        #expect(summary == nil)
+    }
+
+    // MARK: - Contrast Adjusted Opacity
+
+    @Test("returns base opacity when standard contrast")
+    func contrastAdjustedOpacityStandard() async {
+        let result = ProgressChartView.contrastAdjustedOpacity(base: 0.15, increased: 0.3, isIncreaseContrast: false)
+        #expect(result == 0.15)
+    }
+
+    @Test("returns higher opacity when increase contrast is enabled")
+    func contrastAdjustedOpacityIncreased() async {
+        let result = ProgressChartView.contrastAdjustedOpacity(base: 0.15, increased: 0.3, isIncreaseContrast: true)
+        #expect(result == 0.3)
+    }
+
+    // MARK: - Performance: Bucket Count
+
+    @Test("allGranularityBuckets with 365 days of data produces fewer than 2000 buckets")
+    func bucketCountFor365Days() async {
+        let timeline = makeTimeline(dayCount: 365, recordsPerDay: 5)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+        #expect(buckets.count < 2000)
+    }
+
+    @Test("allGranularityBuckets with 1000 days of data produces fewer than 2000 buckets")
+    func bucketCountFor1000Days() async {
+        let timeline = makeTimeline(dayCount: 1000, recordsPerDay: 5)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+        #expect(buckets.count < 2000)
+    }
+
+    @Test("session zone is limited to today only")
+    func sessionZoneLimitedToToday() async {
+        let timeline = makeTimeline(dayCount: 30, recordsPerDay: 5)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+        let sessionBuckets = buckets.filter { $0.bucketSize == .session }
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        for bucket in sessionBuckets {
+            #expect(bucket.periodStart >= startOfToday)
+        }
+    }
+
     // MARK: - Helpers
 
     private func makeBucketArray(count: Int) -> [TimeBucket] {
@@ -436,5 +549,26 @@ struct ProgressChartViewTests {
                 recordCount: 5
             )
         }
+    }
+
+    private func makeTimeline(dayCount: Int, recordsPerDay: Int) -> ProgressTimeline {
+        let now = Date()
+        var records: [PitchComparisonRecord] = []
+        for day in 0..<dayCount {
+            for record in 0..<recordsPerDay {
+                let timestamp = now.addingTimeInterval(Double(-day) * 86400 + Double(record) * 60)
+                let pitchRecord = PitchComparisonRecord(
+                    referenceNote: 60,
+                    targetNote: 60,
+                    centOffset: Double.random(in: 5...25),
+                    isCorrect: true,
+                    interval: 0,
+                    tuningSystem: "equalTemperament",
+                    timestamp: timestamp
+                )
+                records.append(pitchRecord)
+            }
+        }
+        return ProgressTimeline(pitchComparisonRecords: records)
     }
 }

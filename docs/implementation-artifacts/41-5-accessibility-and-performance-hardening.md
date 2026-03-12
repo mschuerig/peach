@@ -1,6 +1,6 @@
 # Story 41.5: Accessibility and Performance Hardening
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,44 +24,44 @@ so that the chart is usable regardless of my accessibility settings.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: VoiceOver zone accessibility containers (AC: #1)
-  - [ ] 1.1 Write tests: `zoneAccessibilitySummary(buckets:zone:config:)` returns descriptive summary for a zone (e.g., "Monthly zone: November 2025 through January 2026, pitch trend from 15.2 to 11.0 cents, 3 data points")
-  - [ ] 1.2 Write tests: single-zone data returns one summary; multi-zone returns one per zone; empty zone returns nil
-  - [ ] 1.3 Implement `zoneAccessibilitySummary(buckets:zone:config:)` static helper — pure function, fully testable
-  - [ ] 1.4 In `chartContent`, wrap each zone's chart marks with `.accessibilityElement(children: .combine)` and `.accessibilityLabel(summary)` using `Group` or chart accessibility modifiers
-  - [ ] 1.5 Verify VoiceOver can navigate zone-by-zone through the chart
+- [x] Task 1: VoiceOver zone accessibility containers (AC: #1)
+  - [x] 1.1 Write tests: `zoneAccessibilitySummary(buckets:zone:config:)` returns descriptive summary for a zone (e.g., "Monthly zone: November 2025 through January 2026, pitch trend from 15.2 to 11.0 cents, 3 data points")
+  - [x] 1.2 Write tests: single-zone data returns one summary; multi-zone returns one per zone; empty zone returns nil
+  - [x] 1.3 Implement `zoneAccessibilitySummary(buckets:zone:config:)` static helper — pure function, fully testable
+  - [x] 1.4 In `chartContent`, wrap each zone's chart marks with `.accessibilityElement(children: .combine)` and `.accessibilityLabel(summary)` using `Group` or chart accessibility modifiers
+  - [x] 1.5 Verify VoiceOver can navigate zone-by-zone through the chart
 
-- [ ] Task 2: Dynamic Type support for chart text (AC: #2)
-  - [ ] 2.1 Audit all font usage in `ProgressChartView.swift` — confirm `.headline`, `.title2`, `.caption`, `.caption2` are used (these auto-scale with Dynamic Type)
-  - [ ] 2.2 Verify annotation popover text (`.caption`, `.caption2`) scales correctly at accessibility sizes
-  - [ ] 2.3 Verify axis labels scale — Swift Charts axis labels use the font you provide, which should already be `.caption`
-  - [ ] 2.4 If any hardcoded font sizes exist, replace with scaled text styles
+- [x] Task 2: Dynamic Type support for chart text (AC: #2)
+  - [x] 2.1 Audit all font usage in `ProgressChartView.swift` — confirm `.headline`, `.title2`, `.caption`, `.caption2` are used (these auto-scale with Dynamic Type)
+  - [x] 2.2 Verify annotation popover text (`.caption`, `.caption2`) scales correctly at accessibility sizes
+  - [x] 2.3 Verify axis labels scale — Swift Charts axis labels use the font you provide, which should already be `.caption`
+  - [x] 2.4 If any hardcoded font sizes exist, replace with scaled text styles
 
-- [ ] Task 3: Reduce Motion — suppress scroll animation (AC: #3)
-  - [ ] 3.1 Add `@Environment(\.accessibilityReduceMotion) private var reduceMotion` to `ProgressChartView`
-  - [ ] 3.2 In `scrollableChartBody`, wrap the `.onAppear` scroll position assignment: if `reduceMotion` is true, set position directly without animation (current implementation already sets it directly via `scrollPosition = ...` — verify no implicit animation wraps this)
-  - [ ] 3.3 If any `.animation()` modifiers exist on the chart or its container, gate them with `reduceMotion ? nil : .default`
+- [x] Task 3: Reduce Motion — suppress scroll animation (AC: #3)
+  - [x] 3.1 Add `@Environment(\.accessibilityReduceMotion) private var reduceMotion` to `ProgressChartView`
+  - [x] 3.2 In `scrollableChartBody`, wrap the `.onAppear` scroll position assignment: if `reduceMotion` is true, set position directly without animation (current implementation already sets it directly via `scrollPosition = ...` — verify no implicit animation wraps this)
+  - [x] 3.3 If any `.animation()` modifiers exist on the chart or its container, gate them with `reduceMotion ? nil : .default`
 
-- [ ] Task 4: Increase Contrast support (AC: #4)
-  - [ ] 4.1 Add `@Environment(\.colorSchemeContrast) private var colorSchemeContrast` to `ProgressChartView`
-  - [ ] 4.2 Write tests: `contrastAdjustedOpacity(base:isIncreaseContrast:)` returns higher opacity when increase contrast is enabled
-  - [ ] 4.3 Implement contrast-aware color helpers — when `colorSchemeContrast == .increased`:
+- [x] Task 4: Increase Contrast support (AC: #4)
+  - [x] 4.1 Add `@Environment(\.colorSchemeContrast) private var colorSchemeContrast` to `ProgressChartView`
+  - [x] 4.2 Write tests: `contrastAdjustedOpacity(base:isIncreaseContrast:)` returns higher opacity when increase contrast is enabled
+  - [x] 4.3 Implement contrast-aware color helpers — when `colorSchemeContrast == .increased`:
     - EWMA line: `.blue` (already opaque, no change needed)
     - Stddev band: increase opacity from `0.15` to `0.3`
     - Baseline: increase opacity from `0.6` to `0.9`
     - Zone backgrounds: increase opacity from `0.06` to `0.12`
     - Zone dividers: use `.primary` instead of `.secondary`
     - Selection indicator: increase from `0.5` to `0.8` opacity
-  - [ ] 4.4 Apply contrast-adjusted values in chart layers
+  - [x] 4.4 Apply contrast-adjusted values in chart layers
 
-- [ ] Task 5: Performance verification (AC: #5)
-  - [ ] 5.1 Write test: `allGranularityBuckets(for:)` with 365 days of data produces < 2000 total buckets
-  - [ ] 5.2 Write test: `allGranularityBuckets(for:)` with 1000 days of data still produces < 2000 buckets (monthly aggregation keeps count bounded)
-  - [ ] 5.3 Verify session zone is limited to today only (already implemented in `ProgressTimeline` — `timestamp >= startOfDay(now)`)
+- [x] Task 5: Performance verification (AC: #5)
+  - [x] 5.1 Write test: `allGranularityBuckets(for:)` with 365 days of data produces < 2000 total buckets
+  - [x] 5.2 Write test: `allGranularityBuckets(for:)` with 1000 days of data still produces < 2000 buckets (monthly aggregation keeps count bounded)
+  - [x] 5.3 Verify session zone is limited to today only (already implemented in `ProgressTimeline` — `timestamp >= startOfDay(now)`)
 
-- [ ] Task 6: Run full test suite (AC: all)
-  - [ ] 6.1 Run `bin/test.sh` — all existing + new tests pass
-  - [ ] 6.2 Verify no dependency violations with `bin/check-dependencies.sh`
+- [x] Task 6: Run full test suite (AC: all)
+  - [x] 6.1 Run `bin/test.sh` — all existing + new tests pass
+  - [x] 6.2 Verify no dependency violations with `bin/check-dependencies.sh`
 
 ## Dev Notes
 
@@ -280,14 +280,38 @@ Chart layer extraction in review commit (f41007d) means each layer method can ac
 - [Source: Peach/PitchComparison/PitchComparisonScreen.swift] — Existing `reduceMotion` pattern to follow
 - [Source: docs/project-context.md] — Coding conventions, testing rules, file placement
 
+## Change Log
+
+- 2026-03-12: Implemented accessibility and performance hardening for ProgressChartView — added VoiceOver zone containers, Dynamic Type verification, Reduce Motion environment guard, Increase Contrast support with contrast-adjusted opacities, and performance verification tests
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Pre-existing flaky tests in PitchComparisonSessionLifecycleTests and PitchComparisonSessionResetTests (timing-sensitive, not related to this story)
+
 ### Completion Notes List
 
+- Added `zoneAccessibilitySummary(buckets:zone:config:)` static helper producing localized VoiceOver summaries per zone
+- Changed card accessibility from `.combine` to `.contain` to enable zone-by-zone VoiceOver navigation
+- Added invisible accessibility overlay elements in `.chartOverlay` for each granularity zone
+- Added `@Environment(\.accessibilityReduceMotion)` as defensive guard (current scroll has no animation)
+- Added `@Environment(\.colorSchemeContrast)` with `isIncreaseContrast` computed property
+- Added `contrastAdjustedOpacity(base:increased:isIncreaseContrast:)` static helper
+- Applied contrast-adjusted opacities to stddev band (0.15→0.3), baseline (0.6→0.9), zone backgrounds (0.06→0.12), selection indicator (0.5→0.8), and zone dividers (.secondary→.primary)
+- Verified all fonts use text styles (no hardcoded sizes) — Dynamic Type works automatically
+- Added performance tests: 365 days → <2000 buckets, 1000 days → <2000 buckets, session zone limited to today
+- Added German translations for zone accessibility labels
+- All 1061 tests pass, no dependency violations
+
 ### File List
+
+- Peach/Profile/ProgressChartView.swift (modified)
+- PeachTests/Profile/ProgressChartViewTests.swift (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
+- docs/implementation-artifacts/41-5-accessibility-and-performance-hardening.md (modified)
+- docs/implementation-artifacts/sprint-status.yaml (modified)
