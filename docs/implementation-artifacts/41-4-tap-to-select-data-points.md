@@ -1,6 +1,6 @@
 # Story 41.4: Tap-to-Select Data Points
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -293,7 +293,9 @@ Claude Opus 4.6
 
 ### Debug Log References
 
-- Swift Charts type-checker timeout when 7 chart layers + `.annotation()` modifier inside `Chart` block — resolved by placing annotation popover in `.chartOverlay` with proxy-based positioning instead of `.annotation(position:overflowResolution:)` on the RuleMark
+- Swift Charts type-checker timeout when 7 chart layers + `.annotation()` modifier inside `Chart` block — resolved by extracting layers 1-5 into separate `some ChartContent` helper methods, reducing result builder complexity. This enabled using `.annotation(position:overflowResolution:)` directly on the RuleMark.
+- The story spec's `.overflowResolution(.fitToChart)` is pseudo-code; actual API is `.init(x: .fit(to: .chart), y: .fit(to: .chart))`
+- `.foregroundStyle(.gray.opacity(0.5))` on RuleMark resolves to `Chart3DContent` when `.annotation()` is chained — fixed by using explicit `Color.gray.opacity(0.5)`
 - `round(-0.5)` uses `.toNearestOrAwayFromZero` by default (rounds to -1); switched to `.toNearestOrEven` so -0.5 rounds to 0 as specified
 
 ### Completion Notes List
@@ -302,7 +304,7 @@ Claude Opus 4.6
 - Added `findNearestBucketIndex(atX:bucketCount:)` static helper with banker's rounding for index snapping
 - Added `annotationDateLabel(_:size:)` static helper with format per bucket granularity (month/day/session)
 - Selection indicator: dashed `RuleMark` at selected X position (Layer 7, distinct from zone dividers)
-- Annotation popover positioned via `.chartOverlay` proxy with horizontal clamping to prevent clipping
+- Annotation popover uses `.annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart)))` on the RuleMark for automatic overflow handling
 - Selection dismissed on scroll via `.onChange(of: scrollPosition)`
 - Added German localization for record count string
 - 6 new tests: findNearestBucketIndex (exact, rounding, negative, boundary, beyond count, empty) + annotationDateLabel (month, day, session)
@@ -311,6 +313,7 @@ Claude Opus 4.6
 ### Change Log
 
 - 2026-03-12: Implemented tap-to-select data points with selection indicator and annotation popover
+- 2026-03-12: Code review fixes — use `.annotation(overflowResolution:)` instead of manual `.chartOverlay` clamping, extract chart layers into helper methods, deduplicate gesture handler, cache DateFormatters, strengthen day label test
 
 ### File List
 

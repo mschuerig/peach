@@ -99,16 +99,7 @@ struct ProgressChartView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: Self.visibleBucketCount)
         .chartScrollPosition(x: $scrollPosition)
-        .chartGesture { proxy in
-            SpatialTapGesture()
-                .onEnded { value in
-                    guard let x: Double = proxy.value(atX: value.location.x) else {
-                        selectedBucketIndex = nil
-                        return
-                    }
-                    selectedBucketIndex = Self.findNearestBucketIndex(atX: x, bucketCount: buckets.count)
-                }
-        }
+        .chartGesture(selectionTapGesture(bucketCount: buckets.count))
         .onChange(of: scrollPosition) { _, _ in
             selectedBucketIndex = nil
         }
@@ -126,16 +117,7 @@ struct ProgressChartView: View {
             separatorData: separatorData,
             yearLabels: labels
         )
-        .chartGesture { proxy in
-            SpatialTapGesture()
-                .onEnded { value in
-                    guard let x: Double = proxy.value(atX: value.location.x) else {
-                        selectedBucketIndex = nil
-                        return
-                    }
-                    selectedBucketIndex = Self.findNearestBucketIndex(atX: x, bucketCount: buckets.count)
-                }
-        }
+        .chartGesture(selectionTapGesture(bucketCount: buckets.count))
     }
 
     private func chartContent(
@@ -145,65 +127,25 @@ struct ProgressChartView: View {
         yearLabels: [YearLabel]
     ) -> some View {
         return Chart {
-            // Layer 1: Zone background tints
-            ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
-                RectangleMark(
-                    xStart: .value("ZS", Double(zone.startIndex) - 0.5),
-                    xEnd: .value("ZE", Double(zone.endIndex) + 0.5),
-                    yStart: .value("Y0", yDomain.lowerBound),
-                    yEnd: .value("Y1", yDomain.upperBound)
-                )
-                .foregroundStyle(Self.zoneTint(for: zone.bucketSize).opacity(0.06))
-            }
-
-            // Layer 2: Zone and year boundary divider lines
-            ForEach(separatorData.dividerIndices, id: \.self) { idx in
-                RuleMark(x: .value("Div", Double(idx) - 0.5))
-                    .lineStyle(StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(.secondary)
-            }
-
-            // Layer 3: Stddev band (month + day + session bridge)
-            ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
-                AreaMark(
-                    x: .value("Index", point.position),
-                    yStart: .value("Low", max(0, point.mean - point.stddev)),
-                    yEnd: .value("High", point.mean + point.stddev)
-                )
-                .foregroundStyle(.blue.opacity(0.15))
-            }
-
-            // Layer 4: EWMA line (month + day + session bridge)
-            ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
-                LineMark(
-                    x: .value("Index", point.position),
-                    y: .value("EWMA", point.mean)
-                )
-                .foregroundStyle(.blue)
-            }
-
-            // Layer 5: Session dots (disconnected, no line)
-            ForEach(Array(buckets.enumerated()), id: \.element.periodStart) { i, bucket in
-                if bucket.bucketSize == .session {
-                    PointMark(
-                        x: .value("Index", Double(i)),
-                        y: .value("Value", bucket.mean)
-                    )
-                    .foregroundStyle(.blue)
-                    .symbolSize(20)
-                }
-            }
+            zoneBackgrounds(separatorData: separatorData, yDomain: yDomain)
+            zoneDividers(separatorData: separatorData)
+            stddevBand(buckets: buckets)
+            ewmaLine(buckets: buckets)
+            sessionDots(buckets: buckets)
 
             // Layer 6: Baseline
             RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                 .foregroundStyle(.green.opacity(0.6))
 
-            // Layer 7: Selection indicator
+            // Layer 7: Selection indicator with annotation
             if let selectedIndex = selectedBucketIndex, selectedIndex < buckets.count {
                 RuleMark(x: .value("Selected", Double(selectedIndex)))
-                    .foregroundStyle(.gray.opacity(0.5))
+                    .foregroundStyle(Color.gray.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
+                    .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        annotationView(for: buckets[selectedIndex])
+                    }
             }
         }
         .chartXScale(domain: -0.5...Double(buckets.count) - 0.5)
@@ -229,18 +171,6 @@ struct ProgressChartView: View {
             GeometryReader { geometry in
                 let plotFrame = geometry[proxy.plotFrame!]
 
-                // Selection annotation popover
-                if let selectedIndex = selectedBucketIndex,
-                   selectedIndex < buckets.count,
-                   let xPos = proxy.position(forX: Double(selectedIndex)) {
-                    let clampedX = min(max(plotFrame.origin.x + xPos, plotFrame.origin.x + 40), plotFrame.maxX - 40)
-                    annotationView(for: buckets[selectedIndex])
-                        .position(
-                            x: clampedX,
-                            y: plotFrame.origin.y - 4
-                        )
-                }
-
                 // Year labels below X-axis
                 ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
                     if let xFirst = proxy.position(forX: Double(label.firstIndex)),
@@ -257,6 +187,75 @@ struct ProgressChartView: View {
             }
         }
         .padding(.bottom, yearLabels.isEmpty ? 0 : 16)
+    }
+
+    private func selectionTapGesture(bucketCount: Int) -> (ChartProxy) -> _EndedGesture<SpatialTapGesture> {
+        { proxy in
+            SpatialTapGesture()
+                .onEnded { value in
+                    guard let x: Double = proxy.value(atX: value.location.x) else {
+                        selectedBucketIndex = nil
+                        return
+                    }
+                    selectedBucketIndex = Self.findNearestBucketIndex(atX: x, bucketCount: bucketCount)
+                }
+        }
+    }
+
+    // MARK: - Chart Content Layers
+
+    private func zoneBackgrounds(separatorData: ZoneSeparatorData, yDomain: ClosedRange<Double>) -> some ChartContent {
+        ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
+            RectangleMark(
+                xStart: .value("ZS", Double(zone.startIndex) - 0.5),
+                xEnd: .value("ZE", Double(zone.endIndex) + 0.5),
+                yStart: .value("Y0", yDomain.lowerBound),
+                yEnd: .value("Y1", yDomain.upperBound)
+            )
+            .foregroundStyle(Self.zoneTint(for: zone.bucketSize).opacity(0.06))
+        }
+    }
+
+    private func zoneDividers(separatorData: ZoneSeparatorData) -> some ChartContent {
+        ForEach(separatorData.dividerIndices, id: \.self) { idx in
+            RuleMark(x: .value("Div", Double(idx) - 0.5))
+                .lineStyle(StrokeStyle(lineWidth: 1))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func stddevBand(buckets: [TimeBucket]) -> some ChartContent {
+        ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
+            AreaMark(
+                x: .value("Index", point.position),
+                yStart: .value("Low", max(0, point.mean - point.stddev)),
+                yEnd: .value("High", point.mean + point.stddev)
+            )
+            .foregroundStyle(.blue.opacity(0.15))
+        }
+    }
+
+    private func ewmaLine(buckets: [TimeBucket]) -> some ChartContent {
+        ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
+            LineMark(
+                x: .value("Index", point.position),
+                y: .value("EWMA", point.mean)
+            )
+            .foregroundStyle(.blue)
+        }
+    }
+
+    private func sessionDots(buckets: [TimeBucket]) -> some ChartContent {
+        ForEach(Array(buckets.enumerated()), id: \.element.periodStart) { i, bucket in
+            if bucket.bucketSize == .session {
+                PointMark(
+                    x: .value("Index", Double(i)),
+                    y: .value("Value", bucket.mean)
+                )
+                .foregroundStyle(.blue)
+                .symbolSize(20)
+            }
+        }
     }
 
     private func annotationView(for bucket: TimeBucket) -> some View {
@@ -430,17 +429,30 @@ struct ProgressChartView: View {
         return max(0, Double(buckets.count) - Double(visibleBucketCount))
     }
 
+    private static let monthFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("MMM yyyy")
+        return f
+    }()
+
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("E MMM d")
+        return f
+    }()
+
+    private static let sessionFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("HH:mm")
+        return f
+    }()
+
     static func annotationDateLabel(_ date: Date, size: BucketSize) -> String {
-        let formatter = DateFormatter()
         switch size {
-        case .month:
-            formatter.setLocalizedDateFormatFromTemplate("MMM yyyy")
-        case .day, .week:
-            formatter.setLocalizedDateFormatFromTemplate("E MMM d")
-        case .session:
-            formatter.setLocalizedDateFormatFromTemplate("HH:mm")
+        case .month: monthFormatter.string(from: date)
+        case .day, .week: dayFormatter.string(from: date)
+        case .session: sessionFormatter.string(from: date)
         }
-        return formatter.string(from: date)
     }
 
     static func findNearestBucketIndex(atX x: Double, bucketCount: Int) -> Int? {

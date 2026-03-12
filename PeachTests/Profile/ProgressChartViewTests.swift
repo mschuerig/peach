@@ -369,7 +369,10 @@ struct ProgressChartViewTests {
         let mar5 = calendar.date(from: DateComponents(year: 2026, month: 3, day: 5))!
         let label = ProgressChartView.annotationDateLabel(mar5, size: .day)
         #expect(label.contains("5"))
-        #expect(!label.isEmpty)
+        // Verify weekday abbreviation is present (Thu/Do/etc. depending on locale)
+        let weekdaySymbols = calendar.shortWeekdaySymbols
+        let containsWeekday = weekdaySymbols.contains { label.contains($0.replacingOccurrences(of: ".", with: "")) }
+        #expect(containsWeekday, "Expected label '\(label)' to contain a weekday abbreviation")
     }
 
     @Test("annotation date label for session shows time")
