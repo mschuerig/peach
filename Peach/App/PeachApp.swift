@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 import os
 
 @main
@@ -81,6 +82,7 @@ struct PeachApp: App {
                 dataStore: dataStore,
                 progressTimeline: progressTimeline
             ))
+            try? Tips.configure()
         } catch {
             fatalError("Failed to initialize app: \(error)")
         }

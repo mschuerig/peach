@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import TipKit
 
 struct ProgressChartView: View {
     let mode: TrainingMode
@@ -10,6 +11,13 @@ struct ProgressChartView: View {
 
     @State private var scrollPosition: Double = .infinity
     @State private var selectedBucketIndex: Int?
+    @State private var tipGroup = TipGroup(.ordered) {
+        ChartOverviewTip()
+        EWMALineTip()
+        StdDevBandTip()
+        BaselineTip()
+        GranularityZoneTip()
+    }
 
     private var config: TrainingModeConfig { mode.config }
     private var isIncreaseContrast: Bool { colorSchemeContrast == .increased }
@@ -35,6 +43,9 @@ struct ProgressChartView: View {
 
         return VStack(alignment: .leading, spacing: 12) {
             headlineRow(ewma: ewma, stddev: stddev, trend: trend)
+            if let currentTip = tipGroup.currentTip {
+                TipView(currentTip)
+            }
             chartLayout(buckets: buckets)
                 .frame(height: chartHeight)
         }
