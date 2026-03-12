@@ -793,6 +793,108 @@ struct ProgressTimelineTests {
         #expect(sizes.contains(.session))
     }
 
+    // MARK: - Calendar-Snapped Zone Boundary Tests
+
+    @Test("session zone starts at midnight today, not 24h rolling window")
+    func calendarSnappedSessionZone() async {
+        let calendar = Calendar.current
+        let now = Date()
+        let midnightToday = calendar.startOfDay(for: now)
+
+        // Record 1 minute after midnight today → session zone
+        let justAfterMidnight = midnightToday.addingTimeInterval(60)
+        // Record 1 minute before midnight today → day zone (yesterday)
+        let justBeforeMidnight = midnightToday.addingTimeInterval(-60)
+
+        let records = [
+            makePitchComparisonRecord(centOffset: 10.0, date: justBeforeMidnight),
+            makePitchComparisonRecord(centOffset: 12.0, date: justAfterMidnight),
+        ]
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+
+        let sessionBuckets = buckets.filter { $0.bucketSize == .session }
+        let dayBuckets = buckets.filter { $0.bucketSize == .day }
+        #expect(!sessionBuckets.isEmpty, "Record after midnight today should be in session zone")
+        #expect(!dayBuckets.isEmpty, "Record before midnight today should be in day zone")
+    }
+
+    @Test("day zone covers 7 calendar days before today")
+    func calendarSnappedDayZone() async {
+        let calendar = Calendar.current
+        let now = Date()
+        let midnightToday = calendar.startOfDay(for: now)
+        let dayStart = calendar.date(byAdding: .day, value: -7, to: midnightToday)!
+
+        // Record at dayStart + 1h → day zone
+        let inDayZone = dayStart.addingTimeInterval(3600)
+        // Record at dayStart - 1h → month zone
+        let inMonthZone = dayStart.addingTimeInterval(-3600)
+
+        let records = [
+            makePitchComparisonRecord(centOffset: 10.0, date: inMonthZone),
+            makePitchComparisonRecord(centOffset: 12.0, date: inDayZone),
+        ]
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+
+        let dayBuckets = buckets.filter { $0.bucketSize == .day }
+        let monthBuckets = buckets.filter { $0.bucketSize == .month }
+        #expect(!dayBuckets.isEmpty, "Record within 7 calendar days should be in day zone")
+        #expect(!monthBuckets.isEmpty, "Record older than 7 calendar days should be in month zone")
+    }
+
+    @Test("last monthly bucket is truncated at day zone start date")
+    func monthBucketTruncatedAtDayZoneStart() async {
+        let calendar = Calendar.current
+        let now = Date()
+        let midnightToday = calendar.startOfDay(for: now)
+        let dayStart = calendar.date(byAdding: .day, value: -7, to: midnightToday)!
+
+        // Two records in the same calendar month but straddling the day zone boundary:
+        // One at dayStart - 2 days (in month zone)
+        let inMonthZone = calendar.date(byAdding: .day, value: -2, to: dayStart)!.addingTimeInterval(12 * 3600)
+        // One at dayStart + 1 day (in day zone)
+        let inDayZone = dayStart.addingTimeInterval(86400 + 12 * 3600)
+
+        let records = [
+            makePitchComparisonRecord(centOffset: 10.0, date: inMonthZone),
+            makePitchComparisonRecord(centOffset: 12.0, date: inDayZone),
+        ]
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+
+        let monthBuckets = buckets.filter { $0.bucketSize == .month }
+        let dayBuckets = buckets.filter { $0.bucketSize == .day }
+
+        #expect(!monthBuckets.isEmpty)
+        #expect(!dayBuckets.isEmpty)
+
+        // The monthly bucket's periodEnd should not extend into the day zone
+        if let lastMonth = monthBuckets.last {
+            #expect(lastMonth.periodEnd <= dayStart, "Monthly bucket should be truncated at dayStart")
+        }
+    }
+
+    @Test("new user with only today's data produces only session buckets")
+    func newUserOnlySessionBuckets() async {
+        let now = Date()
+
+        let records = [
+            makePitchComparisonRecord(centOffset: 10.0, date: now.addingTimeInterval(-3600)),
+            makePitchComparisonRecord(centOffset: 12.0, date: now.addingTimeInterval(-1800)),
+            makePitchComparisonRecord(centOffset: 8.0, date: now.addingTimeInterval(-600)),
+        ]
+        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
+
+        #expect(!buckets.isEmpty)
+        let dayBuckets = buckets.filter { $0.bucketSize == .day }
+        let monthBuckets = buckets.filter { $0.bucketSize == .month }
+        #expect(dayBuckets.isEmpty, "New user with only today's data should have no day buckets")
+        #expect(monthBuckets.isEmpty, "New user with only today's data should have no month buckets")
+    }
+
     @Test("existing buckets(for:) still returns identical results after adding allGranularityBuckets")
     func existingBucketsAPIUnchanged() async {
         let records = [

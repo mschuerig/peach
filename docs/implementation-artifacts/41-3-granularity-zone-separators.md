@@ -1,6 +1,6 @@
 # Story 41.3: Granularity Zone Separators
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -28,51 +28,51 @@ so that I understand the time scale changes as I scroll through my history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 0: Fix calendar-snapped zone boundaries in ProgressTimeline (AC: #7)
-  - [ ] 0.1 Write tests first: given metrics spanning months, days, and today — verify `assignMultiGranularityBuckets` assigns session zone from midnight today (not 24h rolling), day zone as the 7 calendar days before today, and month zone for everything older
-  - [ ] 0.2 Write tests: given metrics in the current month that fall within the day zone's range — verify the last monthly bucket is truncated at the day zone start date (e.g., March data split: March 1–4 in month zone, March 5–11 in day zone)
-  - [ ] 0.3 Write tests: given a new user with only today's data — verify only session buckets are produced (no empty day or month zones)
-  - [ ] 0.4 Refactor `assignMultiGranularityBuckets` to use calendar-based boundaries instead of age-based thresholds:
+- [x] Task 0: Fix calendar-snapped zone boundaries in ProgressTimeline (AC: #7)
+  - [x] 0.1 Write tests first: given metrics spanning months, days, and today — verify `assignMultiGranularityBuckets` assigns session zone from midnight today (not 24h rolling), day zone as the 7 calendar days before today, and month zone for everything older
+  - [x] 0.2 Write tests: given metrics in the current month that fall within the day zone's range — verify the last monthly bucket is truncated at the day zone start date (e.g., March data split: March 1–4 in month zone, March 5–11 in day zone)
+  - [x] 0.3 Write tests: given a new user with only today's data — verify only session buckets are produced (no empty day or month zones)
+  - [x] 0.4 Refactor `assignMultiGranularityBuckets` to use calendar-based boundaries instead of age-based thresholds:
     - `sessionStart = Calendar.current.startOfDay(for: now)` (midnight today)
     - `dayStart = Calendar.current.date(byAdding: .day, value: -7, to: sessionStart)!` (midnight 7 days ago)
     - Classify: `timestamp >= sessionStart` → `.session`, `timestamp >= dayStart` → `.day`, else → `.month`
-  - [ ] 0.5 Ensure month buckets whose calendar month overlaps the day zone are truncated: only include metrics with `timestamp < dayStart` in the monthly bucket. The monthly bucket's `periodEnd` should be `min(monthInterval.end, dayStart)`.
-  - [ ] 0.6 The `dayThreshold` constant added during the previous attempt is superseded by this calendar-based approach — remove it if no longer needed, or repurpose it. The `recentThreshold` constant (24h) is also superseded.
-  - [ ] 0.7 Update the doc comment on `allGranularityBuckets(for:)` to reflect calendar-based boundaries
+  - [x] 0.5 Ensure month buckets whose calendar month overlaps the day zone are truncated: only include metrics with `timestamp < dayStart` in the monthly bucket. The monthly bucket's `periodEnd` should be `min(monthInterval.end, dayStart)`.
+  - [x] 0.6 The `dayThreshold` constant added during the previous attempt is superseded by this calendar-based approach — remove it if no longer needed, or repurpose it. The `recentThreshold` constant (24h) is also superseded.
+  - [x] 0.7 Update the doc comment on `allGranularityBuckets(for:)` to reflect calendar-based boundaries
 
-- [ ] Task 1: Zone separator metadata computation (AC: #1, #4, #5, #6)
-  - [ ] 1.1 Write tests first: given 3-zone buckets (month + day + session), verify `zoneSeparatorData(for:)` returns 3 zones with correct bucket size, tint color, start/end indices, and 2 divider indices
-  - [ ] 1.2 Write tests: given single-zone buckets, verify empty zones and empty divider indices
-  - [ ] 1.3 Write tests: given 2-zone buckets (month + day), verify 2 zones and 1 divider index
-  - [ ] 1.4 Write tests: given monthly buckets spanning 2 calendar years, verify year boundary index appears in dividers
-  - [ ] 1.5 Write tests: given a year boundary within 1 index of a zone transition, verify deduplication (year boundary suppressed)
-  - [ ] 1.6 Implement `zoneSeparatorData(for:)` static method on `ProgressChartView` returning `ZoneSeparatorData` (zones: `[ZoneInfo]`, dividerIndices: `[Int]`). Uses `ChartLayoutCalculator.zoneBoundaries(for:)`. Includes year boundary detection and deduplication logic.
-  - [ ] 1.7 Implement `yearLabels(for:)` static method returning `[YearLabel]` — flanking labels at first and last bucket index of each calendar year span within monthly zones
+- [x] Task 1: Zone separator metadata computation (AC: #1, #4, #5, #6)
+  - [x] 1.1 Write tests first: given 3-zone buckets (month + day + session), verify `zoneSeparatorData(for:)` returns 3 zones with correct bucket size, tint color, start/end indices, and 2 divider indices
+  - [x] 1.2 Write tests: given single-zone buckets, verify empty zones and empty divider indices
+  - [x] 1.3 Write tests: given 2-zone buckets (month + day), verify 2 zones and 1 divider index
+  - [x] 1.4 Write tests: given monthly buckets spanning 2 calendar years, verify year boundary index appears in dividers
+  - [x] 1.5 Write tests: given a year boundary within 1 index of a zone transition, verify deduplication (year boundary suppressed)
+  - [x] 1.6 Implement `zoneSeparatorData(for:)` static method on `ProgressChartView` returning `ZoneSeparatorData` (zones: `[ZoneInfo]`, dividerIndices: `[Int]`). Uses `ChartLayoutCalculator.zoneBoundaries(for:)`. Includes year boundary detection and deduplication logic.
+  - [x] 1.7 Implement `yearLabels(for:)` static method returning `[YearLabel]` — flanking labels at first and last bucket index of each calendar year span within monthly zones
 
-- [ ] Task 2: Zone background tints via RectangleMark (AC: #1, #2)
-  - [ ] 2.1 Add `zoneTint(for:)` mapping `BucketSize` → semantic `Color`: `.month` → `Color(.systemBackground)`, `.day` → `Color(.secondarySystemBackground)`, `.session` → `Color(.systemBackground)`. Alternating pattern for visual distinction.
-  - [ ] 2.2 Add `RectangleMark` entries in `Chart` block for each zone span using index-based coordinates: `xStart: Double(zone.startIndex) - 0.5`, `xEnd: Double(zone.endIndex) + 0.5`, full Y domain. Rendered FIRST (behind data marks).
-  - [ ] 2.3 Apply `.foregroundStyle(zone.tint.opacity(0.06))` — faint enough that the stddev band (`blue.opacity(0.15)`) remains clearly visible in both Light and Dark Mode
+- [x] Task 2: Zone background tints via RectangleMark (AC: #1, #2)
+  - [x] 2.1 Add `zoneTint(for:)` mapping `BucketSize` → semantic `Color`: `.month` → `Color(.systemBackground)`, `.day` → `Color(.secondarySystemBackground)`, `.session` → `Color(.systemBackground)`. Alternating pattern for visual distinction.
+  - [x] 2.2 Add `RectangleMark` entries in `Chart` block for each zone span using index-based coordinates: `xStart: Double(zone.startIndex) - 0.5`, `xEnd: Double(zone.endIndex) + 0.5`, full Y domain. Rendered FIRST (behind data marks).
+  - [x] 2.3 Apply `.foregroundStyle(zone.tint.opacity(0.06))` — faint enough that the stddev band (`blue.opacity(0.15)`) remains clearly visible in both Light and Dark Mode
 
-- [ ] Task 3: Vertical divider lines via RuleMark inside Chart (AC: #1, #3, #5)
-  - [ ] 3.1 Add `RuleMark(x: .value("Div", Double(idx) - 0.5))` inside the `Chart` block for each divider index from `zoneSeparatorData`. This renders within the plot area and clips naturally at the axis boundary — no chartOverlay needed.
-  - [ ] 3.2 Style with `.foregroundStyle(.secondary)` and `.lineStyle(StrokeStyle(lineWidth: 1))` — visible but not dominant
-  - [ ] 3.3 Place divider RuleMarks after RectangleMark tints but before data marks (AreaMark, LineMark, PointMark) so dividers appear behind data
+- [x] Task 3: Vertical divider lines via RuleMark inside Chart (AC: #1, #3, #5)
+  - [x] 3.1 Add `RuleMark(x: .value("Div", Double(idx) - 0.5))` inside the `Chart` block for each divider index from `zoneSeparatorData`. This renders within the plot area and clips naturally at the axis boundary — no chartOverlay needed.
+  - [x] 3.2 Style with `.foregroundStyle(.secondary)` and `.lineStyle(StrokeStyle(lineWidth: 1))` — visible but not dominant
+  - [x] 3.3 Place divider RuleMarks after RectangleMark tints but before data marks (AreaMark, LineMark, PointMark) so dividers appear behind data
 
-- [ ] Task 4: Zone caption labels (AC: #1, #3)
-  - [ ] 4.1 Add localized zone label strings: "Monthly"/"Monatlich", "Daily"/"Täglich", "Sessions"/"Sitzungen" via `bin/add-localization.py`
-  - [ ] 4.2 Render zone labels using `.chartOverlay` with `GeometryReader` — position `Text` at the horizontal center of each zone, vertically at the top of the plot area. Style: `.font(.caption2)`, `.foregroundStyle(.secondary)`.
-  - [ ] 4.3 Ensure labels appear in both scrollable and static chart modes
+- [x] Task 4: Zone caption labels (AC: #1, #3)
+  - [x] 4.1 Add localized zone label strings: "Monthly"/"Monatlich", "Daily"/"Täglich", "Sessions"/"Sitzungen" via `bin/add-localization.py`
+  - [x] 4.2 Render zone labels using `.chartOverlay` with `GeometryReader` — position `Text` at the horizontal center of each zone, vertically at the top of the plot area. Style: `.font(.caption2)`, `.foregroundStyle(.secondary)`.
+  - [x] 4.3 Ensure labels appear in both scrollable and static chart modes
 
-- [ ] Task 5: Year labels below X-axis (AC: #5)
-  - [ ] 5.1 Write tests: given monthly buckets spanning 2025-2026, verify `yearLabels(for:)` returns flanking labels at first and last index of each year span
-  - [ ] 5.2 Write tests: given monthly buckets within a single year, verify a single pair of flanking labels
-  - [ ] 5.3 Render year labels via `.chartOverlay` — text-only, no lines. Position in a row below the X-axis labels using `proxy.position(forX:)`. Use `.font(.caption2)`, `.foregroundStyle(.secondary)`.
-  - [ ] 5.4 Add bottom padding to chart frame to accommodate year label row (only when year labels exist)
+- [x] Task 5: Year labels below X-axis (AC: #5)
+  - [x] 5.1 Write tests: given monthly buckets spanning 2025-2026, verify `yearLabels(for:)` returns flanking labels at first and last index of each year span
+  - [x] 5.2 Write tests: given monthly buckets within a single year, verify a single pair of flanking labels
+  - [x] 5.3 Render year labels via `.chartOverlay` — text-only, no lines. Position in a row below the X-axis labels using `proxy.position(forX:)`. Use `.font(.caption2)`, `.foregroundStyle(.secondary)`.
+  - [x] 5.4 Add bottom padding to chart frame to accommodate year label row (only when year labels exist)
 
-- [ ] Task 6: Run full test suite
-  - [ ] 6.1 Run `bin/test.sh` — all existing + new tests pass
-  - [ ] 6.2 Run `bin/check-dependencies.sh` — no import rule violations
+- [x] Task 6: Run full test suite
+  - [x] 6.1 Run `bin/test.sh` — all existing + new tests pass
+  - [x] 6.2 Run `bin/check-dependencies.sh` — no import rule violations
 
 ## Dev Notes
 
@@ -332,10 +332,31 @@ Recent commits follow `Implement story {id}: {description}` and `Review story {i
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Fixed range crash in `zoneSeparatorData` and `yearLabels`: `for i in (start+1)...end where end > start` crashes because range is constructed before `where` clause filters. Moved guard to outer loop condition.
+- Year boundary deduplication correctly suppresses year boundaries within 1 index of zone transitions. Test needed more monthly buckets to separate the year boundary from the zone transition.
+
 ### Completion Notes List
 
+- **Task 0**: Refactored `assignMultiGranularityBuckets` from age-based thresholds to calendar-snapped zone boundaries. Session zone = midnight today, day zone = 7 calendar days before today, month zone = everything older. Monthly buckets truncated at `dayStart`. Added `dayZoneDays` constant. Updated doc comment. Added 4 new tests.
+- **Task 1**: Refactored `zoneSeparatorData(for:)` from Date-based to index-based coordinates. Added year boundary detection within monthly zones with deduplication (suppresses boundaries within 1 index of zone transitions). Implemented `yearLabels(for:)` with flanking labels. Added 6 new tests (3-zone, 2-zone, 1-zone, empty, year boundary, deduplication, year labels multi-year/single-year/no-monthly).
+- **Task 2**: Added `zoneTint(for:)` mapping `BucketSize` → semantic `Color`. Added `RectangleMark` zone tints at 6% opacity, rendered first in Chart block (behind data marks).
+- **Task 3**: Added `RuleMark(x:)` divider lines inside Chart block (after tints, before data marks). Styled `.foregroundStyle(.secondary)`, lineWidth 1. Clips to plot area naturally.
+- **Task 4**: Zone caption labels via `.chartOverlay` at horizontal center of each zone, top of plot area. Localizations already existed (Monthly/Monatlich, Daily/Täglich, Sessions/Sitzungen). Both scrollable and static modes use same `chartContent` method.
+- **Task 5**: Year labels via `.chartOverlay` below X-axis. Bottom padding added when year labels exist. Tests verify multi-year and single-year scenarios.
+- **Task 6**: Full test suite passes (1047 tests). No dependency violations.
+- Converted chart X-axis from Date-based to index-based (`Double`). `scrollPosition` changed from `Date` to `Double`. Removed date-based `windowedSlice` and `visibleDomainLength` helpers. Added `PointMark` for session-granularity buckets. `chartXScale` uses `-0.5...count-0.5`.
+
 ### File List
+
+- `Peach/Core/Profile/ProgressTimeline.swift` — modified (calendar-snapped zone boundaries, `dayZoneDays` constant, updated doc comment)
+- `PeachTests/Core/Profile/ProgressTimelineTests.swift` — modified (4 new calendar-snapped boundary tests)
+- `Peach/Profile/ProgressChartView.swift` — modified (index-based chart rendering, zone tints, divider RuleMarks, zone labels, year labels, zoneTint helper, yearLabels helper, refactored zoneSeparatorData to index-based)
+- `PeachTests/Profile/ProgressChartViewTests.swift` — modified (updated zone separator tests to index-based, added year boundary/deduplication/year label tests, updated initial scroll position and windowing tests)
+
+## Change Log
+
+- 2026-03-12: Implemented story 41.3 — calendar-snapped zone boundaries, index-based zone separators with RectangleMark tints, RuleMark divider lines, chartOverlay zone/year labels. Full chart X-axis converted from Date-based to index-based rendering.

@@ -7,7 +7,7 @@ struct ProgressChartView: View {
     @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    @State private var scrollPosition = Date()
+    @State private var scrollPosition: Double = .infinity
 
     private var config: TrainingModeConfig { mode.config }
 
@@ -86,94 +86,111 @@ struct ProgressChartView: View {
     }
 
     private func scrollableChartBody(buckets: [TimeBucket], yDomain: ClosedRange<Double>) -> some View {
-        let domainLength = Self.visibleDomainLength(for: buckets)
-        let visibleSlice = Self.windowedSlice(
-            from: buckets,
-            scrollPosition: scrollPosition,
-            domainLength: domainLength,
-            buffer: 5
-        )
         let separatorData = Self.zoneSeparatorData(for: buckets)
+        let labels = Self.yearLabels(for: buckets)
 
-        return chartContent(buckets: visibleSlice, yDomain: yDomain, separatorData: separatorData)
-            .chartScrollableAxes(.horizontal)
-            .chartXVisibleDomain(length: domainLength)
-            .chartScrollPosition(x: $scrollPosition)
-            .onAppear {
-                scrollPosition = Self.initialScrollPosition(
-                    for: buckets,
-                    visibleDomainLength: domainLength
-                )
-            }
+        return chartContent(
+            allBuckets: buckets,
+            visibleBuckets: buckets,
+            yDomain: yDomain,
+            separatorData: separatorData,
+            yearLabels: labels
+        )
+        .chartScrollableAxes(.horizontal)
+        .chartXVisibleDomain(length: Self.visibleBucketCount)
+        .chartScrollPosition(x: $scrollPosition)
+        .onAppear {
+            scrollPosition = Self.initialScrollPosition(for: buckets)
+        }
     }
 
     private func staticChartBody(buckets: [TimeBucket], yDomain: ClosedRange<Double>) -> some View {
         let separatorData = Self.zoneSeparatorData(for: buckets)
-        return chartContent(buckets: buckets, yDomain: yDomain, separatorData: separatorData)
+        let labels = Self.yearLabels(for: buckets)
+        return chartContent(
+            allBuckets: buckets,
+            visibleBuckets: buckets,
+            yDomain: yDomain,
+            separatorData: separatorData,
+            yearLabels: labels
+        )
     }
 
     private func chartContent(
-        buckets: [TimeBucket],
+        allBuckets: [TimeBucket],
+        visibleBuckets: [TimeBucket],
         yDomain: ClosedRange<Double>,
-        separatorData: ZoneSeparatorData
+        separatorData: ZoneSeparatorData,
+        yearLabels: [YearLabel]
     ) -> some View {
-        let bucketSizeByDate = Dictionary(
-            buckets.map { ($0.periodStart, $0.bucketSize) },
-            uniquingKeysWith: { _, last in last }
-        )
-
         return Chart {
-            // Zone background tints (alternating for visual contrast)
-            ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { index, zone in
+            // Layer 1: Zone background tints
+            ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
                 RectangleMark(
-                    xStart: .value("ZoneStart", zone.startDate),
-                    xEnd: .value("ZoneEnd", zone.endDate),
-                    yStart: .value("YMin", yDomain.lowerBound),
-                    yEnd: .value("YMax", yDomain.upperBound)
+                    xStart: .value("ZS", Double(zone.startIndex) - 0.5),
+                    xEnd: .value("ZE", Double(zone.endIndex) + 0.5),
+                    yStart: .value("Y0", yDomain.lowerBound),
+                    yEnd: .value("Y1", yDomain.upperBound)
                 )
-                .foregroundStyle(index.isMultiple(of: 2) ? .clear : Color.white.opacity(0.06))
+                .foregroundStyle(Self.zoneTint(for: zone.bucketSize).opacity(0.06))
             }
 
-            // Data: stddev band
-            ForEach(buckets, id: \.periodStart) { bucket in
+            // Layer 2: Zone and year boundary divider lines
+            ForEach(separatorData.dividerIndices, id: \.self) { idx in
+                RuleMark(x: .value("Div", Double(idx) - 0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(.secondary)
+            }
+
+            // Layer 3: Stddev band
+            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
+                let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
                 AreaMark(
-                    x: .value("Time", bucket.periodStart),
+                    x: .value("Index", Double(globalIndex)),
                     yStart: .value("Low", max(0, bucket.mean - bucket.stddev)),
                     yEnd: .value("High", bucket.mean + bucket.stddev)
                 )
                 .foregroundStyle(.blue.opacity(0.15))
             }
 
-            // Data: EWMA line
-            ForEach(buckets, id: \.periodStart) { bucket in
+            // Layer 4: EWMA line
+            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
+                let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
                 LineMark(
-                    x: .value("Time", bucket.periodStart),
+                    x: .value("Index", Double(globalIndex)),
                     y: .value("EWMA", bucket.mean)
                 )
                 .foregroundStyle(.blue)
             }
 
-            // Baseline
+            // Layer 5: Session dots
+            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
+                if bucket.bucketSize == .session {
+                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
+                    PointMark(
+                        x: .value("Index", Double(globalIndex)),
+                        y: .value("Value", bucket.mean)
+                    )
+                    .foregroundStyle(.blue)
+                    .symbolSize(20)
+                }
+            }
+
+            // Layer 6: Baseline
             RuleMark(y: .value("Baseline", config.optimalBaseline.rawValue))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                 .foregroundStyle(.green.opacity(0.6))
-
-            // Zone divider lines
-            ForEach(separatorData.dividerDates, id: \.self) { date in
-                RuleMark(x: .value("Zone", date))
-                    .lineStyle(StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(.secondary)
-            }
         }
+        .chartXScale(domain: -0.5...Double(allBuckets.count) - 0.5)
         .chartYScale(domain: yDomain)
         .chartYAxisLabel(config.unitLabel)
         .chartXAxis {
-            AxisMarks { value in
-                AxisGridLine()
-                AxisValueLabel {
-                    if let date = value.as(Date.self) {
-                        let size = bucketSizeByDate[date] ?? .day
-                        Text(Self.formatAxisLabel(date, size: size))
+            AxisMarks(values: .stride(by: 1)) { value in
+                if let idx = value.as(Double.self), idx >= 0, Int(idx) < allBuckets.count {
+                    let bucket = allBuckets[Int(idx)]
+                    AxisGridLine()
+                    AxisValueLabel {
+                        Text(Self.formatAxisLabel(bucket.periodStart, size: bucket.bucketSize))
                     }
                 }
             }
@@ -181,16 +198,34 @@ struct ProgressChartView: View {
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 let plotFrame = geometry[proxy.plotFrame!]
+
+                // Zone caption labels
                 ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
-                    if let xPos = proxy.position(forX: zone.startDate) {
+                    let centerIndex = Double(zone.startIndex + zone.endIndex) / 2.0
+                    if let xPos = proxy.position(forX: centerIndex) {
                         Text(zone.label)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
-                            .position(x: plotFrame.origin.x + xPos + 24, y: plotFrame.origin.y + 8)
+                            .position(x: plotFrame.origin.x + xPos, y: plotFrame.origin.y + 8)
+                    }
+                }
+
+                // Year labels below X-axis
+                ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
+                    if let xFirst = proxy.position(forX: Double(label.firstIndex)),
+                       let xLast = proxy.position(forX: Double(label.lastIndex)) {
+                        Text(String(label.year))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .position(
+                                x: plotFrame.origin.x + (xFirst + xLast) / 2.0,
+                                y: plotFrame.maxY + 28
+                            )
                     }
                 }
             }
         }
+        .padding(.bottom, yearLabels.isEmpty ? 0 : 16)
     }
 
     private var chartHeight: CGFloat {
@@ -210,36 +245,94 @@ struct ProgressChartView: View {
     struct ZoneInfo {
         let bucketSize: BucketSize
         let label: String
-        let startDate: Date
-        let endDate: Date
+        let startIndex: Int
+        let endIndex: Int
+    }
+
+    struct YearLabel {
+        let year: Int
+        let firstIndex: Int
+        let lastIndex: Int
     }
 
     struct ZoneSeparatorData {
         let zones: [ZoneInfo]
-        let dividerDates: [Date]
+        let dividerIndices: [Int]
     }
 
     static func zoneSeparatorData(for buckets: [TimeBucket]) -> ZoneSeparatorData {
         let boundaries = ChartLayoutCalculator.zoneBoundaries(for: buckets)
 
         guard boundaries.count > 1 else {
-            return ZoneSeparatorData(zones: [], dividerDates: [])
+            return ZoneSeparatorData(zones: [], dividerIndices: [])
         }
 
         let zones = boundaries.map { boundary in
             ZoneInfo(
                 bucketSize: boundary.bucketSize,
                 label: zoneLabel(for: boundary.bucketSize),
-                startDate: buckets[boundary.startIndex].periodStart,
-                endDate: buckets[boundary.endIndex].periodStart
+                startIndex: boundary.startIndex,
+                endIndex: boundary.endIndex
             )
         }
 
-        let dividerDates = boundaries.dropFirst().map { boundary in
-            buckets[boundary.startIndex].periodStart
+        // Zone transition divider indices
+        var dividerIndices = boundaries.dropFirst().map(\.startIndex)
+
+        // Year boundary dividers within monthly zones
+        let calendar = Calendar.current
+        for boundary in boundaries where boundary.bucketSize == .month && boundary.endIndex > boundary.startIndex {
+            for i in (boundary.startIndex + 1)...boundary.endIndex {
+                let prevYear = calendar.component(.year, from: buckets[i - 1].periodStart)
+                let currYear = calendar.component(.year, from: buckets[i].periodStart)
+                if currYear != prevYear {
+                    // Deduplicate: suppress year boundary within 1 index of a zone transition
+                    let isNearZoneTransition = dividerIndices.contains { abs($0 - i) <= 1 }
+                    if !isNearZoneTransition {
+                        dividerIndices.append(i)
+                    }
+                }
+            }
         }
 
-        return ZoneSeparatorData(zones: zones, dividerDates: dividerDates)
+        dividerIndices.sort()
+
+        return ZoneSeparatorData(zones: zones, dividerIndices: dividerIndices)
+    }
+
+    static func yearLabels(for buckets: [TimeBucket]) -> [YearLabel] {
+        let boundaries = ChartLayoutCalculator.zoneBoundaries(for: buckets)
+        let calendar = Calendar.current
+        var labels: [YearLabel] = []
+
+        for boundary in boundaries where boundary.bucketSize == .month {
+            var currentYear = calendar.component(.year, from: buckets[boundary.startIndex].periodStart)
+            var spanStart = boundary.startIndex
+
+            if boundary.endIndex > boundary.startIndex {
+                for i in (boundary.startIndex + 1)...boundary.endIndex {
+                    let year = calendar.component(.year, from: buckets[i].periodStart)
+                    if year != currentYear {
+                        labels.append(YearLabel(year: currentYear, firstIndex: spanStart, lastIndex: i - 1))
+                        currentYear = year
+                        spanStart = i
+                    }
+                }
+            }
+            // Final span
+            labels.append(YearLabel(year: currentYear, firstIndex: spanStart, lastIndex: boundary.endIndex))
+        }
+
+        return labels
+    }
+
+    private static func zoneTint(for bucketSize: BucketSize) -> Color {
+        switch bucketSize {
+        case .month: Color(.systemBackground)
+        case .day: Color(.secondarySystemBackground)
+        case .session: Color(.systemBackground)
+        case .week: Color(.systemBackground)
+        }
     }
 
     private static func zoneLabel(for bucketSize: BucketSize) -> String {
@@ -265,37 +358,12 @@ struct ProgressChartView: View {
         return Array(buckets[start..<end])
     }
 
-    static func windowedSlice(
-        from buckets: [TimeBucket],
-        scrollPosition: Date,
-        domainLength: TimeInterval,
-        buffer: Int
-    ) -> [TimeBucket] {
-        guard !buckets.isEmpty else { return [] }
-        let windowEnd = scrollPosition.addingTimeInterval(domainLength)
-        let firstVisible = buckets.firstIndex { $0.periodStart >= scrollPosition } ?? 0
-        let lastVisible = (buckets.lastIndex { $0.periodStart <= windowEnd } ?? (buckets.count - 1)) + 1
-        return windowedBuckets(from: buckets, visibleRange: firstVisible..<lastVisible, buffer: buffer)
-    }
+    static let visibleBucketCount = 12
 
-    private static let visibleBucketCount = 12
-
-    /// Computes the time span to show in the visible window (~12 buckets worth).
-    private static func visibleDomainLength(for buckets: [TimeBucket]) -> TimeInterval {
-        guard buckets.count > visibleBucketCount,
-              let first = buckets.first, let last = buckets.last else {
-            return 86400
-        }
-        let totalSpan = last.periodStart.timeIntervalSince(first.periodStart)
-        let ratio = Double(visibleBucketCount) / Double(buckets.count)
-        return max(totalSpan * ratio, 86400)
-    }
-
-    /// Returns the date for the left edge of the initial scroll position
-    /// so that the most recent data appears at the right edge.
-    static func initialScrollPosition(for buckets: [TimeBucket], visibleDomainLength: TimeInterval) -> Date {
-        guard let last = buckets.last else { return Date() }
-        return last.periodStart.addingTimeInterval(-visibleDomainLength)
+    /// Returns the index-based scroll position so that the most recent data appears at the right edge.
+    static func initialScrollPosition(for buckets: [TimeBucket]) -> Double {
+        guard !buckets.isEmpty else { return 0 }
+        return max(0, Double(buckets.count) - Double(visibleBucketCount))
     }
 
     private static func formatAxisLabel(_ date: Date, size: BucketSize) -> String {
