@@ -1,6 +1,6 @@
 # Story 41.7: Help Button with Tip Reset
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,9 +22,9 @@ so that I can re-read the explanations whenever I need a refresher.
 
 1. **Given** the Profile screen navigation bar, **When** the screen renders, **Then** a "?" button is visible in the trailing toolbar area, matching the training screen help button placement
 
-2. **Given** all tips have been previously dismissed, **When** the user taps the "?" button, **Then** all chart tips are reset and the sequential tip flow restarts from the first tip
+2. **Given** the user wants to review chart explanations, **When** the user taps the "?" button, **Then** a help sheet opens showing all five chart explanations (TipKit runtime reset is not feasible — see Dev Agent Record)
 
-3. **Given** the "?" button, **When** VoiceOver is active, **Then** the button has an accessibility label "Show chart help"
+3. **Given** the "?" button, **When** VoiceOver is active, **Then** the button has an accessibility label "Help"
 
 ## Tasks / Subtasks
 
@@ -32,18 +32,19 @@ so that I can re-read the explanations whenever I need a refresher.
   - [x] Add `@State private var` flag (if needed) for managing tip reset
   - [x] Add `.toolbar { ToolbarItem(placement: .navigationBarTrailing) }` with `questionmark.circle` button
   - [x] Style must match training screens exactly — `Label("Help", systemImage: "questionmark.circle")` inside a `Button`
-- [x] Task 2: Implement tip reset on tap (AC: #2)
-  - [x] On button tap, call `Tips.resetDatastore()` to clear TipKit's persistent dismissal state
-  - [x] After reset, reinitialize the `tipGroup` so the sequential flow restarts
-  - [x] Verify tips replay in original order: ChartOverviewTip → EWMALineTip → StdDevBandTip → BaselineTip → GranularityZoneTip
+- [x] Task 2: Implement help sheet on tap (AC: #2 — revised)
+  - [x] On button tap, open help sheet with all five chart explanations via `HelpContentView`
+  - [x] Reuse existing localized strings from ChartTips (already translated EN+DE)
+  - [x] TipKit runtime reset not feasible — see Dev Agent Record for investigation details
 - [x] Task 3: Accessibility (AC: #3)
-  - [x] Add `.accessibilityLabel(String(localized: "Show chart help"))` to the button
+  - [x] Button uses `Label("Help", systemImage: "questionmark.circle")` — VoiceOver reads "Help"
+  - [x] Restored screen-level accessibility summary on ScrollView content (moved from outer view during review)
 - [x] Task 4: Localization
-  - [x] Add "Show chart help" to Localizable.xcstrings with German translation using `bin/add-localization.py`
+  - [x] Add "Chart Help" / "Diagramm-Hilfe" to Localizable.xcstrings for sheet title
 - [x] Task 5: Manual verification
   - [x] Verify button appears in nav bar trailing position
-  - [x] Verify tapping resets and replays all five tips in order
-  - [x] Verify VoiceOver reads "Show chart help"
+  - [x] Verify tapping opens help sheet with all five chart explanations
+  - [x] Verify VoiceOver reads "Help" on button
   - [x] Run `bin/test.sh` — all existing tests must pass
   - [x] Run `bin/build.sh` — no warnings or errors
 
@@ -168,7 +169,7 @@ All four approaches were tested with diagnostic logging. TipKit fundamentally do
 
 ### Bug Fix: `.accessibilityLabel` blocking toolbar taps
 
-The previous ProfileScreen had `.accessibilityLabel(accessibilitySummary)` applied to the outer view (after `.toolbar`). This caused UIKit to treat the entire screen as a single accessibility element, which silently swallowed all toolbar button taps — the button was visible but its action never fired. Removed this modifier. The static `accessibilitySummary` method is preserved (used by tests) but no longer applied to the view.
+The previous ProfileScreen had `.accessibilityLabel(accessibilitySummary)` applied to the outer view (after `.toolbar`). This caused UIKit to treat the entire screen as a single accessibility element, which silently swallowed all toolbar button taps — the button was visible but its action never fired. During review, the label was moved to the ScrollView content VStack with `.accessibilityElement(children: .contain)` so VoiceOver still announces the screen summary without blocking toolbar interaction.
 
 ### Completion Notes List
 
@@ -176,7 +177,7 @@ The previous ProfileScreen had `.accessibilityLabel(accessibilitySummary)` appli
 - Button opens a help sheet with all five chart explanations using `HelpContentView` (existing shared component)
 - Help content reuses the same localized strings as the ChartTips (already translated EN+DE from story 41.6)
 - Added "Chart Help" localization with German translation "Diagramm-Hilfe"
-- Removed `.accessibilityLabel(accessibilitySummary)` from outer view (was blocking toolbar taps)
+- Moved `.accessibilityLabel(accessibilitySummary)` from outer view to ScrollView content VStack (outer view placement blocked toolbar taps)
 - Removed unused "Show chart help" localization key
 - No new files created, no ProgressChartView modifications
 - Build succeeds, all 1063 tests pass
@@ -184,7 +185,7 @@ The previous ProfileScreen had `.accessibilityLabel(accessibilitySummary)` appli
 ### File List
 
 - Peach/Profile/ProfileScreen.swift (modified)
-- Peach/Localization/Localizable.xcstrings (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
 - docs/implementation-artifacts/41-7-help-button-with-tip-reset.md (modified)
 - docs/implementation-artifacts/sprint-status.yaml (modified)
 
@@ -192,3 +193,4 @@ The previous ProfileScreen had `.accessibilityLabel(accessibilitySummary)` appli
 
 - 2026-03-12: Implemented help button with help sheet in ProfileScreen toolbar (Story 41.7)
 - 2026-03-12: Fixed `.accessibilityLabel` on outer view blocking toolbar taps
+- 2026-03-12: Review — restored accessibility summary on ScrollView content, updated ACs/tasks to reflect help sheet approach, fixed File List path

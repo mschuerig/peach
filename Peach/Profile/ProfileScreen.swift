@@ -26,6 +26,8 @@ struct ProfileScreen: View {
                 }
             }
             .padding()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(Self.accessibilitySummary(progressTimeline: progressTimeline))
         }
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
