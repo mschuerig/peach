@@ -142,29 +142,23 @@ struct ProgressChartView: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Layer 3: Stddev band (month + day only — sessions use dots)
-            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
-                if bucket.bucketSize != .session {
-                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
-                    AreaMark(
-                        x: .value("Index", Double(globalIndex)),
-                        yStart: .value("Low", max(0, bucket.mean - bucket.stddev)),
-                        yEnd: .value("High", bucket.mean + bucket.stddev)
-                    )
-                    .foregroundStyle(.blue.opacity(0.15))
-                }
+            // Layer 3: Stddev band (month + day + session bridge)
+            ForEach(Self.lineDataWithSessionBridge(for: allBuckets), id: \.position) { point in
+                AreaMark(
+                    x: .value("Index", point.position),
+                    yStart: .value("Low", max(0, point.mean - point.stddev)),
+                    yEnd: .value("High", point.mean + point.stddev)
+                )
+                .foregroundStyle(.blue.opacity(0.15))
             }
 
-            // Layer 4: EWMA line (month + day only — sessions are disconnected dots)
-            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
-                if bucket.bucketSize != .session {
-                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
-                    LineMark(
-                        x: .value("Index", Double(globalIndex)),
-                        y: .value("EWMA", bucket.mean)
-                    )
-                    .foregroundStyle(.blue)
-                }
+            // Layer 4: EWMA line (month + day + session bridge)
+            ForEach(Self.lineDataWithSessionBridge(for: allBuckets), id: \.position) { point in
+                LineMark(
+                    x: .value("Index", point.position),
+                    y: .value("EWMA", point.mean)
+                )
+                .foregroundStyle(.blue)
             }
 
             // Layer 5: Session dots (disconnected, no line)
@@ -194,7 +188,12 @@ struct ProgressChartView: View {
                     let bucket = allBuckets[Int(idx)]
                     AxisGridLine()
                     AxisValueLabel {
-                        Text(Self.formatAxisLabel(bucket.periodStart, size: bucket.bucketSize))
+                        Text(Self.formatAxisLabel(
+                            bucket.periodStart,
+                            size: bucket.bucketSize,
+                            index: Int(idx),
+                            allBuckets: allBuckets
+                        ))
                     }
                 }
             }
@@ -232,6 +231,32 @@ struct ProgressChartView: View {
         .day: DailyZoneConfig(),
         .session: SessionZoneConfig(),
     ]
+
+    // MARK: - Line Data with Session Bridge
+
+    struct LinePoint {
+        let position: Double
+        let mean: Double
+        let stddev: Double
+    }
+
+    static func lineDataWithSessionBridge(for buckets: [TimeBucket]) -> [LinePoint] {
+        var points: [LinePoint] = []
+        for (i, bucket) in buckets.enumerated() where bucket.bucketSize != .session {
+            points.append(LinePoint(position: Double(i), mean: bucket.mean, stddev: bucket.stddev))
+        }
+        // Bridge: extend line/band to separator position (firstSessionIndex - 0.5)
+        let sessionBuckets = buckets.enumerated().filter { $0.element.bucketSize == .session }
+        if let first = sessionBuckets.first {
+            let totalRecords = sessionBuckets.map(\.element.recordCount).reduce(0, +)
+            if totalRecords > 0 {
+                let mean = sessionBuckets.map { $0.element.mean * Double($0.element.recordCount) }.reduce(0, +) / Double(totalRecords)
+                let weightedVariance = sessionBuckets.map { pow($0.element.stddev, 2) * Double($0.element.recordCount) }.reduce(0, +) / Double(totalRecords)
+                points.append(LinePoint(position: Double(first.offset) - 0.5, mean: mean, stddev: sqrt(weightedVariance)))
+            }
+        }
+        return points
+    }
 
     // MARK: - Zone Separator Data
 
@@ -351,7 +376,7 @@ struct ProgressChartView: View {
         return Array(buckets[start..<end])
     }
 
-    static let visibleBucketCount = 12
+    static let visibleBucketCount = 8
 
     /// Returns the index-based scroll position so that the most recent data appears at the right edge.
     static func initialScrollPosition(for buckets: [TimeBucket]) -> Double {
@@ -359,8 +384,12 @@ struct ProgressChartView: View {
         return max(0, Double(buckets.count) - Double(visibleBucketCount))
     }
 
-    private static func formatAxisLabel(_ date: Date, size: BucketSize) -> String {
-        if size == .session { return "" }
+    static func formatAxisLabel(_ date: Date, size: BucketSize, index: Int, allBuckets: [TimeBucket]) -> String {
+        if size == .session {
+            // Show "Today" only for the first session bucket
+            let isFirst = index == 0 || allBuckets[index - 1].bucketSize != .session
+            return isFirst ? String(localized: "Today") : ""
+        }
         guard let config = zoneConfigs[size] else { return "" }
         var label = config.formatAxisLabel(date)
         // Strip trailing dot from German abbreviations (e.g., "Dez." → "Dez", "Mo." → "Mo")

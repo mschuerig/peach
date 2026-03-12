@@ -116,7 +116,7 @@ struct ProgressChartViewTests {
     func initialScrollPositionPinsRight() async {
         let buckets = makeBucketArray(count: 30)
         let position = ProgressChartView.initialScrollPosition(for: buckets)
-        // With 30 buckets and visibleBucketCount=12, should start at index 18
+        // With 30 buckets and visibleBucketCount=8, should start at index 22
         #expect(position == Double(30 - ProgressChartView.visibleBucketCount))
     }
 
@@ -358,6 +358,37 @@ struct ProgressChartViewTests {
 
         let labels = ProgressChartView.yearLabels(for: buckets)
         #expect(labels.isEmpty)
+    }
+
+    // MARK: - Axis Label Formatting
+
+    @Test("session zone first bucket shows Today label")
+    func sessionFirstBucketShowsToday() async {
+        let base = Date()
+        let buckets = [
+            TimeBucket(periodStart: base.addingTimeInterval(-86400), periodEnd: base, bucketSize: .day, mean: 10, stddev: 1, recordCount: 5),
+            TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(3600), bucketSize: .session, mean: 7, stddev: 1, recordCount: 1),
+            TimeBucket(periodStart: base.addingTimeInterval(3600), periodEnd: base.addingTimeInterval(7200), bucketSize: .session, mean: 8, stddev: 1, recordCount: 1),
+        ]
+
+        let firstSessionLabel = ProgressChartView.formatAxisLabel(buckets[1].periodStart, size: .session, index: 1, allBuckets: buckets)
+        let secondSessionLabel = ProgressChartView.formatAxisLabel(buckets[2].periodStart, size: .session, index: 2, allBuckets: buckets)
+
+        #expect(firstSessionLabel == String(localized: "Today"))
+        #expect(secondSessionLabel == "")
+    }
+
+    @Test("month and day buckets return non-empty axis labels")
+    func monthDayBucketsHaveLabels() async {
+        let base = Date()
+        let buckets = [
+            TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(86400), bucketSize: .month, mean: 10, stddev: 1, recordCount: 5),
+        ]
+
+        let label = ProgressChartView.formatAxisLabel(base, size: .month, index: 0, allBuckets: buckets)
+        #expect(!label.isEmpty)
+        // Should not end with a trailing dot (German abbreviation fix)
+        #expect(!label.hasSuffix("."))
     }
 
     // MARK: - Helpers
