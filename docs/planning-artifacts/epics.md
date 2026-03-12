@@ -4113,4 +4113,34 @@ So that I can reflect on specific sessions and understand what caused variabilit
 - Reuse existing `TimeBucket` data — no new data source needed
 - The existing tap-to-select (41.4) already handles annotation display
 
+### Story 41.10: Year Label Positioning via AnnotationMark
+
+As a **user**,
+I want year labels below the chart X-axis to adapt correctly to different text sizes and devices,
+So that the labels remain readable regardless of Dynamic Type or screen size.
+
+**Depends on:** Story 41.3
+
+**Acceptance Criteria:**
+
+**Given** the chart with monthly buckets spanning multiple years
+**When** year labels render
+**Then** they are positioned using `AnnotationMark` (or equivalent Chart-native positioning) instead of a hardcoded Y-offset
+**And** they adapt automatically to axis label height changes from Dynamic Type
+
+**Given** year labels rendered via the new approach
+**When** compared to the previous hardcoded offset rendering
+**Then** the visual result is equivalent or better — no overlap with axis labels, no clipping
+
+**Given** a chart with no monthly zone (new user)
+**When** the chart renders
+**Then** no year labels appear and no extra padding is added (same as current behavior)
+
+**Technical hints:**
+- Current implementation uses `chartOverlay` with `plotFrame.maxY + 28` — a hardcoded offset that doesn't adapt to Dynamic Type
+- Investigate `AnnotationMark` positioning within the Chart block as a replacement
+- If `AnnotationMark` doesn't support below-axis positioning, consider `chartBackground` or `alignmentGuide` alternatives
+- The existing `yearLabels(for:)` static method provides the data; only the rendering approach needs to change
+- Preserve the `yearLabelYOffset` constant as fallback if Chart-native positioning proves insufficient
+
 ---

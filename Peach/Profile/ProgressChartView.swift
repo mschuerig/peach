@@ -90,8 +90,7 @@ struct ProgressChartView: View {
         let labels = Self.yearLabels(for: buckets)
 
         return chartContent(
-            allBuckets: buckets,
-            visibleBuckets: buckets,
+            buckets: buckets,
             yDomain: yDomain,
             separatorData: separatorData,
             yearLabels: labels
@@ -108,8 +107,7 @@ struct ProgressChartView: View {
         let separatorData = Self.zoneSeparatorData(for: buckets)
         let labels = Self.yearLabels(for: buckets)
         return chartContent(
-            allBuckets: buckets,
-            visibleBuckets: buckets,
+            buckets: buckets,
             yDomain: yDomain,
             separatorData: separatorData,
             yearLabels: labels
@@ -117,8 +115,7 @@ struct ProgressChartView: View {
     }
 
     private func chartContent(
-        allBuckets: [TimeBucket],
-        visibleBuckets: [TimeBucket],
+        buckets: [TimeBucket],
         yDomain: ClosedRange<Double>,
         separatorData: ZoneSeparatorData,
         yearLabels: [YearLabel]
@@ -143,7 +140,7 @@ struct ProgressChartView: View {
             }
 
             // Layer 3: Stddev band (month + day + session bridge)
-            ForEach(Self.lineDataWithSessionBridge(for: allBuckets), id: \.position) { point in
+            ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
                 AreaMark(
                     x: .value("Index", point.position),
                     yStart: .value("Low", max(0, point.mean - point.stddev)),
@@ -153,7 +150,7 @@ struct ProgressChartView: View {
             }
 
             // Layer 4: EWMA line (month + day + session bridge)
-            ForEach(Self.lineDataWithSessionBridge(for: allBuckets), id: \.position) { point in
+            ForEach(Self.lineDataWithSessionBridge(for: buckets), id: \.position) { point in
                 LineMark(
                     x: .value("Index", point.position),
                     y: .value("EWMA", point.mean)
@@ -162,11 +159,10 @@ struct ProgressChartView: View {
             }
 
             // Layer 5: Session dots (disconnected, no line)
-            ForEach(Array(visibleBuckets.enumerated()), id: \.element.periodStart) { i, bucket in
+            ForEach(Array(buckets.enumerated()), id: \.element.periodStart) { i, bucket in
                 if bucket.bucketSize == .session {
-                    let globalIndex = allBuckets.firstIndex(where: { $0.periodStart == bucket.periodStart }) ?? i
                     PointMark(
-                        x: .value("Index", Double(globalIndex)),
+                        x: .value("Index", Double(i)),
                         y: .value("Value", bucket.mean)
                     )
                     .foregroundStyle(.blue)
@@ -179,20 +175,20 @@ struct ProgressChartView: View {
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                 .foregroundStyle(.green.opacity(0.6))
         }
-        .chartXScale(domain: -0.5...Double(allBuckets.count) - 0.5)
+        .chartXScale(domain: -0.5...Double(buckets.count) - 0.5)
         .chartYScale(domain: yDomain)
         .chartYAxisLabel(config.unitLabel)
         .chartXAxis {
             AxisMarks(values: .stride(by: 1)) { value in
-                if let idx = value.as(Double.self), idx >= 0, Int(idx) < allBuckets.count {
-                    let bucket = allBuckets[Int(idx)]
+                if let idx = value.as(Double.self), idx >= 0, Int(idx) < buckets.count {
+                    let bucket = buckets[Int(idx)]
                     AxisGridLine()
                     AxisValueLabel {
                         Text(Self.formatAxisLabel(
                             bucket.periodStart,
                             size: bucket.bucketSize,
                             index: Int(idx),
-                            allBuckets: allBuckets
+                            buckets: buckets
                         ))
                     }
                 }
@@ -211,7 +207,7 @@ struct ProgressChartView: View {
                             .foregroundStyle(.secondary)
                             .position(
                                 x: plotFrame.origin.x + (xFirst + xLast) / 2.0,
-                                y: plotFrame.maxY + 28
+                                y: plotFrame.maxY + Self.yearLabelYOffset
                             )
                     }
                 }
@@ -223,6 +219,13 @@ struct ProgressChartView: View {
     private var chartHeight: CGFloat {
         horizontalSizeClass == .compact ? 180 : 240
     }
+
+    // MARK: - Layout Constants
+
+    /// Vertical offset for year labels below the X-axis.
+    /// Approximation — Swift Charts does not expose axis label height.
+    /// See Story 41.10 for a planned AnnotationMark-based alternative.
+    private static let yearLabelYOffset: CGFloat = 28
 
     // MARK: - Static Helpers
 
@@ -262,7 +265,6 @@ struct ProgressChartView: View {
 
     struct ZoneInfo {
         let bucketSize: BucketSize
-        let label: String
         let startIndex: Int
         let endIndex: Int
     }
@@ -288,7 +290,6 @@ struct ProgressChartView: View {
         let zones = boundaries.map { boundary in
             ZoneInfo(
                 bucketSize: boundary.bucketSize,
-                label: zoneLabel(for: boundary.bucketSize),
                 startIndex: boundary.startIndex,
                 endIndex: boundary.endIndex
             )
@@ -353,27 +354,11 @@ struct ProgressChartView: View {
         }
     }
 
-    private static func zoneLabel(for bucketSize: BucketSize) -> String {
-        switch bucketSize {
-        case .month: String(localized: "Monthly")
-        case .day: String(localized: "Daily")
-        case .session: String(localized: "Sessions")
-        case .week: String(localized: "Weekly")
-        }
-    }
-
     static func yDomain(for buckets: [TimeBucket]) -> ClosedRange<Double> {
         guard !buckets.isEmpty else { return 0...1 }
         let rawMax = buckets.map { $0.mean + $0.stddev }.max() ?? 1
         let yMax = max(1, rawMax)
         return 0...yMax
-    }
-
-    static func windowedBuckets(from buckets: [TimeBucket], visibleRange: Range<Int>, buffer: Int) -> [TimeBucket] {
-        guard !buckets.isEmpty else { return [] }
-        let start = max(0, visibleRange.lowerBound - buffer)
-        let end = min(buckets.count, visibleRange.upperBound + buffer)
-        return Array(buckets[start..<end])
     }
 
     static let visibleBucketCount = 8
@@ -384,10 +369,10 @@ struct ProgressChartView: View {
         return max(0, Double(buckets.count) - Double(visibleBucketCount))
     }
 
-    static func formatAxisLabel(_ date: Date, size: BucketSize, index: Int, allBuckets: [TimeBucket]) -> String {
+    static func formatAxisLabel(_ date: Date, size: BucketSize, index: Int, buckets: [TimeBucket]) -> String {
         if size == .session {
             // Show "Today" only for the first session bucket
-            let isFirst = index == 0 || allBuckets[index - 1].bucketSize != .session
+            let isFirst = index == 0 || buckets[index - 1].bucketSize != .session
             return isFirst ? String(localized: "Today") : ""
         }
         guard let config = zoneConfigs[size] else { return "" }

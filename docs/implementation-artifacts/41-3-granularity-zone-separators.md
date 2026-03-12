@@ -1,6 +1,6 @@
 # Story 41.3: Granularity Zone Separators
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -12,11 +12,11 @@ so that I understand the time scale changes as I scroll through my history.
 
 ## Acceptance Criteria
 
-1. **Given** a chart with multiple granularity zones, **When** the chart renders, **Then** each zone has a subtle background tint using semantic colors (`Color(.systemBackground)` vs `Color(.secondarySystemBackground)`), **And** a thin vertical divider line marks each zone boundary, **And** a small caption label at the top of each zone identifies it (e.g., "Monthly", "Daily", "Sessions" — localized DE+EN).
+1. **Given** a chart with multiple granularity zones, **When** the chart renders, **Then** each zone has a subtle background tint using semantic colors (`Color(.systemBackground)` vs `Color(.secondarySystemBackground)`), **And** a thin vertical divider line marks each zone boundary. *(Zone caption labels were removed per user feedback — tints and dividers provide sufficient visual distinction.)*
 
 2. **Given** the zone separators, **When** viewed in Dark Mode, **Then** semantic colors adapt automatically with no hardcoded color values.
 
-3. **Given** the zone separators, **When** evaluated for WCAG 1.4.1 compliance, **Then** color is not the sole information carrier — the vertical divider line and zone label text also communicate the transition (NFR1).
+3. **Given** the zone separators, **When** evaluated for WCAG 1.4.1 compliance, **Then** color is not the sole information carrier — the vertical divider line also communicates the transition (NFR1).
 
 4. **Given** a chart with only one granularity zone (e.g., new user with sessions only), **When** the chart renders, **Then** no zone separators or labels are shown (nothing to separate).
 
@@ -360,3 +360,4 @@ Claude Opus 4.6
 ## Change Log
 
 - 2026-03-12: Implemented story 41.3 — calendar-snapped zone boundaries, index-based zone separators with RectangleMark tints, RuleMark divider lines, chartOverlay zone/year labels. Full chart X-axis converted from Date-based to index-based rendering.
+- 2026-03-12: Code review fixes — extracted hardcoded year label Y-offset to named constant (`yearLabelYOffset`); removed dead code (`windowedBuckets`, `zoneLabel(for:)`, `ZoneInfo.label`); simplified `chartContent` signature by removing redundant `visibleBuckets` parameter; updated ACs to reflect authorized zone label removal. Added Story 41.10 to epic for AnnotationMark-based year label positioning.

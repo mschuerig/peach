@@ -46,46 +46,6 @@ struct ProgressChartViewTests {
         #expect(domain.upperBound == 15.0)
     }
 
-    // MARK: - Data Windowing
-
-    @Test("windowed slice returns correct subset with buffer")
-    func windowedSliceWithBuffer() async {
-        let buckets = makeBucketArray(count: 50)
-        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 30..<40, buffer: 5)
-        #expect(result.count == 20)
-        #expect(result.first?.mean == 25.0)
-        #expect(result.last?.mean == 44.0)
-    }
-
-    @Test("windowed slice clamps at start boundary")
-    func windowedSliceClampsAtStart() async {
-        let buckets = makeBucketArray(count: 50)
-        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 0..<5, buffer: 5)
-        #expect(result.count == 10)
-        #expect(result.first?.mean == 0.0)
-    }
-
-    @Test("windowed slice clamps at end boundary")
-    func windowedSliceClampsAtEnd() async {
-        let buckets = makeBucketArray(count: 50)
-        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 45..<50, buffer: 5)
-        #expect(result.count == 10)
-        #expect(result.last?.mean == 49.0)
-    }
-
-    @Test("windowed slice with fewer buckets than buffer returns all")
-    func windowedSliceFewBuckets() async {
-        let buckets = makeBucketArray(count: 8)
-        let result = ProgressChartView.windowedBuckets(from: buckets, visibleRange: 2..<6, buffer: 5)
-        #expect(result.count == 8)
-    }
-
-    @Test("windowed slice with empty buckets returns empty")
-    func windowedSliceEmpty() async {
-        let result = ProgressChartView.windowedBuckets(from: [], visibleRange: 0..<0, buffer: 5)
-        #expect(result.isEmpty)
-    }
-
     // MARK: - Zone Config Dictionary
 
     @Test("zone configs contains month, day, and session")
@@ -371,8 +331,8 @@ struct ProgressChartViewTests {
             TimeBucket(periodStart: base.addingTimeInterval(3600), periodEnd: base.addingTimeInterval(7200), bucketSize: .session, mean: 8, stddev: 1, recordCount: 1),
         ]
 
-        let firstSessionLabel = ProgressChartView.formatAxisLabel(buckets[1].periodStart, size: .session, index: 1, allBuckets: buckets)
-        let secondSessionLabel = ProgressChartView.formatAxisLabel(buckets[2].periodStart, size: .session, index: 2, allBuckets: buckets)
+        let firstSessionLabel = ProgressChartView.formatAxisLabel(buckets[1].periodStart, size: .session, index: 1, buckets: buckets)
+        let secondSessionLabel = ProgressChartView.formatAxisLabel(buckets[2].periodStart, size: .session, index: 2, buckets: buckets)
 
         #expect(firstSessionLabel == String(localized: "Today"))
         #expect(secondSessionLabel == "")
@@ -385,7 +345,7 @@ struct ProgressChartViewTests {
             TimeBucket(periodStart: base, periodEnd: base.addingTimeInterval(86400), bucketSize: .month, mean: 10, stddev: 1, recordCount: 5),
         ]
 
-        let label = ProgressChartView.formatAxisLabel(base, size: .month, index: 0, allBuckets: buckets)
+        let label = ProgressChartView.formatAxisLabel(base, size: .month, index: 0, buckets: buckets)
         #expect(!label.isEmpty)
         // Should not end with a trailing dot (German abbreviation fix)
         #expect(!label.hasSuffix("."))
