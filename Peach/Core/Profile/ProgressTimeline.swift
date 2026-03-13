@@ -427,7 +427,9 @@ final class ProgressTimeline {
     ) -> [TimeBucket] {
         // Calendar-snapped zone boundaries
         let sessionStart = calendar.startOfDay(for: now)
-        let dayStart = calendar.date(byAdding: .day, value: -Self.dayZoneDays, to: sessionStart)!
+        guard let dayStart = calendar.date(byAdding: .day, value: -Self.dayZoneDays, to: sessionStart) else {
+            return []
+        }
 
         var groups: [(key: Date, end: Date, size: BucketSize, points: [Double])] = []
 

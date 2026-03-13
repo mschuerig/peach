@@ -183,7 +183,7 @@ final class PitchComparisonSession: TrainingSession {
     private func playNextPitchComparison() async {
         guard let settings else { return }
 
-        let interval = settings.intervals.randomElement()!
+        guard let interval = settings.intervals.randomElement() else { return }
         currentInterval = interval
 
         let pitchComparison = strategy.nextPitchComparison(

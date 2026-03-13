@@ -174,34 +174,36 @@ struct ProgressChartView: View {
         }
         .chartOverlay { proxy in
             GeometryReader { geometry in
-                let plotFrame = geometry[proxy.plotFrame!]
+                if let plotAreaFrame = proxy.plotFrame {
+                    let plotFrame = geometry[plotAreaFrame]
 
-                // Year labels below X-axis
-                ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
-                    if let xFirst = proxy.position(forX: Double(label.firstIndex)),
-                       let xLast = proxy.position(forX: Double(label.lastIndex)) {
-                        Text(String(label.year))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .position(
-                                x: plotFrame.origin.x + (xFirst + xLast) / 2.0,
-                                y: geometry.size.height + yearLabelBottomPadding
-                            )
+                    // Year labels below X-axis
+                    ForEach(Array(yearLabels.enumerated()), id: \.offset) { _, label in
+                        if let xFirst = proxy.position(forX: Double(label.firstIndex)),
+                           let xLast = proxy.position(forX: Double(label.lastIndex)) {
+                            Text(String(label.year))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .position(
+                                    x: plotFrame.origin.x + (xFirst + xLast) / 2.0,
+                                    y: geometry.size.height + yearLabelBottomPadding
+                                )
+                        }
                     }
-                }
 
-                // Zone accessibility containers
-                ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
-                    if let summary = Self.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config),
-                       let xStart = proxy.position(forX: Double(zone.startIndex) - 0.5),
-                       let xEnd = proxy.position(forX: Double(zone.endIndex) + 0.5) {
-                        let zoneWidth = xEnd - xStart
-                        let zoneCenterX = plotFrame.origin.x + (xStart + xEnd) / 2.0
-                        Color.clear
-                            .frame(width: zoneWidth, height: plotFrame.height)
-                            .position(x: zoneCenterX, y: plotFrame.midY)
-                            .accessibilityElement()
-                            .accessibilityLabel(summary)
+                    // Zone accessibility containers
+                    ForEach(Array(separatorData.zones.enumerated()), id: \.offset) { _, zone in
+                        if let summary = Self.zoneAccessibilitySummary(buckets: buckets, zone: zone, config: config),
+                           let xStart = proxy.position(forX: Double(zone.startIndex) - 0.5),
+                           let xEnd = proxy.position(forX: Double(zone.endIndex) + 0.5) {
+                            let zoneWidth = xEnd - xStart
+                            let zoneCenterX = plotFrame.origin.x + (xStart + xEnd) / 2.0
+                            Color.clear
+                                .frame(width: zoneWidth, height: plotFrame.height)
+                                .position(x: zoneCenterX, y: plotFrame.midY)
+                                .accessibilityElement()
+                                .accessibilityLabel(summary)
+                        }
                     }
                 }
             }
@@ -525,10 +527,11 @@ struct ProgressChartView: View {
         case .week: zoneName = String(localized: "Weekly")
         }
 
-        let firstDate = annotationDateLabel(zoneBuckets.first!.periodStart, size: zone.bucketSize)
-        let lastDate = annotationDateLabel(zoneBuckets.last!.periodStart, size: zone.bucketSize)
-        let firstMean = formatEWMA(zoneBuckets.first!.mean)
-        let lastMean = formatEWMA(zoneBuckets.last!.mean)
+        guard let first = zoneBuckets.first, let last = zoneBuckets.last else { return "" }
+        let firstDate = annotationDateLabel(first.periodStart, size: zone.bucketSize)
+        let lastDate = annotationDateLabel(last.periodStart, size: zone.bucketSize)
+        let firstMean = formatEWMA(first.mean)
+        let lastMean = formatEWMA(last.mean)
         let count = zoneBuckets.count
 
         if count == 1 {

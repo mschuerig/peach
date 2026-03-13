@@ -43,7 +43,9 @@ enum TuningSystem: Hashable, Sendable, CaseIterable, Codable {
         let distance = note.note.rawValue - Self.referenceMIDINote
         let remainder = ((distance % 12) + 12) % 12
         let octaves = (distance - remainder) / 12
-        let interval = Interval(rawValue: remainder)!
+        guard let interval = Interval(rawValue: remainder) else {
+            preconditionFailure("Euclidean mod produced out-of-range remainder \(remainder)")
+        }
         return Double(octaves) * Cents.perOctave + centOffset(for: interval) + note.offset.rawValue
     }
 

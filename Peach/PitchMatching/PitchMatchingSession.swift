@@ -235,7 +235,7 @@ final class PitchMatchingSession: TrainingSession {
     private func playNextChallenge() async {
         guard let settings else { return }
 
-        let interval = settings.intervals.randomElement()!
+        guard let interval = settings.intervals.randomElement() else { return }
         currentInterval = interval
         let challenge = generateChallenge(settings: settings, interval: interval)
         currentChallenge = challenge
