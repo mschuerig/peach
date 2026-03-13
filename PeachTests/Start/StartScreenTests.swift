@@ -17,7 +17,7 @@ struct StartScreenTests {
     // MARK: - View Instantiation Tests
 
     @Test("Start Screen can be instantiated")
-    func startScreenCanBeInstantiated() {
+    func startScreenCanBeInstantiated() async {
         let view = StartScreen()
         let mirror = Mirror(reflecting: view)
 
@@ -26,7 +26,7 @@ struct StartScreenTests {
     }
 
     @Test("Comparison Screen can be instantiated with prime intervals")
-    func comparisonScreenCanBeInstantiated() {
+    func comparisonScreenCanBeInstantiated() async {
         _ = PitchComparisonScreen(intervals: [.prime])
     }
 
@@ -41,17 +41,17 @@ struct StartScreenTests {
     }
 
     @Test("Settings Screen can be instantiated")
-    func settingsScreenCanBeInstantiated() {
+    func settingsScreenCanBeInstantiated() async {
         _ = SettingsScreen()
     }
 
     @Test("Profile Screen can be instantiated")
-    func profileScreenCanBeInstantiated() {
+    func profileScreenCanBeInstantiated() async {
         _ = ProfileScreen()
     }
 
     @Test("Info Screen can be instantiated")
-    func infoScreenCanBeInstantiated() {
+    func infoScreenCanBeInstantiated() async {
         let view = InfoScreen()
         let mirror = Mirror(reflecting: view)
 
@@ -60,38 +60,38 @@ struct StartScreenTests {
     }
 
     @Test("ContentView can be instantiated")
-    func contentViewCanBeInstantiated() {
+    func contentViewCanBeInstantiated() async {
         _ = ContentView()
     }
 
     // MARK: - Navigation Destination Tests
 
     @Test("NavigationDestination enum has comparison case with intervals")
-    func navigationDestinationHasComparison() {
+    func navigationDestinationHasComparison() async {
         let destination = NavigationDestination.pitchComparison(intervals: [.prime])
         #expect(destination == NavigationDestination.pitchComparison(intervals: [.prime]))
     }
 
     @Test("NavigationDestination enum has pitchMatching case with intervals")
-    func navigationDestinationHasPitchMatching() {
+    func navigationDestinationHasPitchMatching() async {
         let destination = NavigationDestination.pitchMatching(intervals: [.prime])
         #expect(destination == NavigationDestination.pitchMatching(intervals: [.prime]))
     }
 
     @Test("NavigationDestination enum has settings case")
-    func navigationDestinationHasSettings() {
+    func navigationDestinationHasSettings() async {
         let destination = NavigationDestination.settings
         #expect(destination == NavigationDestination.settings)
     }
 
     @Test("NavigationDestination enum has profile case")
-    func navigationDestinationHasProfile() {
+    func navigationDestinationHasProfile() async {
         let destination = NavigationDestination.profile
         #expect(destination == NavigationDestination.profile)
     }
 
     @Test("NavigationDestination enum is Hashable")
-    func navigationDestinationIsHashable() {
+    func navigationDestinationIsHashable() async {
         let destination1 = NavigationDestination.pitchComparison(intervals: [.prime])
         let destination2 = NavigationDestination.pitchComparison(intervals: [.prime])
         let destination3 = NavigationDestination.settings
@@ -101,21 +101,21 @@ struct StartScreenTests {
     }
 
     @Test("NavigationDestination comparison cases with different intervals are not equal")
-    func navigationDestinationComparisonDifferentIntervals() {
+    func navigationDestinationComparisonDifferentIntervals() async {
         let unison = NavigationDestination.pitchComparison(intervals: [.prime])
         let fifth = NavigationDestination.pitchComparison(intervals: [.up(.perfectFifth)])
         #expect(unison != fifth)
     }
 
     @Test("NavigationDestination pitchMatching cases with different intervals are not equal")
-    func navigationDestinationPitchMatchingDifferentIntervals() {
+    func navigationDestinationPitchMatchingDifferentIntervals() async {
         let unison = NavigationDestination.pitchMatching(intervals: [.prime])
         let fifth = NavigationDestination.pitchMatching(intervals: [.up(.perfectFifth)])
         #expect(unison != fifth)
     }
 
     @Test("NavigationDestination cases are not equal when different")
-    func navigationDestinationCasesAreDistinct() {
+    func navigationDestinationCasesAreDistinct() async {
         #expect(NavigationDestination.pitchComparison(intervals: [.prime]) != NavigationDestination.settings)
         #expect(NavigationDestination.settings != NavigationDestination.profile)
         #expect(NavigationDestination.pitchComparison(intervals: [.prime]) != NavigationDestination.profile)
@@ -125,12 +125,12 @@ struct StartScreenTests {
     // MARK: - Info Screen Content Tests
 
     @Test("Info Screen has correct GitHub URL")
-    func infoScreenHasCorrectGitHubURL() {
+    func infoScreenHasCorrectGitHubURL() async {
         #expect(InfoScreen.gitHubURL == URL(string: "https://github.com/mschuerig/peach")!)
     }
 
     @Test("Info Screen has correct developer name")
-    func infoScreenHasCorrectDeveloperName() {
+    func infoScreenHasCorrectDeveloperName() async {
         #expect(InfoScreen.developerName == "Michael Schürig")
     }
 
@@ -143,12 +143,12 @@ struct StartScreenTests {
     }
 
     @Test("Info Screen has correct license name")
-    func infoScreenHasCorrectLicenseName() {
+    func infoScreenHasCorrectLicenseName() async {
         #expect(InfoScreen.licenseName == "MIT")
     }
 
     @Test("Info Screen has non-empty version string")
-    func infoScreenHasNonEmptyVersion() {
+    func infoScreenHasNonEmptyVersion() async {
         let view = InfoScreen()
 
         let mirror = Mirror(reflecting: view)
@@ -193,7 +193,7 @@ struct StartScreenTests {
     // MARK: - Hub and Spoke Pattern Verification
 
     @Test("All navigation destinations can be created")
-    func allNavigationDestinationsCanBeCreated() {
+    func allNavigationDestinationsCanBeCreated() async {
         // Verify that all destination screens can be instantiated
         // This ensures the hub-and-spoke pattern has all spokes available
 

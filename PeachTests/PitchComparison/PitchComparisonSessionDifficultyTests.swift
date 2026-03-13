@@ -8,7 +8,7 @@ struct PitchComparisonSessionDifficultyTests {
     // MARK: - currentDifficulty Tests
 
     @Test("currentDifficulty is nil before training starts")
-    func currentDifficultyNilBeforeTraining() {
+    func currentDifficultyNilBeforeTraining() async {
         let f = makePitchComparisonSession()
         #expect(f.session.currentDifficulty == nil)
     }
@@ -37,7 +37,7 @@ struct PitchComparisonSessionDifficultyTests {
     // MARK: - sessionBestCentDifference Tests
 
     @Test("sessionBestCentDifference is nil before any correct answer")
-    func sessionBestNilBeforeCorrectAnswer() {
+    func sessionBestNilBeforeCorrectAnswer() async {
         let f = makePitchComparisonSession()
         #expect(f.session.sessionBestCentDifference == nil)
     }

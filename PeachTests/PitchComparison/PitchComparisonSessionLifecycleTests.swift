@@ -106,7 +106,7 @@ struct PitchComparisonSessionLifecycleTests {
     }
 
     @Test("stop() is safe to call multiple times")
-    func stopIsSafeToCallMultipleTimes() {
+    func stopIsSafeToCallMultipleTimes() async {
         let f = makePitchComparisonSession()
 
         // Call stop when already idle

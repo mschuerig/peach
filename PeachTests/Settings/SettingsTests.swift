@@ -9,7 +9,7 @@ struct SettingsTests {
     // MARK: - Task 1: @AppStorage Keys and Defaults
 
     @Test("Algorithm defaults match PitchComparisonTrainingSettings defaults")
-    func algorithmDefaultsMatchTrainingSettings() {
+    func algorithmDefaultsMatchTrainingSettings() async {
         let trainingDefaults = PitchComparisonTrainingSettings(referencePitch: Frequency(440.0), intervals: [.prime])
 
         #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRange.lowerBound.rawValue)
@@ -18,7 +18,7 @@ struct SettingsTests {
     }
 
     @Test("Audio defaults use expected standalone values")
-    func audioDefaultsAreCorrect() {
+    func audioDefaultsAreCorrect() async {
         // noteDuration and soundSource are not TrainingSettings properties —
         // they are standalone settings with hardcoded defaults
         #expect(SettingsKeys.defaultNoteDuration == 1.0)
@@ -26,7 +26,7 @@ struct SettingsTests {
     }
 
     @Test("Storage keys are defined as string constants")
-    func storageKeysAreDefined() {
+    func storageKeysAreDefined() async {
         #expect(SettingsKeys.noteRangeMin == "noteRangeMin")
         #expect(SettingsKeys.noteRangeMax == "noteRangeMax")
         #expect(SettingsKeys.noteDuration == "noteDuration")
@@ -98,7 +98,7 @@ struct SettingsTests {
     }
 
     @Test("MockUserSettings allows interval test injection")
-    func mockUserSettingsIntervalInjection() {
+    func mockUserSettingsIntervalInjection() async {
         let mock = MockUserSettings()
         #expect(mock.intervals == Set<DirectedInterval>([.prime]))
         mock.intervals = [.up(.perfectFifth), .up(.majorThird)]
@@ -106,7 +106,7 @@ struct SettingsTests {
     }
 
     @Test("MockUserSettings allows tuningSystem test injection")
-    func mockUserSettingsTuningSystemInjection() {
+    func mockUserSettingsTuningSystemInjection() async {
         let mock = MockUserSettings()
         #expect(mock.tuningSystem == .equalTemperament)
     }
@@ -289,7 +289,7 @@ struct SettingsTests {
     // MARK: - Task 2: Note Range Validation
 
     @Test("Lower bound range enforces minimum gap from upper bound")
-    func lowerBoundRangeEnforcesGap() {
+    func lowerBoundRangeEnforcesGap() async {
         // With upper at 84 (C6), lower can go up to 72 (C5)
         let range = SettingsKeys.lowerBoundRange(noteRangeMax: 84)
         #expect(range == 21...72)
@@ -301,7 +301,7 @@ struct SettingsTests {
     }
 
     @Test("Upper bound range enforces minimum gap from lower bound")
-    func upperBoundRangeEnforcesGap() {
+    func upperBoundRangeEnforcesGap() async {
         // With lower at 36 (C2), upper must be at least 48 (C3)
         let range = SettingsKeys.upperBoundRange(noteRangeMin: 36)
         #expect(range == 48...108)
@@ -313,7 +313,7 @@ struct SettingsTests {
     }
 
     @Test("Note name display uses PianoKeyboardLayout")
-    func noteNameDisplay() {
+    func noteNameDisplay() async {
         #expect(PianoKeyboardLayout.noteName(midiNote: 36) == "C2")
         #expect(PianoKeyboardLayout.noteName(midiNote: 84) == "C6")
         #expect(PianoKeyboardLayout.noteName(midiNote: 69) == "A4")
@@ -324,7 +324,7 @@ struct SettingsTests {
     // MARK: - Task 3: Reset Functionality
 
     @Test("PerceptualProfile reset clears all note data")
-    func profileResetClearsData() {
+    func profileResetClearsData() async {
         let profile = PerceptualProfile()
 
         // Add some training data
@@ -346,7 +346,7 @@ struct SettingsTests {
     }
 
     @Test("ProgressTimeline reset clears all data")
-    func progressTimelineResetClearsData() {
+    func progressTimelineResetClearsData() async {
         let records = (0..<30).map { i in
             PitchComparisonRecord(
                 referenceNote: 60,
@@ -366,7 +366,7 @@ struct SettingsTests {
     }
 
     @Test("Reset deletes all records from SwiftData")
-    func resetDeletesAllRecords() throws {
+    func resetDeletesAllRecords() async throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, configurations: config)
         let context = container.mainContext
@@ -423,7 +423,7 @@ struct SettingsTests {
     // MARK: - Task 5: Range Functions
 
     @Test("Range functions produce valid ranges with default values")
-    func rangeValidityWithDefaults() {
+    func rangeValidityWithDefaults() async {
         let lowerRange = SettingsKeys.lowerBoundRange(noteRangeMax: SettingsKeys.defaultNoteRangeMax)
         let upperRange = SettingsKeys.upperBoundRange(noteRangeMin: SettingsKeys.defaultNoteRangeMin)
 

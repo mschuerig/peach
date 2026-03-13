@@ -204,7 +204,7 @@ struct TrainingDataStoreEdgeCaseTests {
     }
 
     @Test("DataStoreError cases have descriptive messages")
-    func dataStoreErrorMessages() {
+    func dataStoreErrorMessages() async {
         let saveError = Peach.DataStoreError.saveFailed("Test save error")
         let fetchError = Peach.DataStoreError.fetchFailed("Test fetch error")
         let deleteError = Peach.DataStoreError.deleteFailed("Test delete error")

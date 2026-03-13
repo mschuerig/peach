@@ -9,7 +9,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Protocol Compliance
 
     @Test("Conforms to NextPitchComparisonStrategy and returns valid PitchComparison")
-    func protocolCompliance() {
+    func protocolCompliance() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime])
         let comparison = strategy.nextPitchComparison(
@@ -27,7 +27,7 @@ struct KazezNoteStrategyTests {
     // MARK: - First Comparison
 
     @Test("First comparison uses maxCentDifference")
-    func firstComparisonUsesMax() {
+    func firstComparisonUsesMax() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
@@ -42,7 +42,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("First comparison respects custom maxCentDifference")
-    func firstComparisonCustomMax() {
+    func firstComparisonCustomMax() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(50.0))
 
@@ -59,27 +59,27 @@ struct KazezNoteStrategyTests {
     // MARK: - Kazez Correct Formula: N = P × [1 - (0.05 × √P)]
 
     @Test("Correct at P=100: N = 100 × [1 - 0.05×10] = 50")
-    func correctAt100() {
+    func correctAt100() async {
         let result = nextAfterCorrect(p: 100.0)
         #expect(abs(result - 50.0) < 0.001)
     }
 
     @Test("Correct at P=50: N = 50 × [1 - 0.05×√50] ≈ 32.32")
-    func correctAt50() {
+    func correctAt50() async {
         let expected = 50.0 * (1.0 - 0.05 * 50.0.squareRoot())
         let result = nextAfterCorrect(p: 50.0)
         #expect(abs(result - expected) < 0.001)
     }
 
     @Test("Correct at P=10: N = 10 × [1 - 0.05×√10] ≈ 8.42")
-    func correctAt10() {
+    func correctAt10() async {
         let expected = 10.0 * (1.0 - 0.05 * 10.0.squareRoot())
         let result = nextAfterCorrect(p: 10.0)
         #expect(abs(result - expected) < 0.001)
     }
 
     @Test("Correct at P=5: N = 5 × [1 - 0.05×√5] ≈ 4.44")
-    func correctAt5() {
+    func correctAt5() async {
         let expected = 5.0 * (1.0 - 0.05 * 5.0.squareRoot())
         let result = nextAfterCorrect(p: 5.0)
         #expect(abs(result - expected) < 0.001)
@@ -88,21 +88,21 @@ struct KazezNoteStrategyTests {
     // MARK: - Kazez Incorrect Formula: N = P × [1 + (0.09 × √P)]
 
     @Test("Incorrect at P=5: N = 5 × [1 + 0.09×√5] ≈ 6.01")
-    func incorrectAt5() {
+    func incorrectAt5() async {
         let expected = 5.0 * (1.0 + 0.09 * 5.0.squareRoot())
         let result = nextAfterIncorrect(p: 5.0)
         #expect(abs(result - expected) < 0.001)
     }
 
     @Test("Incorrect at P=10: N = 10 × [1 + 0.09×√10] ≈ 12.85")
-    func incorrectAt10() {
+    func incorrectAt10() async {
         let expected = 10.0 * (1.0 + 0.09 * 10.0.squareRoot())
         let result = nextAfterIncorrect(p: 10.0)
         #expect(abs(result - expected) < 0.001)
     }
 
     @Test("Incorrect at P=50: N = 50 × [1 + 0.09×√50] ≈ 81.82")
-    func incorrectAt50() {
+    func incorrectAt50() async {
         let expected = 50.0 * (1.0 + 0.09 * 50.0.squareRoot())
         let result = nextAfterIncorrect(p: 50.0)
         #expect(abs(result - expected) < 0.001)
@@ -111,7 +111,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Clamping
 
     @Test("Floor clamping: result never below minCentDifference")
-    func floorClamping() {
+    func floorClamping() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(5.0))
         // P=1: N = 1 × [1 - 0.05×1] = 0.95 → clamped to 5.0
@@ -128,7 +128,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Ceiling clamping: result never above maxCentDifference")
-    func ceilingClamping() {
+    func ceilingClamping() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
         // P=50 incorrect: N = 50 × [1 + 0.09×7.07] ≈ 81.8 → under ceiling
@@ -148,7 +148,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Note Range
 
     @Test("Notes always within settings noteRange")
-    func noteRange() {
+    func noteRange() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)), referencePitch: .concert440, intervals: [.prime])
 
@@ -164,7 +164,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Notes respect custom note range from settings")
-    func customNoteRange() {
+    func customNoteRange() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)), referencePitch: .concert440, intervals: [.prime])
 
@@ -182,7 +182,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Cold Start from Profile
 
     @Test("Cold start with empty profile uses maxCentDifference")
-    func coldStartEmptyProfile() {
+    func coldStartEmptyProfile() async {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
@@ -198,7 +198,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Cold start with trained profile uses overallMean")
-    func coldStartWithProfile() throws {
+    func coldStartWithProfile() async throws {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train some notes so overallMean returns a value
@@ -222,7 +222,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Cold start with profile clamps to minCentDifference")
-    func coldStartProfileClampedToMin() {
+    func coldStartProfileClampedToMin() async {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train a note with very small offset
@@ -242,7 +242,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Cold start with profile clamps to maxCentDifference")
-    func coldStartProfileClampedToMax() {
+    func coldStartProfileClampedToMax() async {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train with large offsets
@@ -264,7 +264,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Convergence
 
     @Test("10 consecutive correct answers from 100 cents reaches ~5 cents")
-    func convergenceTest() {
+    func convergenceTest() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(1.0), maxCentDifference: Cents(100.0))
 
@@ -298,7 +298,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Recovery after incorrect answer at low difficulty")
-    func recoveryTest() {
+    func recoveryTest() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(1.0), maxCentDifference: Cents(100.0))
 
@@ -319,7 +319,7 @@ struct KazezNoteStrategyTests {
     // MARK: - Interval Support
 
     @Test("Unison interval produces targetNote.note == referenceNote")
-    func unisonIntervalSameNote() {
+    func unisonIntervalSameNote() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime])
 
@@ -335,7 +335,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Perfect fifth interval produces targetNote.note 7 semitones above referenceNote")
-    func perfectFifthInterval() {
+    func perfectFifthInterval() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
@@ -351,7 +351,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("MIDI range constraint prevents overflow with large interval")
-    func midiRangeConstraint() {
+    func midiRangeConstraint() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(124)), referencePitch: .concert440, intervals: [.prime])
 
@@ -368,7 +368,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Octave interval produces targetNote.note 12 semitones above referenceNote")
-    func octaveInterval() {
+    func octaveInterval() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
@@ -385,7 +385,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Downward perfect fifth produces targetNote.note 7 semitones below referenceNote")
-    func downwardPerfectFifthInterval() {
+    func downwardPerfectFifthInterval() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
@@ -402,7 +402,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Downward interval constrains reference note minimum to interval semitones")
-    func downwardIntervalNoteRangeConstraint() {
+    func downwardIntervalNoteRangeConstraint() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
@@ -420,7 +420,7 @@ struct KazezNoteStrategyTests {
     }
 
     @Test("Downward octave constrains reference note minimum to 12")
-    func downwardOctaveNoteRangeConstraint() {
+    func downwardOctaveNoteRangeConstraint() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 

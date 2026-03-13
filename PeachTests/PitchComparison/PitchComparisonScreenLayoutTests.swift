@@ -9,49 +9,49 @@ struct PitchComparisonScreenLayoutTests {
     // MARK: - Button Icon Size
 
     @Test("Button icon size is 60pt in compact mode")
-    func buttonIconSizeCompact() {
+    func buttonIconSizeCompact() async {
         #expect(PitchComparisonScreen.buttonIconSize(isCompact: true) == 60)
     }
 
     @Test("Button icon size is 80pt in regular mode")
-    func buttonIconSizeRegular() {
+    func buttonIconSizeRegular() async {
         #expect(PitchComparisonScreen.buttonIconSize(isCompact: false) == 80)
     }
 
     // MARK: - Button Min Height
 
     @Test("Button min height is 120pt in compact mode")
-    func buttonMinHeightCompact() {
+    func buttonMinHeightCompact() async {
         #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) == 120)
     }
 
     @Test("Button min height is 200pt in regular mode")
-    func buttonMinHeightRegular() {
+    func buttonMinHeightRegular() async {
         #expect(PitchComparisonScreen.buttonMinHeight(isCompact: false) == 200)
     }
 
     // MARK: - Button Text Font
 
     @Test("Button text font is title2 in compact mode")
-    func buttonTextFontCompact() {
+    func buttonTextFontCompact() async {
         #expect(PitchComparisonScreen.buttonTextFont(isCompact: true) == .title2)
     }
 
     @Test("Button text font is title in regular mode")
-    func buttonTextFontRegular() {
+    func buttonTextFontRegular() async {
         #expect(PitchComparisonScreen.buttonTextFont(isCompact: false) == .title)
     }
 
     // MARK: - Compact vs Regular Consistency
 
     @Test("All compact dimensions are smaller than regular dimensions")
-    func compactDimensionsSmallerThanRegular() {
+    func compactDimensionsSmallerThanRegular() async {
         #expect(PitchComparisonScreen.buttonIconSize(isCompact: true) < PitchComparisonScreen.buttonIconSize(isCompact: false))
         #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) < PitchComparisonScreen.buttonMinHeight(isCompact: false))
     }
 
     @Test("Compact button min height exceeds 44pt minimum tap target")
-    func compactButtonMinHeightExceedsTapTarget() {
+    func compactButtonMinHeightExceedsTapTarget() async {
         #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) >= 44)
     }
 

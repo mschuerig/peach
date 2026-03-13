@@ -38,19 +38,19 @@ struct PitchComparisonTests {
     }
 
     @Test("isTargetHigher reflects positive cent difference")
-    func isTargetHigherPositiveCents() {
+    func isTargetHigherPositiveCents() async {
         let comparison = PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0)))
         #expect(comparison.isTargetHigher == true)
     }
 
     @Test("isTargetHigher reflects negative cent difference")
-    func isTargetHigherNegativeCents() {
+    func isTargetHigherNegativeCents() async {
         let comparison = PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-50.0)))
         #expect(comparison.isTargetHigher == false)
     }
 
     @Test("isCorrect validates user answer against cent direction")
-    func isCorrectValidatesAnswer() {
+    func isCorrectValidatesAnswer() async {
         let higher = PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
         let lower = PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-100.0)))
 
@@ -65,7 +65,7 @@ struct PitchComparisonTests {
 struct CompletedPitchComparisonTests {
 
     @Test("isCorrect delegates to comparison logic")
-    func isCorrectDelegatesToPitchComparison() {
+    func isCorrectDelegatesToPitchComparison() async {
         let comparison = PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
 
         let correct = CompletedPitchComparison(pitchComparison: comparison, userAnsweredHigher: true, tuningSystem: .equalTemperament)
@@ -76,7 +76,7 @@ struct CompletedPitchComparisonTests {
     }
 
     @Test("timestamp defaults to now")
-    func timestampDefaultsToNow() {
+    func timestampDefaultsToNow() async {
         let before = Date()
         let completed = CompletedPitchComparison(
             pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
