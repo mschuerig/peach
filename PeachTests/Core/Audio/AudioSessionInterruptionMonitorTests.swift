@@ -10,7 +10,7 @@ struct AudioSessionInterruptionMonitorTests {
     // MARK: - Audio Interruption Tests
 
     @Test("Interruption began calls onStopRequired")
-    func interruptionBeganCallsOnStopRequired() async throws {
+    func interruptionBeganCallsOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -25,14 +25,13 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue]
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(stopCalled)
         _ = _monitor
     }
 
     @Test("Interruption ended does not call onStopRequired")
-    func interruptionEndedDoesNotCallOnStopRequired() async throws {
+    func interruptionEndedDoesNotCallOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -47,14 +46,13 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue]
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
     }
 
     @Test("Nil interruption type does not call onStopRequired")
-    func nilInterruptionTypeDoesNotCallOnStopRequired() async throws {
+    func nilInterruptionTypeDoesNotCallOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -69,7 +67,6 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: nil
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
@@ -78,7 +75,7 @@ struct AudioSessionInterruptionMonitorTests {
     // MARK: - Route Change Tests
 
     @Test("Route change oldDeviceUnavailable calls onStopRequired")
-    func routeChangeOldDeviceUnavailableCallsOnStopRequired() async throws {
+    func routeChangeOldDeviceUnavailableCallsOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -93,14 +90,13 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue]
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(stopCalled)
         _ = _monitor
     }
 
     @Test("Non-stop route changes do not call onStopRequired")
-    func nonStopRouteChangesDoNotCallOnStopRequired() async throws {
+    func nonStopRouteChangesDoNotCallOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -115,14 +111,13 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.newDeviceAvailable.rawValue]
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
     }
 
     @Test("Nil route change reason does not call onStopRequired")
-    func nilRouteChangeReasonDoesNotCallOnStopRequired() async throws {
+    func nilRouteChangeReasonDoesNotCallOnStopRequired() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -137,7 +132,6 @@ struct AudioSessionInterruptionMonitorTests {
             userInfo: nil
         )
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
@@ -146,7 +140,7 @@ struct AudioSessionInterruptionMonitorTests {
     // MARK: - Background Notification Tests
 
     @Test("Background notification calls onStopRequired when backgroundNotificationName is provided")
-    func backgroundNotificationCallsOnStopRequiredWhenEnabled() async throws {
+    func backgroundNotificationCallsOnStopRequiredWhenEnabled() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -158,14 +152,13 @@ struct AudioSessionInterruptionMonitorTests {
 
         nc.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(stopCalled)
         _ = _monitor
     }
 
     @Test("Background notification does not call onStopRequired when backgroundNotificationName is nil")
-    func backgroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async throws {
+    func backgroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -176,7 +169,6 @@ struct AudioSessionInterruptionMonitorTests {
 
         nc.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
@@ -185,7 +177,7 @@ struct AudioSessionInterruptionMonitorTests {
     // MARK: - Foreground Notification Tests
 
     @Test("Foreground notification calls onStopRequired when foregroundNotificationName is provided")
-    func foregroundNotificationCallsOnStopRequiredWhenEnabled() async throws {
+    func foregroundNotificationCallsOnStopRequiredWhenEnabled() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -197,14 +189,13 @@ struct AudioSessionInterruptionMonitorTests {
 
         nc.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(stopCalled)
         _ = _monitor
     }
 
     @Test("Foreground notification does not call onStopRequired when foregroundNotificationName is nil")
-    func foregroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async throws {
+    func foregroundNotificationDoesNotCallOnStopRequiredWhenDisabled() async {
         let nc = NotificationCenter()
         var stopCalled = false
         let _monitor = AudioSessionInterruptionMonitor(
@@ -215,7 +206,6 @@ struct AudioSessionInterruptionMonitorTests {
 
         nc.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
-        try await Task.sleep(for: .milliseconds(50))
         await Task.yield()
         #expect(!stopCalled)
         _ = _monitor
