@@ -26,6 +26,25 @@ final class MockNotePlayer: NotePlayer {
     var onPlayCalled: (() -> Void)?
     var onStopAllCalled: (() -> Void)?
 
+    // MARK: - Continuation-Based Wait
+
+    private var playCountWaiters: [(minCount: Int, continuation: CheckedContinuation<Void, Never>)] = []
+    private var stopAllWaiters: [CheckedContinuation<Void, Never>] = []
+
+    func waitForPlay(minCount: Int = 1) async {
+        if playCallCount >= minCount { return }
+        await withCheckedContinuation { continuation in
+            playCountWaiters.append((minCount: minCount, continuation: continuation))
+        }
+    }
+
+    func waitForStopAll() async {
+        if stopAllCallCount > 0 { return }
+        await withCheckedContinuation { continuation in
+            stopAllWaiters.append(continuation)
+        }
+    }
+
     // MARK: - NotePlayer Protocol (Primary — returns handle)
 
     func play(frequency: Frequency, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws -> PlaybackHandle {
@@ -35,6 +54,12 @@ final class MockNotePlayer: NotePlayer {
         lastAmplitudeDB = amplitudeDB.rawValue
 
         onPlayCalled?()
+
+        let satisfied = playCountWaiters.filter { playCallCount >= $0.minCount }
+        playCountWaiters.removeAll { playCallCount >= $0.minCount }
+        for entry in satisfied {
+            entry.continuation.resume()
+        }
 
         if shouldThrowError {
             throw errorToThrow
@@ -68,6 +93,12 @@ final class MockNotePlayer: NotePlayer {
     func stopAll() async throws {
         stopAllCallCount += 1
         onStopAllCalled?()
+
+        let waiters = stopAllWaiters
+        stopAllWaiters.removeAll()
+        for waiter in waiters {
+            waiter.resume()
+        }
     }
 
     // MARK: - Test Helpers
@@ -85,5 +116,7 @@ final class MockNotePlayer: NotePlayer {
         onStopAllCalled = nil
         lastHandle = nil
         handleHistory = []
+        playCountWaiters.removeAll()
+        stopAllWaiters.removeAll()
     }
 }

@@ -127,11 +127,11 @@ struct PitchComparisonSessionLifecycleTests {
     }
 
     @Test("stop() transitions to idle and cancels training")
-    func stopTransitionsToIdleAndCancelsTraining() async throws {
+    func stopTransitionsToIdleAndCancelsTraining() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 1)
+        await f.mockPlayer.waitForPlay()
 
         f.session.stop()
 
@@ -141,11 +141,11 @@ struct PitchComparisonSessionLifecycleTests {
     // MARK: - Navigation-Based Stop Tests
 
     @Test("Simulated onDisappear triggers stop")
-    func simulatedOnDisappearTriggersStop() async throws {
+    func simulatedOnDisappearTriggersStop() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 1)
+        await f.mockPlayer.waitForPlay()
 
         #expect(f.session.state != .idle)
 
@@ -157,7 +157,7 @@ struct PitchComparisonSessionLifecycleTests {
     // MARK: - Edge Case Tests
 
     @Test("Rapid stop and start sequence")
-    func rapidStopAndStartSequence() async throws {
+    func rapidStopAndStartSequence() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
@@ -168,7 +168,7 @@ struct PitchComparisonSessionLifecycleTests {
 
         f.mockPlayer.reset()
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 1)
+        await f.mockPlayer.waitForPlay()
 
         #expect(f.session.state != .idle)
         #expect(f.mockPlayer.playCallCount >= 1)
@@ -190,16 +190,15 @@ struct PitchComparisonSessionLifecycleTests {
     // MARK: - stopAll() Verification
 
     @Test("stop() calls notePlayer.stopAll() for audio cleanup")
-    func stopCallsStopAll() async throws {
+    func stopCallsStopAll() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 1)
+        await f.mockPlayer.waitForPlay()
 
         f.session.stop()
 
-        // Allow the fire-and-forget Task to execute
-        try await Task.sleep(for: .milliseconds(50))
+        await f.mockPlayer.waitForStopAll()
         #expect(f.mockPlayer.stopAllCallCount >= 1)
     }
 
@@ -223,8 +222,7 @@ struct PitchComparisonSessionLifecycleTests {
         // Wait for feedback state (answer was given during target)
         try await waitForState(f.session, .showingFeedback)
 
-        // Allow the fire-and-forget Task to execute
-        try await Task.sleep(for: .milliseconds(50))
+        await f.mockPlayer.waitForStopAll()
         #expect(f.mockPlayer.stopAllCallCount >= 1)
     }
 }
