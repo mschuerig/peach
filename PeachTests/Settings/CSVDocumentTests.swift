@@ -15,10 +15,9 @@ struct CSVDocumentTests {
 
     @Test("filename follows peach-training-data-YYYY-MM-DD.csv pattern")
     func filenamePattern() async {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let expectedDate = formatter.string(from: Date())
+        let expectedDate = Date().formatted(
+            .iso8601.year().month().day().dateSeparator(.dash).timeSeparator(.omitted)
+        )
         let expectedName = "peach-training-data-\(expectedDate).csv"
 
         let name = CSVDocument.exportFileName()

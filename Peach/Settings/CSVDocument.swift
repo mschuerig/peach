@@ -25,14 +25,10 @@ struct CSVDocument: FileDocument {
         return FileWrapper(regularFileWithContents: data)
     }
 
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
-
     static func exportFileName() -> String {
-        "peach-training-data-\(dateFormatter.string(from: Date())).csv"
+        let dateString = Date().formatted(
+            .iso8601.year().month().day().dateSeparator(.dash).timeSeparator(.omitted)
+        )
+        return "peach-training-data-\(dateString).csv"
     }
 }

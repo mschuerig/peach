@@ -8,15 +8,11 @@ struct GranularityZoneConfigTests {
     // MARK: - Helpers
 
     private func abbreviatedMonthName(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM"
-        return formatter.string(from: date)
+        date.formatted(.dateTime.month(.abbreviated))
     }
 
     private func abbreviatedWeekdayName(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE"
-        return formatter.string(from: date)
+        date.formatted(.dateTime.weekday(.abbreviated))
     }
 
     // MARK: - MonthlyZoneConfig Tests

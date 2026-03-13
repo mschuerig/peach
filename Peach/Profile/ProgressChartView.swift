@@ -446,29 +446,11 @@ struct ProgressChartView: View {
         return max(0, Double(buckets.count) - Double(visibleBucketCount))
     }
 
-    private static let monthFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.setLocalizedDateFormatFromTemplate("MMM yyyy")
-        return f
-    }()
-
-    private static let dayFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.setLocalizedDateFormatFromTemplate("E MMM d")
-        return f
-    }()
-
-    private static let sessionFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.setLocalizedDateFormatFromTemplate("HH:mm")
-        return f
-    }()
-
     static func annotationDateLabel(_ date: Date, size: BucketSize) -> String {
         switch size {
-        case .month: monthFormatter.string(from: date)
-        case .day, .week: dayFormatter.string(from: date)
-        case .session: sessionFormatter.string(from: date)
+        case .month: date.formatted(.dateTime.month(.abbreviated).year())
+        case .day, .week: date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+        case .session: date.formatted(.dateTime.hour().minute())
         }
     }
 

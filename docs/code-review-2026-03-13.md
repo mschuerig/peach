@@ -147,7 +147,7 @@ This is the most architecturally involved fix — read both files and their cons
 
 ---
 
-### L4: Replace `DateFormatter` with `Date.FormatStyle`
+### ✅ L4: Replace `DateFormatter` with `Date.FormatStyle`
 
 - `Peach/Settings/CSVDocument.swift:28`
 - `Peach/Core/Profile/GranularityZoneConfig.swift:24-28,39-43,54-58`
