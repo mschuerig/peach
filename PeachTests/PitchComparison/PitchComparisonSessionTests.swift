@@ -32,11 +32,11 @@ struct PitchComparisonSessionTests {
     }
 
     @Test("PitchComparisonSession transitions from playingNote1 to playingNote2")
-    func transitionsFromNote1ToNote2() async throws {
+    func transitionsFromNote1ToNote2() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 2)
+        await f.mockPlayer.waitForPlay(minCount: 2)
 
         #expect(f.mockPlayer.playCallCount >= 2)
         #expect(f.session.state == .playingNote2 || f.session.state == .awaitingAnswer)
@@ -74,17 +74,17 @@ struct PitchComparisonSessionTests {
         f.session.handleAnswer(isHigher: true)
         #expect(f.session.state == .showingFeedback)
 
-        try await waitForPlayCallCount(f.mockPlayer, 3)
+        await f.mockPlayer.waitForPlay(minCount: 3)
 
         #expect(f.mockPlayer.playCallCount >= 3)
     }
 
     @Test("stop() transitions to idle from any state")
-    func stopTransitionsToIdle() async throws {
+    func stopTransitionsToIdle() async {
         let f = makePitchComparisonSession()
 
         f.session.start(settings: defaultTestSettings)
-        try await waitForPlayCallCount(f.mockPlayer, 1)
+        await f.mockPlayer.waitForPlay()
 
         f.session.stop()
 
@@ -140,7 +140,7 @@ struct PitchComparisonSessionTests {
         try await waitForState(f.session, .awaitingAnswer)
 
         f.session.handleAnswer(isHigher: true)
-        try await waitForPlayCallCount(f.mockPlayer, 3)
+        await f.mockPlayer.waitForPlay(minCount: 3)
 
         #expect(f.mockPlayer.playCallCount >= 3)
         #expect(f.mockDataStore.saveCallCount == 1)
