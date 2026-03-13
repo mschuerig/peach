@@ -37,16 +37,10 @@ enum TrainingDataImporter {
         _ parseResult: CSVImportParser.ImportResult,
         into store: TrainingDataStore
     ) throws -> ImportSummary {
-        // Non-atomic: if a save fails after deleteAll, existing data is lost with partial import.
-        // Acceptable for MVP — a future enhancement could wrap in a single transaction.
-        try store.deleteAll()
-
-        for record in parseResult.pitchComparisons {
-            try store.save(record)
-        }
-        for record in parseResult.pitchMatchings {
-            try store.save(record)
-        }
+        try store.replaceAllRecords(
+            pitchComparisons: parseResult.pitchComparisons,
+            pitchMatchings: parseResult.pitchMatchings
+        )
 
         return ImportSummary(
             pitchComparisonsImported: parseResult.pitchComparisons.count,

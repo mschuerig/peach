@@ -136,6 +136,73 @@ struct TrainingDataStoreEdgeCaseTests {
         }
     }
 
+    // MARK: - Atomic Replace Tests
+
+    @Test("replaceAllRecords inserts new records after deleting existing ones")
+    func replaceAllRecordsInsertsAfterDelete() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let existing = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        try store.save(existing)
+
+        let newComparison = PitchComparisonRecord(referenceNote: 72, targetNote: 72, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
+        let newMatching = PitchMatchingRecord(referenceNote: 69, targetNote: 69, initialCentOffset: 30.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
+
+        try store.replaceAllRecords(pitchComparisons: [newComparison], pitchMatchings: [newMatching])
+
+        let comparisons = try store.fetchAllPitchComparisons()
+        let matchings = try store.fetchAllPitchMatchings()
+
+        #expect(comparisons.count == 1)
+        #expect(comparisons[0].referenceNote == 72)
+        #expect(matchings.count == 1)
+        #expect(matchings[0].referenceNote == 69)
+    }
+
+    @Test("replaceAllRecords with empty arrays clears all data")
+    func replaceAllRecordsWithEmptyArrays() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let comparison = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let matching = PitchMatchingRecord(referenceNote: 69, targetNote: 69, initialCentOffset: 30.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
+        try store.save(comparison)
+        try store.save(matching)
+
+        try store.replaceAllRecords(pitchComparisons: [], pitchMatchings: [])
+
+        let comparisons = try store.fetchAllPitchComparisons()
+        let matchings = try store.fetchAllPitchMatchings()
+
+        #expect(comparisons.isEmpty)
+        #expect(matchings.isEmpty)
+    }
+
+    @Test("replaceAllRecords handles multiple records of both types")
+    func replaceAllRecordsMultiple() async throws {
+        let container = try makeTestContainer()
+        let context = ModelContext(container)
+        let store = TrainingDataStore(modelContext: context)
+
+        let comparisons = (0..<5).map { i in
+            PitchComparisonRecord(referenceNote: 60 + i, targetNote: 60 + i, centOffset: Double(i) * 10, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        }
+        let matchings = (0..<3).map { i in
+            PitchMatchingRecord(referenceNote: 69 + i, targetNote: 69 + i, initialCentOffset: Double(i) * 15, userCentError: Double(i), interval: 0, tuningSystem: "equalTemperament")
+        }
+
+        try store.replaceAllRecords(pitchComparisons: comparisons, pitchMatchings: matchings)
+
+        let fetchedComparisons = try store.fetchAllPitchComparisons()
+        let fetchedMatchings = try store.fetchAllPitchMatchings()
+
+        #expect(fetchedComparisons.count == 5)
+        #expect(fetchedMatchings.count == 3)
+    }
+
     @Test("DataStoreError cases have descriptive messages")
     func dataStoreErrorMessages() {
         let saveError = Peach.DataStoreError.saveFailed("Test save error")

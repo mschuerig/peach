@@ -69,6 +69,32 @@ final class TrainingDataStore {
         }
     }
 
+    /// Atomically replaces all records: deletes existing data and inserts new records in a single transaction.
+    /// If any insert fails, the entire operation rolls back and existing data is preserved.
+    /// - Parameters:
+    ///   - pitchComparisons: Comparison records to insert
+    ///   - pitchMatchings: Pitch matching records to insert
+    /// - Throws: DataStoreError.saveFailed if the transaction fails
+    func replaceAllRecords(
+        pitchComparisons: [PitchComparisonRecord],
+        pitchMatchings: [PitchMatchingRecord]
+    ) throws {
+        do {
+            try modelContext.transaction {
+                try modelContext.delete(model: PitchComparisonRecord.self)
+                try modelContext.delete(model: PitchMatchingRecord.self)
+                for record in pitchComparisons {
+                    modelContext.insert(record)
+                }
+                for record in pitchMatchings {
+                    modelContext.insert(record)
+                }
+            }
+        } catch {
+            throw DataStoreError.saveFailed("Failed to replace all records: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Pitch Matching CRUD
 
     /// Saves a pitch matching record to persistent storage
