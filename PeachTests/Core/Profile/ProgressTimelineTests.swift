@@ -167,16 +167,24 @@ struct ProgressTimelineTests {
         #expect(buckets.count == 2)
     }
 
-    @Test("records between 7-30 days old are grouped by week")
-    func weekBuckets() async {
+    @Test("records between 7-30 days old are grouped by day")
+    func dayBucketsExtendedRange() async {
+        // Use calendar-day-aligned offsets to avoid midnight boundary flakiness.
+        let calendar = Calendar.current
+        let now = Date()
+        let noon10DaysAgo = calendar.startOfDay(for: now.addingTimeInterval(-10 * 86400)).addingTimeInterval(12 * 3600)
+        let noon20DaysAgo = calendar.startOfDay(for: now.addingTimeInterval(-20 * 86400)).addingTimeInterval(12 * 3600)
+
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 24 * 10),  // 10 days ago
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: 24 * 20),  // 20 days ago
+            makePitchComparisonRecord(centOffset: 10.0, date: noon10DaysAgo),
+            makePitchComparisonRecord(centOffset: 12.0, date: noon20DaysAgo),
         ]
         let timeline = ProgressTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchComparison)
-        // May be 1 or 2 buckets depending on week boundaries — just verify they exist
-        #expect(buckets.count >= 1)
+        #expect(buckets.count == 2)
+        for bucket in buckets {
+            #expect(bucket.bucketSize == .day)
+        }
     }
 
     @Test("records older than 30 days are grouped by month")
@@ -208,23 +216,32 @@ struct ProgressTimelineTests {
 
     @Test("EWMA halflife gives 50% weight when dt equals halflife")
     func ewmaHalflife() async {
-        // Create two buckets separated by exactly 7 days (halflife)
-        // Bucket 1 (7 days ago): value = 20.0
-        // Bucket 2 (now): value = 10.0
-        // With halflife=7d, alpha = 0.5, so EWMA = 0.5*10 + 0.5*20 = 15.0
+        // Create two buckets separated by exactly 7 days (halflife).
+        // With week buckets removed, older records land in day buckets whose
+        // periodStart = startOfDay — deterministic and locale-independent.
+        //
+        // Bucket 1 (day bucket, 7 days ago): mean = 20.0, periodStart = midnight 7 days ago
+        // Bucket 2 (session bucket, today): mean = 10.0, periodStart = midnight today
+        // dt = exactly 7 calendar days = halflife → alpha = 0.5
+        // EWMA = 0.5 × 10 + 0.5 × 20 = 15.0
+        let calendar = Calendar.current
+        let now = Date()
+        let midnightToday = calendar.startOfDay(for: now)
+        let midnight7DaysAgo = calendar.date(byAdding: .day, value: -7, to: midnightToday)!
+
         let olderRecords = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 20.0, hoursAgo: 7 * 24 + Double(i) * 0.01)
+            makePitchComparisonRecord(centOffset: 20.0, date: midnight7DaysAgo.addingTimeInterval(12 * 3600 + Double(i) * 0.01))
         }
         let recentRecords = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 1.0 + Double(i) * 0.01)
+            makePitchComparisonRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60 + Double(i) * 0.01))
         }
         let timeline = ProgressTimeline(pitchComparisonRecords: olderRecords + recentRecords)
         let ewma = timeline.currentEWMA(for: .unisonPitchComparison)
         #expect(ewma != nil)
         if let ewma {
-            // EWMA should weight recent values more than older ones; exact value
-            // varies with calendar-dependent bucket boundaries (±2.0 tolerance)
-            #expect(abs(ewma - 15.0) < 2.0)
+            // dt = midnightToday - midnight7DaysAgo = exactly 7 days (may differ by
+            // ±1 hour around DST transitions), so alpha ≈ 0.5 and EWMA ≈ 15.0.
+            #expect(abs(ewma - 15.0) < 0.5)
         }
     }
 
@@ -507,14 +524,13 @@ struct ProgressTimelineTests {
 
     // MARK: - Sub-Bucket Tests
 
-    @Test("subBuckets returns week-level buckets for a month bucket")
-    func subBucketsMonthToWeek() async {
+    @Test("subBuckets returns day-level buckets for a month bucket")
+    func subBucketsMonthToDay() async {
         // Create records spanning ~45 days ago (will be month-bucketed)
-        // Spread across multiple weeks within the same month
+        // Spread across multiple days within the same month
         let calendar = Calendar.current
         let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
         let records = (0..<20).map { i in
-            // Spread records across 4 weeks within the month
             let dayOffset = Double(i % 28)
             let timestamp = monthStart.addingTimeInterval(dayOffset * 86400 + Double(i) * 60)
             return PitchComparisonRecord(
@@ -529,33 +545,11 @@ struct ProgressTimelineTests {
         }
         let timeline = ProgressTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchComparison)
-        // Find a month bucket
         guard let monthBucket = buckets.first(where: { $0.bucketSize == .month }) else {
             Issue.record("Expected at least one month bucket")
             return
         }
         let subs = timeline.subBuckets(for: .unisonPitchComparison, expanding: monthBucket)
-        #expect(!subs.isEmpty)
-        for sub in subs {
-            #expect(sub.bucketSize == .week)
-        }
-    }
-
-    @Test("subBuckets returns day-level buckets for a week bucket")
-    func subBucketsWeekToDay() async {
-        // Create records ~10 days ago (will be week-bucketed)
-        let records = (0..<10).map { i in
-            // Spread across different days within the same week
-            let hoursAgo = 24.0 * 8.0 + Double(i) * 12.0  // 8-13 days ago, within week range
-            return makePitchComparisonRecord(centOffset: 10.0 + Double(i), hoursAgo: hoursAgo)
-        }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
-        let buckets = timeline.buckets(for: .unisonPitchComparison)
-        guard let weekBucket = buckets.first(where: { $0.bucketSize == .week }) else {
-            Issue.record("Expected at least one week bucket")
-            return
-        }
-        let subs = timeline.subBuckets(for: .unisonPitchComparison, expanding: weekBucket)
         #expect(!subs.isEmpty)
         for sub in subs {
             #expect(sub.bucketSize == .day)
@@ -765,22 +759,6 @@ struct ProgressTimelineTests {
         }
     }
 
-    @Test("allGranularityBuckets does not include week buckets")
-    func multiGranularityNoWeekBuckets() async {
-        let now = Date()
-        // Data at various ages, none should produce week buckets
-        let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: now.addingTimeInterval(-45 * 86400)),
-            makePitchComparisonRecord(centOffset: 12.0, date: now.addingTimeInterval(-15 * 86400)),
-            makePitchComparisonRecord(centOffset: 8.0, date: now.addingTimeInterval(-2 * 3600)),
-        ]
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
-        let buckets = timeline.allGranularityBuckets(for: .unisonPitchComparison)
-
-        let weekBuckets = buckets.filter { $0.bucketSize == .week }
-        #expect(weekBuckets.isEmpty)
-    }
-
     @Test("day and session zones only when no data older than 30 days")
     func multiGranularityDayAndSessionOnly() async {
         let calendar = Calendar.current
@@ -927,7 +905,7 @@ struct ProgressTimelineTests {
 
     @Test("sub-bucket record counts are consistent with parent bucket")
     func subBucketRecordCountConsistency() async {
-        // Create records spanning weeks within a month bucket
+        // Create records spanning days within a month bucket
         let calendar = Calendar.current
         let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now.addingTimeInterval(-45 * 86400)))!
         let records = (0..<15).map { i in

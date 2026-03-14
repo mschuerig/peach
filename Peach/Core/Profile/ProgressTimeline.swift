@@ -92,13 +92,12 @@ enum TrainingModeState: Equatable {
 enum BucketSize {
     case session
     case day
-    case week
     case month
 }
 
 /// A single aggregated data point on the progress chart.
 ///
-/// Each bucket represents a time period (session, day, week, or month)
+/// Each bucket represents a time period (session, day, or month)
 /// with the mean and standard deviation of all metric values in that period.
 struct TimeBucket {
     let periodStart: Date
@@ -129,9 +128,6 @@ final class ProgressTimeline {
     private static let recentThreshold: Duration = .seconds(24 * 3600)
 
     /// Records younger than this (but older than recentThreshold) are bucketed per day.
-    private static let weekThreshold: Duration = .seconds(7 * 86400)
-
-    /// Records younger than this (but older than weekThreshold) are bucketed per week.
     /// Older records are bucketed per month.
     private static let monthThreshold: Duration = .seconds(30 * 86400)
 
@@ -177,7 +173,7 @@ final class ProgressTimeline {
     /// - **Day zone**: previous 7 calendar days before today
     /// - **Month zone**: everything older, with the last monthly bucket truncated at the day zone start
     ///
-    /// Weekly granularity is intentionally omitted.
+    /// Only three granularity tiers are used: month, day, and session.
     func allGranularityBuckets(for mode: TrainingMode) -> [TimeBucket] {
         guard let data = modeData[mode], !data.allMetrics.isEmpty else { return [] }
         let now = Date()
@@ -187,7 +183,7 @@ final class ProgressTimeline {
 
     /// Returns sub-buckets at finer granularity for a given parent bucket.
     ///
-    /// Splits a month bucket into weeks, a week into days, or a day into sessions.
+    /// Splits a month bucket into days, or a day into sessions.
     /// Returns an empty array for session buckets (finest granularity).
     func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket] {
         guard bucket.bucketSize != .session else { return [] }
@@ -371,16 +367,10 @@ final class ProgressTimeline {
                     continue
                 }
                 bucketInfo = (key: metric.timestamp, end: metric.timestamp, size: .session)
-            } else if age < Self.weekThreshold / .seconds(1) {
+            } else if age < Self.monthThreshold / .seconds(1) {
                 let dayStart = calendar.startOfDay(for: metric.timestamp)
                 let dayEnd = dayStart.addingTimeInterval(Self.secondsPerDay / .seconds(1))
                 bucketInfo = (key: dayStart, end: dayEnd, size: .day)
-            } else if age < Self.monthThreshold / .seconds(1) {
-                if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: metric.timestamp) {
-                    bucketInfo = (key: weekInterval.start, end: weekInterval.end, size: .week)
-                } else {
-                    continue
-                }
             } else {
                 if let monthInterval = calendar.dateInterval(of: .month, for: metric.timestamp) {
                     bucketInfo = (key: monthInterval.start, end: monthInterval.end, size: .month)
@@ -486,8 +476,7 @@ final class ProgressTimeline {
         let sessionGapSeconds = sessionGap / .seconds(1)
         let childSize: BucketSize
         switch parentSize {
-        case .month: childSize = .week
-        case .week: childSize = .day
+        case .month: childSize = .day
         case .day: childSize = .session
         case .session: return []
         }
@@ -498,12 +487,6 @@ final class ProgressTimeline {
             let groupInfo: (key: Date, end: Date)
 
             switch childSize {
-            case .week:
-                if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: metric.timestamp) {
-                    groupInfo = (key: weekInterval.start, end: weekInterval.end)
-                } else {
-                    continue
-                }
             case .day:
                 let dayStart = calendar.startOfDay(for: metric.timestamp)
                 groupInfo = (key: dayStart, end: dayStart.addingTimeInterval(Self.secondsPerDay / .seconds(1)))

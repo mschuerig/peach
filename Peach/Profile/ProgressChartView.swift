@@ -427,7 +427,6 @@ struct ProgressChartView: View {
         case .month: Color(.systemBackground)
         case .day: Color(.secondarySystemBackground)
         case .session: Color(.systemBackground)
-        case .week: Color(.systemBackground)
         }
     }
 
@@ -449,7 +448,7 @@ struct ProgressChartView: View {
     static func annotationDateLabel(_ date: Date, size: BucketSize) -> String {
         switch size {
         case .month: date.formatted(.dateTime.month(.abbreviated).year())
-        case .day, .week: date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+        case .day: date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
         case .session: date.formatted(.dateTime.hour().minute())
         }
     }
@@ -506,7 +505,6 @@ struct ProgressChartView: View {
         case .month: zoneName = String(localized: "Monthly")
         case .day: zoneName = String(localized: "Daily")
         case .session: zoneName = String(localized: "Session")
-        case .week: zoneName = String(localized: "Weekly")
         }
 
         guard let first = zoneBuckets.first, let last = zoneBuckets.last else { return "" }

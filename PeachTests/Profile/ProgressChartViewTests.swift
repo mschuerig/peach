@@ -56,12 +56,6 @@ struct ProgressChartViewTests {
         #expect(configs[.session] != nil)
     }
 
-    @Test("zone configs does not contain week")
-    func zoneConfigsExcludesWeek() async {
-        let configs = ProgressChartView.zoneConfigs
-        #expect(configs[.week] == nil)
-    }
-
     @Test("zone config point widths match expected values")
     func zoneConfigPointWidths() async {
         let configs = ProgressChartView.zoneConfigs
