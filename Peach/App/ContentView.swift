@@ -11,9 +11,6 @@ struct ContentView: View {
     /// Navigation path for programmatic navigation control
     @State private var navigationPath: [NavigationDestination] = []
 
-    /// Track previous scene phase to detect transitions
-    @State private var previousScenePhase: ScenePhase?
-
     /// Logger for lifecycle events
     private let logger = Logger(subsystem: "com.peach.app", category: "ContentView")
 
@@ -33,8 +30,6 @@ struct ContentView: View {
             if oldPhase == .background && newPhase == .active {
                 handleAppForegrounding()
             }
-
-            previousScenePhase = newPhase
         }
     }
 
