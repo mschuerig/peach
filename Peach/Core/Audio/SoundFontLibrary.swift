@@ -32,12 +32,8 @@ final class SoundFontLibrary {
     }
 
     func preset(forTag tag: String) -> SF2Preset? {
-        guard tag.hasPrefix("sf2:") else { return nil }
-        let parts = tag.dropFirst(4).split(separator: ":")
-        guard parts.count == 2,
-              let bank = Int(parts[0]),
-              let program = Int(parts[1]) else { return nil }
-        return availablePresets.first { $0.bank == bank && $0.program == program }
+        guard let components = SoundSourceID(tag).sf2Components else { return nil }
+        return availablePresets.first { $0.bank == components.bank && $0.program == components.program }
     }
 }
 

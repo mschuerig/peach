@@ -194,13 +194,8 @@ final class SoundFontNotePlayer: NotePlayer {
     // MARK: - Static Helpers
 
     nonisolated static func parseSF2Tag(from source: SoundSourceID) -> SF2Preset? {
-        let tag = source.rawValue
-        guard tag.hasPrefix("sf2:") else { return nil }
-        let parts = tag.dropFirst(4).split(separator: ":")
-        guard parts.count == 2,
-              let bank = Int(parts[0]),
-              let program = Int(parts[1]) else { return nil }
-        return SF2Preset(name: tag, program: program, bank: bank)
+        guard let components = source.sf2Components else { return nil }
+        return SF2Preset(name: source.rawValue, program: components.program, bank: components.bank)
     }
 
     nonisolated static func pitchBendValue(forCents cents: Cents) -> UInt16 {

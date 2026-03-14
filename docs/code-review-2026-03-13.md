@@ -157,7 +157,7 @@ This is the most architecturally involved fix — read both files and their cons
 
 ---
 
-### L5: DRY — deduplicate SF2 tag parsing
+### ✅ L5: DRY — deduplicate SF2 tag parsing
 
 `Peach/Core/Audio/SoundFontNotePlayer.swift:196-204` and `Peach/Core/Audio/SoundFontLibrary.swift:34-41` both parse `"sf2:bank:program"`. Move to `SoundSourceID` as a computed property.
 
