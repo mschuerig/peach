@@ -324,7 +324,7 @@ struct SettingsTests {
         profile.update(note: 72, centOffset: -2.0, isCorrect: false)
         #expect(profile.statsForNote(60).sampleCount == 2)
         #expect(profile.statsForNote(72).sampleCount == 1)
-        #expect(profile.overallMean != nil)
+        #expect(profile.comparisonMean != nil)
 
         // Reset
         profile.resetComparison()
@@ -332,8 +332,8 @@ struct SettingsTests {
         // Verify cold start state
         #expect(profile.statsForNote(60).sampleCount == 0)
         #expect(profile.statsForNote(72).sampleCount == 0)
-        #expect(profile.overallMean == nil)
-        #expect(profile.overallStdDev == nil)
+        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonStdDev == nil)
     }
 
     @Test("ProgressTimeline reset clears all data")

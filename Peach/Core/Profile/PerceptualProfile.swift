@@ -66,7 +66,7 @@ final class PerceptualProfile: PitchComparisonProfile, PitchMatchingProfile {
 
     // MARK: - Summary Statistics
 
-    var overallMean: Cents? {
+    var comparisonMean: Cents? {
         let trainedStats = noteStats.filter { $0.sampleCount > 0 }
         guard !trainedStats.isEmpty else { return nil }
 
@@ -74,7 +74,7 @@ final class PerceptualProfile: PitchComparisonProfile, PitchMatchingProfile {
         return Cents(sum / Double(trainedStats.count))
     }
 
-    var overallStdDev: Cents? {
+    var comparisonStdDev: Cents? {
         let trainedStats = noteStats.filter { $0.sampleCount > 0 }
         guard trainedStats.count >= 2 else { return nil }
 

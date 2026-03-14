@@ -60,7 +60,7 @@ struct TrainingDataImportActionTests {
         )
 
         #expect(summary.totalImported == 2)
-        #expect(profile.overallMean != nil)
+        #expect(profile.comparisonMean != nil)
     }
 
     // MARK: - Merge mode
@@ -90,7 +90,7 @@ struct TrainingDataImportActionTests {
         #expect(summary.pitchComparisonsImported == 1)
         #expect(summary.pitchComparisonsSkipped == 1)
         // Profile rebuilt from ALL store records (existing + new)
-        #expect(profile.overallMean != nil)
+        #expect(profile.comparisonMean != nil)
     }
 
     // MARK: - Profile rebuild uses ALL store records

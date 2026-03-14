@@ -11,7 +11,7 @@ struct ProfileScreenTests {
     func environmentKeyDefaultValue() async throws {
         var env = EnvironmentValues()
         let profile = env.perceptualProfile
-        #expect(profile.overallMean == nil)
+        #expect(profile.comparisonMean == nil)
     }
 
     @Test("PerceptualProfile environment key can be set and retrieved")

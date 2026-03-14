@@ -8,8 +8,8 @@ final class MockPitchComparisonProfile: PitchComparisonProfile {
     var lastNote: MIDINote?
     var lastCentOffset: Cents?
     var lastIsCorrect: Bool?
-    var overallMean: Cents? = nil
-    var overallStdDev: Cents? = nil
+    var comparisonMean: Cents? = nil
+    var comparisonStdDev: Cents? = nil
     private var noteStats: [Int: PerceptualNote] = [:]
 
     // MARK: - Test Control
@@ -49,8 +49,8 @@ final class MockPitchComparisonProfile: PitchComparisonProfile {
         lastNote = nil
         lastCentOffset = nil
         lastIsCorrect = nil
-        overallMean = nil
-        overallStdDev = nil
+        comparisonMean = nil
+        comparisonStdDev = nil
         noteStats = [:]
         shouldThrowError = false
         onUpdateCalled = nil

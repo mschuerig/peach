@@ -197,11 +197,11 @@ struct KazezNoteStrategyTests {
         #expect(comparison.targetNote.offset.magnitude == 100.0)
     }
 
-    @Test("Cold start with trained profile uses overallMean")
+    @Test("Cold start with trained profile uses comparisonMean")
     func coldStartWithProfile() async throws {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
-        // Train some notes so overallMean returns a value
+        // Train some notes so comparisonMean returns a value
         profile.update(note: 60, centOffset: 10.0, isCorrect: true)
         profile.update(note: 60, centOffset: 8.0, isCorrect: true)
         profile.update(note: 72, centOffset: 12.0, isCorrect: false)
@@ -215,8 +215,8 @@ struct KazezNoteStrategyTests {
             interval: .prime,
         )
 
-        // overallMean should be used, not maxCentDifference
-        let expectedMean = try #require(profile.overallMean)
+        // comparisonMean should be used, not maxCentDifference
+        let expectedMean = try #require(profile.comparisonMean)
         #expect(comparison.targetNote.offset.magnitude == expectedMean.rawValue)
         #expect(comparison.targetNote.offset.magnitude != 100.0)
     }
@@ -237,7 +237,7 @@ struct KazezNoteStrategyTests {
             interval: .prime,
         )
 
-        // overallMean (0.05) should be clamped to minCentDifference (1.0)
+        // comparisonMean (0.05) should be clamped to minCentDifference (1.0)
         #expect(comparison.targetNote.offset.magnitude >= settings.minCentDifference.rawValue)
     }
 
@@ -257,7 +257,7 @@ struct KazezNoteStrategyTests {
             interval: .prime,
         )
 
-        // overallMean (200.0) should be clamped to maxCentDifference (100.0)
+        // comparisonMean (200.0) should be clamped to maxCentDifference (100.0)
         #expect(comparison.targetNote.offset.magnitude <= settings.maxCentDifference.rawValue)
     }
 

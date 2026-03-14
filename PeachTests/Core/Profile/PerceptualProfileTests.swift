@@ -14,8 +14,8 @@ struct PerceptualProfileTests {
         let profile = PerceptualProfile()
 
         // Cold start should have nil summary statistics
-        #expect(profile.overallMean == nil)
-        #expect(profile.overallStdDev == nil)
+        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonStdDev == nil)
     }
 
     @Test("Cold start treats all notes as weak spots")
@@ -178,7 +178,7 @@ struct PerceptualProfileTests {
     // MARK: - Task 5 Tests: Summary Statistics
 
     @Test("Overall mean across trained notes")
-    func overallMeanComputation() async throws {
+    func comparisonMeanComputation() async throws {
         let profile = PerceptualProfile()
 
         // Train three notes
@@ -186,11 +186,11 @@ struct PerceptualProfileTests {
         profile.update(note: 62, centOffset: 30, isCorrect: true)
         profile.update(note: 64, centOffset: 40, isCorrect: true)
 
-        #expect(profile.overallMean == 40.0) // (50+30+40)/3
+        #expect(profile.comparisonMean == 40.0) // (50+30+40)/3
     }
 
     @Test("Overall standard deviation computation")
-    func overallStdDevComputation() async throws {
+    func comparisonStdDevComputation() async throws {
         let profile = PerceptualProfile()
 
         // Train three notes with same threshold
@@ -199,7 +199,7 @@ struct PerceptualProfileTests {
         profile.update(note: 64, centOffset: 50, isCorrect: true)
 
         // All same values = stdDev should be 0
-        #expect(profile.overallStdDev == 0.0)
+        #expect(profile.comparisonStdDev == 0.0)
     }
 
     // MARK: - Average Threshold (Story 31.4)
