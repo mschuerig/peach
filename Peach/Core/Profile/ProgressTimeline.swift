@@ -182,8 +182,7 @@ final class ProgressTimeline {
         guard let data = modeData[mode], !data.allMetrics.isEmpty else { return [] }
         let now = Date()
         let calendar = Calendar.current
-        let sessionGap = mode.config.sessionGap.timeIntervalSeconds
-        return assignMultiGranularityBuckets(data.allMetrics, now: now, calendar: calendar, sessionGap: sessionGap)
+        return assignMultiGranularityBuckets(data.allMetrics, now: now, calendar: calendar, sessionGap: mode.config.sessionGap)
     }
 
     /// Returns sub-buckets at finer granularity for a given parent bucket.
@@ -199,8 +198,7 @@ final class ProgressTimeline {
         }
         guard !metrics.isEmpty else { return [] }
 
-        let sessionGap = mode.config.sessionGap.timeIntervalSeconds
-        return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: sessionGap)
+        return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: mode.config.sessionGap)
     }
 
     /// Returns the trend direction for a mode, or nil if insufficient data.
@@ -260,7 +258,7 @@ final class ProgressTimeline {
             let delta2 = point.value - runningMean
             runningM2 += delta * delta2
 
-            let sessionGapSeconds = config.sessionGap.timeIntervalSeconds
+            let sessionGapSeconds = config.sessionGap / .seconds(1)
 
             if let lastIndex = buckets.indices.last,
                buckets[lastIndex].bucketSize == .session,
@@ -303,7 +301,7 @@ final class ProgressTimeline {
                 ewma = nil
                 return
             }
-            let halflifeSeconds = config.ewmaHalflife.timeIntervalSeconds
+            let halflifeSeconds = config.ewmaHalflife / .seconds(1)
             var currentEWMA = buckets[0].mean
             for i in 1..<buckets.count {
                 let dt = buckets[i].periodStart.timeIntervalSince(buckets[i - 1].periodStart)
@@ -346,7 +344,7 @@ final class ProgressTimeline {
             let delta2 = metric.value - state.runningMean
             state.runningM2 += delta * delta2
         }
-        state.buckets = assignBuckets(sorted, now: now, sessionGap: config.sessionGap.timeIntervalSeconds)
+        state.buckets = assignBuckets(sorted, now: now, sessionGap: config.sessionGap)
         state.recomputeEWMA(config: config)
         state.recomputeTrend()
 
@@ -355,8 +353,9 @@ final class ProgressTimeline {
 
     // MARK: - Bucket Assignment
 
-    private func assignBuckets(_ metrics: [MetricPoint], now: Date, sessionGap: TimeInterval) -> [TimeBucket] {
+    private func assignBuckets(_ metrics: [MetricPoint], now: Date, sessionGap: Duration) -> [TimeBucket] {
         let calendar = Calendar.current
+        let sessionGapSeconds = sessionGap / .seconds(1)
         var groups: [(key: Date, end: Date, size: BucketSize, points: [Double])] = []
 
         for metric in metrics {
@@ -366,7 +365,7 @@ final class ProgressTimeline {
             if age < Self.recentThreshold / .seconds(1) {
                 if let lastGroup = groups.last,
                    lastGroup.size == .session,
-                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGap {
+                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGapSeconds {
                     groups[groups.count - 1].points.append(metric.value)
                     groups[groups.count - 1].end = metric.timestamp
                     continue
@@ -408,7 +407,7 @@ final class ProgressTimeline {
         _ metrics: [MetricPoint],
         now: Date,
         calendar: Calendar,
-        sessionGap: TimeInterval
+        sessionGap: Duration
     ) -> [TimeBucket] {
         // Calendar-snapped zone boundaries
         let sessionStart = calendar.startOfDay(for: now)
@@ -416,6 +415,7 @@ final class ProgressTimeline {
             return []
         }
 
+        let sessionGapSeconds = sessionGap / .seconds(1)
         var groups: [(key: Date, end: Date, size: BucketSize, points: [Double])] = []
 
         for metric in metrics {
@@ -425,7 +425,7 @@ final class ProgressTimeline {
                 // Session zone: merge records within sessionGap
                 if let lastGroup = groups.last,
                    lastGroup.size == .session,
-                   metric.timestamp.timeIntervalSince(lastGroup.end) < sessionGap {
+                   metric.timestamp.timeIntervalSince(lastGroup.end) < sessionGapSeconds {
                     groups[groups.count - 1].points.append(metric.value)
                     groups[groups.count - 1].end = metric.timestamp
                     continue
@@ -481,8 +481,9 @@ final class ProgressTimeline {
 
     // MARK: - Sub-Bucket Assignment
 
-    private func assignSubBuckets(_ metrics: [MetricPoint], parentSize: BucketSize, sessionGap: TimeInterval) -> [TimeBucket] {
+    private func assignSubBuckets(_ metrics: [MetricPoint], parentSize: BucketSize, sessionGap: Duration) -> [TimeBucket] {
         let calendar = Calendar.current
+        let sessionGapSeconds = sessionGap / .seconds(1)
         let childSize: BucketSize
         switch parentSize {
         case .month: childSize = .week
@@ -508,7 +509,7 @@ final class ProgressTimeline {
                 groupInfo = (key: dayStart, end: dayStart.addingTimeInterval(Self.secondsPerDay / .seconds(1)))
             case .session:
                 if let lastGroup = groups.last,
-                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGap {
+                   metric.timestamp.timeIntervalSince(lastGroup.key) < sessionGapSeconds {
                     groups[groups.count - 1].points.append(metric.value)
                     groups[groups.count - 1].end = metric.timestamp
                     continue
@@ -528,15 +529,6 @@ final class ProgressTimeline {
         return groups.sorted { $0.key < $1.key }.map { group in
             Self.makeBucket(periodStart: group.key, periodEnd: group.end, bucketSize: childSize, points: group.points)
         }
-    }
-}
-
-// MARK: - Duration Conversion
-
-private extension Duration {
-    var timeIntervalSeconds: TimeInterval {
-        let (seconds, attoseconds) = components
-        return Double(seconds) + Double(attoseconds) / 1_000_000_000_000_000_000
     }
 }
 

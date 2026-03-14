@@ -10,13 +10,13 @@ struct NotePlayerConvenienceTests {
         let mock = MockNotePlayer()
         let player: NotePlayer = mock
 
-        try await player.play(frequency: 440.0, duration: 0.01, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(10), velocity: 63, amplitudeDB: 0.0)
 
         #expect(mock.playCallCount == 1)
         #expect(mock.lastFrequency == 440.0)
         #expect(mock.lastVelocity == 63)
         #expect(mock.lastAmplitudeDB == 0.0)
-        #expect(mock.lastDuration == 0.01)
+        #expect(mock.lastDuration == .milliseconds(10))
 
         // Handle should have been stopped by the convenience method
         #expect(mock.lastHandle != nil)
@@ -28,14 +28,14 @@ struct NotePlayerConvenienceTests {
         let mock = MockNotePlayer()
         let player: NotePlayer = mock
 
-        try await player.play(frequency: 440.0, duration: 0.5, velocity: 63, amplitudeDB: 0.0)
-        try await player.play(frequency: 880.0, duration: 0.3, velocity: 100, amplitudeDB: -2.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(500), velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 880.0, duration: .milliseconds(300), velocity: 100, amplitudeDB: -2.0)
 
         #expect(mock.playHistory.count == 2)
         #expect(mock.playHistory[0].frequency == 440.0)
-        #expect(mock.playHistory[0].duration == 0.5)
+        #expect(mock.playHistory[0].duration == .milliseconds(500))
         #expect(mock.playHistory[1].frequency == 880.0)
-        #expect(mock.playHistory[1].duration == 0.3)
+        #expect(mock.playHistory[1].duration == .milliseconds(300))
     }
 
     @Test("Convenience method stops handle on error")
@@ -43,7 +43,7 @@ struct NotePlayerConvenienceTests {
         let mock = MockNotePlayer()
 
         let task = Task {
-            try await mock.play(frequency: 440.0, duration: 10.0, velocity: 63, amplitudeDB: 0.0)
+            try await mock.play(frequency: 440.0, duration: .seconds(10), velocity: 63, amplitudeDB: 0.0)
         }
 
         // Wait for play to start
@@ -65,7 +65,7 @@ struct NotePlayerConvenienceTests {
         let stub = ExtensionOnlyNotePlayer()
 
         await #expect(throws: AudioError.self) {
-            try await stub.play(frequency: 440.0, duration: 0.0, velocity: 63, amplitudeDB: 0.0)
+            try await stub.play(frequency: 440.0, duration: .zero, velocity: 63, amplitudeDB: 0.0)
         }
         #expect(stub.playCallCount == 0)
     }
@@ -75,7 +75,7 @@ struct NotePlayerConvenienceTests {
         let stub = ExtensionOnlyNotePlayer()
 
         await #expect(throws: AudioError.self) {
-            try await stub.play(frequency: 440.0, duration: -1.0, velocity: 63, amplitudeDB: 0.0)
+            try await stub.play(frequency: 440.0, duration: .seconds(-1), velocity: 63, amplitudeDB: 0.0)
         }
         #expect(stub.playCallCount == 0)
     }

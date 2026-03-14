@@ -41,7 +41,7 @@ struct SoundFontNotePlayerTests {
     @Test("Fixed-duration convenience method works without crash")
     func fixedDurationConvenienceMethod() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("PlaybackHandle stop is idempotent")
@@ -101,13 +101,13 @@ struct SoundFontNotePlayerTests {
     @Test("Velocity 127 is accepted")
     func velocity127_accepted() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 127, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 127, amplitudeDB: 0.0)
     }
 
     @Test("Velocity within range plays successfully")
     func velocityWithinRange_plays() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     // MARK: - Amplitude Validation
@@ -115,31 +115,31 @@ struct SoundFontNotePlayerTests {
     @Test("amplitudeDB 0.0 (default) plays successfully")
     func amplitudeDB_default_playsSuccessfully() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("amplitudeDB positive offset accepted")
     func amplitudeDB_positiveOffset_accepted() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 2.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 2.0)
     }
 
     @Test("amplitudeDB negative offset accepted")
     func amplitudeDB_negativeOffset_accepted() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: -2.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: -2.0)
     }
 
     @Test("amplitudeDB at minimum boundary (-90.0) accepted")
     func amplitudeDB_atMinimumBoundary_accepted() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: -90.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: -90.0)
     }
 
     @Test("amplitudeDB at maximum boundary (12.0) accepted")
     func amplitudeDB_atMaximumBoundary_accepted() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 12.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 12.0)
     }
 
     // Note: Out-of-range amplitude values (-91.0, 13.0) are now silently clamped
@@ -178,7 +178,7 @@ struct SoundFontNotePlayerTests {
     func playAfterPresetSwitch() async throws {
         let player = try SoundFontNotePlayer(userSettings: MockUserSettings())
         try await player.loadPreset(program: 0) // switch to piano
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("loadPreset throws for out-of-range program")
@@ -281,7 +281,7 @@ struct SoundFontNotePlayerTests {
         let mockSettings = MockUserSettings()
         mockSettings.soundSource = "sf2:0:0"
         let player = try SoundFontNotePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset for unparseable soundSource")
@@ -289,7 +289,7 @@ struct SoundFontNotePlayerTests {
         let mockSettings = MockUserSettings()
         mockSettings.soundSource = "garbage"
         let player = try SoundFontNotePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset when loadPreset fails for invalid program")
@@ -297,7 +297,7 @@ struct SoundFontNotePlayerTests {
         let mockSettings = MockUserSettings()
         mockSettings.soundSource = "sf2:0:999"
         let player = try SoundFontNotePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     @Test("play falls back to default preset for legacy 'cello' tag")
@@ -305,7 +305,7 @@ struct SoundFontNotePlayerTests {
         let mockSettings = MockUserSettings()
         mockSettings.soundSource = "cello"
         let player = try SoundFontNotePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: 0.1, velocity: 63, amplitudeDB: 0.0)
+        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
     }
 
     // MARK: - Frequency Decomposition (Hz → MIDI note + cents)

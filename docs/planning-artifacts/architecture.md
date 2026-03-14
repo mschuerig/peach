@@ -1529,7 +1529,7 @@ Raw `Double`/`Int`/`TimeInterval` values have been replaced with domain types at
 **Deliberate exceptions** (raw types preserved):
 - `PerceptualNote` internals — Welford's algorithm arithmetic would be noisy with `Cents` wrappers
 - Persistence records (`PitchComparisonRecord`, `PitchMatchingRecord`) — SwiftData boundary uses raw `Double`/`Int`
-- `NotePlayer.play(duration:)` — stays `TimeInterval`; `NoteDuration` clamps to 0.3-3.0 which breaks test values
+- `NotePlayer.play(duration:)` — uses `Duration`; `TimeInterval` only at platform API boundaries
 
 ### Constant Extraction
 

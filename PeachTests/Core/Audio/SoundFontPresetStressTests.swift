@@ -92,7 +92,7 @@ struct SoundFontPresetStressTests {
         let presets = SoundFontLibrary().availablePresets.filter {
             Self.focusTags.contains($0.tag)
         }
-        let durations: [TimeInterval] = [0.01, 0.1, 0.5]
+        let durations: [Duration] = [.milliseconds(10), .milliseconds(100), .milliseconds(500)]
 
         for preset in presets {
             let player = try makePlayer()

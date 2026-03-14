@@ -36,7 +36,7 @@ struct PitchComparisonSessionUserDefaultsTests {
         f.session.start(settings: settings)
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(f.mockPlayer.lastDuration == 2.5)
+        #expect(f.mockPlayer.lastDuration == .milliseconds(2500))
 
         f.session.stop()
     }

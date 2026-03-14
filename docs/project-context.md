@@ -53,7 +53,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **`final class`** — mark classes `final` unless inheritance is explicitly designed for
 - **No force unwrapping (`!`)** — no `@IBOutlet`, no implicit unwraps
 - **Domain types at interfaces** — use `Cents`, `Frequency`, `MIDINote`, `MIDIVelocity`, `AmplitudeDB`, `NoteDuration` at public API boundaries. Unwrap to `.rawValue` only at: (1) persistence boundaries (SwiftData records store raw `Double`/`Int`), (2) arithmetic-heavy internals (Welford's algorithm in `PerceptualProfile`), (3) display formatting. Protocol signatures (`PitchComparisonProfile`, `PitchMatchingProfile`) use `Cents` for all cent-valued properties
-- **`Duration` for time intervals** — use Swift `Duration` (e.g., `.milliseconds(400)`, `.seconds(2)`) for all timing values: feedback durations, preview durations, configuration constants. `TimeInterval` is only acceptable at the `NotePlayer.play(duration:)` boundary since `NoteDuration` clamps and would break test values. Convert `Duration` → `TimeInterval` at the call site when passing to `NotePlayer`
+- **`Duration` for time intervals** — use Swift `Duration` (e.g., `.milliseconds(400)`, `.seconds(2)`) for all timing values: feedback durations, preview durations, configuration constants, `NotePlayer.play(duration:)`. `TimeInterval` must not appear in any public interface; convert to `TimeInterval` only where platform APIs require it (e.g., `Date.addingTimeInterval()`, `Task.sleep`)
 
 **Error Handling:**
 - **Typed error enums per service** — `enum AudioError: Error`, `enum DataStoreError: Error`; errors are specific and descriptive

@@ -33,7 +33,7 @@ struct PitchComparisonSessionAudioInterruptionTests {
         let session = f.session
         let mockPlayer = f.mockPlayer
         mockPlayer.instantPlayback = false
-        mockPlayer.simulatedPlaybackDuration = 5.0
+        mockPlayer.simulatedPlaybackDuration = .seconds(5)
 
         session.start(settings: PitchComparisonTrainingSettings(referencePitch: Frequency(440.0), intervals: [.prime], noteDuration: NoteDuration(0.3)))
         try await waitForState(session, .playingNote1)
@@ -55,11 +55,11 @@ struct PitchComparisonSessionAudioInterruptionTests {
         let session = f.session
         let mockPlayer = f.mockPlayer
         mockPlayer.instantPlayback = false
-        mockPlayer.simulatedPlaybackDuration = 0.01
+        mockPlayer.simulatedPlaybackDuration = .milliseconds(10)
 
         session.start(settings: PitchComparisonTrainingSettings(referencePitch: Frequency(440.0), intervals: [.prime], noteDuration: NoteDuration(0.3)))
         await mockPlayer.waitForPlay(minCount: 2)
-        mockPlayer.simulatedPlaybackDuration = 5.0
+        mockPlayer.simulatedPlaybackDuration = .seconds(5)
 
         try await waitForState(session, .playingNote2)
 

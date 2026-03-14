@@ -36,7 +36,7 @@ struct PitchComparisonSessionLifecycleTests {
         let f = makePitchComparisonSession()
 
         f.mockPlayer.instantPlayback = false
-        f.mockPlayer.simulatedPlaybackDuration = 0.5
+        f.mockPlayer.simulatedPlaybackDuration = .milliseconds(500)
 
         var noteCount = 0
         f.mockPlayer.onPlayCalled = {
@@ -206,7 +206,7 @@ struct PitchComparisonSessionLifecycleTests {
     func handleAnswerDuringTargetCallsStopAll() async throws {
         let f = makePitchComparisonSession()
         f.mockPlayer.instantPlayback = false
-        f.mockPlayer.simulatedPlaybackDuration = 0.5
+        f.mockPlayer.simulatedPlaybackDuration = .milliseconds(500)
 
         var noteCount = 0
         f.mockPlayer.onPlayCalled = {

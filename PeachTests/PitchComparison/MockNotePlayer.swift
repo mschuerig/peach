@@ -7,10 +7,10 @@ final class MockNotePlayer: NotePlayer {
     var playCallCount = 0
     var stopAllCallCount = 0
     var lastFrequency: Double?
-    var lastDuration: TimeInterval?
+    var lastDuration: Duration?
     var lastVelocity: UInt8?
     var lastAmplitudeDB: Double?
-    var playHistory: [(frequency: Double, duration: TimeInterval, velocity: UInt8, amplitudeDB: Double)] = []
+    var playHistory: [(frequency: Double, duration: Duration, velocity: UInt8, amplitudeDB: Double)] = []
     var shouldThrowError = false
     var errorToThrow: AudioError = .engineStartFailed("Mock error")
 
@@ -22,7 +22,7 @@ final class MockNotePlayer: NotePlayer {
     // MARK: - Test Control (Fully Synchronous)
 
     var instantPlayback: Bool = true
-    var simulatedPlaybackDuration: TimeInterval = 0.01
+    var simulatedPlaybackDuration: Duration = .milliseconds(10)
     var onPlayCalled: (() -> Void)?
     var onStopAllCalled: (() -> Void)?
 
@@ -73,7 +73,7 @@ final class MockNotePlayer: NotePlayer {
 
     // MARK: - NotePlayer Protocol (Convenience — fixed-duration with instantPlayback)
 
-    func play(frequency: Frequency, duration: TimeInterval, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws {
+    func play(frequency: Frequency, duration: Duration, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws {
         lastDuration = duration
         playHistory.append((frequency: frequency.rawValue, duration: duration, velocity: velocity.rawValue, amplitudeDB: amplitudeDB.rawValue))
 
@@ -81,7 +81,7 @@ final class MockNotePlayer: NotePlayer {
 
         do {
             if !instantPlayback {
-                try await Task.sleep(for: .milliseconds(Int(simulatedPlaybackDuration * 1000)))
+                try await Task.sleep(for: simulatedPlaybackDuration)
             }
             try await handle.stop()
         } catch {

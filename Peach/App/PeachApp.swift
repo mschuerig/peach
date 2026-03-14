@@ -105,10 +105,9 @@ struct PeachApp: App {
                         for: MIDINote(69),
                         referencePitch: userSettings.referencePitch
                     )
-                    let seconds = Double(duration.components.seconds) + Double(duration.components.attoseconds) / 1e18
                     try? await notePlayer.play(
                         frequency: frequency,
-                        duration: seconds,
+                        duration: duration,
                         velocity: MIDIVelocity(63),
                         amplitudeDB: AmplitudeDB(0)
                     )

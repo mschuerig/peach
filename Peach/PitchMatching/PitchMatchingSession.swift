@@ -253,7 +253,7 @@ final class PitchMatchingSession: TrainingSession {
             state = .playingReference
             try await notePlayer.play(
                 frequency: refFreq,
-                duration: settings.noteDuration.rawValue,
+                duration: .seconds(settings.noteDuration.rawValue),
                 velocity: settings.velocity,
                 amplitudeDB: AmplitudeDB(0.0)
             )

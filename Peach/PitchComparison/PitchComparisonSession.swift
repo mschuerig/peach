@@ -230,7 +230,7 @@ final class PitchComparisonSession: TrainingSession {
         logger.info("PitchComparison: ref=\(pitchComparison.referenceNote.rawValue) \(freq1.rawValue)Hz @0.0dB, target \(freq2.rawValue)Hz @\(amplitudeDB.rawValue)dB, offset=\(pitchComparison.targetNote.offset.rawValue), higher=\(pitchComparison.isTargetHigher)")
 
         state = .playingNote1
-        try await notePlayer.play(frequency: freq1, duration: settings.noteDuration.rawValue, velocity: settings.velocity, amplitudeDB: AmplitudeDB(0.0))
+        try await notePlayer.play(frequency: freq1, duration: .seconds(settings.noteDuration.rawValue), velocity: settings.velocity, amplitudeDB: AmplitudeDB(0.0))
 
         guard state != .idle && !Task.isCancelled else {
             logger.info("Training stopped during note 1, aborting comparison")
@@ -238,7 +238,7 @@ final class PitchComparisonSession: TrainingSession {
         }
 
         state = .playingNote2
-        try await notePlayer.play(frequency: freq2, duration: settings.noteDuration.rawValue, velocity: settings.velocity, amplitudeDB: amplitudeDB)
+        try await notePlayer.play(frequency: freq2, duration: .seconds(settings.noteDuration.rawValue), velocity: settings.velocity, amplitudeDB: amplitudeDB)
 
         guard state != .idle && !Task.isCancelled else {
             logger.info("Training stopped during note 2, aborting comparison")

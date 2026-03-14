@@ -37,7 +37,7 @@ struct PitchComparisonSessionIntegrationTests {
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
 
-        #expect(f.mockPlayer.lastDuration == 1.0)
+        #expect(f.mockPlayer.lastDuration == .seconds(1))
     }
 
     @Test("PitchComparisonSession passes correct velocity to NotePlayer")

@@ -115,7 +115,7 @@ struct PitchMatchingSessionTests {
     func startTransitionsToPlayingReference() async throws {
         let (session, notePlayer, _, _) = makePitchMatchingSession()
         notePlayer.instantPlayback = false
-        notePlayer.simulatedPlaybackDuration = 5.0
+        notePlayer.simulatedPlaybackDuration = .seconds(5)
         session.start(settings: defaultPitchMatchingTestSettings)
         try await waitForState(session, .playingReference)
 
@@ -404,7 +404,7 @@ struct PitchMatchingSessionTests {
     func stopFromPlayingReference() async throws {
         let (session, notePlayer, _, _) = makePitchMatchingSession()
         notePlayer.instantPlayback = false
-        notePlayer.simulatedPlaybackDuration = 5.0
+        notePlayer.simulatedPlaybackDuration = .seconds(5)
         session.start(settings: defaultPitchMatchingTestSettings)
         try await waitForState(session, .playingReference)
 
@@ -1060,7 +1060,7 @@ struct PitchMatchingSessionAudioInterruptionTests {
         let nc = NotificationCenter()
         let (session, notePlayer, _, _) = makePitchMatchingSession(notificationCenter: nc)
         notePlayer.instantPlayback = false
-        notePlayer.simulatedPlaybackDuration = 5.0
+        notePlayer.simulatedPlaybackDuration = .seconds(5)
         session.start(settings: defaultPitchMatchingTestSettings)
         try await waitForState(session, .playingReference)
 

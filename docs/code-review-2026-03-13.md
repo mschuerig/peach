@@ -231,11 +231,9 @@ Removed `PianoKeyboardLayout` struct entirely — only used in tests. Replaced t
 
 ---
 
-### L13: Centralize Duration→TimeInterval conversion
+### ✅ L13: Remove TimeInterval from all public interfaces
 
-`Peach/App/PeachApp.swift:106` uses manual attosecond arithmetic. Create a small `Duration` extension producing `TimeInterval`.
-
-> **Agent prompt:** Read `docs/project-context.md` and this fix description. Read `Peach/App/PeachApp.swift` around line 106. Create a `Duration` extension (in the same file or a sensible Core/ location) with a `var timeInterval: TimeInterval` computed property. Replace the manual arithmetic. Grep for any other manual Duration→TimeInterval conversions. Run `bin/test.sh` — all tests must pass. Commit with message: `Add Duration.timeInterval extension to replace manual conversion`
+Changed `NotePlayer.play(duration:)` from `TimeInterval` to `Duration`. Removed `TimeInterval` from `ProgressTimeline` internal signatures. `TimeInterval` now only appears at platform API boundaries (`Date.addingTimeInterval()`).
 
 ---
 
