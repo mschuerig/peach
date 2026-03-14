@@ -183,7 +183,7 @@ This is the most architecturally involved fix — read both files and their cons
 
 ---
 
-### L8: Add missing mock contract elements
+### ✅ L8: Add missing mock contract elements
 
 7 mocks missing callback hooks, error injection, or `reset()`:
 

@@ -1,6 +1,8 @@
 @testable import Peach
 
 final class MockPitchMatchingProfile: PitchMatchingProfile {
+    // MARK: - Test State Tracking
+
     var updateMatchingCallCount = 0
     var lastNote: Int?
     var lastCentError: Cents?
@@ -9,10 +11,18 @@ final class MockPitchMatchingProfile: PitchMatchingProfile {
     var matchingSampleCount: Int = 0
     var resetMatchingCallCount = 0
 
+    // MARK: - Test Control
+
+    var onUpdateMatchingCalled: (() -> Void)?
+    var onResetMatchingCalled: (() -> Void)?
+
+    // MARK: - PitchMatchingProfile Protocol
+
     func updateMatching(note: MIDINote, centError: Cents) {
         updateMatchingCallCount += 1
         lastNote = note.rawValue
         lastCentError = centError
+        onUpdateMatchingCalled?()
     }
 
     func resetMatching() {
@@ -20,7 +30,10 @@ final class MockPitchMatchingProfile: PitchMatchingProfile {
         matchingMean = nil
         matchingStdDev = nil
         matchingSampleCount = 0
+        onResetMatchingCalled?()
     }
+
+    // MARK: - Test Helpers
 
     func reset() {
         updateMatchingCallCount = 0
@@ -30,5 +43,7 @@ final class MockPitchMatchingProfile: PitchMatchingProfile {
         matchingStdDev = nil
         matchingSampleCount = 0
         resetMatchingCallCount = 0
+        onUpdateMatchingCalled = nil
+        onResetMatchingCalled = nil
     }
 }

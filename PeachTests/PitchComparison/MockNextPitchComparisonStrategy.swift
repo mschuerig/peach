@@ -20,6 +20,10 @@ final class MockNextPitchComparisonStrategy: NextPitchComparisonStrategy {
         self.comparisons = comparisons
     }
 
+    // MARK: - Test Control
+
+    var onNextPitchComparisonCalled: (() -> Void)?
+
     // MARK: - NextPitchComparisonStrategy Protocol
 
     func nextPitchComparison(
@@ -33,6 +37,8 @@ final class MockNextPitchComparisonStrategy: NextPitchComparisonStrategy {
         lastReceivedSettings = settings
         lastReceivedLastComparison = lastPitchComparison
         lastReceivedInterval = interval
+
+        onNextPitchComparisonCalled?()
 
         let comparison = comparisons[currentIndex % comparisons.count]
         currentIndex += 1
@@ -48,5 +54,6 @@ final class MockNextPitchComparisonStrategy: NextPitchComparisonStrategy {
         lastReceivedSettings = nil
         lastReceivedLastComparison = nil
         lastReceivedInterval = nil
+        onNextPitchComparisonCalled = nil
     }
 }

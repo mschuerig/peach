@@ -21,11 +21,21 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
     var lastSavedPitchMatchingRecord: PitchMatchingRecord?
     var savedPitchMatchingRecords: [PitchMatchingRecord] = []
 
+    // MARK: - Test Control
+
+    var onSaveCalled: (() -> Void)?
+    var onSavePitchMatchingCalled: (() -> Void)?
+    var onFetchCalled: (() -> Void)?
+    var onPitchComparisonCompletedCalled: (() -> Void)?
+    var onPitchMatchingCompletedCalled: (() -> Void)?
+
     // MARK: - PitchComparisonRecordStoring Protocol
 
     func save(_ record: PitchComparisonRecord) throws {
         saveCallCount += 1
         lastSavedRecord = record
+
+        onSaveCalled?()
 
         if shouldThrowError {
             throw errorToThrow
@@ -35,6 +45,8 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
     }
 
     func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] {
+        onFetchCalled?()
+
         if shouldThrowError {
             throw DataStoreError.fetchFailed("Mock error")
         }
@@ -47,6 +59,8 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
         savePitchMatchingCallCount += 1
         lastSavedPitchMatchingRecord = record
 
+        onSavePitchMatchingCalled?()
+
         if shouldThrowError {
             throw errorToThrow
         }
@@ -55,6 +69,8 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
     }
 
     func fetchAllPitchMatchings() throws -> [PitchMatchingRecord] {
+        onFetchCalled?()
+
         if shouldThrowError {
             throw DataStoreError.fetchFailed("Mock error")
         }
@@ -73,11 +89,17 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
         lastSavedPitchMatchingRecord = nil
         savedPitchMatchingRecords = []
         shouldThrowError = false
+        onSaveCalled = nil
+        onSavePitchMatchingCalled = nil
+        onFetchCalled = nil
+        onPitchComparisonCompletedCalled = nil
+        onPitchMatchingCompletedCalled = nil
     }
 
     // MARK: - PitchComparisonObserver Protocol
 
     func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
+        onPitchComparisonCompletedCalled?()
         completedComparisons.append(completed)
         // Create record for backward compatibility with tests that check savedRecords
         let pitchComparison = completed.pitchComparison
@@ -96,6 +118,7 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
     // MARK: - PitchMatchingObserver Protocol
 
     func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+        onPitchMatchingCompletedCalled?()
         completedPitchMatchings.append(result)
         // Create record for backward compatibility with tests that check savedPitchMatchingRecords
         let record = PitchMatchingRecord(
