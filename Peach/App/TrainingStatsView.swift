@@ -12,7 +12,7 @@ struct TrainingStatsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Text("Latest: \(Self.formattedCents(latestValue?.rawValue ?? 0)) ¢")
+                Text("Latest: \((latestValue ?? Cents(0)).formatted()) ¢")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 if let trend {
@@ -27,7 +27,7 @@ struct TrainingStatsView: View {
             .accessibilityLabel(latestValue.map { Self.latestAccessibilityLabel($0.rawValue, trend: trend) } ?? "")
             .accessibilityHidden(latestValue == nil)
 
-            Text("Best: \(Self.formattedCents(sessionBest?.rawValue ?? 0)) ¢")
+            Text("Best: \((sessionBest ?? Cents(0)).formatted()) ¢")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .opacity(sessionBest != nil ? 1 : 0)
@@ -35,20 +35,6 @@ struct TrainingStatsView: View {
                 .accessibilityHidden(sessionBest == nil)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Formatting
-
-    private static let centFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 1
-        formatter.maximumFractionDigits = 1
-        return formatter
-    }()
-
-    static func formattedCents(_ value: Double) -> String {
-        centFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
     }
 
     // MARK: - Trend Helpers
@@ -80,7 +66,7 @@ struct TrainingStatsView: View {
     // MARK: - Accessibility
 
     static func latestAccessibilityLabel(_ value: Double, trend: Trend?) -> String {
-        var label = String(localized: "Latest result: \(formattedCents(value)) cents")
+        var label = String(localized: "Latest result: \(Cents(value).formatted()) cents")
         if let trend {
             label += ", \(trendLabel(trend))"
         }
@@ -88,6 +74,6 @@ struct TrainingStatsView: View {
     }
 
     static func bestAccessibilityLabel(_ value: Double) -> String {
-        String(localized: "Best result: \(formattedCents(value)) cents")
+        String(localized: "Best result: \(Cents(value).formatted()) cents")
     }
 }

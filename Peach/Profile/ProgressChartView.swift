@@ -488,11 +488,11 @@ struct ProgressChartView: View {
     }
 
     static func formatEWMA(_ value: Double) -> String {
-        TrainingStatsView.formattedCents(value)
+        Cents(value).formatted()
     }
 
     static func formatStdDev(_ value: Double) -> String {
-        "±\(TrainingStatsView.formattedCents(value))"
+        "±\(Cents(value).formatted())"
     }
 
     static func zoneAccessibilitySummary(buckets: [TimeBucket], zone: ZoneInfo, config: TrainingModeConfig) -> String? {

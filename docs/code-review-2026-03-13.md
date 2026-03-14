@@ -223,7 +223,7 @@ Removed `PianoKeyboardLayout` struct entirely — only used in tests. Replaced t
 
 ---
 
-### L12: Fix cross-feature reference in ProgressSparklineView
+### ✅ L12: Fix cross-feature reference in ProgressSparklineView
 
 `Peach/Start/ProgressSparklineView.swift:54` references `TrainingStatsView.formattedCents()` from `App/`. Move `formattedCents` to an extension on `Cents` in `Core/`.
 

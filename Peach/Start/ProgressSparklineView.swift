@@ -51,11 +51,11 @@ struct ProgressSparklineView: View {
     }
 
     static func formatCompactEWMA(_ value: Double) -> String {
-        "\(TrainingStatsView.formattedCents(value)) ¢"
+        "\(Cents(value).formatted()) ¢"
     }
 
     static func sparklineAccessibilityLabel(modeName: String, ewma: Double, trend: Trend, unitLabel: String) -> String {
-        let value = TrainingStatsView.formattedCents(ewma)
+        let value = Cents(ewma).formatted()
         let trendText = TrainingStatsView.trendLabel(trend)
         return "\(modeName): \(value) \(unitLabel), \(trendText)"
     }
