@@ -2,29 +2,28 @@ import Foundation
 @testable import Peach
 
 final class MockUserSettings: UserSettings {
-    var noteRange: NoteRange = NoteRange(
-        lowerBound: MIDINote(SettingsKeys.defaultNoteRangeMin),
-        upperBound: MIDINote(SettingsKeys.defaultNoteRangeMax)
-    ) { didSet { onSettingsChanged?() } }
-    var noteDuration: NoteDuration = NoteDuration(SettingsKeys.defaultNoteDuration) {
+    var noteRange: NoteRange = SettingsKeys.defaultNoteRange {
         didSet { onSettingsChanged?() }
     }
-    var referencePitch: Frequency = Frequency(SettingsKeys.defaultReferencePitch) {
+    var noteDuration: NoteDuration = SettingsKeys.defaultNoteDuration {
+        didSet { onSettingsChanged?() }
+    }
+    var referencePitch: Frequency = SettingsKeys.defaultReferencePitch {
         didSet { onSettingsChanged?() }
     }
     var soundSource: String = SettingsKeys.defaultSoundSource {
         didSet { onSettingsChanged?() }
     }
-    var varyLoudness: UnitInterval = UnitInterval(SettingsKeys.defaultVaryLoudness) {
+    var varyLoudness: UnitInterval = SettingsKeys.defaultVaryLoudness {
         didSet { onSettingsChanged?() }
     }
     var intervals: Set<DirectedInterval> = [DirectedInterval.prime] {
         didSet { onSettingsChanged?() }
     }
-    var tuningSystem: TuningSystem = .equalTemperament {
+    var tuningSystem: TuningSystem = SettingsKeys.defaultTuningSystem {
         didSet { onSettingsChanged?() }
     }
-    var noteGap: Duration = .seconds(SettingsKeys.defaultNoteGap) {
+    var noteGap: Duration = SettingsKeys.defaultNoteGap {
         didSet { onSettingsChanged?() }
     }
 
@@ -35,17 +34,14 @@ final class MockUserSettings: UserSettings {
     // MARK: - Test Helpers
 
     func reset() {
-        noteRange = NoteRange(
-            lowerBound: MIDINote(SettingsKeys.defaultNoteRangeMin),
-            upperBound: MIDINote(SettingsKeys.defaultNoteRangeMax)
-        )
-        noteDuration = NoteDuration(SettingsKeys.defaultNoteDuration)
-        referencePitch = Frequency(SettingsKeys.defaultReferencePitch)
+        noteRange = SettingsKeys.defaultNoteRange
+        noteDuration = SettingsKeys.defaultNoteDuration
+        referencePitch = SettingsKeys.defaultReferencePitch
         soundSource = SettingsKeys.defaultSoundSource
-        varyLoudness = UnitInterval(SettingsKeys.defaultVaryLoudness)
+        varyLoudness = SettingsKeys.defaultVaryLoudness
         intervals = [DirectedInterval.prime]
-        tuningSystem = .equalTemperament
-        noteGap = .seconds(SettingsKeys.defaultNoteGap)
+        tuningSystem = SettingsKeys.defaultTuningSystem
+        noteGap = SettingsKeys.defaultNoteGap
         onSettingsChanged = nil
     }
 }

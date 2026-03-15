@@ -15,31 +15,31 @@ enum SettingsKeys {
 
     // MARK: - Default Values (matching TrainingSettings defaults)
 
-    static let defaultNoteRangeMin: Int = 36
-    static let defaultNoteRangeMax: Int = 84
-    static let defaultNoteDuration: Double = 1.0
-    static let defaultReferencePitch: Double = 440.0
+    static let defaultNoteRangeMin: MIDINote = 36
+    static let defaultNoteRangeMax: MIDINote = 84
+    static let defaultNoteDuration: NoteDuration = 1.0
+    static let defaultReferencePitch: Frequency = 440.0
     static let defaultSoundSource: String = "sf2:0:0"
-    static let defaultVaryLoudness: Double = 0.0
-    static let defaultTuningSystem: String = "equalTemperament"
-    static let defaultNoteGap: Double = 0.0
+    static let defaultVaryLoudness: UnitInterval = 0.0
+    static let defaultTuningSystem: TuningSystem = .equalTemperament
+    static let defaultNoteGap: Duration = .zero
 
     // MARK: - Note Range Constants
 
     static let defaultNoteRange = NoteRange(
-        lowerBound: MIDINote(defaultNoteRangeMin),
-        upperBound: MIDINote(defaultNoteRangeMax)
+        lowerBound: defaultNoteRangeMin,
+        upperBound: defaultNoteRangeMax
     )
 
-    static let absoluteMinNote: Int = 21   // A0
-    static let absoluteMaxNote: Int = 108  // C8
+    static let absoluteMinNote: MIDINote = 21
+    static let absoluteMaxNote: MIDINote = 108
 
     static func lowerBoundRange(noteRangeMax: Int) -> ClosedRange<Int> {
-        absoluteMinNote...(noteRangeMax - NoteRange.minimumSpan)
+        absoluteMinNote.rawValue...(noteRangeMax - NoteRange.minimumSpan)
     }
 
     static func upperBoundRange(noteRangeMin: Int) -> ClosedRange<Int> {
-        (noteRangeMin + NoteRange.minimumSpan)...absoluteMaxNote
+        (noteRangeMin + NoteRange.minimumSpan)...absoluteMaxNote.rawValue
     }
 
     // MARK: - Sound Source Validation

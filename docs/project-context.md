@@ -52,7 +52,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Value types by default** — `struct` for data carriers; `class` only for `@Observable` or reference semantics
 - **`final class`** — mark classes `final` unless inheritance is explicitly designed for
 - **No force unwrapping (`!`)** — no `@IBOutlet`, no implicit unwraps
-- **Domain types at interfaces** — use `Cents`, `Frequency`, `MIDINote`, `MIDIVelocity`, `AmplitudeDB`, `NoteDuration` at public API boundaries. Unwrap to `.rawValue` only at: (1) persistence boundaries (SwiftData records store raw `Double`/`Int`), (2) arithmetic-heavy internals (Welford's algorithm in `PerceptualProfile`), (3) display formatting. Protocol signatures (`PitchComparisonProfile`, `PitchMatchingProfile`) use `Cents` for all cent-valued properties
+- **Domain types everywhere, not just "interfaces"** — use `Cents`, `Frequency`, `MIDINote`, `MIDIVelocity`, `AmplitudeDB`, `NoteDuration`, `SoundSourceID`, `TuningSystem`, `Duration` for all values that have domain meaning: constants, defaults, parameters, return types, local variables where clarity matters. Unwrap to `.rawValue` only at: (1) the literal `UserDefaults` read/write call site, (2) SwiftData `@Model` stored properties, (3) arithmetic-heavy internals (Welford's algorithm in `PerceptualProfile`), (4) display formatting. Protocol signatures (`PitchComparisonProfile`, `PitchMatchingProfile`) use `Cents` for all cent-valued properties. **A constant like `36` is meaningless; `MIDINote(36)` communicates intent.**
 - **`Duration` for time intervals** — use Swift `Duration` (e.g., `.milliseconds(400)`, `.seconds(2)`) for all timing values: feedback durations, preview durations, configuration constants, `NotePlayer.play(duration:)`. `TimeInterval` must not appear in any public interface; convert to `TimeInterval` only where platform APIs require it (e.g., `Date.addingTimeInterval()`, `Task.sleep`)
 
 **Error Handling:**
@@ -219,6 +219,9 @@ Never run only specific test files — always the complete suite.
 **The Golden Rule:**
 - **Read before writing** — before implementing anything, read the existing implementation of the component you're modifying or the closest analogous component; the codebase is the primary source of truth for patterns
 
+**The Boy Scout Rule (mandatory):**
+- **Leave the code cleaner than you found it** — if you encounter a failing test, a code smell, a type violation, or any other issue while working on a task, you must either fix it immediately or create a tracked issue (story/spec). "Pre-existing condition" is never an acceptable reason to ignore a problem. Dismissing issues as pre-existing is explicitly forbidden — every problem has an owner, and if you're looking at it, that owner is you
+
 **Architectural Boundaries (hard rules):**
 - **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `PitchComparisonSession` or `PerceptualProfile` as computed properties
 - **`PitchComparisonSession` is the ONLY component that understands "pitch comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextPitchComparisonStrategy` knows note selection, neither knows about the loop
@@ -247,7 +250,7 @@ Never run only specific test files — always the complete suite.
 - Premature abstractions, `Utils/` directories, speculative features → keep it simple
 - `Pitch` struct → deleted; use `DetunedMIDINote` + `TuningSystem.frequency(for:referencePitch:)` instead
 - `print()` in production code → use `os.Logger` with appropriate log levels
-- Raw `Double` at public interfaces where domain types exist → use `Cents`, `Frequency`, `MIDINote`, etc.
+- Raw `Double`/`Int`/`String` where domain types exist → use `Cents`, `Frequency`, `MIDINote`, `NoteDuration`, `SoundSourceID`, `TuningSystem`, `Duration`, etc. This applies everywhere: default values, constants, function parameters, return types. The *only* place raw types are acceptable is at the literal `UserDefaults.set()`/`UserDefaults.value(forKey:)` call site and SwiftData `@Model` stored properties
 
 **Error Resilience:**
 - **Both sessions are error boundaries** — `PitchComparisonSession` and `PitchMatchingSession` catch all service errors; training loops continue gracefully

@@ -3,31 +3,31 @@ import UniformTypeIdentifiers
 
 struct SettingsScreen: View {
     @AppStorage(SettingsKeys.noteRangeMin)
-    private var noteRangeMin: Int = SettingsKeys.defaultNoteRangeMin
+    private var noteRangeMin: Int = SettingsKeys.defaultNoteRangeMin.rawValue
 
     @AppStorage(SettingsKeys.noteRangeMax)
-    private var noteRangeMax: Int = SettingsKeys.defaultNoteRangeMax
+    private var noteRangeMax: Int = SettingsKeys.defaultNoteRangeMax.rawValue
 
     @AppStorage(SettingsKeys.noteDuration)
-    private var noteDuration: Double = SettingsKeys.defaultNoteDuration
+    private var noteDuration: Double = SettingsKeys.defaultNoteDuration.rawValue
 
     @AppStorage(SettingsKeys.referencePitch)
-    private var referencePitch: Double = SettingsKeys.defaultReferencePitch
+    private var referencePitch: Double = SettingsKeys.defaultReferencePitch.rawValue
 
     @AppStorage(SettingsKeys.soundSource)
     private var soundSource: String = SettingsKeys.defaultSoundSource
 
     @AppStorage(SettingsKeys.varyLoudness)
-    private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness
+    private var varyLoudness: Double = SettingsKeys.defaultVaryLoudness.rawValue
 
     @AppStorage(SettingsKeys.intervals)
     private var intervalSelection = IntervalSelection.default
 
     @AppStorage(SettingsKeys.tuningSystem)
-    private var tuningSystemIdentifier: String = SettingsKeys.defaultTuningSystem
+    private var tuningSystemIdentifier: String = SettingsKeys.defaultTuningSystem.identifier
 
     @AppStorage(SettingsKeys.noteGap)
-    private var noteGap: Double = SettingsKeys.defaultNoteGap
+    private var noteGap: Double = 0.0
 
     @Environment(\.dataStoreResetter) private var dataStoreResetter
     @Environment(\.soundSourceProvider) private var soundSourceProvider

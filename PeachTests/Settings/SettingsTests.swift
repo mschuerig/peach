@@ -12,16 +12,16 @@ struct SettingsTests {
     func algorithmDefaultsMatchTrainingSettings() async {
         let trainingDefaults = PitchComparisonTrainingSettings(referencePitch: Frequency(440.0), intervals: [.prime])
 
-        #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRange.lowerBound.rawValue)
-        #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRange.upperBound.rawValue)
-        #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch.rawValue)
+        #expect(SettingsKeys.defaultNoteRangeMin == trainingDefaults.noteRange.lowerBound)
+        #expect(SettingsKeys.defaultNoteRangeMax == trainingDefaults.noteRange.upperBound)
+        #expect(SettingsKeys.defaultReferencePitch == trainingDefaults.referencePitch)
     }
 
     @Test("Audio defaults use expected standalone values")
     func audioDefaultsAreCorrect() async {
         // noteDuration and soundSource are not TrainingSettings properties —
         // they are standalone settings with hardcoded defaults
-        #expect(SettingsKeys.defaultNoteDuration == 1.0)
+        #expect(SettingsKeys.defaultNoteDuration == NoteDuration(1.0))
         #expect(SettingsKeys.defaultSoundSource == "sf2:0:0")
     }
 
@@ -71,7 +71,7 @@ struct SettingsTests {
 
     @Test("defaultTuningSystem is equalTemperament storage identifier")
     func defaultTuningSystemValue() async {
-        #expect(SettingsKeys.defaultTuningSystem == "equalTemperament")
+        #expect(SettingsKeys.defaultTuningSystem == .equalTemperament)
     }
 
     @Test("AppUserSettings returns equalTemperament when no UserDefaults entry")
@@ -120,7 +120,7 @@ struct SettingsTests {
 
     @Test("defaultNoteGap is zero")
     func defaultNoteGapIsZero() async {
-        #expect(SettingsKeys.defaultNoteGap == 0.0)
+        #expect(SettingsKeys.defaultNoteGap == .zero)
     }
 
     @Test("AppUserSettings returns default noteGap when no UserDefaults entry")
@@ -442,12 +442,12 @@ struct SettingsTests {
 
     @Test("Range functions produce valid ranges with default values")
     func rangeValidityWithDefaults() async {
-        let lowerRange = SettingsKeys.lowerBoundRange(noteRangeMax: SettingsKeys.defaultNoteRangeMax)
-        let upperRange = SettingsKeys.upperBoundRange(noteRangeMin: SettingsKeys.defaultNoteRangeMin)
+        let lowerRange = SettingsKeys.lowerBoundRange(noteRangeMax: SettingsKeys.defaultNoteRangeMax.rawValue)
+        let upperRange = SettingsKeys.upperBoundRange(noteRangeMin: SettingsKeys.defaultNoteRangeMin.rawValue)
 
-        #expect(lowerRange.contains(SettingsKeys.defaultNoteRangeMin))
-        #expect(upperRange.contains(SettingsKeys.defaultNoteRangeMax))
-        #expect(lowerRange.lowerBound == SettingsKeys.absoluteMinNote)
-        #expect(upperRange.upperBound == SettingsKeys.absoluteMaxNote)
+        #expect(lowerRange.contains(SettingsKeys.defaultNoteRangeMin.rawValue))
+        #expect(upperRange.contains(SettingsKeys.defaultNoteRangeMax.rawValue))
+        #expect(lowerRange.lowerBound == SettingsKeys.absoluteMinNote.rawValue)
+        #expect(upperRange.upperBound == SettingsKeys.absoluteMaxNote.rawValue)
     }
 }
