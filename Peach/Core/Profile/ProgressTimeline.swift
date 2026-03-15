@@ -30,6 +30,15 @@ enum TrainingMode: CaseIterable {
         }
     }
 
+    var slug: String {
+        switch self {
+        case .unisonPitchComparison: "pitch-comparison"
+        case .intervalPitchComparison: "interval-comparison"
+        case .unisonMatching: "pitch-matching"
+        case .intervalMatching: "interval-matching"
+        }
+    }
+
     /// Extracts metric points for this mode from raw training records.
     func extractMetrics(
         pitchComparisonRecords: [PitchComparisonRecord],

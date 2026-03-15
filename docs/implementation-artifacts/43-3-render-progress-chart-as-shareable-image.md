@@ -1,6 +1,6 @@
 # Story 43.3: Render Progress Chart as Shareable Image
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -37,40 +37,40 @@ So that the chart image rendering is testable and decoupled from the share inter
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `slug` computed property to `TrainingMode` (AC: #5)
-  - [ ] Add `var slug: String` to `TrainingMode` returning kebab-case identifiers: `"pitch-comparison"`, `"interval-comparison"`, `"pitch-matching"`, `"interval-matching"`
-  - [ ] Add tests for all four slug values
+- [x] Task 1: Add `slug` computed property to `TrainingMode` (AC: #5)
+  - [x] Add `var slug: String` to `TrainingMode` returning kebab-case identifiers: `"pitch-comparison"`, `"interval-comparison"`, `"pitch-matching"`, `"interval-matching"`
+  - [x] Add tests for all four slug values
 
-- [ ] Task 2: Create `ExportChartView` in `Peach/Profile/` (AC: #1, #2, #3)
-  - [ ] Create `Peach/Profile/ExportChartView.swift` — a SwiftUI view that renders a single training mode's chart card for image export
-  - [ ] Include headline row: mode `displayName`, formatted EWMA, formatted stddev, trend icon — reuse `ProgressChartView`'s static helpers (`formatEWMA`, `formatStdDev`, `trendSymbol`, `trendColor`)
-  - [ ] Include chart content: zone backgrounds, zone dividers, stddev band, EWMA line, session dots, baseline — reuse chart layer methods from `ProgressChartView` where possible via extraction or direct re-implementation
-  - [ ] Chart must be **non-scrollable** (static full-width) with **no** selection indicator, tap gesture, `chartScrollableAxes`, or `chartScrollPosition`
-  - [ ] Include a localized timestamp row below the chart using `Date.FormatStyle` (`.dateTime.day().month(.wide).year().hour().minute()`)
-  - [ ] Include a small "Peach" attribution text (secondary style, trailing alignment)
-  - [ ] Use a fixed size appropriate for sharing (e.g., 390pt width, chart height matching `ProgressChartView`'s compact height of 180pt)
-  - [ ] Set a solid background fill (`.background(Color(.systemBackground))`) so the image is not transparent
+- [x] Task 2: Create `ExportChartView` in `Peach/Profile/` (AC: #1, #2, #3)
+  - [x] Create `Peach/Profile/ExportChartView.swift` — a SwiftUI view that renders a single training mode's chart card for image export
+  - [x] Include headline row: mode `displayName`, formatted EWMA, formatted stddev, trend icon — reuse `ProgressChartView`'s static helpers (`formatEWMA`, `formatStdDev`, `trendSymbol`, `trendColor`)
+  - [x] Include chart content: zone backgrounds, zone dividers, stddev band, EWMA line, session dots, baseline — reuse chart layer methods from `ProgressChartView` where possible via extraction or direct re-implementation
+  - [x] Chart must be **non-scrollable** (static full-width) with **no** selection indicator, tap gesture, `chartScrollableAxes`, or `chartScrollPosition`
+  - [x] Include a localized timestamp row below the chart using `Date.FormatStyle` (`.dateTime.day().month(.wide).year().hour().minute()`)
+  - [x] Include a small "Peach" attribution text (secondary style, trailing alignment)
+  - [x] Use a fixed size appropriate for sharing (e.g., 390pt width, chart height matching `ProgressChartView`'s compact height of 180pt)
+  - [x] Set a solid background fill (`.background(Color(.systemBackground))`) so the image is not transparent
 
-- [ ] Task 3: Create `ChartImageRenderer` enum in `Peach/Profile/` (AC: #4, #5)
-  - [ ] Create `Peach/Profile/ChartImageRenderer.swift` — a stateless enum with a `static func render(mode:progressTimeline:) -> URL?` method
-  - [ ] Use SwiftUI `ImageRenderer` to render `ExportChartView` to a `CGImage`
-  - [ ] Set `renderer.scale` to `2.0` (for @2x output)
-  - [ ] Convert `CGImage` to PNG data via `UIImage(cgImage:).pngData()`
-  - [ ] Write PNG data to a temp file using `FileManager.default.temporaryDirectory`
-  - [ ] Generate filename using `exportFileName(for:mode:)` static method following pattern `peach-{slug}-{yyyy-MM-dd-HHmm}.png` with `en_US_POSIX` locale for the timestamp (consistent with `TrainingDataTransferService.exportFileName`)
-  - [ ] Return the temp file URL on success, `nil` on failure
+- [x] Task 3: Create `ChartImageRenderer` enum in `Peach/Profile/` (AC: #4, #5)
+  - [x] Create `Peach/Profile/ChartImageRenderer.swift` — a stateless enum with a `static func render(mode:progressTimeline:) -> URL?` method
+  - [x] Use SwiftUI `ImageRenderer` to render `ExportChartView` to a `CGImage`
+  - [x] Set `renderer.scale` to `2.0` (for @2x output)
+  - [x] Convert `CGImage` to PNG data via `UIImage(cgImage:).pngData()`
+  - [x] Write PNG data to a temp file using `FileManager.default.temporaryDirectory`
+  - [x] Generate filename using `exportFileName(for:mode:)` static method following pattern `peach-{slug}-{yyyy-MM-dd-HHmm}.png` with `en_US_POSIX` locale for the timestamp (consistent with `TrainingDataTransferService.exportFileName`)
+  - [x] Return the temp file URL on success, `nil` on failure
 
-- [ ] Task 4: Add localization strings (AC: #2)
-  - [ ] Add "Peach" attribution string (if it needs localization — it's a brand name, so it may not)
-  - [ ] Ensure timestamp formatting uses `Date.FormatStyle` which is auto-localized
+- [x] Task 4: Add localization strings (AC: #2)
+  - [x] Add "Peach" attribution string (if it needs localization — it's a brand name, so it may not)
+  - [x] Ensure timestamp formatting uses `Date.FormatStyle` which is auto-localized
 
-- [ ] Task 5: Write tests (AC: #1–#5)
-  - [ ] Test `TrainingMode.slug` returns correct kebab-case values for all four modes
-  - [ ] Test `ChartImageRenderer.exportFileName(for:mode:)` produces correct pattern for each mode
-  - [ ] Test `ChartImageRenderer.exportFileName` uses `en_US_POSIX` locale (timestamp doesn't change with device locale)
-  - [ ] Test `ExportChartView` renders without crashing (snapshot test with mock `ProgressTimeline`)
+- [x] Task 5: Write tests (AC: #1–#5)
+  - [x] Test `TrainingMode.slug` returns correct kebab-case values for all four modes
+  - [x] Test `ChartImageRenderer.exportFileName(for:mode:)` produces correct pattern for each mode
+  - [x] Test `ChartImageRenderer.exportFileName` uses `en_US_POSIX` locale (timestamp doesn't change with device locale)
+  - [x] Test `ExportChartView` renders without crashing (snapshot test with mock `ProgressTimeline`)
 
-- [ ] Task 6: Run full test suite and verify no regressions
+- [x] Task 6: Run full test suite and verify no regressions
 
 ## Dev Notes
 
@@ -215,10 +215,32 @@ enum ChartImageRenderer {
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- Test target needed `import SwiftUI` for `ImageRenderer` to be in scope
+
 ### Completion Notes List
 
+- Task 1: Added `TrainingMode.slug` computed property with kebab-case identifiers for all four modes. 4 tests in new `TrainingModeTests.swift`.
+- Task 2: Created `ExportChartView` — static (non-scrollable) chart card view for image export. Reuses all `ProgressChartView` static helpers (`formatEWMA`, `formatStdDev`, `trendSymbol`, `trendColor`, `yDomain`, `zoneSeparatorData`, `yearLabels`, `lineDataWithSessionBridge`, `formatAxisLabel`). Receives `ProgressTimeline` as init parameter (no `@Environment`). Uses hardcoded base contrast values. Includes headline row, full chart layers, localized timestamp, and "Peach" attribution.
+- Task 3: Created `ChartImageRenderer` stateless enum with `render(mode:progressTimeline:date:) -> URL?` and `exportFileName(for:mode:) -> String`. Uses `ImageRenderer` at @2x scale, writes PNG to temp directory.
+- Task 4: "Peach" is a brand name — no localization needed. Timestamp uses `Date.FormatStyle` which is auto-localized.
+- Task 5: 12 tests total — 4 slug tests, 5 filename tests, 3 rendering tests (including full render-to-file integration test).
+- Task 6: Full test suite passes — 1075 tests, 0 failures.
+
+### Change Log
+
+- 2026-03-16: Implemented story 43.3 — ExportChartView, ChartImageRenderer, TrainingMode.slug, and comprehensive tests
+
 ### File List
+
+- Peach/Core/Profile/ProgressTimeline.swift (modified — added `TrainingMode.slug`)
+- Peach/Profile/ExportChartView.swift (new)
+- Peach/Profile/ChartImageRenderer.swift (new)
+- PeachTests/Core/Profile/TrainingModeTests.swift (new)
+- PeachTests/Profile/ChartImageRendererTests.swift (new)
+- PeachTests/Profile/ExportChartViewTests.swift (new)
+- docs/implementation-artifacts/sprint-status.yaml (modified)
+- docs/implementation-artifacts/43-3-render-progress-chart-as-shareable-image.md (modified)
