@@ -19,7 +19,7 @@ struct InfoScreen: View {
 
     static let gettingStartedText = String(localized: "Just pick any training mode on the home screen and start practicing. Peach adapts to your skill level automatically.")
 
-    static let acknowledgmentsText = String(localized: "Sounds provided by [GeneralUser GS by S. Christian Collins](https://schristiancollins.com/generaluser.php).")
+    static let acknowledgmentsText = String(localized: "Piano sounds from [FluidR3_GM by Frank Wen](https://member.keymusician.com/Member/FluidR3_GM/index.html) (MIT License). All other sounds from [GeneralUser GS by S. Christian Collins](https://schristiancollins.com/generaluser.php).")
 
     static var copyrightNotice: String {
         "© \(copyrightYear) \(developerName)"

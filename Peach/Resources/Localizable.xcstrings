@@ -284,16 +284,6 @@
         }
       }
     },
-    "Once the second note starts playing, the **Higher** and **Lower** buttons become active. Tap the one that matches what you heard." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobald der zweite Ton zu spielen beginnt, werden die Tasten **Höher** und **Tiefer** aktiv. Tippe auf die Taste, die zu dem passt, was du gehört hast."
-          }
-        }
-      }
-    },
     "After each answer you'll see a brief **checkmark** (correct) or **X** (incorrect). Use this to calibrate your listening — over time, you'll notice patterns in what you get right." : {
       "localizations" : {
         "de" : {
@@ -1255,6 +1245,16 @@
         }
       }
     },
+    "Once the second note starts playing, the **Higher** and **Lower** buttons become active. Tap the one that matches what you heard." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobald der zweite Ton zu spielen beginnt, werden die Tasten **Höher** und **Tiefer** aktiv. Tippe auf die Taste, die zu dem passt, was du gehört hast."
+          }
+        }
+      }
+    },
     "Peach" : {
       "localizations" : {
         "de" : {
@@ -1590,12 +1590,12 @@
         }
       }
     },
-    "Sounds provided by [GeneralUser GS by S. Christian Collins](https://schristiancollins.com/generaluser.php)." : {
+    "Piano sounds from [FluidR3_GM by Frank Wen](https://member.keymusician.com/Member/FluidR3_GM/index.html) (MIT License). All other sounds from [GeneralUser GS by S. Christian Collins](https://schristiancollins.com/generaluser.php)." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Klänge bereitgestellt von [GeneralUser GS von S. Christian Collins](https://schristiancollins.com/generaluser.php)."
+            "value" : "Pianoklänge von [FluidR3_GM von Frank Wen](https://member.keymusician.com/Member/FluidR3_GM/index.html) (MIT-Lizenz). Alle anderen Klänge von [GeneralUser GS von S. Christian Collins](https://schristiancollins.com/generaluser.php)."
           }
         }
       }
@@ -2134,6 +2134,7 @@
       }
     },
     "Weekly" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

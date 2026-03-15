@@ -9,6 +9,8 @@
 #   bin/test.sh -s SuiteName     # filter: only run tests matching SuiteName
 #   bin/test.sh -r               # raw: just run xcodebuild, no parsing
 #                                  (useful when this script's parsing breaks)
+#   bin/test.sh -S               # run ONLY stress tests (sets RUN_STRESS_TESTS=1)
+#   bin/test.sh -a               # run ALL tests including stress tests
 #
 # Exit codes:
 #   0  all tests passed
@@ -21,22 +23,64 @@ set -euo pipefail
 # --- Configuration (edit these if your project changes) ---
 SCHEME="Peach"
 DESTINATION="platform=iOS Simulator,name=iPhone 17"
+SCHEME_PATH="Peach.xcodeproj/xcshareddata/xcschemes/Peach.xcscheme"
 
 # --- Parse arguments ---
 FAILURES_ONLY=false
 VERBOSE=false
 RAW=false
 FILTER=""
+STRESS_ONLY=false
+ALL_TESTS=false
 
-while getopts "fvrs:" opt; do
+while getopts "fvrs:Sa" opt; do
     case $opt in
         f) FAILURES_ONLY=true ;;
         v) VERBOSE=true ;;
         r) RAW=true ;;
         s) FILTER="$OPTARG" ;;
-        *) echo "Usage: $0 [-f] [-v] [-r] [-s SuiteName]" >&2; exit 1 ;;
+        S) STRESS_ONLY=true ;;
+        a) ALL_TESTS=true ;;
+        *) echo "Usage: $0 [-f] [-v] [-r] [-s SuiteName] [-S] [-a]" >&2; exit 1 ;;
     esac
 done
+
+# --- Stress test env var injection ---
+# xcodebuild does not forward shell env vars to the simulator test host.
+# The only reliable way is to inject into the scheme's TestAction XML.
+ENABLE_STRESS=false
+
+if $STRESS_ONLY; then
+    ENABLE_STRESS=true
+    FILTER="PeachTests/SoundFontPresetStressTests"
+fi
+
+if $ALL_TESTS; then
+    ENABLE_STRESS=true
+fi
+
+SCHEME_MODIFIED=false
+if $ENABLE_STRESS; then
+    cp "$SCHEME_PATH" "$SCHEME_PATH.bak"
+    SCHEME_MODIFIED=true
+    # Add RUN_STRESS_TESTS env var to TestAction and disable inheriting launch args
+    sed -i '' 's/shouldUseLaunchSchemeArgsEnv = "YES"/shouldUseLaunchSchemeArgsEnv = "NO"/' "$SCHEME_PATH"
+    sed -i '' '/<Testables>/i\
+      <EnvironmentVariables>\
+         <EnvironmentVariable\
+            key = "RUN_STRESS_TESTS"\
+            value = "1"\
+            isEnabled = "YES">\
+         </EnvironmentVariable>\
+      </EnvironmentVariables>' "$SCHEME_PATH"
+fi
+
+restore_scheme() {
+    if $SCHEME_MODIFIED && [ -f "$SCHEME_PATH.bak" ]; then
+        mv "$SCHEME_PATH.bak" "$SCHEME_PATH"
+    fi
+}
+trap 'restore_scheme' EXIT INT TERM
 
 # --- Build the xcodebuild command ---
 # Note: do NOT use -quiet — it suppresses the per-test pass/fail lines
@@ -56,7 +100,7 @@ fi
 
 # --- Run tests, capture output ---
 TMPFILE=$(mktemp /tmp/peach-test-XXXXXX)
-trap 'rm -f "$TMPFILE"' EXIT
+trap 'rm -f "$TMPFILE"; restore_scheme' EXIT INT TERM
 
 if $VERBOSE; then
     "${CMD[@]}" 2>&1 | tee "$TMPFILE"

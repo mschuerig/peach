@@ -6,8 +6,8 @@
 #   ./bin/download-sf2.sh
 #
 # SF2 files are placed in .cache/ in the project root.
-# Xcode includes .cache/GeneralUser-GS.sf2 in the app bundle via Copy Bundle Resources.
-# If that file is missing, the Xcode build will fail with a "file not found" error.
+# These files are source material for building the custom Samples.sf2 in Polyphone.
+# They are NOT directly included in the app bundle.
 #
 # The script is idempotent: files with correct checksums are skipped.
 # On per-file failure, the script continues downloading remaining files

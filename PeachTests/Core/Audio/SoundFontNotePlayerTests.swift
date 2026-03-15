@@ -5,10 +5,7 @@ import Foundation
 @Suite("SoundFontNotePlayer Tests")
 struct SoundFontNotePlayerTests {
 
-    private static let testLibrary = SoundFontLibrary(
-        sf2URL: Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")!,
-        defaultPreset: "sf2:0:0"
-    )
+    private static let testLibrary = TestSoundFont.makeLibrary()
 
     private func makePlayer(userSettings: UserSettings = MockUserSettings()) throws -> SoundFontNotePlayer {
         try SoundFontNotePlayer(library: Self.testLibrary, userSettings: userSettings)
@@ -177,7 +174,7 @@ struct SoundFontNotePlayerTests {
     @Test("loadPreset with bank parameter loads bank variant")
     func loadPresetBankVariant() async throws {
         let player = try makePlayer()
-        try await player.loadPreset(program: 4, bank: 8) // Chorused Tine EP
+        try await player.loadPreset(program: 6, bank: 8) // Coupled Harpsichord
     }
 
     @Test("Loading same preset twice is a no-op (no error)")

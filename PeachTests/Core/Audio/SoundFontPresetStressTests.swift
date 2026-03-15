@@ -14,21 +14,25 @@ struct SoundFontPresetStressTests {
     // MARK: - Constants
 
     private static let representativeRawValues: Set<String> = [
-        "sf2:0:0", "sf2:0:24", "sf2:0:42",
-        "sf2:0:48", "sf2:0:56", "sf2:0:73", "sf2:8:80"
+        "sf2:0:0",  // Grand Piano
+        "sf2:0:1",  // Bright Grand Piano
+        "sf2:0:2",  // Electric Piano
+        "sf2:0:24", // Nylon Guitar
+        "sf2:0:42", // Cello
+        "sf2:0:56", // Trumpet
+        "sf2:0:73", // Flute
+        "sf2:8:80"  // Sine Wave
     ]
 
     private static let focusRawValues: Set<String> = [
         "sf2:0:0", "sf2:0:42", "sf2:0:73", "sf2:8:80"
     ]
 
-    private static let midiNoteValues: [UInt8] = [0, 21, 36, 48, 60, 69, 84, 96, 108, 127]
-
-    private static let sf2URL = Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")!
+    private static let midiNoteValues: [UInt8] = [21, 36, 48, 60, 69, 84, 96, 108, 127]
 
     // MARK: - Factory
 
-    private static let testLibrary = SoundFontLibrary(sf2URL: sf2URL, defaultPreset: "sf2:0:0")
+    private static let testLibrary = TestSoundFont.makeLibrary()
 
     private func makeLibrary() -> SoundFontLibrary {
         Self.testLibrary

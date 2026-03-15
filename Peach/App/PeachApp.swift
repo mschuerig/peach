@@ -27,7 +27,7 @@ struct PeachApp: App {
             let dataStore = TrainingDataStore(modelContext: container.mainContext)
             _dataStore = State(wrappedValue: dataStore)
 
-            let sf2URL = Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")!
+            let sf2URL = Bundle.main.url(forResource: "Samples", withExtension: "sf2")!
             let soundFontLibrary = SoundFontLibrary(sf2URL: sf2URL, defaultPreset: SettingsKeys.defaultSoundSource)
             _soundFontLibrary = State(wrappedValue: soundFontLibrary)
             SettingsKeys.validateSoundSource(against: soundFontLibrary)

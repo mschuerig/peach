@@ -5,10 +5,8 @@ import Foundation
 @Suite("SoundFontLibrary Tests")
 struct SoundFontLibraryTests {
 
-    private static let sf2URL = Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")!
-
     private func makeLibrary() -> SoundFontLibrary {
-        SoundFontLibrary(sf2URL: Self.sf2URL, defaultPreset: "sf2:0:0")
+        TestSoundFont.makeLibrary()
     }
 
     // MARK: - Preset Discovery
@@ -41,12 +39,12 @@ struct SoundFontLibraryTests {
         #expect(names == sorted)
     }
 
-    @Test("Contains Grand Piano at bank 0 program 0")
+    @Test("Contains Yamaha Grand Piano at bank 0 program 0")
     func containsPiano() async {
         let library = makeLibrary()
         let piano = library.availablePresets.first { $0.program == 0 && $0.bank == 0 }
         #expect(piano != nil)
-        #expect(piano?.name == "Grand Piano")
+        #expect(piano?.name == "Yamaha Grand Piano")
     }
 
     @Test("Contains Cello at bank 0 program 42")
@@ -57,12 +55,12 @@ struct SoundFontLibraryTests {
         #expect(cello?.name == "Cello")
     }
 
-    @Test("Contains bank variants (e.g., bank 8 program 4)")
+    @Test("Contains bank variants (e.g., bank 8 program 6)")
     func containsBankVariants() async {
         let library = makeLibrary()
-        let variant = library.availablePresets.first { $0.bank == 8 && $0.program == 4 }
+        let variant = library.availablePresets.first { $0.bank == 8 && $0.program == 6 }
         #expect(variant != nil)
-        #expect(variant?.name == "Chorused Tine EP")
+        #expect(variant?.name == "Coupled Harpsichord")
     }
 
     // MARK: - SoundSourceProvider Conformance
@@ -141,6 +139,6 @@ struct SoundFontLibraryTests {
     @Test("sf2URL is exposed from library")
     func sf2URLExposed() async {
         let library = makeLibrary()
-        #expect(library.sf2URL == Self.sf2URL)
+        #expect(library.sf2URL == TestSoundFont.url)
     }
 }

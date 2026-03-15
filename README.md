@@ -35,15 +35,7 @@ Known rough edges include a profile visualization that needs redesign, no onboar
 
 ## Building
 
-Before the first build, download the SF2 SoundFont sample file:
-
-```bash
-./bin/download-sf2.sh
-```
-
-This downloads GeneralUser GS (~31 MB) to `.cache/` in the project root. The file is not tracked in git. You only need to run this once.
-
-Then open `Peach.xcodeproj` in Xcode and run (Cmd+R), or build from the command line:
+Open `Peach.xcodeproj` in Xcode and run (Cmd+R), or build from the command line:
 
 ```bash
 xcodebuild build -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17'
@@ -60,14 +52,15 @@ xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 1
 SoundFont preset stress tests are skipped by default. To run them:
 
 ```bash
-RUN_STRESS_TESTS=1 xcodebuild test -scheme Peach -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:PeachTests/SoundFontPresetStressTests
+bin/test.sh -S          # stress tests only
+bin/test.sh -a          # all tests including stress tests
 ```
 
 ## Tech Stack
 
 - Swift 6 (strict concurrency), SwiftUI
 - SwiftData for persistence
-- AVAudioEngine for real-time sine wave synthesis
+- AVAudioEngine with SoundFont (SF2) instrument playback
 - Swift Testing framework
 - Zero third-party dependencies
 

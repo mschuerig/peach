@@ -5,10 +5,7 @@ import Foundation
 @Suite("SoundFontPlaybackHandle Tests")
 struct SoundFontPlaybackHandleTests {
 
-    private static let testLibrary = SoundFontLibrary(
-        sf2URL: Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")!,
-        defaultPreset: "sf2:0:0"
-    )
+    private static let testLibrary = TestSoundFont.makeLibrary()
 
     private func makePlayer() throws -> SoundFontNotePlayer {
         try SoundFontNotePlayer(library: Self.testLibrary, userSettings: MockUserSettings())
