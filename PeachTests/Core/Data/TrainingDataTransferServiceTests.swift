@@ -57,6 +57,28 @@ struct TrainingDataTransferServiceTests {
         )
     }
 
+    // MARK: - exportFileName Tests
+
+    @Test("export filename follows peach-training-data-YYYY-MM-DD-HHmm.csv pattern")
+    func exportFileNamePattern() async {
+        var components = DateComponents()
+        components.year = 2026
+        components.month = 3
+        components.day = 15
+        components.hour = 14
+        components.minute = 32
+        let date = Calendar(identifier: .gregorian).date(from: components)!
+        let name = TrainingDataTransferService.exportFileName(for: date)
+
+        #expect(name == "peach-training-data-2026-03-15-1432.csv")
+    }
+
+    @Test("export filename has .csv extension")
+    func exportFileNameHasCSVExtension() async {
+        let name = TrainingDataTransferService.exportFileName()
+        #expect(name.hasSuffix(".csv"))
+    }
+
     // MARK: - refreshExport Tests
 
     @Test("refreshExport returns CSV string when records exist")
@@ -80,9 +102,12 @@ struct TrainingDataTransferServiceTests {
         let (service, dataStore) = try makeService()
         try dataStore.save(makeComparison())
         service.refreshExport()
-        #expect(service.exportFileURL != nil)
-        #expect(service.exportFileURL!.pathExtension == "csv")
-        #expect(FileManager.default.fileExists(atPath: service.exportFileURL!.path()))
+        guard let url = service.exportFileURL else {
+            Issue.record("Expected exportFileURL to be set")
+            return
+        }
+        #expect(url.pathExtension == "csv")
+        #expect(FileManager.default.fileExists(atPath: url.path()))
     }
 
     @Test("refreshExport sets file URL to nil when store is empty")

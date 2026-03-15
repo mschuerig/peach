@@ -1,26 +1,7 @@
-import SwiftUI
-import UniformTypeIdentifiers
+import Foundation
 
-struct CSVDocument: Transferable {
+struct CSVDocument {
     let csvString: String
-    let exportDate: Date
-
-    init(csvString: String, exportDate: Date = Date()) {
-        self.csvString = csvString
-        self.exportDate = exportDate
-    }
-
-    nonisolated static var transferRepresentation: some TransferRepresentation {
-        FileRepresentation(exportedContentType: .commaSeparatedText) { document in
-            let fileName = exportFileName(for: document.exportDate)
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-            guard let data = document.csvString.data(using: .utf8) else {
-                throw CocoaError(.fileWriteInapplicableStringEncoding)
-            }
-            try data.write(to: tempURL)
-            return SentTransferredFile(tempURL)
-        }
-    }
 
     static func exportFileName(for date: Date = Date()) -> String {
         let formatter = DateFormatter()

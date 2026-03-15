@@ -40,7 +40,7 @@ final class TrainingDataTransferService {
     }
 
     private func writeExportFile(_ csv: String) -> URL? {
-        let fileName = CSVDocument.exportFileName()
+        let fileName = Self.exportFileName()
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         guard let data = csv.data(using: .utf8) else { return nil }
         do {
@@ -49,6 +49,14 @@ final class TrainingDataTransferService {
         } catch {
             return nil
         }
+    }
+
+    static func exportFileName(for date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd-HHmm"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        let timestamp = formatter.string(from: date)
+        return "peach-training-data-\(timestamp).csv"
     }
 
     // MARK: - Import

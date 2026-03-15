@@ -1,6 +1,6 @@
 # Story 43.2: Replace File Exporter with ShareLink in Settings
 
-Status: review
+Status: done
 
 ## Story
 
@@ -181,17 +181,13 @@ None — clean implementation with no blockers.
 
 - 2026-03-15: Implemented story 43.2 — replaced `.fileExporter()` with `ShareLink`, removed `FileDocument` conformance, stabilized export filename via `exportDate`, cleaned up `refreshExport` environment key
 - 2026-03-15: Fixed ShareLink sharing — switched from `CSVDocument` Transferable to direct file URL sharing to preserve filenames in AirDrop/Numbers
+- 2026-03-15: Code review — deleted dead `CSVDocument.swift` (unused Transferable conformance, exportDate), moved `exportFileName` to `TrainingDataTransferService` (fixed Core→Settings dependency inversion), added German translation for "Peach Training Data", removed stale strings, deduplicated File List, fixed force unwraps in tests
 
 ### File List
 
 - Peach/Settings/SettingsScreen.swift (modified)
-- Peach/Settings/CSVDocument.swift (modified)
 - Peach/Core/Data/TrainingDataTransferService.swift (modified)
 - Peach/App/EnvironmentKeys.swift (modified)
 - Peach/App/PeachApp.swift (modified)
-- PeachTests/Settings/CSVDocumentTests.swift (modified)
 - PeachTests/Core/Data/TrainingDataTransferServiceTests.swift (modified)
-- Peach/Settings/CSVDocument.swift (modified)
-- Peach/App/EnvironmentKeys.swift (modified)
-- Peach/App/PeachApp.swift (modified)
-- PeachTests/Settings/CSVDocumentTests.swift (modified)
+- Peach/Resources/Localizable.xcstrings (modified)
