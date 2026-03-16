@@ -12,5 +12,8 @@ DerivedData/
 # Generated test data
 test-data.csv
 
+# LSP
+buildServer.json
+
 # macOS
 .DS_Store
