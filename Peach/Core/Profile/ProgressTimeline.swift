@@ -206,6 +206,11 @@ final class ProgressTimeline {
         return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: mode.config.sessionGap)
     }
 
+    /// Returns the total number of records ingested for a mode.
+    func recordCount(for mode: TrainingMode) -> Int {
+        modeData[mode]?.recordCount ?? 0
+    }
+
     /// Returns the trend direction for a mode, or nil if insufficient data.
     func trend(for mode: TrainingMode) -> Trend? {
         guard let data = modeData[mode], data.recordCount >= 2 else { return nil }

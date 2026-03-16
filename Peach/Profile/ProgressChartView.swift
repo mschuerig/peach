@@ -51,7 +51,7 @@ struct ProgressChartView: View {
             trend: trend,
             unitLabel: config.unitLabel
         ))
-        .task(id: progressTimeline.currentEWMA(for: mode)) {
+        .task(id: progressTimeline.recordCount(for: mode)) {
             shareImageURL = ChartImageRenderer.render(
                 mode: mode,
                 progressTimeline: progressTimeline

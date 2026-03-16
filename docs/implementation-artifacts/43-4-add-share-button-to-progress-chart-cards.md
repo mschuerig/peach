@@ -1,6 +1,6 @@
 # Story 43.4: Add Share Button to Progress Chart Cards
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -158,14 +158,18 @@ Claude Opus 4.6
 ### Completion Notes List
 
 - Added `@State private var shareImageURL: URL?` to `ProgressChartView`
-- Added `.task(id: progressTimeline.currentEWMA(for: mode))` modifier on `activeCard` to pre-render chart image via `ChartImageRenderer.render()`
+- Added `.task(id: progressTimeline.recordCount(for: mode))` modifier on `activeCard` to pre-render chart image via `ChartImageRenderer.render()`
 - Added `ShareLink` after the trend icon in `headlineRow`, conditionally shown when `shareImageURL` is non-nil
 - Used `.font(.body)` and `.foregroundStyle(.secondary)` for secondary visual weight
 - Added accessibility label `"Share \(config.displayName) chart"` to `ShareLink`
 - Added German localization `"%@ Chart teilen"` via `bin/add-localization.swift`
 - Verified `ExportChartView` does NOT include a share button (AC #5 satisfied by separate view architecture)
+- Modified `ExportChartView`: added app icon to headline row, moved timestamp above chart, removed attribution row, filtered session axis labels
+- Added `ExportIcon` image asset for the export chart header
+- Added `ChartImageRenderer.lastRenderedURLs` to clean up previous temp files on re-render
+- Exposed `ProgressTimeline.recordCount(for:)` for stable `.task(id:)` identity (replaces fragile `Double?` EWMA key)
 - Added parameterized test verifying accessibility label format for all four training modes
-- All 1079 tests pass with no regressions
+- All tests pass with no regressions
 
 ### Change Log
 
@@ -174,6 +178,9 @@ Claude Opus 4.6
 ### File List
 
 - Peach/Profile/ProgressChartView.swift (modified — added @State shareImageURL, .task(id:), ShareLink in headlineRow)
+- Peach/Profile/ExportChartView.swift (modified — added app icon to headline row, moved timestamp above chart, removed attribution row, filtered session axis labels)
+- Peach/Resources/Assets.xcassets/ExportIcon.imageset/Contents.json (added — asset catalog entry for export app icon)
+- Peach/Resources/Assets.xcassets/ExportIcon.imageset/ExportIcon.png (added — app icon image for export chart header)
 - Peach/Resources/Localizable.xcstrings (modified — added "Share %@ chart" key with German translation)
 - PeachTests/Profile/ProgressChartViewTests.swift (modified — added share accessibility label test)
 - docs/implementation-artifacts/43-4-add-share-button-to-progress-chart-cards.md (modified — status, tasks, dev agent record)

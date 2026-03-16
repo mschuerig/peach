@@ -5,6 +5,8 @@ enum ChartImageRenderer {
 
     private static let logger = Logger(subsystem: "Peach", category: "ChartImageRenderer")
 
+    private static var lastRenderedURLs: [TrainingMode: URL] = [:]
+
     static func render(mode: TrainingMode, progressTimeline: ProgressTimeline, date: Date = Date()) -> URL? {
         let view = ExportChartView(mode: mode, progressTimeline: progressTimeline, date: date)
         let renderer = ImageRenderer(content: view)
@@ -16,6 +18,10 @@ enum ChartImageRenderer {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             try pngData.write(to: url)
+            if let previous = lastRenderedURLs[mode], previous != url {
+                try? FileManager.default.removeItem(at: previous)
+            }
+            lastRenderedURLs[mode] = url
             return url
         } catch {
             logger.warning("Failed to write chart image: \(error.localizedDescription)")
