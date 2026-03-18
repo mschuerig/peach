@@ -4552,3 +4552,907 @@ So that I can show my training progress to others.
 **Then** the share button is not visible in the exported image
 
 ---
+
+## Epic 44: Solid Ground — Prerequisite Refactorings
+
+Move domain value types from Core/Audio/ to Core/Music/ and clean up PerceptualProfile — removing stale tracking, normalizing naming, preparing for multi-mode extension. Pure refactoring with no functional changes, preparing the codebase for rhythm extension.
+
+### Story 44.1: Split Core/Audio into Core/Music and Core/Audio
+
+As a **developer**,
+I want musical domain value types in their own Core/Music/ directory separate from audio infrastructure in Core/Audio/,
+So that the codebase has clean separation between domain concepts and audio machinery before adding rhythm types.
+
+**Acceptance Criteria:**
+
+**Given** the following files currently in Core/Audio/: MIDINote.swift, DetunedMIDINote.swift, Frequency.swift, Cents.swift, Interval.swift, DirectedInterval.swift, Direction.swift, TuningSystem.swift, MIDIVelocity.swift, AmplitudeDB.swift, NoteDuration.swift, NoteRange.swift, SoundSourceID.swift
+**When** the directory split is performed
+**Then** all 13 files are moved to Core/Music/ with matching Xcode group structure
+
+**Given** the following files remain in Core/Audio/: NotePlayer.swift, PlaybackHandle.swift, SoundFontNotePlayer.swift, SoundFontPlaybackHandle.swift, SoundFontLibrary.swift, SF2PresetParser.swift, SoundSourceProvider.swift, AudioSessionInterruptionMonitor.swift
+**When** the directory split is performed
+**Then** all 8 audio infrastructure files remain in Core/Audio/
+
+**Given** test files that mirror the source structure
+**When** the source files are moved
+**Then** corresponding test files are moved to PeachTests/Core/Music/ (e.g., MIDINoteTests.swift, CentsTests.swift, etc.)
+
+**Given** the single-module app architecture (no cross-module imports)
+**When** all files are moved
+**Then** the project builds with zero errors and zero warnings
+**And** all existing tests pass without modification
+
+**Given** this is a pure file-move refactoring
+**When** the changes are reviewed
+**Then** no type renames, no API changes, and no behavioral changes have occurred
+
+### Story 44.2: Clean Up PerceptualProfile for Multi-Mode Extension
+
+As a **developer**,
+I want PerceptualProfile cleaned up with stale tracking removed and naming normalized,
+So that it has clean extension points for the new RhythmProfile protocol conformance.
+
+**Acceptance Criteria:**
+
+**Given** PerceptualProfile currently contains per-MIDI-note comparison tracking
+**When** the cleanup is performed
+**Then** any unused per-MIDI-note tracking that doesn't serve current pitch training functionality is removed
+
+**Given** PerceptualProfile conforms to PitchComparisonProfile and PitchMatchingProfile
+**When** internal naming is reviewed
+**Then** naming conventions are normalized to align with the protocol-first pattern (PitchComparisonProfile, PitchMatchingProfile, future RhythmProfile)
+
+**Given** the cleanup is complete
+**When** PerceptualProfile is inspected
+**Then** it has clean extension points where new protocol conformances (e.g., RhythmProfile) can be added without modifying existing protocol conformances
+
+**Given** all existing pitch comparison and pitch matching tests
+**When** they are run after cleanup
+**Then** all tests pass — no behavioral changes to existing functionality
+
+## Epic 45: Rhythm Domain — Types and Contracts
+
+Introduce TempoBPM, RhythmOffset, RhythmDirection domain types with full test coverage. Define the observer protocols (RhythmComparisonObserver, RhythmMatchingObserver) and completed-result value types. Define the RhythmProfile protocol.
+
+### Story 45.1: TempoBPM Domain Type
+
+As a **developer**,
+I want a `TempoBPM` value type representing tempo in beats per minute,
+So that all rhythm APIs use a domain type instead of raw `Int` values.
+
+**Acceptance Criteria:**
+
+**Given** `TempoBPM` with an `Int` value
+**When** it is used across the codebase
+**Then** it conforms to `Hashable`, `Sendable`, `Codable`, `Comparable`
+
+**Given** a `TempoBPM` value
+**When** `sixteenthNoteDuration` is computed
+**Then** it returns `Duration.seconds(60.0 / (Double(value) * 4.0))`
+**And** unit tests verify known values (e.g., 120 BPM → 125ms sixteenth note)
+
+**Given** file location conventions
+**When** the file is created
+**Then** it is placed at `Core/Music/TempoBPM.swift` with tests at `PeachTests/Core/Music/TempoBPMTests.swift`
+
+### Story 45.2: RhythmOffset and RhythmDirection Domain Types
+
+As a **developer**,
+I want `RhythmOffset` (signed duration) and `RhythmDirection` (early/late) types,
+So that rhythm timing data uses domain types with direction derived from sign (FR99).
+
+**Acceptance Criteria:**
+
+**Given** `RhythmOffset` with a `Duration` value
+**When** the duration is negative
+**Then** `direction` returns `.early`
+
+**Given** `RhythmOffset` with a positive or zero duration
+**When** `direction` is accessed
+**Then** it returns `.late` (zero treated as on-the-beat, classified as late per architecture)
+
+**Given** a `RhythmOffset` and a `TempoBPM`
+**When** `percentageOfSixteenthNote(at:)` is called
+**Then** it returns `abs(duration / tempo.sixteenthNoteDuration) * 100` (FR87)
+**And** unit tests verify known values (e.g., 12.5ms offset at 120 BPM = 10% of 125ms sixteenth note)
+
+**Given** `RhythmDirection` enum
+**When** inspected
+**Then** it has cases `.early` and `.late` and conforms to `Hashable`, `Sendable`, `Codable`
+
+**Given** `RhythmOffset`
+**When** `Comparable` is applied
+**Then** ordering is based on absolute magnitude (for difficulty comparison)
+
+**Given** file location conventions
+**When** files are created
+**Then** `RhythmOffset.swift` and `RhythmDirection.swift` are in `Core/Music/` with corresponding tests
+
+### Story 45.3: Rhythm Observer Protocols and Result Types
+
+As a **developer**,
+I want `RhythmComparisonObserver` and `RhythmMatchingObserver` protocols with their completed-result value types,
+So that rhythm sessions can notify observers using the same pattern as pitch training.
+
+**Acceptance Criteria:**
+
+**Given** `RhythmComparisonObserver` protocol
+**When** inspected
+**Then** it declares `rhythmComparisonCompleted(_ result: CompletedRhythmComparison)`
+
+**Given** `CompletedRhythmComparison` value type
+**When** inspected
+**Then** it contains `tempo: TempoBPM`, `offset: RhythmOffset`, `isCorrect: Bool`, `timestamp: Date`
+**And** it conforms to `Sendable`
+
+**Given** `RhythmMatchingObserver` protocol
+**When** inspected
+**Then** it declares `rhythmMatchingCompleted(_ result: CompletedRhythmMatching)`
+
+**Given** `CompletedRhythmMatching` value type
+**When** inspected
+**Then** it contains `tempo: TempoBPM`, `expectedOffset: RhythmOffset`, `userOffset: RhythmOffset`, `timestamp: Date`
+**And** it conforms to `Sendable`
+
+**Given** file locations
+**When** files are created
+**Then** observer protocols are in `Core/Training/` and value types in `Core/Training/` with corresponding tests
+
+### Story 45.4: RhythmProfile Protocol
+
+As a **developer**,
+I want a `RhythmProfile` protocol defining the contract for rhythm perceptual data,
+So that sessions and views can depend on the protocol while PerceptualProfile provides the implementation.
+
+**Acceptance Criteria:**
+
+**Given** the `RhythmProfile` protocol
+**When** inspected
+**Then** it declares: `updateRhythmComparison(tempo:offset:isCorrect:)`, `updateRhythmMatching(tempo:userOffset:)`, `rhythmStats(tempo:direction:) -> RhythmTempoStats`, `trainedTempos: [TempoBPM]`, `rhythmOverallAccuracy: Double?`, `resetRhythm()`
+
+**Given** the `RhythmTempoStats` struct
+**When** inspected
+**Then** it contains `mean: RhythmOffset`, `stdDev: RhythmOffset`, `sampleCount: Int`, `currentDifficulty: RhythmOffset`
+
+**Given** the protocol file
+**When** it is created
+**Then** it is placed at `Core/Profile/RhythmProfile.swift` with `RhythmTempoStats` in the same file
+**And** unit tests for `RhythmTempoStats` are created
+
+## Epic 46: One Engine — Audio Architecture Redesign
+
+Extract SoundFontEngine from SoundFontNotePlayer, refactor NotePlayer to delegate, then build RhythmPlayer protocol and SoundFontRhythmPlayer with sample-accurate render-thread scheduling. Includes an on-device POC — a temporary demo screen that plays a pre-computed rhythm pattern at a fixed tempo, proving that the three-layer audio architecture delivers audibly tight timing on real hardware. The POC is removed once rhythm training screens are in place.
+
+### Story 46.1: Extract SoundFontEngine from SoundFontNotePlayer
+
+As a **developer**,
+I want a `SoundFontEngine` class that owns `AVAudioEngine`, `AVAudioUnitSampler`, and audio session configuration,
+So that audio hardware ownership is consolidated in one place before adding rhythm playback.
+
+**Acceptance Criteria:**
+
+**Given** `SoundFontEngine` is created
+**When** inspected
+**Then** it owns `AVAudioEngine` and `AVAudioUnitSampler` (melodic) that were previously owned by `SoundFontNotePlayer`
+
+**Given** `SoundFontEngine`
+**When** it provides immediate MIDI dispatch
+**Then** `startNote`/`stopNote` methods are available for pitch training (existing behavior)
+
+**Given** `SoundFontEngine`
+**When** it manages SoundFont preset loading
+**Then** it loads presets for the melodic bank using existing `SoundFontLibrary` infrastructure
+
+**Given** `SoundFontEngine` is a concrete internal class (not a protocol)
+**When** created
+**Then** it is placed at `Core/Audio/SoundFontEngine.swift` with tests at `PeachTests/Core/Audio/SoundFontEngineTests.swift`
+
+### Story 46.2: Refactor SoundFontNotePlayer to Delegate to SoundFontEngine
+
+As a **developer**,
+I want `SoundFontNotePlayer` to delegate to `SoundFontEngine` instead of owning `AVAudioEngine` directly,
+So that pitch training continues to work identically while sharing the engine with future rhythm playback.
+
+**Acceptance Criteria:**
+
+**Given** `SoundFontNotePlayer` is refactored
+**When** it receives a `SoundFontEngine` dependency
+**Then** it delegates all MIDI dispatch to the engine's immediate dispatch methods
+
+**Given** the `NotePlayer` protocol
+**When** inspected after refactoring
+**Then** it is completely unchanged — no API changes
+
+**Given** the `PlaybackHandle` protocol and `SoundFontPlaybackHandle`
+**When** inspected after refactoring
+**Then** `SoundFontPlaybackHandle` uses the engine's immediate dispatch but its public interface is unchanged
+
+**Given** all existing pitch comparison and pitch matching tests
+**When** run after refactoring
+**Then** all tests pass without modification — no behavioral changes
+
+### Story 46.3: Add Render-Thread Scheduling to SoundFontEngine
+
+As a **developer**,
+I want `SoundFontEngine` to support sample-accurate scheduled MIDI dispatch via an `AVAudioSourceNode` render callback,
+So that rhythm patterns can be played with sub-millisecond timing precision (NFR-R1).
+
+**Acceptance Criteria:**
+
+**Given** `SoundFontEngine` with render-thread scheduling
+**When** an `AVAudioSourceNode` is attached to the audio engine
+**Then** it serves as the master clock on the audio render thread
+**And** the source node outputs silence (it exists purely for its render callback)
+
+**Given** a schedule of MIDI events with absolute sample offsets
+**When** a render cycle occurs
+**Then** the engine checks for events falling within the current buffer window
+**And** dispatches them via `scheduleMIDIEventBlock` with the exact sample offset
+
+**Given** the audio session
+**When** rhythm scheduling is active
+**Then** minimum buffer duration is configured to 5ms (0.005s) per FR96
+
+**Given** the scheduling mechanism
+**When** tested with known event times
+**Then** scheduled vs. actual sample positions differ by no more than 0.01ms (NFR-R1)
+
+### Story 46.4: RhythmPlayer Protocol and SoundFontRhythmPlayer
+
+As a **developer**,
+I want a `RhythmPlayer` protocol and `SoundFontRhythmPlayer` implementation,
+So that rhythm sessions can play pre-computed patterns through a clean protocol boundary.
+
+**Acceptance Criteria:**
+
+**Given** the `RhythmPlayer` protocol
+**When** inspected
+**Then** it declares `play(_ pattern: RhythmPattern) async throws -> RhythmPlaybackHandle` and `stopAll() async throws`
+
+**Given** the `RhythmPlaybackHandle` protocol
+**When** inspected
+**Then** it declares `stop() async throws` where first call silences audio and subsequent calls are no-ops
+
+**Given** the `RhythmPattern` value type
+**When** inspected
+**Then** it contains `events: [Event]` (each with `sampleOffset: Int64`, `soundSourceID: SoundSourceID`, `velocity: MIDIVelocity`), `sampleRate: Double`, and `totalDuration: Duration`
+**And** events use absolute sample offsets from pattern start (no relative deltas)
+
+**Given** `SoundFontRhythmPlayer` delegates to `SoundFontEngine`
+**When** `play(_:)` is called with a `RhythmPattern`
+**Then** all pattern events are pre-calculated before playback starts (FR94)
+**And** events are dispatched on the render thread via the engine's scheduling mechanism
+
+**Given** `SoundFontRhythmPlayer`
+**When** it loads percussion sounds
+**Then** it resolves `SoundSourceID` values through the existing `SoundSourceProvider` pattern (FR95)
+
+**Given** `MockRhythmPlayer` and `MockRhythmPlaybackHandle`
+**When** created for testing
+**Then** they are placed in `PeachTests/Mocks/` for use by session tests in later epics
+
+**Given** file locations
+**When** files are created
+**Then** protocols are at `Core/Audio/RhythmPlayer.swift` and `Core/Audio/RhythmPlaybackHandle.swift`; implementations at `Core/Audio/SoundFontRhythmPlayer.swift` and `Core/Audio/SoundFontRhythmPlaybackHandle.swift`
+
+### Story 46.5: On-Device Rhythm Timing POC
+
+As a **developer testing the architecture**,
+I want a temporary demo screen accessible from the Start Screen that plays a pre-computed 4-click rhythm pattern at a fixed tempo,
+So that I can verify on real hardware that the three-layer audio architecture delivers audibly tight timing before building sessions on top of it.
+
+**Acceptance Criteria:**
+
+**Given** a temporary "Rhythm POC" button on the Start Screen
+**When** tapped
+**Then** it navigates to a minimal demo screen
+
+**Given** the demo screen
+**When** displayed
+**Then** it shows a "Play Pattern" button and a tempo label (e.g., "120 BPM")
+
+**Given** the user taps "Play Pattern"
+**When** the button is tapped
+**Then** the system plays 4 percussion clicks at sixteenth-note intervals at 120 BPM using `SoundFontRhythmPlayer`
+**And** the pattern is pre-computed as a `RhythmPattern` with absolute sample offsets
+
+**Given** the user taps "Play Pattern" again
+**When** the previous pattern is still playing
+**Then** the previous pattern is stopped before the new one starts
+
+**Given** the demo screen
+**When** a second tempo option is available (e.g., a stepper or toggle between 80/120/160 BPM)
+**Then** the user can switch tempos and hear the pattern at different speeds to verify timing at various rates
+
+**Given** this is a temporary POC
+**When** rhythm training screens are implemented (Epics 48–49)
+**Then** the POC screen and its Start Screen button are removed
+
+**Given** the POC plays audio
+**When** evaluated on a real iPhone
+**Then** the 4 clicks sound evenly spaced with no audible jitter or drift — confirming the architecture works
+
+## Epic 47: Remember Every Beat — Rhythm Data Layer
+
+RhythmComparisonRecord and RhythmMatchingRecord SwiftData models, TrainingDataStore extension with rhythm CRUD and observer conformances, PerceptualProfile RhythmProfile conformance, ProgressTimeline extension to 6 modes.
+
+### Story 47.1: Rhythm SwiftData Records
+
+As a **developer**,
+I want `RhythmComparisonRecord` and `RhythmMatchingRecord` SwiftData models,
+So that rhythm training results can be persisted locally.
+
+**Acceptance Criteria:**
+
+**Given** `RhythmComparisonRecord` `@Model`
+**When** inspected
+**Then** it contains `tempoBPM: Int`, `offsetMs: Double` (signed, negative=early, positive=late), `isCorrect: Bool`, `timestamp: Date`
+
+**Given** `RhythmMatchingRecord` `@Model`
+**When** inspected
+**Then** it contains `tempoBPM: Int`, `expectedOffsetMs: Double` (always 0.0 for v0.4), `userOffsetMs: Double` (signed), `timestamp: Date`
+**And** a comment reserves `inputMethod` for future non-tap input
+
+**Given** the `ModelContainer` schema in `PeachApp.swift`
+**When** updated
+**Then** it includes `RhythmComparisonRecord.self` and `RhythmMatchingRecord.self` alongside existing pitch records
+
+**Given** raw types at the SwiftData boundary
+**When** compared with domain types
+**Then** `Int`/`Double` are used at the persistence boundary (consistent with pitch record pattern), domain types at all other boundaries
+
+### Story 47.2: TrainingDataStore Rhythm CRUD and Observer Conformance
+
+As a **developer**,
+I want `TrainingDataStore` extended with rhythm record CRUD and observer conformances,
+So that rhythm results are automatically persisted when sessions notify observers.
+
+**Acceptance Criteria:**
+
+**Given** `TrainingDataStore`
+**When** extended for rhythm
+**Then** it provides: `save(_ record: RhythmComparisonRecord) throws`, `save(_ record: RhythmMatchingRecord) throws`, `fetchAllRhythmComparisons() throws -> [RhythmComparisonRecord]`, `fetchAllRhythmMatching() throws -> [RhythmMatchingRecord]`, `deleteAllRhythmComparisons() throws`, `deleteAllRhythmMatching() throws`
+
+**Given** `TrainingDataStore` conforms to `RhythmComparisonObserver`
+**When** `rhythmComparisonCompleted(_:)` is called
+**Then** a `RhythmComparisonRecord` is created from the result and saved
+
+**Given** `TrainingDataStore` conforms to `RhythmMatchingObserver`
+**When** `rhythmMatchingCompleted(_:)` is called
+**Then** a `RhythmMatchingRecord` is created from the result and saved
+
+**Given** save errors
+**When** they occur
+**Then** they are logged via `os.Logger` at `.warning` level (consistent with existing error handling)
+
+**Given** unit tests
+**When** they verify CRUD operations
+**Then** save, fetch, and delete work correctly for both record types
+
+### Story 47.3: PerceptualProfile RhythmProfile Conformance
+
+As a **developer**,
+I want `PerceptualProfile` to conform to `RhythmProfile`,
+So that rhythm statistics are tracked per-tempo with asymmetric early/late tracking (FR86).
+
+**Acceptance Criteria:**
+
+**Given** `PerceptualProfile` conforms to `RhythmProfile`
+**When** `updateRhythmComparison(tempo:offset:isCorrect:)` is called
+**Then** it updates per-(tempo, direction) statistics for rhythm comparison
+
+**Given** `PerceptualProfile` conforms to `RhythmProfile`
+**When** `updateRhythmMatching(tempo:userOffset:)` is called
+**Then** it updates per-(tempo, direction) statistics for rhythm matching
+
+**Given** `rhythmStats(tempo:direction:)` is called
+**When** data exists for the given tempo and direction
+**Then** it returns `RhythmTempoStats` with mean, stdDev, sampleCount, currentDifficulty
+
+**Given** `trainedTempos`
+**When** accessed
+**Then** it returns all tempos that have any rhythm training data
+
+**Given** `rhythmOverallAccuracy`
+**When** accessed with rhythm data
+**Then** it returns the combined overall accuracy for EWMA headline display (FR89)
+
+**Given** `PerceptualProfile` on app startup
+**When** rebuilt from stored records
+**Then** it loads `RhythmComparisonRecord` and `RhythmMatchingRecord` data alongside existing pitch data
+
+**Given** `resetRhythm()` is called
+**When** executed
+**Then** all rhythm statistics are cleared while pitch statistics remain untouched
+
+### Story 47.4: ProgressTimeline Extension to Six Training Modes
+
+As a **developer**,
+I want `ProgressTimeline` and `TrainingMode` extended to track six training modes,
+So that rhythm training progress is tracked with EWMA smoothing and trend analysis.
+
+**Acceptance Criteria:**
+
+**Given** `TrainingMode` enum
+**When** extended
+**Then** it has six cases: `unisonPitchComparison`, `intervalPitchComparison`, `unisonMatching`, `intervalMatching`, `rhythmComparison`, `rhythmMatching`
+
+**Given** `TrainingModeConfig` for each new rhythm mode
+**When** configured
+**Then** each has display name, unit label (percentage of sixteenth note), optimal baseline, EWMA half-life, and session gap
+
+**Given** `ProgressTimeline`
+**When** it conforms to `RhythmComparisonObserver` and `RhythmMatchingObserver`
+**Then** it tracks rhythm training modes for trend analysis using the same bucketing as pitch modes
+
+**Given** `HapticFeedbackManager`
+**When** it conforms to `RhythmComparisonObserver`
+**Then** it triggers haptic feedback on incorrect rhythm comparison answers (same pattern as pitch comparison)
+
+**Given** all existing pitch progress tracking tests
+**When** run after extension
+**Then** they pass without modification
+
+## Epic 48: Four Clicks — Rhythm Comparison Training
+
+Full rhythm comparison training: session state machine, adaptive difficulty strategy with asymmetric early/late tracking, screen with dot visualization, Early/Late buttons, feedback line, and haptics. Users can start rhythm comparison from the Start Screen and train their timing detection.
+
+### Story 48.1: NextRhythmOffsetStrategy Protocol and Initial Implementation
+
+As a **developer**,
+I want a `NextRhythmOffsetStrategy` that decides rhythm comparison challenge parameters based on asymmetric early/late profile data,
+So that rhythm comparison difficulty adapts independently per direction (FR83).
+
+**Acceptance Criteria:**
+
+**Given** the `NextRhythmOffsetStrategy` protocol
+**When** inspected
+**Then** it declares `nextRhythmChallenge(profile:settings:lastResult:) -> RhythmChallenge`
+
+**Given** the `RhythmChallenge` value type
+**When** inspected
+**Then** it contains `tempo: TempoBPM` and `offset: RhythmOffset` (signed — encodes direction + magnitude)
+
+**Given** the initial implementation (e.g., `AdaptiveRhythmOffsetStrategy`)
+**When** it selects the next challenge
+**Then** it considers the profile's asymmetric early/late tracking and the last completed result to decide both direction and magnitude
+
+**Given** the strategy receives a profile with no data
+**When** selecting the first challenge
+**Then** it provides a reasonable starting difficulty (analogous to 100 cents cold start for pitch)
+
+**Given** unit tests with a `MockRhythmProfile`
+**When** various profile states are tested
+**Then** the strategy adapts difficulty appropriately — narrower on correct, wider on wrong, per direction
+
+**Given** file locations
+**When** created
+**Then** protocol at `Core/Algorithm/NextRhythmOffsetStrategy.swift`, implementation at `Core/Algorithm/AdaptiveRhythmOffsetStrategy.swift`, challenge at `RhythmComparison/RhythmChallenge.swift`
+
+### Story 48.2: RhythmComparisonSession State Machine
+
+As a **developer**,
+I want a `RhythmComparisonSession` that plays 4-note patterns and records Early/Late judgments,
+So that the rhythm comparison training loop works end-to-end with proper state management.
+
+**Acceptance Criteria:**
+
+**Given** `RhythmComparisonSession` is `@Observable`
+**When** inspected
+**Then** it follows the state machine: `idle → playingPattern → awaitingAnswer → showingFeedback → loop`
+
+**Given** `start()` is called
+**When** the session transitions from idle
+**Then** it calls `strategy.nextRhythmChallenge(profile:settings:lastResult:)` to get a `RhythmChallenge`
+**And** builds a `RhythmPattern` with 4 events at sixteenth-note intervals, 4th shifted by the challenge offset
+**And** calls `rhythmPlayer.play(pattern)` and awaits the handle
+
+**Given** the pattern completes
+**When** the session transitions to `awaitingAnswer`
+**Then** the user can tap "Early" or "Late"
+
+**Given** the user answers
+**When** the answer is recorded
+**Then** observers are notified with a `CompletedRhythmComparison`
+**And** the session transitions to `showingFeedback` for ~400ms
+**And** then automatically starts the next challenge
+
+**Given** interruption occurs (navigation away, backgrounding, headphone disconnect)
+**When** in any state other than idle
+**Then** the session stops via `rhythmPlaybackHandle.stop()`, discards incomplete exercises, and transitions to idle (FR73, FR73a)
+
+**Given** the session's constructor
+**When** inspected
+**Then** it accepts `rhythmPlayer: RhythmPlayer`, `strategy: NextRhythmOffsetStrategy`, `profile: RhythmProfile`, `observers: [RhythmComparisonObserver]`, `settingsOverride: TrainingSettings?`, `notificationCenter: NotificationCenter`
+
+**Given** unit tests using `MockRhythmPlayer` and `MockNextRhythmOffsetStrategy`
+**When** all state transitions are tested
+**Then** full coverage of the state machine including interruption paths
+
+### Story 48.3: RhythmComparisonScreen with Dot Visualization
+
+As a **musician using Peach**,
+I want a rhythm comparison screen showing dots that light up with each note and Early/Late buttons to answer,
+So that I can train my ability to detect timing deviations.
+
+**Acceptance Criteria:**
+
+**Given** the Rhythm Comparison Screen
+**When** displayed
+**Then** it shows a summary stat line, 4 horizontal dots (~16pt diameter, ~24pt spacing), and side-by-side Early/Late buttons below (UX-DR12)
+
+**Given** the dots
+**When** a note plays
+**Then** the corresponding dot transitions from dim (opacity 0.2) to lit (opacity 1.0) instantly, matching the percussive attack (UX-DR1)
+**And** dots are `.accessibilityHidden(true)`
+
+**Given** the Early/Late buttons
+**When** the pattern is playing
+**Then** both buttons are disabled
+**When** the pattern completes (awaitingAnswer state)
+**Then** both buttons are enabled (UX-DR2)
+
+**Given** the buttons
+**When** displayed
+**Then** they show directional arrows (SF Symbols `arrow.left` / `arrow.right`) with `.borderedProminent` style, each taking half the width
+
+**Given** the feedback line
+**When** the user answers
+**Then** it shows checkmark/cross + current difficulty as percentage (e.g., "4%") (UX-DR8)
+
+**Given** VoiceOver is active
+**When** buttons are focused
+**Then** they read "Early" and "Late" respectively
+**When** feedback is shown
+**Then** it announces "Correct, 4 percent" or "Incorrect, 4 percent" (UX-DR9)
+
+**Given** landscape orientation or iPad
+**When** the screen is displayed
+**Then** layout adapts appropriately (UX-DR14)
+
+## Epic 49: Hit That Beat — Rhythm Matching Training
+
+Full rhythm matching training: session state machine, screen with dot visualization (3+1 with color feedback), tap button, signed deviation feedback. Users can start rhythm matching from the Start Screen and train their timing production.
+
+### Story 49.1: RhythmMatchingSession State Machine
+
+As a **developer**,
+I want a `RhythmMatchingSession` that plays 3 lead-in notes and measures the user's tap timing,
+So that the rhythm matching training loop works end-to-end with proper state management.
+
+**Acceptance Criteria:**
+
+**Given** `RhythmMatchingSession` is `@Observable`
+**When** inspected
+**Then** it follows the state machine: `idle → playingLeadIn → awaitingTap → showingFeedback → loop`
+
+**Given** `start()` is called
+**When** the session transitions from idle
+**Then** it builds a `RhythmPattern` with 3 events at sixteenth-note intervals at the configured tempo
+**And** calls `rhythmPlayer.play(pattern)` and awaits the handle
+
+**Given** the lead-in pattern completes
+**When** the session transitions to `awaitingTap`
+**Then** the session records the expected tap time (pattern end + one sixteenth-note duration)
+
+**Given** the user taps
+**When** tap timing is measured
+**Then** the session uses `CACurrentMediaTime()` for microsecond precision
+**And** computes error = actual tap time - expected tap time, stored as `RhythmOffset`
+**And** observers are notified with a `CompletedRhythmMatching`
+
+**Given** the session transitions to `showingFeedback`
+**When** ~400ms elapses
+**Then** it automatically starts the next lead-in
+
+**Given** interruption occurs
+**When** in any state other than idle
+**Then** the session stops, discards incomplete exercises, transitions to idle (FR79, FR79a)
+
+**Given** no strategy protocol is needed (per architecture)
+**When** challenged
+**Then** selection is trivial — play 3 notes at the configured tempo
+
+**Given** unit tests using `MockRhythmPlayer`
+**When** all state transitions are tested
+**Then** full coverage including interruption and tap timing measurement
+
+### Story 49.2: RhythmMatchingScreen with Tap Button and Color Feedback
+
+As a **musician using Peach**,
+I want a rhythm matching screen showing dots that light up with lead-in notes, a large Tap button, and color-coded feedback on my 4th dot,
+So that I can train my ability to produce accurate timing.
+
+**Acceptance Criteria:**
+
+**Given** the Rhythm Matching Screen
+**When** displayed
+**Then** it shows a summary stat line, 4 horizontal dots, and a full-width Tap button below (UX-DR13)
+
+**Given** the 3 lead-in notes
+**When** each plays
+**Then** the corresponding dot (1st, 2nd, 3rd) transitions from dim to lit instantly (UX-DR1)
+
+**Given** the 4th dot position
+**When** the user taps
+**Then** the 4th dot appears at the same fixed grid position as dots 1–3
+**And** after the answer is recorded, the dot shows color feedback: green (precise), yellow (moderate), red (erratic) (FR82)
+
+**Given** the Tap button
+**When** displayed
+**Then** it is full-width, `.borderedProminent` style, "Tap" label, always enabled (UX-DR3)
+
+**Given** the feedback line
+**When** feedback is shown after tap
+**Then** it displays an arrow + signed percentage (e.g., "← 3% early" or "→ 8% late") (UX-DR8)
+
+**Given** VoiceOver is active
+**When** the Tap button is focused
+**Then** it reads "Tap" with hint "Tap at the correct moment to match the rhythm" (UX-DR10)
+**When** feedback is shown
+**Then** it announces "3 percent early" or "8 percent late"
+
+**Given** landscape orientation or iPad
+**When** the screen is displayed
+**Then** layout adapts appropriately (UX-DR14)
+
+## Epic 50: Six Modes, One App — Start Screen & Settings
+
+6-button Start Screen layout with section labels (Pitch/Intervals/Rhythm), NavigationDestination updates, tempo stepper in Settings (40–200 BPM). Portrait vertical stack with landscape 3-column grid.
+
+### Story 50.1: NavigationDestination and Settings for Rhythm
+
+As a **developer**,
+I want `NavigationDestination` to include rhythm cases and `AppUserSettings`/`UserSettings` to include a tempo property,
+So that rhythm training can be navigated to and tempo can be configured.
+
+**Acceptance Criteria:**
+
+**Given** `NavigationDestination` enum
+**When** extended
+**Then** it includes `.rhythmComparison` and `.rhythmMatching` cases with no parameters (tempo read from settings)
+
+**Given** `ContentView`
+**When** updated with navigation destination handling
+**Then** `.rhythmComparison` navigates to `RhythmComparisonScreen` and `.rhythmMatching` navigates to `RhythmMatchingScreen`
+
+**Given** `SettingsKeys`
+**When** extended
+**Then** it includes a rhythm tempo key with default 80 BPM
+
+**Given** `AppUserSettings`/`UserSettings`
+**When** extended
+**Then** they include a `tempoBPM: TempoBPM` property backed by `@AppStorage`
+
+**Given** the tempo value
+**When** set below the minimum floor
+**Then** it is clamped to ~60 BPM (FR85)
+
+### Story 50.2: Start Screen Six-Button Layout with Section Labels
+
+As a **musician using Peach**,
+I want the Start Screen to show six training buttons organized by section (Pitch, Intervals, Rhythm),
+So that I can easily find and start any training mode (FR104).
+
+**Acceptance Criteria:**
+
+**Given** the Start Screen in portrait
+**When** displayed
+**Then** it shows section labels ("Pitch", "Intervals", "Rhythm") with two buttons per section in a scrollable vertical stack (UX-DR6)
+
+**Given** the button styling
+**When** displayed
+**Then** Pitch Comparison remains `.borderedProminent` (hero button), all others use `.bordered` style
+
+**Given** the Rhythm section
+**When** displayed
+**Then** it shows "Rhythm Comparison" and "Rhythm Matching" buttons that navigate to the corresponding screens
+
+**Given** landscape orientation
+**When** the Start Screen is displayed
+**Then** it uses a 3-column grid layout (UX-DR6)
+
+**Given** iPad
+**When** the Start Screen is displayed
+**Then** layout adapts to the wider form factor (UX-DR14)
+
+### Story 50.3: Settings Screen Tempo Stepper
+
+As a **musician using Peach**,
+I want a tempo stepper in Settings to choose my rhythm training tempo,
+So that I can train at my preferred speed (FR84).
+
+**Acceptance Criteria:**
+
+**Given** the Settings Screen
+**When** displayed
+**Then** a "Rhythm" section appears below existing pitch settings
+
+**Given** the tempo stepper
+**When** displayed
+**Then** it shows a `Stepper` with range 40–200 BPM, step 1, with "BPM" label (UX-DR7)
+
+**Given** the tempo value
+**When** changed by the user
+**Then** it is immediately persisted via `@AppStorage`
+**And** subsequent rhythm training sessions use the new tempo
+
+**Given** the minimum tempo floor
+**When** the stepper is at its minimum
+**Then** it cannot go below 40 BPM (conservative floor below the ~60 BPM functional minimum per FR85)
+
+## Epic 51: See Your Rhythm — Profile Visualization
+
+RhythmSpectrogramView with color-coded tempo × time grid, RhythmProfileCardView with EWMA headline + trend arrow, Profile Screen integration, tap-to-detail, empty states, VoiceOver per-column summaries.
+
+### Story 51.1: RhythmSpectrogramView
+
+As a **musician using Peach**,
+I want a spectrogram-style chart showing my rhythm accuracy across time and tempo,
+So that I can see how my timing precision evolves and identify which tempos need more practice.
+
+**Acceptance Criteria:**
+
+**Given** the `RhythmSpectrogramView`
+**When** displayed with rhythm data
+**Then** it shows a grid where X-axis is time progression (same bucketing as pitch charts) and Y-axis is tempos actually trained at (FR90)
+**And** only tempos with data appear — no empty rows for untrained tempos
+
+**Given** cell coloring
+**When** accuracy is computed for a cell
+**Then** green (precise, ≤5%), yellow (moderate, 5–15%), red (erratic, >15%) thresholds are applied (UX-DR4)
+**And** thresholds are parameterized for future tuning
+
+**Given** cells with no training data
+**When** displayed
+**Then** they are empty/transparent (FR91)
+
+**Given** the user taps a cell
+**When** data exists for that tempo and time period
+**Then** an early/late breakdown detail is shown (FR92, UX-DR4)
+
+**Given** VoiceOver is active
+**When** the spectrogram is navigated
+**Then** per-column summaries are announced (e.g., "March week 2: 120 BPM precise, 100 BPM moderate") (UX-DR11)
+**And** activating a column shows the detail overlay
+
+### Story 51.2: RhythmProfileCardView and Profile Screen Integration
+
+As a **musician using Peach**,
+I want a rhythm profile card on the Profile Screen showing my overall rhythm accuracy and the spectrogram,
+So that I can track my rhythm training progress alongside my pitch progress.
+
+**Acceptance Criteria:**
+
+**Given** the `RhythmProfileCardView`
+**When** displayed with rhythm data
+**Then** it shows a headline with "Rhythm" label, EWMA of the most recent time bucket's combined accuracy, and a trend arrow (FR89, UX-DR5)
+**And** the spectrogram view appears below the headline
+**And** a share button appears in the headline row (same pattern as pitch profile cards)
+
+**Given** no rhythm training data
+**When** the card is displayed
+**Then** it shows dashes for the EWMA value and placeholder text encouraging the user to start training (UX-DR5)
+
+**Given** the Profile Screen
+**When** updated
+**Then** it includes the `RhythmProfileCardView` alongside existing pitch profile cards
+
+**Given** landscape or iPad layout
+**When** the Profile Screen is displayed
+**Then** the rhythm card adapts appropriately
+
+## Epic 52: Version Your Exports — CSV Format v2
+
+CSVImportParserV2 and CSVExportSchemaV2 extending the chain-of-responsibility pattern. Exporter/importer updates for rhythm records. V1 backward compatibility preserved. Deduplication by timestamp + tempo + training type.
+
+### Story 52.1: CSV Export Schema v2
+
+As a **developer**,
+I want a `CSVExportSchemaV2` that exports all four training types with a `trainingType` discriminator column,
+So that rhythm training data can be exported alongside pitch data (FR100, FR101).
+
+**Acceptance Criteria:**
+
+**Given** `CSVExportSchemaV2`
+**When** it formats export data
+**Then** each row includes a `trainingType` column with values: `pitchComparison`, `pitchMatching`, `rhythmComparison`, `rhythmMatching`
+
+**Given** rhythm comparison records
+**When** exported
+**Then** type-specific columns include tempoBPM, offsetMs, isCorrect, timestamp
+
+**Given** rhythm matching records
+**When** exported
+**Then** type-specific columns include tempoBPM, expectedOffsetMs, userOffsetMs, timestamp
+
+**Given** `TrainingDataExporter`
+**When** updated
+**Then** it exports all four record types using the v2 schema
+
+**Given** unit tests
+**When** they verify v2 export
+**Then** output CSV contains correct headers, discriminators, and type-specific columns for all four training types
+
+### Story 52.2: CSV Import Parser v2 with Backward Compatibility
+
+As a **developer**,
+I want a `CSVImportParserV2` that imports all four training types and maintains V1 backward compatibility,
+So that users can import rhythm data and existing pitch exports remain importable (FR102).
+
+**Acceptance Criteria:**
+
+**Given** `CSVImportParserV2` conforms to `CSVVersionedParser`
+**When** inspected
+**Then** it has `supportedVersion: 2`
+
+**Given** a v2 CSV file with all four training types
+**When** imported
+**Then** it correctly parses `pitchComparison`, `pitchMatching`, `rhythmComparison`, and `rhythmMatching` records
+
+**Given** a v1 CSV file (pitch records only)
+**When** imported
+**Then** the existing V1 parser handles it — V1 records remain importable (FR102)
+
+**Given** `CSVImportParser`
+**When** updated
+**Then** it registers the V2 parser in the chain alongside V1
+
+**Given** deduplication
+**When** importing records that already exist
+**Then** rhythm records are deduplicated by timestamp + tempo + training type (FR103)
+**And** pitch records continue to use existing deduplication logic
+
+**Given** `TrainingDataImporter`
+**When** updated
+**Then** it imports rhythm records with deduplication through the V2 parser
+
+**Given** unit tests
+**When** they verify V2 import
+**Then** all four training types parse correctly, V1 backward compatibility is confirmed, and deduplication works
+
+## Epic 53: Rhythm in Every Language — Localization
+
+English + German UI strings for all rhythm training screens, Start Screen section labels, Settings tempo section, Profile rhythm cards, feedback text, and spectrogram accessibility descriptions.
+
+### Story 53.1: Rhythm Training Localization
+
+As a **musician using Peach in German**,
+I want all rhythm training UI text available in both English and German,
+So that the app provides a consistent localized experience across all training modes.
+
+**Acceptance Criteria:**
+
+**Given** `Localizable.xcstrings`
+**When** updated
+**Then** it includes English and German translations for all new rhythm UI strings
+
+**Given** rhythm comparison screen strings
+**When** localized
+**Then** button labels ("Early"/"Late" → "Früh"/"Spät"), feedback text, and screen titles are translated
+
+**Given** rhythm matching screen strings
+**When** localized
+**Then** button label ("Tap" → "Tippen"), feedback text, and screen titles are translated
+
+**Given** Start Screen section labels
+**When** localized
+**Then** "Pitch", "Intervals", "Rhythm" are translated ("Tonhöhe", "Intervalle", "Rhythmus")
+
+**Given** Settings Screen rhythm section
+**When** localized
+**Then** "Rhythm" section title and "BPM" label are translated
+
+**Given** Profile Screen rhythm card
+**When** localized
+**Then** "Rhythm" card title, spectrogram accessibility descriptions, and empty-state text are translated
+
+**Given** VoiceOver accessibility descriptions
+**When** localized
+**Then** all rhythm-specific VoiceOver labels, hints, and announcements have German translations
+
+**Given** German abbreviation conventions
+**When** translations are reviewed
+**Then** no trailing dots on German abbreviations (consistent with existing localization conventions)
+
+---
