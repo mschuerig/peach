@@ -1,6 +1,6 @@
 ---
 stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-04-final-validation', 'v0.2-step-01-validate-prerequisites', 'v0.2-step-02-design-epics', 'v0.2-step-03-create-stories', 'v0.2-step-04-final-validation', 'v0.3-step-01-validate-prerequisites', 'v0.3-step-02-design-epics', 'v0.3-step-03-create-stories', 'v0.3-step-04-final-validation', 'v0.4-step-01-validate-prerequisites', 'v0.4-step-02-design-epics', 'v0.4-step-03-create-stories', 'v0.4-step-04-final-validation', 'v0.5-sharing']
-inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md', 'docs/planning-artifacts/research/technical-profile-screen-chart-ux-research-2026-03-11.md']
+inputDocuments: ['docs/planning-artifacts/prd.md', 'docs/planning-artifacts/architecture.md', 'docs/planning-artifacts/ux-design-specification.md', 'docs/planning-artifacts/glossary.md', 'docs/project-context.md', 'docs/planning-artifacts/research/technical-profile-screen-chart-ux-research-2026-03-11.md', 'docs/planning-artifacts/rhythm-training-spec.md']
 ---
 
 # Peach - Epic Breakdown
@@ -82,6 +82,45 @@ FR64: System records interval pitch matching results: reference note, target int
 FR65: Start Screen shows four training buttons: "Pitch Comparison", "Pitch Matching", "Interval Pitch Comparison", "Interval Pitch Matching"
 FR66: Unison comparison and unison pitch matching behave identically to their interval variants with the interval fixed to prime (unison)
 FR67: Initial interval training implementation uses a single fixed interval: perfect fifth up (700 cents in 12-TET)
+FR68: User can start rhythm comparison training from the Start Screen via a dedicated button
+FR69: System plays 4 sixteenth notes using a sharp-attack non-pitched tone at the user's chosen metronome tempo, with the 4th note offset early or late by the current difficulty amount
+FR70: User judges whether the 4th note was "Early" or "Late"
+FR71: System provides immediate visual feedback and haptic feedback on incorrect answers (same pattern as pitch comparison)
+FR72: System tracks early and late as independent difficulty tracks with independent exercise selection per direction
+FR73: System discards incomplete rhythm comparison exercises on interruption (navigation away, app backgrounding, phone call, headphone disconnect)
+FR73a: System returns to the Start Screen when the app is foregrounded after being backgrounded during rhythm comparison
+FR74: User can start rhythm matching training from the Start Screen via a dedicated button
+FR75: System plays 3 sixteenth notes at the user's chosen metronome tempo; user taps to produce the 4th note at the correct moment
+FR76: System accepts tap input only (clap and MIDI reserved for future; inputMethod field reserved in data model)
+FR77: System records rhythm matching results: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp
+FR78: System tracks separate mean and stdDev for early vs. late errors in rhythm matching
+FR79: System discards incomplete rhythm matching exercises on interruption (same rules as FR73)
+FR79a: System returns to the Start Screen when the app is foregrounded after being backgrounded during rhythm matching
+FR80: System displays non-informative dots during rhythm training — dots light up in sequence as accompaniment with no positional encoding, no target zones, no ghost dots
+FR81: In rhythm comparison, 4 dots appear with each note
+FR82: In rhythm matching, 3 dots appear with notes; 4th dot appears on user input at the same fixed grid position with color feedback (green/yellow/red) after answer
+FR83: System adapts time offset difficulty independently for early and late deviations (asymmetric tracking)
+FR84: User can select a fixed metronome tempo in settings; system does not change tempo between exercises
+FR85: System enforces a minimum tempo floor of approximately 60 BPM
+FR86: System tracks per-tempo statistics: mean, stdDev, sampleCount, currentDifficulty — split by early/late
+FR87: System displays rhythm accuracy to users as percentage of one sixteenth note duration (e.g., "4% early", "11% late")
+FR88: System stores rhythm data internally as tempo in BPM and a signed time offset in milliseconds (negative=early, positive=late)
+FR89: User can view a rhythm profile card headline showing EWMA of the most recent time bucket's combined accuracy across all tempos, with a trend arrow
+FR90: User can view a spectrogram-style rhythm detail chart: X-axis progression over time, Y-axis tempos actually trained at, cell color green→yellow→red for accuracy
+FR91: Spectrogram displays empty/transparent cells where no training occurred at a given tempo in a given period
+FR92: User can tap a spectrogram cell to see early/late breakdown for that tempo and time period
+FR93: System schedules rhythm notes with sub-millisecond precision (sample-accurate placement)
+FR94: System pre-calculates all note timing before playback begins — no scheduling decisions during audio rendering
+FR95: System plays non-pitched percussion tones using available percussion presets
+FR96: System configures minimum audio buffer duration for timing-critical rhythm playback
+FR97: System stores rhythm comparison results as: tempoBPM, offsetMs (signed), isCorrect, timestamp
+FR98: System stores rhythm matching results as: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp (inputMethod field reserved for future)
+FR99: System derives early/late distinction from the sign of the stored time offset — no separate early/late field per record
+FR100: System uses CSV format version 2 for export/import with a trainingType discriminator
+FR101: Format version 2 introduces rhythmComparison and rhythmMatching as new trainingType values with type-specific columns
+FR102: V1 exports remain importable; V2 parser handles all training types including V1 records
+FR103: System deduplicates merged records by timestamp, tempo, and training type
+FR104: Start Screen shows six training buttons: "Pitch Comparison", "Pitch Matching", "Interval Pitch Comparison", "Interval Pitch Matching", "Rhythm Comparison", "Rhythm Matching"
 
 ### NonFunctional Requirements
 
@@ -99,6 +138,9 @@ NFR11: Data writes must be atomic — no partial comparison records
 NFR12: App updates must preserve all existing training data (no migration data loss)
 NFR13: Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
 NFR14: Tuning system precision — interval frequency computations must be accurate to within 0.1 cent of the theoretical value for any supported tuning system
+NFR-R1: Rhythm note scheduling jitter must not exceed 0.01ms as measured by comparing scheduled vs. actual sample positions in a test harness
+NFR-R2: Pre-calculated note schedules must complete before playback begins as verified by unit tests asserting no scheduling calls occur after playback start
+NFR-R3: Minimum audio buffer duration: 5ms (0.005s) on supported devices as configured via audio session and verified by measuring actual buffer callback intervals
 
 ### Additional Requirements
 
@@ -185,6 +227,52 @@ NFR14: Tuning system precision — interval frequency computations must be accur
 - Interruption patterns: identical to unison modes — no interval-specific handling
 - No interval settings UI for v0.3 (fixed perfect fifth)
 
+**From Architecture (v0.4 Amendment — Prerequisite Refactorings):**
+- Core/Audio/ → Core/Music/ + Core/Audio/ directory split: musical domain value types (MIDINote, Cents, Interval, etc.) move to Core/Music/; audio infrastructure (NotePlayer, PlaybackHandle, SoundFontNotePlayer, etc.) stays in Core/Audio/. File moves only, no type renames.
+- PerceptualProfile cleanup: remove stale MIDI-note-indexed comparison tracking, normalize naming conventions, prepare class for multi-mode extension. Must complete before rhythm implementation.
+- SoundFontEngine extraction: new internal class that owns AVAudioEngine, AVAudioUnitSampler(s), and AVAudioSourceNode. Consolidates audio hardware ownership from SoundFontNotePlayer.
+- SoundFontNotePlayer refactoring: delegates to SoundFontEngine instead of owning AVAudioEngine directly. NotePlayer protocol unchanged.
+
+**From Architecture (v0.4 Amendment — Audio & Sessions):**
+- Three-layer audio architecture: SoundFontEngine (shared engine) → SoundFontNotePlayer + SoundFontRhythmPlayer (mid-level) → NotePlayer + RhythmPlayer protocols (high-level)
+- RhythmPlayer protocol: play(RhythmPattern) async throws → RhythmPlaybackHandle; stopAll()
+- RhythmPattern value type: pre-computed events with absolute sample offsets, sampleRate, totalDuration
+- SoundFontRhythmPlayer: concrete implementation using render-thread scheduling via AVAudioSourceNode + scheduleMIDIEventBlock
+- RhythmComparisonSession: Observable state machine (idle → playingPattern → awaitingAnswer → showingFeedback → loop)
+- RhythmMatchingSession: Observable state machine (idle → playingLeadIn → awaitingTap → showingFeedback → loop)
+- NextRhythmOffsetStrategy protocol: decides direction (early/late) and magnitude based on asymmetric profile
+- Observer protocols: RhythmComparisonObserver, RhythmMatchingObserver with CompletedRhythmComparison/CompletedRhythmMatching value types
+- RhythmProfile protocol: updateRhythmComparison, updateRhythmMatching, rhythmStats(tempo:direction:), trainedTempos, rhythmOverallAccuracy, resetRhythm
+- New domain types: TempoBPM (Int), RhythmOffset (Duration, signed), RhythmDirection (early/late)
+- RhythmComparisonRecord + RhythmMatchingRecord SwiftData @Model types
+- TrainingDataStore extended with rhythm CRUD + observer conformances
+- TrainingMode enum grows from 4 to 6 cases (rhythmComparison, rhythmMatching)
+- NavigationDestination gains .rhythmComparison and .rhythmMatching (no parameters — tempo from settings)
+- CSV format v2: CSVImportParserV2, CSVExportSchemaV2 extending chain-of-responsibility pattern
+- 20-step implementation sequence defining dependency ordering
+
+**From Architecture (v0.4 Amendment — Percussion & Timing):**
+- ~5 user-facing percussion sounds resolved via SoundSourceID through existing SoundSourceProvider pattern
+- AVAudioSourceNode render callback as master clock; events dispatched with exact sample offsets via scheduleMIDIEventBlock
+- Minimum audio buffer duration 5ms configured via audio session
+
+### UX Design Requirements
+
+UX-DR1: Rhythm Dot View — 4 dots horizontal, ~16pt diameter, ~24pt spacing, dim (opacity 0.2) / lit (opacity 1.0) states, instant transitions matching percussive attack, .accessibilityHidden(true)
+UX-DR2: Early/Late Buttons — side-by-side half-width, directional arrows (SF Symbols arrow.left / arrow.right), .borderedProminent style, disabled during playback, enabled during awaitingAnswer
+UX-DR3: Rhythm Tap Button — full-width single button filling space below dots, always enabled, "Tap" label, .borderedProminent style, VoiceOver hint "Tap at the correct moment to match the rhythm"
+UX-DR4: Spectrogram Profile View — time × tempo × color grid, square cells, parameterized color thresholds (precise ≤5% green, moderate 5-15% yellow, erratic >15% red), transparent empty cells, tap-to-detail for early/late breakdown
+UX-DR5: Rhythm Profile Card — same card structure as pitch cards, headline "Rhythm" + EWMA RhythmDeviation + trend arrow + share button, spectrogram below, empty state with dashes and placeholder text
+UX-DR6: Start Screen 6-button layout — section labels ("Pitch", "Intervals", "Rhythm"), portrait vertical stack (scrollable), landscape 3-column grid, Pitch Comparison remains .borderedProminent hero, all others .bordered
+UX-DR7: Settings tempo stepper — "Rhythm" section below pitch settings, Stepper 40-200 BPM range step 1, default 80 BPM, "BPM" unit label, @AppStorage auto-save
+UX-DR8: Feedback Line — rhythm comparison: checkmark/cross + current difficulty as RhythmDeviation (e.g., "4%"); rhythm matching: arrow + signed RhythmDeviation (e.g., "← 3% early" or "→ 8% late")
+UX-DR9: VoiceOver rhythm comparison — "Early" and "Late" button labels, feedback announced as "Correct, 4 percent" or "Incorrect, 4 percent"
+UX-DR10: VoiceOver rhythm matching — "Tap" label with hint, feedback announced as "3 percent early" or "8 percent late"
+UX-DR11: VoiceOver spectrogram — per-column summaries (e.g., "March week 2: 120 BPM precise, 100 BPM moderate"), activate for detail overlay
+UX-DR12: Rhythm Comparison Screen layout — summary stat line + dots above + Early/Late buttons below, full vertical button space
+UX-DR13: Rhythm Matching Screen layout — summary stat line + dots above + Tap button below, full vertical button space
+UX-DR14: Landscape/iPad adaptive layouts for all rhythm screens and spectrogram
+
 ### FR Coverage Map
 
 | FR | Epic | Description |
@@ -258,6 +346,45 @@ NFR14: Tuning system precision — interval frequency computations must be accur
 | FR65 | Epic 24 | Four training buttons on Start Screen |
 | FR66 | Epic 23 | Unison = prime case of interval variants |
 | FR67 | Epic 24 | Fixed interval: perfect fifth up (700 cents) |
+| FR68 | Epic 48 | Start rhythm comparison from Start Screen |
+| FR69 | Epic 48 | Play 4 sixteenth notes with offset 4th |
+| FR70 | Epic 48 | User judges Early or Late |
+| FR71 | Epic 48 | Visual + haptic feedback on incorrect |
+| FR72 | Epic 48 | Independent early/late difficulty tracks |
+| FR73 | Epic 48 | Discard incomplete rhythm comparison on interruption |
+| FR73a | Epic 48 | Return to Start Screen on foreground after backgrounding |
+| FR74 | Epic 49 | Start rhythm matching from Start Screen |
+| FR75 | Epic 49 | Play 3 sixteenth notes, user taps 4th |
+| FR76 | Epic 49 | Tap input only (clap/MIDI reserved) |
+| FR77 | Epic 49 | Record rhythm matching results |
+| FR78 | Epic 49 | Separate early/late mean and stdDev |
+| FR79 | Epic 49 | Discard incomplete rhythm matching on interruption |
+| FR79a | Epic 49 | Return to Start Screen on foreground after backgrounding |
+| FR80 | Epic 48 | Non-informative dot visualization |
+| FR81 | Epic 48 | 4 dots in rhythm comparison |
+| FR82 | Epic 49 | 3+1 dots with color feedback in rhythm matching |
+| FR83 | Epic 48 | Asymmetric early/late difficulty adaptation |
+| FR84 | Epic 50 | User-selected fixed metronome tempo |
+| FR85 | Epic 50 | Minimum tempo floor ~60 BPM |
+| FR86 | Epic 47 | Per-tempo stats split by early/late |
+| FR87 | Epic 45 | Display rhythm accuracy as % of sixteenth note |
+| FR88 | Epic 45 | Store rhythm data as BPM + signed ms offset |
+| FR89 | Epic 51 | Rhythm profile card with EWMA + trend arrow |
+| FR90 | Epic 51 | Spectrogram: time × tempo × color |
+| FR91 | Epic 51 | Transparent cells for no-data periods |
+| FR92 | Epic 51 | Tap spectrogram cell for early/late breakdown |
+| FR93 | Epic 46 | Sub-millisecond note scheduling precision |
+| FR94 | Epic 46 | Pre-calculated timing before playback |
+| FR95 | Epic 46 | Percussion tone playback via SoundFont presets |
+| FR96 | Epic 46 | Minimum audio buffer duration configuration |
+| FR97 | Epic 47 | Rhythm comparison record storage |
+| FR98 | Epic 47 | Rhythm matching record storage |
+| FR99 | Epic 45 | Early/late derived from offset sign |
+| FR100 | Epic 52 | CSV format version 2 with trainingType |
+| FR101 | Epic 52 | rhythmComparison and rhythmMatching discriminators |
+| FR102 | Epic 52 | V1 backward compatibility |
+| FR103 | Epic 52 | Deduplication by timestamp + tempo + type |
+| FR104 | Epic 50 | Six training buttons on Start Screen |
 
 ## Epic List
 
@@ -421,6 +548,51 @@ Users see a useful and easily understandable visualization of their perceptual p
 Users can share training data via the system share sheet (replacing the file exporter) and share individual progress chart images from the Profile Screen.
 **FRs covered:** None (new feature, replaces Epic 33 export UI approach)
 **Depends on:** Epic 33, Epic 41
+
+### Epic 44: Solid Ground — Prerequisite Refactorings
+Move domain value types from Core/Audio/ to Core/Music/ and clean up PerceptualProfile — removing stale tracking, normalizing naming, preparing for multi-mode extension. Pure refactoring with no functional changes, preparing the codebase for rhythm extension.
+**FRs covered:** None directly (architecture prerequisite A + B)
+
+### Epic 45: Rhythm Domain — Types and Contracts
+Introduce TempoBPM, RhythmOffset, RhythmDirection domain types with full test coverage. Define the observer protocols (RhythmComparisonObserver, RhythmMatchingObserver) and completed-result value types. Define the RhythmProfile protocol.
+**FRs covered:** FR87, FR88, FR99
+
+### Epic 46: One Engine — Audio Architecture Redesign
+Extract SoundFontEngine from SoundFontNotePlayer, refactor NotePlayer to delegate, then build RhythmPlayer protocol and SoundFontRhythmPlayer with sample-accurate render-thread scheduling. Includes an on-device POC — a temporary demo screen that plays a pre-computed rhythm pattern at a fixed tempo, proving that the three-layer audio architecture delivers audibly tight timing on real hardware. The POC is removed once rhythm training screens are in place.
+**FRs covered:** FR93, FR94, FR95, FR96
+**NFRs covered:** NFR-R1, NFR-R2, NFR-R3
+
+### Epic 47: Remember Every Beat — Rhythm Data Layer
+RhythmComparisonRecord and RhythmMatchingRecord SwiftData models, TrainingDataStore extension with rhythm CRUD and observer conformances, PerceptualProfile RhythmProfile conformance, ProgressTimeline extension to 6 modes.
+**FRs covered:** FR86, FR97, FR98
+
+### Epic 48: Four Clicks — Rhythm Comparison Training
+Full rhythm comparison training: session state machine, adaptive difficulty strategy with asymmetric early/late tracking, screen with dot visualization, Early/Late buttons, feedback line, and haptics. Users can start rhythm comparison from the Start Screen and train their timing detection.
+**FRs covered:** FR68, FR69, FR70, FR71, FR72, FR73, FR73a, FR80, FR81, FR83
+**UX-DRs covered:** UX-DR1, UX-DR2, UX-DR8, UX-DR9, UX-DR12
+
+### Epic 49: Hit That Beat — Rhythm Matching Training
+Full rhythm matching training: session state machine, screen with dot visualization (3+1 with color feedback), tap button, signed deviation feedback. Users can start rhythm matching from the Start Screen and train their timing production.
+**FRs covered:** FR74, FR75, FR76, FR77, FR78, FR79, FR79a, FR82
+**UX-DRs covered:** UX-DR1, UX-DR3, UX-DR8, UX-DR10, UX-DR13
+
+### Epic 50: Six Modes, One App — Start Screen & Settings
+6-button Start Screen layout with section labels (Pitch/Intervals/Rhythm), NavigationDestination updates, tempo stepper in Settings (40–200 BPM). Portrait vertical stack with landscape 3-column grid.
+**FRs covered:** FR84, FR85, FR104
+**UX-DRs covered:** UX-DR6, UX-DR7, UX-DR14
+
+### Epic 51: See Your Rhythm — Profile Visualization
+RhythmSpectrogramView with color-coded tempo × time grid, RhythmProfileCardView with EWMA headline + trend arrow, Profile Screen integration, tap-to-detail, empty states, VoiceOver per-column summaries.
+**FRs covered:** FR89, FR90, FR91, FR92
+**UX-DRs covered:** UX-DR4, UX-DR5, UX-DR11
+
+### Epic 52: Version Your Exports — CSV Format v2
+CSVImportParserV2 and CSVExportSchemaV2 extending the chain-of-responsibility pattern. Exporter/importer updates for rhythm records. V1 backward compatibility preserved. Deduplication by timestamp + tempo + training type.
+**FRs covered:** FR100, FR101, FR102, FR103
+
+### Epic 53: Rhythm in Every Language — Localization
+English + German UI strings for all rhythm training screens, Start Screen section labels, Settings tempo section, Profile rhythm cards, feedback text, and spectrogram accessibility descriptions.
+**FRs covered:** None directly (cross-cutting)
 
 ## Epic 1: Remember Every Note — Data Foundation
 
