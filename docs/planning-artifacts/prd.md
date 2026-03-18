@@ -492,7 +492,7 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 ### Localization & Accessibility
 
 - **FR37:** User can use the app in English or German
-- **FR38:** System provides basic accessibility support (labels, contrast, VoiceOver basics)
+- **FR38:** System provides VoiceOver labels for all interactive controls, meets WCAG 2.1 AA color contrast ratios, and supports minimum 44x44 point tap targets
 
 ### Device & Platform
 
@@ -571,7 +571,7 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 ### Rhythm Units
 
 - **FR87:** System displays rhythm accuracy to users as percentage of one sixteenth note duration (e.g., "4% early", "11% late")
-- **FR88:** System stores rhythm data internally as tempoBPM (Int) + offsetMs (Double, signed: negative=early, positive=late)
+- **FR88:** System stores rhythm data internally as tempo in BPM and a signed time offset in milliseconds (negative=early, positive=late)
 
 ### Rhythm Perceptual Profile
 
@@ -582,23 +582,23 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 
 ### Rhythm Audio Engine
 
-- **FR93:** System schedules rhythm notes with sub-millisecond precision using render-callback-level timing (sample-accurate placement)
-- **FR94:** System pre-calculates all note timing before playback with no allocations or locks on the audio thread
-- **FR95:** System plays non-pitched percussion tones via SoundFont bank 2 presets
+- **FR93:** System schedules rhythm notes with sub-millisecond precision (sample-accurate placement)
+- **FR94:** System pre-calculates all note timing before playback begins — no scheduling decisions occur during audio rendering
+- **FR95:** System plays non-pitched percussion tones using available percussion presets
 - **FR96:** System configures minimum audio buffer duration for timing-critical rhythm playback
 
 ### Rhythm Data Storage
 
 - **FR97:** System stores rhythm comparison results as: tempoBPM, offsetMs (signed), isCorrect, timestamp — one record per exercise
 - **FR98:** System stores rhythm matching results as: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp — one record per exercise (inputMethod field reserved for future)
-- **FR99:** Early/late distinction is derived from the sign of offsetMs at the statistics layer, not stored as a separate field
+- **FR99:** System derives early/late distinction from the sign of the stored time offset — no separate early/late field per record
 
 ### Rhythm Export/Import
 
 - **FR100:** System uses CSV format version 2 for export/import with a `trainingType` discriminator
 - **FR101:** Format version 2 introduces `rhythmComparison` and `rhythmMatching` as new trainingType values with type-specific columns
-- **FR102:** V1 parser remains unchanged; V2 parser handles all training types (chain-of-responsibility pattern)
-- **FR103:** Merge deduplication uses timestamp + tempoBPM + trainingType as the composite key
+- **FR102:** V1 exports remain importable; V2 parser handles all training types including V1 records
+- **FR103:** System deduplicates merged records by timestamp, tempo, and training type
 
 ### Rhythm Start Screen Integration
 
@@ -608,12 +608,12 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 
 ### Performance
 
-- Audio latency: time from triggering a note to audible output must be imperceptible to the user (target < 10ms)
-- Transition between comparisons: next comparison must begin within 100ms after the user answers
-- Frequency precision: generated tones must be accurate to within 0.1 cent of the target frequency
-- App launch to training-ready: Start Screen must be interactive within 2 seconds of app launch
-- Real-time pitch adjustment: slider input must produce audible frequency change within 20ms — no perceptible lag between gesture and sound
-- Profile Screen rendering: perceptual profile visualization must render within 1 second, including summary statistics computation
+- Audio latency: time from triggering a note to audible output must be imperceptible to the user (target < 10ms) as measured by audio unit test instrumentation
+- Transition between comparisons: next comparison must begin within 100ms after the user answers as measured by UI test timestamps
+- Frequency precision: generated tones must be accurate to within 0.1 cent of the target frequency as verified by unit tests comparing generated frequency to target
+- App launch to training-ready: Start Screen must be interactive within 2 seconds of app launch as measured by XCTest performance metrics
+- Real-time pitch adjustment: slider input must produce audible frequency change within 20ms as measured by audio unit test instrumentation — no perceptible lag between gesture and sound
+- Profile Screen rendering: perceptual profile visualization must render within 1 second, including summary statistics computation, as measured by XCTest performance metrics
 
 ### Accessibility
 
@@ -624,13 +624,13 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 
 ### Rhythm Timing Precision
 
-- Rhythm note scheduling jitter must not exceed 0.01ms (~0.5 samples at 44.1kHz) as measured at the render callback
-- Pre-calculated note schedules must complete before playback begins — no runtime computation on the audio thread
-- Minimum audio buffer duration: 5ms (0.005s) on supported devices
+- Rhythm note scheduling jitter must not exceed 0.01ms as measured by comparing scheduled vs. actual sample positions in a test harness
+- Pre-calculated note schedules must complete before playback begins as verified by unit tests asserting no scheduling calls occur after playback start
+- Minimum audio buffer duration: 5ms (0.005s) on supported devices as configured via audio session and verified by measuring actual buffer callback intervals
 
 ### Tuning System Precision
 
-- Interval frequency computations must be accurate to within 0.1 cent of the theoretical value for any supported tuning system
+- Interval frequency computations must be accurate to within 0.1 cent of the theoretical value for any supported tuning system as verified by unit tests against known reference values
 
 ### Data Integrity
 
