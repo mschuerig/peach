@@ -4610,6 +4610,38 @@ So that it has clean extension points for the new RhythmProfile protocol conform
 **When** they are run after cleanup
 **Then** all tests pass — no behavioral changes to existing functionality
 
+### Story 44.3: Re-Architect Profile and Progress Responsibilities
+
+As a **developer**,
+I want PerceptualProfile to own all per-mode statistical state (Welford, EWMA, trend) and ProgressTimeline to be a pure presentation layer that reads from the profile,
+So that domain truth lives in one place, storage coupling is removed, and both types have clear single responsibilities.
+
+**Acceptance Criteria:**
+
+**Given** PerceptualProfile currently tracks only 2 aggregates (comparison, matching)
+**When** the refactoring is complete
+**Then** it tracks 4 independent modes (unisonPitchComparison, intervalPitchComparison, unisonMatching, intervalMatching) with per-mode Welford statistics, EWMA, and trend
+
+**Given** ProgressTimeline currently duplicates Welford's algorithm in its ModeState
+**When** the refactoring is complete
+**Then** a single shared ModeStatistics value type is used by PerceptualProfile, and ProgressTimeline contains no statistical computation of its own
+
+**Given** ProgressTimeline currently conforms to PitchComparisonObserver and PitchMatchingObserver
+**When** the refactoring is complete
+**Then** only PerceptualProfile conforms to those observer protocols; ProgressTimeline receives no training events directly
+
+**Given** ProgressTimeline currently takes storage records in its rebuild method
+**When** the refactoring is complete
+**Then** neither PerceptualProfile nor ProgressTimeline imports or references storage record types; record-to-metric mapping lives in the app composition layer
+
+**Given** ProgressTimeline currently owns bucketing, EWMA, trend, and state queries
+**When** the refactoring is complete
+**Then** ProgressTimeline retains only time bucketing / chart formatting and delegates statistical queries to PerceptualProfile
+
+**Given** all existing tests
+**When** they are run after the refactoring
+**Then** all tests pass — no behavioral changes to user-visible functionality
+
 ## Epic 45: Rhythm Domain — Types and Contracts
 
 Introduce TempoBPM, RhythmOffset, RhythmDirection domain types with full test coverage. Define the observer protocols (RhythmComparisonObserver, RhythmMatchingObserver) and completed-result value types. Define the RhythmProfile protocol.
