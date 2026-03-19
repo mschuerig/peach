@@ -15,3 +15,8 @@ Use these scripts instead of writing inline xcodebuild commands:
 
 If a script's output doesn't contain what you need, use the `-r` (raw) flag as a fallback. Do not reinvent the parsing.
 
+
+## Code Audit Tools
+
+- **Dead code analysis** — Use `LSP incomingCalls` on each method under review, not grep. Grep cannot distinguish callers from definitions, protocol declarations, and test-only usage. A method with no incoming calls outside its own file and tests is dead.
+
