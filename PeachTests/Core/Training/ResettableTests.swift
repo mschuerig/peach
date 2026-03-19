@@ -22,7 +22,7 @@ struct ResettableTests {
         #expect(mock2.resetCallCount == 1)
     }
 
-@Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
+    @Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
     func resetTrainingDataCallsAllResettables() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()

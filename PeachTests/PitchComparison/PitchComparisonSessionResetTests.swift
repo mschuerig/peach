@@ -17,18 +17,23 @@ struct PitchComparisonSessionResetTests {
             profile: profile
         )
 
-        // Simulate converged state
-        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
-        profile.updateComparison(note: 62, centOffset: 50.0, isCorrect: true)
-        #expect(profile.comparisonMean != nil)
+        // Simulate converged state via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(50.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        #expect(profile.comparisonMean(for: .prime) != nil)
 
-        // Reset session state + profile (composition root does both in production)
+        // Reset session state + profile
         try session.resetTrainingData()
-        profile.resetComparison()
+        profile.resetAll()
 
         // Verify cold start
-        #expect(profile.comparisonMean == nil)
-        #expect(profile.comparisonStdDev == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
     }
 
     @Test("after reset, first comparison from KazezNoteStrategy uses 100 cents")
@@ -41,12 +46,15 @@ struct PitchComparisonSessionResetTests {
             profile: profile
         )
 
-        // Simulate converged state
-        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
+        // Simulate converged state via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
-        // Reset session state + profile (composition root does both in production)
+        // Reset session state + profile
         try session.resetTrainingData()
-        profile.resetComparison()
+        profile.resetAll()
 
         // Cold start: nil lastPitchComparison with reset profile → should return 100.0
         let comparison = strategy.nextPitchComparison(
@@ -68,14 +76,17 @@ struct PitchComparisonSessionResetTests {
             profile: profile
         )
 
-        // Set up trained data
+        // Set up trained data via observer
         for note in 55...65 {
-            profile.updateComparison(note: MIDINote(note), centOffset: 30.0, isCorrect: true)
+            profile.pitchComparisonCompleted(CompletedPitchComparison(
+                pitchComparison: PitchComparison(referenceNote: MIDINote(note), targetNote: DetunedMIDINote(note: MIDINote(note), offset: Cents(30.0))),
+                userAnsweredHigher: true, tuningSystem: .equalTemperament
+            ))
         }
 
-        // Reset session state + profile (composition root does both in production)
+        // Reset session state + profile
         try session.resetTrainingData()
-        profile.resetComparison()
+        profile.resetAll()
 
         // With all stats cleared, bootstrap should find no data → 100.0
         let comparison = strategy.nextPitchComparison(
@@ -121,16 +132,19 @@ struct PitchComparisonSessionResetTests {
         await mockPlayer.waitForPlay()
         #expect(session.state != .idle)
 
-        // Simulate converged state
-        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
+        // Simulate converged state via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
-        // Reset during active training (composition root does both in production)
+        // Reset during active training
         try session.resetTrainingData()
-        profile.resetComparison()
+        profile.resetAll()
 
         // Verify training stopped and state fully cleared
         #expect(session.state == .idle)
         #expect(session.currentDifficulty == nil)
-        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
     }
 }

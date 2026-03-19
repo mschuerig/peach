@@ -17,40 +17,27 @@ enum MetricPointMapper {
         let correctComparisons = pitchComparisonRecords.filter(\.isCorrect)
         var result: [TrainingMode: [MetricPoint]] = [:]
 
-        result[.unisonPitchComparison] = correctComparisons
-            .filter { $0.interval == 0 }
-            .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.centOffset)) }
-
-        result[.intervalPitchComparison] = correctComparisons
-            .filter { $0.interval != 0 }
-            .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.centOffset)) }
-
-        result[.unisonMatching] = pitchMatchingRecords
-            .filter { $0.interval == 0 }
-            .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.userCentError)) }
-
-        result[.intervalMatching] = pitchMatchingRecords
-            .filter { $0.interval != 0 }
-            .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.userCentError)) }
+        for mode in TrainingMode.allCases {
+            switch mode {
+            case .unisonPitchComparison:
+                result[mode] = correctComparisons
+                    .filter { $0.interval == 0 }
+                    .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.centOffset)) }
+            case .intervalPitchComparison:
+                result[mode] = correctComparisons
+                    .filter { $0.interval != 0 }
+                    .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.centOffset)) }
+            case .unisonMatching:
+                result[mode] = pitchMatchingRecords
+                    .filter { $0.interval == 0 }
+                    .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.userCentError)) }
+            case .intervalMatching:
+                result[mode] = pitchMatchingRecords
+                    .filter { $0.interval != 0 }
+                    .map { MetricPoint(timestamp: $0.timestamp, value: abs($0.userCentError)) }
+            }
+        }
 
         return result
-    }
-
-    /// Maps a single completed pitch comparison to its training mode metric point, if applicable.
-    static func metricPoint(from completed: CompletedPitchComparison) -> (mode: TrainingMode, point: MetricPoint)? {
-        guard completed.isCorrect else { return nil }
-        let pc = completed.pitchComparison
-        let interval = (try? Interval.between(pc.referenceNote, pc.targetNote.note))?.rawValue ?? 0
-        let mode: TrainingMode = interval == 0 ? .unisonPitchComparison : .intervalPitchComparison
-        let point = MetricPoint(timestamp: completed.timestamp, value: pc.targetNote.offset.magnitude)
-        return (mode: mode, point: point)
-    }
-
-    /// Maps a single completed pitch matching to its training mode metric point.
-    static func metricPoint(from result: CompletedPitchMatching) -> (mode: TrainingMode, point: MetricPoint) {
-        let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
-        let mode: TrainingMode = interval == 0 ? .unisonMatching : .intervalMatching
-        let point = MetricPoint(timestamp: result.timestamp, value: result.userCentError.magnitude)
-        return (mode: mode, point: point)
     }
 }

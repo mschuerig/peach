@@ -44,13 +44,12 @@ struct PerceptualProfileTests {
     func coldStartProfile() async {
         let profile = PerceptualProfile()
 
-        #expect(profile.comparisonMean == nil)
-        #expect(profile.comparisonStdDev == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
         #expect(profile.matchingMean == nil)
         #expect(profile.matchingSampleCount == 0)
     }
 
-    // MARK: - Aggregate Comparison Statistics via Observer
+    // MARK: - Comparison Statistics via Observer
 
     @Test("Single correct comparison sets comparison mean")
     func singleUpdateSetsMean() async {
@@ -58,7 +57,7 @@ struct PerceptualProfileTests {
 
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
 
-        #expect(profile.comparisonMean == 50.0)
+        #expect(profile.comparisonMean(for: .prime) == 50.0)
     }
 
     @Test("Multiple correct comparisons compute correct running mean")
@@ -68,7 +67,7 @@ struct PerceptualProfileTests {
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 40))
 
-        #expect(profile.comparisonMean == 45.0) // (50+40)/2
+        #expect(profile.comparisonMean(for: .prime) == 45.0) // (50+40)/2
     }
 
     @Test("Overall mean across all samples")
@@ -79,7 +78,7 @@ struct PerceptualProfileTests {
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 30))
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 40))
 
-        #expect(profile.comparisonMean == 40.0) // (50+30+40)/3
+        #expect(profile.comparisonMean(for: .prime) == 40.0) // (50+30+40)/3
     }
 
     @Test("Only correct answers contribute to comparison mean")
@@ -90,40 +89,7 @@ struct PerceptualProfileTests {
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 200, isCorrect: false))
         profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 60, isCorrect: true))
 
-        #expect(profile.comparisonMean == 55.0) // (50+60)/2, incorrect answer excluded
-    }
-
-    @Test("Standard deviation with identical values is zero")
-    func comparisonStdDevZero() async {
-        let profile = PerceptualProfile()
-
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-
-        #expect(profile.comparisonStdDev == 0.0)
-    }
-
-    @Test("Standard deviation with variance")
-    func comparisonStdDevWithVariance() async {
-        let profile = PerceptualProfile()
-
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 40))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 60))
-
-        // Sample stdDev = sqrt(((40-50)^2 + (50-50)^2 + (60-50)^2) / 2) = sqrt(100) = 10.0
-        let stdDev = profile.comparisonStdDev!
-        #expect(abs(stdDev.rawValue - 10.0) < 0.01)
-    }
-
-    @Test("Single sample returns nil stdDev")
-    func singleSampleStdDev() async {
-        let profile = PerceptualProfile()
-
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-
-        #expect(profile.comparisonStdDev == nil)
+        #expect(profile.comparisonMean(for: .prime) == 55.0) // (50+60)/2, incorrect answer excluded
     }
 
     // MARK: - Observer Integration
@@ -144,7 +110,7 @@ struct PerceptualProfileTests {
 
         profile.pitchComparisonCompleted(completed)
 
-        #expect(profile.comparisonMean == 25.0)
+        #expect(profile.comparisonMean(for: .up(.perfectFifth)) == 25.0)
         #expect(profile.hasData(for: .intervalPitchComparison))
         #expect(!profile.hasData(for: .unisonPitchComparison))
     }
@@ -201,30 +167,6 @@ struct PerceptualProfileTests {
         #expect(profile.recordCount(for: .intervalPitchComparison) == 1)
     }
 
-    @Test("aggregate mean combines unison and interval modes")
-    func aggregateMeanCombinesModes() async {
-        let profile = PerceptualProfile()
-
-        // 2 unison at 10 cents
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 10))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 10))
-
-        // 1 interval at 20 cents
-        let intervalComparison = CompletedPitchComparison(
-            pitchComparison: PitchComparison(
-                referenceNote: MIDINote(60),
-                targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(20.0))
-            ),
-            userAnsweredHigher: true,
-            tuningSystem: .equalTemperament
-        )
-        profile.pitchComparisonCompleted(intervalComparison)
-
-        // Weighted mean: (10*2 + 20*1) / 3 ≈ 13.33
-        let mean = profile.comparisonMean!
-        #expect(abs(mean.rawValue - 13.33) < 0.01)
-    }
-
     // MARK: - Rebuild
 
     @Test("rebuild from metric points produces correct per-mode data")
@@ -252,45 +194,6 @@ struct PerceptualProfileTests {
 
     // MARK: - Reset
 
-    @Test("resetComparison clears both comparison modes")
-    func resetComparisonClearsBothModes() async {
-        let profile = PerceptualProfile()
-
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 10))
-        let intervalComparison = CompletedPitchComparison(
-            pitchComparison: PitchComparison(
-                referenceNote: MIDINote(60),
-                targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(20.0))
-            ),
-            userAnsweredHigher: true,
-            tuningSystem: .equalTemperament
-        )
-        profile.pitchComparisonCompleted(intervalComparison)
-
-        profile.resetComparison()
-
-        #expect(!profile.hasData(for: .unisonPitchComparison))
-        #expect(!profile.hasData(for: .intervalPitchComparison))
-    }
-
-    @Test("resetMatching clears both matching modes")
-    func resetMatchingClearsBothModes() async {
-        let profile = PerceptualProfile()
-
-        profile.pitchMatchingCompleted(makeMatchingCompleted(centError: 5))
-        profile.pitchMatchingCompleted(makeMatchingCompleted(
-            referenceNote: MIDINote(60),
-            targetNote: MIDINote(67),
-            centError: 8
-        ))
-
-        profile.resetMatching()
-
-        #expect(!profile.hasData(for: .unisonMatching))
-        #expect(!profile.hasData(for: .intervalMatching))
-        #expect(profile.matchingSampleCount == 0)
-    }
-
     @Test("resetAll clears all modes")
     func resetAllClearsAllModes() async {
         let profile = PerceptualProfile()
@@ -303,7 +206,7 @@ struct PerceptualProfileTests {
         for mode in TrainingMode.allCases {
             #expect(!profile.hasData(for: mode))
         }
-        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
         #expect(profile.matchingMean == nil)
     }
 

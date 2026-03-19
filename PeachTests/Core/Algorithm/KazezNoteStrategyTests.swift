@@ -201,10 +201,15 @@ struct KazezNoteStrategyTests {
     func coldStartWithProfile() async throws {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
-        // Train some notes so comparisonMean returns a value
-        profile.updateComparison(note: 60, centOffset: 10.0, isCorrect: true)
-        profile.updateComparison(note: 60, centOffset: 8.0, isCorrect: true)
-        profile.updateComparison(note: 72, centOffset: 12.0, isCorrect: false)
+        // Train some notes via observer so comparisonMean returns a value
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(10.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(8.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
@@ -216,7 +221,7 @@ struct KazezNoteStrategyTests {
         )
 
         // comparisonMean should be used, not maxCentDifference
-        let expectedMean = try #require(profile.comparisonMean)
+        let expectedMean = try #require(profile.comparisonMean(for: .prime))
         #expect(comparison.targetNote.offset.magnitude == expectedMean.rawValue)
         #expect(comparison.targetNote.offset.magnitude != 100.0)
     }
@@ -225,8 +230,11 @@ struct KazezNoteStrategyTests {
     func coldStartProfileClampedToMin() async {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
-        // Train a note with very small offset
-        profile.updateComparison(note: 60, centOffset: 0.05, isCorrect: true)
+        // Train a note with very small offset via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(0.05))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(1.0), maxCentDifference: Cents(100.0))
 
@@ -245,8 +253,11 @@ struct KazezNoteStrategyTests {
     func coldStartProfileClampedToMax() async {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
-        // Train with large offsets
-        profile.updateComparison(note: 60, centOffset: 200.0, isCorrect: true)
+        // Train with large offset via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(200.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 

@@ -345,18 +345,22 @@ struct SettingsTests {
     func profileResetClearsData() async {
         let profile = PerceptualProfile()
 
-        // Add some training data
-        profile.updateComparison(note: 60, centOffset: 5.0, isCorrect: true)
-        profile.updateComparison(note: 60, centOffset: 3.0, isCorrect: true)
-        profile.updateComparison(note: 72, centOffset: -2.0, isCorrect: false)
-        #expect(profile.comparisonMean != nil)
+        // Add some training data via observer
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(5.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(3.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        #expect(profile.comparisonMean(for: .prime) != nil)
 
         // Reset
-        profile.resetComparison()
+        profile.resetAll()
 
         // Verify cold start state
-        #expect(profile.comparisonMean == nil)
-        #expect(profile.comparisonStdDev == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
     }
 
     @Test("ProgressTimeline reflects profile reset")

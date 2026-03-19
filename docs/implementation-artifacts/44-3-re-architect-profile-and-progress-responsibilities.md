@@ -1,6 +1,6 @@
 # Story 44.3: Re-Architect Profile and Progress Responsibilities
 
-Status: review
+Status: done
 
 ## Story
 
@@ -20,7 +20,7 @@ So that domain truth lives in one place, storage coupling is removed, and both t
 
 5. **Given** ProgressTimeline currently owns time bucketing, EWMA queries, trend queries, and state queries, **when** the refactoring is complete, **then** ProgressTimeline retains only time bucketing / chart formatting (`buckets(for:)`, `allGranularityBuckets(for:)`, `subBuckets(for:)`) and delegates `currentEWMA(for:)`, `trend(for:)`, `state(for:)`, and `recordCount(for:)` to PerceptualProfile.
 
-6. **Given** PerceptualProfile currently exposes `comparisonMean` and `matchingMean` as flat aggregates, **when** the refactoring is complete, **then** backward-compatible accessors (`comparisonMean`, `comparisonStdDev`, `matchingMean`, `matchingStdDev`, `matchingSampleCount`) still work for existing consumers (strategies), derived from the relevant mode statistics.
+6. **Given** PerceptualProfile currently exposes `comparisonMean` and `matchingMean` as flat aggregates, **when** the refactoring is complete, **then** `PitchComparisonProfile` exposes `comparisonMean(for: DirectedInterval) -> Cents?` (per-mode, not aggregate), `PitchMatchingProfile` retains `matchingMean`, `matchingStdDev`, `matchingSampleCount`, and the dead methods `updateComparison`, `updateMatching` and aggregate `comparisonStdDev` are removed. `resetComparison()` and `resetMatching()` are removed in favor of `resetAll()`. `ModeStatistics` is renamed to `TrainingModeStatistics`.
 
 7. **Given** all existing tests for ProgressTimeline, PerceptualProfile, ProfileScreen, ProgressChartView, strategies, and data import, **when** they are run after the refactoring, **then** all tests pass — no behavioral changes to user-visible functionality.
 
@@ -147,6 +147,22 @@ Tasks must be done in order (1 → 2 → 3 → 4 → 5). Each task is independen
 - [Source: docs/project-context.md — Domain types everywhere, Code Style, File Placement]
 - [Source: Peach/Core/Profile/ProgressTimeline.swift — current 565-line implementation]
 - [Source: Peach/Core/Profile/PerceptualProfile.swift — current 123-line implementation]
+
+## Post-Review Fixes
+
+Code review (adversarial 3-layer review + manual findings) identified 8 patch items, all applied:
+
+1. **Removed dead protocol methods**: `updateComparison` from `PitchComparisonProfile`, `updateMatching` from `PitchMatchingProfile` — zero production callers, mutations happen through observer protocols
+2. **Removed semantically wrong aggregate**: `comparisonMean` property combined unison + interval mode data via weighted mean — meaningless across independent training modes. Replaced with `comparisonMean(for: DirectedInterval) -> Cents?` which queries the correct mode
+3. **Removed `comparisonStdDev`**: zero production callers, removed from protocol and implementation
+4. **Removed `resetComparison()` / `resetMatching()`**: zero production callers, only `resetAll()` retained
+5. **Removed `weightedMean` / `weightedStdDev` helpers**: supported the removed aggregates
+6. **Renamed `ModeStatistics` → `TrainingModeStatistics`**: avoids ambiguity with unrelated statistics concepts
+7. **Deleted dead `MetricPointMapper.metricPoint(from:)` overloads**: zero callers
+8. **Restructured `MetricPointMapper.extractMetrics`**: iterates `TrainingMode.allCases` with switch for extensibility
+9. **Fixed indentation**: `ResettableTests.swift` line 25
+
+Updated `KazezNoteStrategy` (sole production consumer) to use `profile.comparisonMean(for: interval)`. Updated 15 test files. All 1078 tests pass.
 
 ## Dev Agent Record
 

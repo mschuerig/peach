@@ -51,7 +51,7 @@ final class KazezNoteStrategy: NextPitchComparisonStrategy {
             magnitude = last.isCorrect
                 ? kazezNarrow(p: p).clamped(to: difficultyRange)
                 : kazezWiden(p: p).clamped(to: difficultyRange)
-        } else if let profileMean = profile.comparisonMean {
+        } else if let profileMean = profile.comparisonMean(for: interval) {
             magnitude = profileMean.rawValue.clamped(to: difficultyRange)
         } else {
             magnitude = settings.maxCentDifference.rawValue

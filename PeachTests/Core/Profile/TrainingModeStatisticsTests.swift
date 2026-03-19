@@ -2,8 +2,8 @@ import Testing
 import Foundation
 @testable import Peach
 
-@Suite("ModeStatistics Tests")
-struct ModeStatisticsTests {
+@Suite("TrainingModeStatistics Tests")
+struct TrainingModeStatisticsTests {
 
     private let config = TrainingModeConfig.unisonPitchComparison
 
@@ -11,7 +11,7 @@ struct ModeStatisticsTests {
 
     @Test("empty statistics has zero record count")
     func emptyStatistics() async {
-        let stats = ModeStatistics()
+        let stats = TrainingModeStatistics()
         #expect(stats.recordCount == 0)
         #expect(stats.ewma == nil)
         #expect(stats.trend == nil)
@@ -19,7 +19,7 @@ struct ModeStatisticsTests {
 
     @Test("single point sets Welford mean")
     func singlePoint() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         stats.addPoint(MetricPoint(timestamp: Date(), value: 10.0), config: config)
 
         #expect(stats.recordCount == 1)
@@ -28,7 +28,7 @@ struct ModeStatisticsTests {
 
     @Test("multiple points compute correct Welford running mean")
     func welfordMean() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         stats.addPoint(MetricPoint(timestamp: now, value: 10.0), config: config)
         stats.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20.0), config: config)
@@ -40,7 +40,7 @@ struct ModeStatisticsTests {
 
     @Test("Welford population stddev matches expected value")
     func welfordStdDev() async throws {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         stats.addPoint(MetricPoint(timestamp: now, value: 10.0), config: config)
         stats.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20.0), config: config)
@@ -55,7 +55,7 @@ struct ModeStatisticsTests {
 
     @Test("EWMA equals single point value")
     func ewmaSinglePoint() async throws {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         stats.addPoint(MetricPoint(timestamp: Date(), value: 15.0), config: config)
 
         let ewma = try #require(stats.ewma)
@@ -64,7 +64,7 @@ struct ModeStatisticsTests {
 
     @Test("EWMA with halflife gives 50% weight")
     func ewmaHalflife() async throws {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         // First session
         stats.addPoint(MetricPoint(timestamp: now, value: 20.0), config: config)
@@ -81,14 +81,14 @@ struct ModeStatisticsTests {
 
     @Test("no trend with single record")
     func noTrendSingleRecord() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         stats.addPoint(MetricPoint(timestamp: Date(), value: 10.0), config: config)
         #expect(stats.trend == nil)
     }
 
     @Test("stable trend with constant values")
     func stableTrend() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         for i in 0..<5 {
             stats.addPoint(MetricPoint(timestamp: now.addingTimeInterval(Double(i)), value: 10.0), config: config)
@@ -98,7 +98,7 @@ struct ModeStatisticsTests {
 
     @Test("improving trend when latest is below EWMA")
     func improvingTrend() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         for i in 0..<10 {
             stats.addPoint(MetricPoint(timestamp: now.addingTimeInterval(Double(i) * 3600), value: 20.0), config: config)
@@ -109,7 +109,7 @@ struct ModeStatisticsTests {
 
     @Test("declining trend when latest is above mean + stddev")
     func decliningTrend() async {
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         let now = Date()
         for i in 0..<10 {
             stats.addPoint(MetricPoint(timestamp: now.addingTimeInterval(Double(i) * 3600), value: 10.0), config: config)
@@ -127,12 +127,12 @@ struct ModeStatisticsTests {
             MetricPoint(timestamp: now.addingTimeInterval(Double(i) * 3600), value: Double(i * 10 + 5))
         }
 
-        var incremental = ModeStatistics()
+        var incremental = TrainingModeStatistics()
         for point in points {
             incremental.addPoint(point, config: config)
         }
 
-        var rebuilt = ModeStatistics()
+        var rebuilt = TrainingModeStatistics()
         rebuilt.rebuild(from: points, config: config)
 
         #expect(rebuilt.recordCount == incremental.recordCount)
@@ -150,7 +150,7 @@ struct ModeStatisticsTests {
             MetricPoint(timestamp: now.addingTimeInterval(Double(i)), value: Double(i + 1))
         }
 
-        var stats = ModeStatistics()
+        var stats = TrainingModeStatistics()
         stats.rebuild(from: points, config: config)
 
         #expect(stats.metrics.count == 3)

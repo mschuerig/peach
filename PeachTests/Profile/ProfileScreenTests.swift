@@ -9,21 +9,24 @@ struct ProfileScreenTests {
 
     @Test("PerceptualProfile environment key provides default value")
     func environmentKeyDefaultValue() async throws {
-        var env = EnvironmentValues()
+        let env = EnvironmentValues()
         let profile = env.perceptualProfile
-        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
     }
 
     @Test("PerceptualProfile environment key can be set and retrieved")
     func environmentKeySetAndGet() async throws {
         let profile = PerceptualProfile()
-        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
         var env = EnvironmentValues()
         env.perceptualProfile = profile
 
         let retrieved = env.perceptualProfile
-        #expect(retrieved.comparisonMean == 50.0)
+        #expect(retrieved.comparisonMean(for: .prime) == 50.0)
     }
 
 }

@@ -22,8 +22,8 @@ struct PitchMatchingProfileTests {
     @Test("matching mean tracks absolute cent error")
     func matchingMean() async {
         let profile = PerceptualProfile()
-        profile.updateMatching(note: 60, centError: 10.0)
-        profile.updateMatching(note: 60, centError: -20.0) // abs = 20
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: 10.0, tuningSystem: .equalTemperament))
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: -20.0, tuningSystem: .equalTemperament))
         #expect(profile.matchingMean == 15.0) // (10 + 20) / 2
         #expect(profile.matchingSampleCount == 2)
     }
@@ -31,8 +31,8 @@ struct PitchMatchingProfileTests {
     @Test("matching stdDev computed from absolute errors")
     func matchingStdDev() async throws {
         let profile = PerceptualProfile()
-        profile.updateMatching(note: 60, centError: 10.0)
-        profile.updateMatching(note: 60, centError: -20.0) // abs = 20
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: 10.0, tuningSystem: .equalTemperament))
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: -20.0, tuningSystem: .equalTemperament))
         // stdDev of [10, 20] = sqrt(50) ≈ 7.071
         let stdDev = try #require(profile.matchingStdDev)
         #expect(abs(stdDev.rawValue - 7.0710678) < 0.001)
@@ -41,41 +41,26 @@ struct PitchMatchingProfileTests {
     @Test("single sample returns nil stdDev")
     func singleSampleStdDev() async {
         let profile = PerceptualProfile()
-        profile.updateMatching(note: 60, centError: 10.0)
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: 10.0, tuningSystem: .equalTemperament))
         #expect(profile.matchingMean == 10.0)
         #expect(profile.matchingStdDev == nil)
-        #expect(profile.matchingSampleCount == 1)
-    }
-
-    @Test("resetMatching clears matching but preserves comparison")
-    func resetMatchingIndependence() async {
-        let profile = PerceptualProfile()
-        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
-        profile.updateMatching(note: 60, centError: 10.0)
-        profile.resetMatching()
-        #expect(profile.matchingMean == nil)
-        #expect(profile.matchingSampleCount == 0)
-        #expect(profile.comparisonMean == 50.0) // comparison preserved
-    }
-
-    @Test("resetComparison clears comparison but preserves matching")
-    func resetComparisonIndependence() async {
-        let profile = PerceptualProfile()
-        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
-        profile.updateMatching(note: 60, centError: 10.0)
-        profile.resetComparison()
-        #expect(profile.comparisonMean == nil) // comparison cleared
-        #expect(profile.matchingMean == 10.0) // matching preserved
         #expect(profile.matchingSampleCount == 1)
     }
 
     @Test("resetAll clears both comparison and matching")
     func resetAllClearsBoth() async {
         let profile = PerceptualProfile()
-        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
-        profile.updateMatching(note: 60, centError: 10.0)
+        profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(
+                referenceNote: MIDINote(60),
+                targetNote: DetunedMIDINote(note: MIDINote(60), offset: Cents(50.0))
+            ),
+            userAnsweredHigher: true,
+            tuningSystem: .equalTemperament
+        ))
+        profile.pitchMatchingCompleted(CompletedPitchMatching(referenceNote: 60, targetNote: 60, initialCentOffset: 50.0, userCentError: 10.0, tuningSystem: .equalTemperament))
         profile.resetAll()
-        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonMean(for: .prime) == nil)
         #expect(profile.matchingMean == nil)
         #expect(profile.matchingSampleCount == 0)
     }

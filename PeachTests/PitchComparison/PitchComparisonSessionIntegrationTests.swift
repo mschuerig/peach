@@ -123,17 +123,23 @@ struct PitchComparisonSessionIntegrationTests {
 
         try #require(f.mockDataStore.lastSavedRecord != nil, "No comparison was recorded")
 
-        #expect(f.profile.comparisonMean == 100.0)
+        #expect(f.profile.comparisonMean(for: .prime) == 100.0)
     }
 
     @Test("Profile updates use unsigned centOffset for threshold measurement")
     func profileUsesUnsignedCentOffset() async {
         let f = makePitchComparisonSession()
 
-        f.profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
-        f.profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
+        f.profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
+        f.profile.pitchComparisonCompleted(CompletedPitchComparison(
+            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+            userAnsweredHigher: true, tuningSystem: .equalTemperament
+        ))
 
-        #expect(f.profile.comparisonMean == 40.0)
+        #expect(f.profile.comparisonMean(for: .prime) == 40.0)
     }
 
     @Test("Profile statistics accumulate correctly over multiple comparisons")
@@ -153,7 +159,7 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockDataStore.savedRecords.count == 2)
 
         // Profile should have mean of both comparison offsets
-        #expect(f.profile.comparisonMean != nil)
+        #expect(f.profile.comparisonMean(for: .prime) != nil)
     }
 
     @Test("Incorrect answer is recorded but does not update profile statistics")
@@ -168,7 +174,7 @@ struct PitchComparisonSessionIntegrationTests {
 
         try #require(f.mockDataStore.lastSavedRecord != nil, "No comparison was recorded")
 
-        #expect(f.profile.comparisonMean == nil, "Incorrect answers should not contribute to profile statistics")
+        #expect(f.profile.comparisonMean(for: .prime) == nil, "Incorrect answers should not contribute to profile statistics")
     }
 
     // MARK: - Profile Loading from DataStore (Story 4.3 AC#2)
@@ -182,12 +188,14 @@ struct PitchComparisonSessionIntegrationTests {
             PitchComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: -40.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: Date())
         ]
 
-        for record in records {
-            profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(record.centOffset), isCorrect: record.isCorrect)
-        }
+        let metrics = MetricPointMapper.extractMetrics(
+            pitchComparisonRecords: records,
+            pitchMatchingRecords: []
+        )
+        profile.rebuild(metrics: metrics)
 
         // Only correct answers contribute: mean of [50, 30] = 40.0
-        #expect(profile.comparisonMean == 40.0)
+        #expect(profile.comparisonMean(for: .prime) == 40.0)
     }
 
     // MARK: - Cold Start (Story 4.3)

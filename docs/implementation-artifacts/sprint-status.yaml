@@ -350,4 +350,5 @@ development_status:
   epic-44: in-progress
   44-1-split-core-audio-into-core-music-and-core-audio: done
   44-2-clean-up-perceptualprofile-for-multi-mode-extension: done
-  44-3-re-architect-profile-and-progress-responsibilities: review
+  44-3-re-architect-profile-and-progress-responsibilities: done
+  44-4-typed-metrics-generic-accumulator-incremental-profile-init: backlog

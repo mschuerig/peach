@@ -4642,6 +4642,38 @@ So that domain truth lives in one place, storage coupling is removed, and both t
 **When** they are run after the refactoring
 **Then** all tests pass — no behavioral changes to user-visible functionality
 
+### Story 44.4: Typed Metrics, Generic Accumulator, and Incremental Profile Init
+
+As a **developer**,
+I want MetricPoint to carry typed measurement data, WelfordAccumulator to be generic over measurement type, and PerceptualProfile to initialize incrementally via a closure-based builder,
+So that domain typing is preserved through the statistical pipeline, the accumulator is reusable for future measurement types (including 2D), and profile initialization doesn't require loading all records into memory at once.
+
+**Acceptance Criteria:**
+
+**Given** MetricPoint currently stores a bare `Double` value
+**When** the refactoring is complete
+**Then** MetricPoint carries a typed measurement (e.g., `Cents` for pitch comparisons) rather than an erased `Double`, and the type information is preserved through the statistical pipeline
+
+**Given** WelfordAccumulator currently operates on `Double` with `Cents`-specific accessors (`centsMean`, `centsStdDev`) baked in
+**When** the refactoring is complete
+**Then** WelfordAccumulator is generic over measurement type, the statistical algorithm is separated from domain units, and `Cents`-specific accessors are removed from the accumulator itself
+
+**Given** PerceptualProfile currently requires `rebuild(metrics: [TrainingMode: [MetricPoint]])` which loads all records into a dictionary
+**When** the refactoring is complete
+**Then** `rebuild` is removed; PerceptualProfile offers a closure-based initializer where the closure receives an accumulator proxy with a single `addPoint` method, and derived computations (EWMA, trend) run once after the closure completes
+
+**Given** PeachApp.loadPerceptualProfile currently fetches all records, maps them, and passes the full dictionary to `rebuild`
+**When** the refactoring is complete
+**Then** PeachApp uses the closure-based initializer, streaming records through MetricPointMapper into the proxy without materializing the full dataset
+
+**Given** the closure-based initializer receives a proxy parameter
+**When** the closure executes
+**Then** the proxy is a separate type with only an `addPoint` method — not the profile itself — because the profile is not yet fully initialized during the closure
+
+**Given** all existing tests
+**When** they are run after the refactoring
+**Then** all tests pass — no behavioral changes to user-visible functionality
+
 ## Epic 45: Rhythm Domain — Types and Contracts
 
 Introduce TempoBPM, RhythmOffset, RhythmDirection domain types with full test coverage. Define the observer protocols (RhythmComparisonObserver, RhythmMatchingObserver) and completed-result value types. Define the RhythmProfile protocol.
