@@ -31,7 +31,7 @@ struct TrainingDataImportActionTests {
         let allPitchMatchings = try dataStore.fetchAllPitchMatchings()
         profile.resetAll()
         for record in allComparisons {
-            profile.update(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
+            profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
         }
         for record in allPitchMatchings {
             profile.updateMatching(note: MIDINote(record.referenceNote), centError: Cents(record.userCentError))

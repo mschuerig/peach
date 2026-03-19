@@ -346,19 +346,16 @@ struct SettingsTests {
         let profile = PerceptualProfile()
 
         // Add some training data
-        profile.update(note: 60, centOffset: 5.0, isCorrect: true)
-        profile.update(note: 60, centOffset: 3.0, isCorrect: true)
-        profile.update(note: 72, centOffset: -2.0, isCorrect: false)
-        #expect(profile.statsForNote(60).sampleCount == 2)
-        #expect(profile.statsForNote(72).sampleCount == 1)
+        profile.updateComparison(note: 60, centOffset: 5.0, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 3.0, isCorrect: true)
+        profile.updateComparison(note: 72, centOffset: -2.0, isCorrect: false)
+        #expect(profile.comparisonMean != nil)
         #expect(profile.comparisonMean != nil)
 
         // Reset
         profile.resetComparison()
 
         // Verify cold start state
-        #expect(profile.statsForNote(60).sampleCount == 0)
-        #expect(profile.statsForNote(72).sampleCount == 0)
         #expect(profile.comparisonMean == nil)
         #expect(profile.comparisonStdDev == nil)
     }

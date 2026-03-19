@@ -17,13 +17,13 @@ struct ProfileScreenTests {
     @Test("PerceptualProfile environment key can be set and retrieved")
     func environmentKeySetAndGet() async throws {
         let profile = PerceptualProfile()
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
 
         var env = EnvironmentValues()
         env.perceptualProfile = profile
 
         let retrieved = env.perceptualProfile
-        #expect(retrieved.statsForNote(60).mean == 50.0)
+        #expect(retrieved.comparisonMean == 50.0)
     }
 
 }

@@ -8,8 +8,8 @@ struct PitchComparisonSessionResetTests {
 
     // MARK: - Cold-Start Behavior After Reset
 
-    @Test("after reset, PerceptualProfile statsForNote returns currentDifficulty 100.0 for all notes")
-    func resetTrainingDataResetsAllCurrentDifficultyToDefault() throws {
+    @Test("after reset, PerceptualProfile comparison data is cleared")
+    func resetTrainingDataClearsComparisonData() throws {
         let profile = PerceptualProfile()
         let session = PitchComparisonSession(
             notePlayer: MockNotePlayer(),
@@ -17,24 +17,18 @@ struct PitchComparisonSessionResetTests {
             profile: profile
         )
 
-        // Simulate converged state: lower difficulty on several notes
-        profile.setDifficulty(note: 60, difficulty: 30.0)
-        profile.setDifficulty(note: 62, difficulty: 50.0)
-        profile.update(note: 60, centOffset: 30.0, isCorrect: true)
-        profile.update(note: 62, centOffset: 50.0, isCorrect: true)
-        #expect(profile.statsForNote(60).currentDifficulty == 30.0)
-        #expect(profile.statsForNote(62).currentDifficulty == 50.0)
+        // Simulate converged state
+        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
+        profile.updateComparison(note: 62, centOffset: 50.0, isCorrect: true)
+        #expect(profile.comparisonMean != nil)
 
         // Reset session state + profile (composition root does both in production)
         try session.resetTrainingData()
         profile.resetComparison()
 
-        // Verify cold start for all notes
-        for note in 0..<128 {
-            #expect(profile.statsForNote(MIDINote(note)).currentDifficulty == 100.0)
-        }
-        #expect(profile.statsForNote(60).sampleCount == 0)
-        #expect(profile.statsForNote(62).sampleCount == 0)
+        // Verify cold start
+        #expect(profile.comparisonMean == nil)
+        #expect(profile.comparisonStdDev == nil)
     }
 
     @Test("after reset, first comparison from KazezNoteStrategy uses 100 cents")
@@ -48,8 +42,7 @@ struct PitchComparisonSessionResetTests {
         )
 
         // Simulate converged state
-        profile.setDifficulty(note: 60, difficulty: 30.0)
-        profile.update(note: 60, centOffset: 30.0, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
 
         // Reset session state + profile (composition root does both in production)
         try session.resetTrainingData()
@@ -75,17 +68,16 @@ struct PitchComparisonSessionResetTests {
             profile: profile
         )
 
-        // Set up trained neighbors across a range
+        // Set up trained data
         for note in 55...65 {
-            profile.setDifficulty(note: MIDINote(note), difficulty: 30.0)
-            profile.update(note: MIDINote(note), centOffset: 30.0, isCorrect: true)
+            profile.updateComparison(note: MIDINote(note), centOffset: 30.0, isCorrect: true)
         }
 
         // Reset session state + profile (composition root does both in production)
         try session.resetTrainingData()
         profile.resetComparison()
 
-        // With all stats cleared, bootstrap should find no trained neighbors → 100.0
+        // With all stats cleared, bootstrap should find no data → 100.0
         let comparison = strategy.nextPitchComparison(
             profile: profile,
             settings: PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime]),
@@ -142,8 +134,8 @@ struct PitchComparisonSessionResetTests {
         await mockPlayer.waitForPlay()
         #expect(session.state != .idle)
 
-        // Simulate converged difficulty
-        profile.setDifficulty(note: 60, difficulty: 30.0)
+        // Simulate converged state
+        profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
 
         // Reset during active training (composition root does both in production)
         try session.resetTrainingData()
@@ -152,6 +144,6 @@ struct PitchComparisonSessionResetTests {
         // Verify training stopped and state fully cleared
         #expect(session.state == .idle)
         #expect(session.currentDifficulty == nil)
-        #expect(profile.statsForNote(60).currentDifficulty == 100.0)
+        #expect(profile.comparisonMean == nil)
     }
 }

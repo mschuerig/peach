@@ -1,6 +1,6 @@
 # Story 44.2: Clean Up PerceptualProfile for Multi-Mode Extension
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,37 +20,37 @@ So that it has clean extension points for the new RhythmProfile protocol conform
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Remove dead per-MIDI-note tracking (AC: #1)
-  - [ ] Remove `PerceptualNote` struct entirely — it exists only to serve dead code
-  - [ ] Remove `noteStats: [PerceptualNote]` array (128-slot per-note storage)
-  - [ ] Remove dead protocol methods from `PitchComparisonProfile`: `weakSpots()`, `statsForNote()`, `setDifficulty()`, `averageThreshold()`
-  - [ ] Remove implementations of those methods from `PerceptualProfile`
-  - [ ] Remove dead protocol methods from `MockPitchComparisonProfile` in tests
-  - [ ] Replace per-note tracking with aggregate Welford's accumulators (same pattern as matching already uses): `comparisonCount`, `comparisonMeanAbs`, `comparisonM2`
-  - [ ] Rewrite `comparisonMean` and `comparisonStdDev` to read from aggregate accumulators
-  - [ ] Update `resetComparison()` to reset aggregate accumulators
-  - [ ] Update tests: remove tests for deleted methods; update `comparisonMean`/`comparisonStdDev` tests for aggregate semantics
-  - [ ] Run `bin/test.sh` to confirm
+- [x] Task 1: Remove dead per-MIDI-note tracking (AC: #1)
+  - [x]Remove `PerceptualNote` struct entirely — it exists only to serve dead code
+  - [x]Remove `noteStats: [PerceptualNote]` array (128-slot per-note storage)
+  - [x]Remove dead protocol methods from `PitchComparisonProfile`: `weakSpots()`, `statsForNote()`, `setDifficulty()`, `averageThreshold()`
+  - [x]Remove implementations of those methods from `PerceptualProfile`
+  - [x]Remove dead protocol methods from `MockPitchComparisonProfile` in tests
+  - [x]Replace per-note tracking with aggregate Welford's accumulators (same pattern as matching already uses): `comparisonCount`, `comparisonMeanAbs`, `comparisonM2`
+  - [x]Rewrite `comparisonMean` and `comparisonStdDev` to read from aggregate accumulators
+  - [x]Update `resetComparison()` to reset aggregate accumulators
+  - [x]Update tests: remove tests for deleted methods; update `comparisonMean`/`comparisonStdDev` tests for aggregate semantics
+  - [x]Run `bin/test.sh` to confirm
 
-- [ ] Task 2: Normalize naming across both protocols (AC: #2)
-  - [ ] Rename `update(note:centOffset:isCorrect:)` → `updateComparison(note:centOffset:isCorrect:)` in `PitchComparisonProfile` protocol and `PerceptualProfile` implementation — aligns with `updateMatching(note:centError:)` naming pattern
-  - [ ] Update all callers of `update()`: `PitchComparisonObserver` extension, `PeachApp.loadPerceptualProfile()`, `PeachApp.onDataChanged` closure, all tests
-  - [ ] Rename `MockPitchComparisonProfile` recorded calls accordingly
-  - [ ] Reorganize MARK sections by protocol conformance:
+- [x] Task 2: Normalize naming across both protocols (AC: #2)
+  - [x]Rename `update(note:centOffset:isCorrect:)` → `updateComparison(note:centOffset:isCorrect:)` in `PitchComparisonProfile` protocol and `PerceptualProfile` implementation — aligns with `updateMatching(note:centError:)` naming pattern
+  - [x]Update all callers of `update()`: `PitchComparisonObserver` extension, `PeachApp.loadPerceptualProfile()`, `PeachApp.onDataChanged` closure, all tests
+  - [x]Rename `MockPitchComparisonProfile` recorded calls accordingly
+  - [x]Reorganize MARK sections by protocol conformance:
     - `// MARK: - PitchComparisonProfile` (comparison state + methods)
     - `// MARK: - PitchMatchingProfile` (matching state + methods)
     - `// MARK: - Reset`
-  - [ ] Run `bin/test.sh` to confirm
+  - [x]Run `bin/test.sh` to confirm
 
-- [ ] Task 3: Clean extension points for new protocol conformances (AC: #3)
-  - [ ] Verify comparison and matching state are in clearly delineated regions — future RhythmProfile state follows the same pattern
-  - [ ] Verify `resetAll()` calls each protocol's reset method — future `resetRhythm()` just adds another call
-  - [ ] Verify observer conformance extensions are in separate extensions — future `RhythmComparisonObserver`/`RhythmMatchingObserver` follow the same pattern
-  - [ ] Run `bin/test.sh` to confirm
+- [x] Task 3: Clean extension points for new protocol conformances (AC: #3)
+  - [x]Verify comparison and matching state are in clearly delineated regions — future RhythmProfile state follows the same pattern
+  - [x]Verify `resetAll()` calls each protocol's reset method — future `resetRhythm()` just adds another call
+  - [x]Verify observer conformance extensions are in separate extensions — future `RhythmComparisonObserver`/`RhythmMatchingObserver` follow the same pattern
+  - [x]Run `bin/test.sh` to confirm
 
-- [ ] Task 4: Final build and test verification (AC: #4)
-  - [ ] Run `bin/build.sh` — zero errors, zero warnings
-  - [ ] Run `bin/test.sh` — all tests pass
+- [x] Task 4: Final build and test verification (AC: #4)
+  - [x]Run `bin/build.sh` — zero errors, zero warnings
+  - [x]Run `bin/test.sh` — all tests pass
 
 ## Dev Notes
 
@@ -217,10 +217,43 @@ The `isCorrect` parameter in `updateComparison()` is passed through but not used
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None
+
 ### Completion Notes List
 
+- Removed `PerceptualNote` struct entirely and the 128-slot `noteStats` array
+- Removed dead protocol methods: `weakSpots()`, `statsForNote()`, `setDifficulty()`, `averageThreshold()` from `PitchComparisonProfile` and `PerceptualProfile`
+- Replaced per-note tracking with aggregate Welford's accumulators (`comparisonCount`, `comparisonMeanAbs`, `comparisonM2`) — mirrors the matching pattern exactly
+- `comparisonMean` now returns overall mean across all samples (previously mean-of-per-note-means; negligible practical difference for `KazezNoteStrategy` cold-start fallback)
+- `comparisonStdDev` now uses aggregate Welford's (previously variance of per-note means)
+- Renamed `update(note:centOffset:isCorrect:)` → `updateComparison(note:centOffset:isCorrect:)` across protocol, implementation, all callers, and all tests
+- Removed dead mock methods from `MockPitchComparisonProfile` (no more `noteStats`, `setStats`, `weakSpots`, `statsForNote`, `averageThreshold`, `setDifficulty`)
+- Reorganized `PerceptualProfile` MARK sections by protocol conformance: `PitchComparisonProfile State`, `PitchMatchingProfile State`, `PitchComparisonProfile`, `PitchMatchingProfile`, `Reset`
+- Observer conformance extensions in separate `MARK` extensions
+- Updated all test files to use aggregate assertions instead of per-note `statsForNote()` checks
+- All 1069 tests pass, zero build warnings (excluding Xcode metadata warning)
+
+### Change Log
+
+- 2026-03-19: Implemented story 44.2 — removed dead per-note tracking, added aggregate Welford's for comparison, renamed update → updateComparison, reorganized MARK sections, updated all tests
+- 2026-03-19: Extracted WelfordAccumulator private struct to eliminate duplication between comparison and matching tracking; future RhythmProfile just adds another instance
+
 ### File List
+
+- Peach/Core/Profile/PitchComparisonProfile.swift (modified — removed 4 dead methods, renamed `update` → `updateComparison`)
+- Peach/Core/Profile/PerceptualProfile.swift (modified — removed `PerceptualNote`, `noteStats`, dead methods; added aggregate Welford's; renamed `update` → `updateComparison`; reorganized MARKs)
+- Peach/App/PeachApp.swift (modified — `update()` → `updateComparison()` at 2 call sites)
+- PeachTests/Profile/MockPitchComparisonProfile.swift (modified — removed dead mock methods, renamed `update` → `updateComparison`)
+- PeachTests/Core/Profile/PerceptualProfileTests.swift (modified — rewrote tests for aggregate semantics, removed tests for dead methods)
+- PeachTests/Core/Profile/PitchMatchingProfileTests.swift (modified — `update()` → `updateComparison()`, replaced `statsForNote()` with `comparisonMean`)
+- PeachTests/Profile/ProfileScreenTests.swift (modified — `update()` → `updateComparison()`, replaced `statsForNote()` with `comparisonMean`)
+- PeachTests/Settings/SettingsTests.swift (modified — `update()` → `updateComparison()`, replaced `statsForNote()` with `comparisonMean`)
+- PeachTests/Settings/TrainingDataImportActionTests.swift (modified — `update()` → `updateComparison()`)
+- PeachTests/PitchComparison/PitchComparisonSessionIntegrationTests.swift (modified — replaced `statsForNote()` with `comparisonMean`, `update()` → `updateComparison()`)
+- PeachTests/PitchComparison/PitchComparisonSessionResetTests.swift (modified — replaced `statsForNote()`/`setDifficulty()`/`currentDifficulty` checks with `comparisonMean`, `update()` → `updateComparison()`)
+- PeachTests/PitchComparison/PitchComparisonSessionSettingsTests.swift (modified — replaced `statsForNote()` with `comparisonMean`)
+- PeachTests/Core/Algorithm/KazezNoteStrategyTests.swift (modified — `update()` → `updateComparison()`)

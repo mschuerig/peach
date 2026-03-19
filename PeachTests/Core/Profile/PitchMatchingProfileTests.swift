@@ -50,21 +50,21 @@ struct PitchMatchingProfileTests {
     @Test("resetMatching clears matching but preserves comparison")
     func resetMatchingIndependence() async {
         let profile = PerceptualProfile()
-        profile.update(note: 60, centOffset: 50.0, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
         profile.updateMatching(note: 60, centError: 10.0)
         profile.resetMatching()
         #expect(profile.matchingMean == nil)
         #expect(profile.matchingSampleCount == 0)
-        #expect(profile.statsForNote(60).sampleCount == 1) // comparison preserved
+        #expect(profile.comparisonMean == 50.0) // comparison preserved
     }
 
     @Test("resetComparison clears comparison but preserves matching")
     func resetComparisonIndependence() async {
         let profile = PerceptualProfile()
-        profile.update(note: 60, centOffset: 50.0, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
         profile.updateMatching(note: 60, centError: 10.0)
         profile.resetComparison()
-        #expect(profile.statsForNote(60).sampleCount == 0) // comparison cleared
+        #expect(profile.comparisonMean == nil) // comparison cleared
         #expect(profile.matchingMean == 10.0) // matching preserved
         #expect(profile.matchingSampleCount == 1)
     }
@@ -72,10 +72,10 @@ struct PitchMatchingProfileTests {
     @Test("resetAll clears both comparison and matching")
     func resetAllClearsBoth() async {
         let profile = PerceptualProfile()
-        profile.update(note: 60, centOffset: 50.0, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
         profile.updateMatching(note: 60, centError: 10.0)
         profile.resetAll()
-        #expect(profile.statsForNote(60).sampleCount == 0)
+        #expect(profile.comparisonMean == nil)
         #expect(profile.matchingMean == nil)
         #expect(profile.matchingSampleCount == 0)
     }

@@ -63,7 +63,7 @@ struct PeachApp: App {
                     let pitchMatchings = (try? dataStore.fetchAllPitchMatchings()) ?? []
                     profile.resetAll()
                     for record in comparisons {
-                        profile.update(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
+                        profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
                     }
                     for record in pitchMatchings {
                         profile.updateMatching(note: MIDINote(record.referenceNote), centError: Cents(record.userCentError))
@@ -165,7 +165,7 @@ struct PeachApp: App {
         let profile = PerceptualProfile()
         let startTime = CFAbsoluteTimeGetCurrent()
         for record in pitchComparisonRecords {
-            profile.update(
+            profile.updateComparison(
                 note: MIDINote(record.referenceNote),
                 centOffset: Cents(abs(record.centOffset)),
                 isCorrect: record.isCorrect

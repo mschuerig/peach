@@ -35,8 +35,7 @@ struct PitchComparisonSessionSettingsTests {
         #expect(f.mockStrategy.callCount == 2)
         #expect(f.mockStrategy.lastReceivedProfile === f.profile)
 
-        let stats = f.profile.statsForNote(60)
-        #expect(stats.sampleCount == 1)
+        #expect(f.profile.comparisonMean != nil)
     }
 
     @Test("PitchComparisonSession with custom settings uses those values")

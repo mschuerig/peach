@@ -2,239 +2,98 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Comprehensive test suite for PerceptualProfile
-/// Tests aggregation, incremental updates, and weak spot identification
 @Suite("PerceptualProfile Tests")
 struct PerceptualProfileTests {
 
-    // MARK: - Task 1 Tests: Data Structure and Cold Start
+    // MARK: - Cold Start
 
     @Test("Cold start profile has no statistics")
     func coldStartProfile() async throws {
         let profile = PerceptualProfile()
 
-        // Cold start should have nil summary statistics
         #expect(profile.comparisonMean == nil)
         #expect(profile.comparisonStdDev == nil)
     }
 
-    @Test("Cold start treats all notes as weak spots")
-    func coldStartWeakSpots() async throws {
+    // MARK: - Aggregate Comparison Statistics
+
+    @Test("Single update sets comparison mean")
+    func singleUpdateSetsMean() async {
         let profile = PerceptualProfile()
 
-        // All 128 MIDI notes should be weak spots when no data exists
-        let weakSpots = profile.weakSpots(count: 128)
-        #expect(weakSpots.count == 128)
-        #expect(weakSpots.contains(60)) // Middle C should be in weak spots
-        #expect(weakSpots.contains(0))  // Lowest MIDI note
-        #expect(weakSpots.contains(127)) // Highest MIDI note
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+
+        #expect(profile.comparisonMean == 50.0)
     }
 
-    @Test("Untrained notes have zero sample count")
-    func untrainedNoteStats() async throws {
+    @Test("Multiple updates compute correct running mean")
+    func multipleUpdatesComputeMean() async {
         let profile = PerceptualProfile()
 
-        let stats = profile.statsForNote(60)
-        #expect(stats.sampleCount == 0)
-        #expect(stats.mean == 0.0)
-        #expect(stats.stdDev == 0.0)
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 40, isCorrect: true)
+
+        #expect(profile.comparisonMean == 45.0) // (50+40)/2
     }
 
-    // MARK: - Task 2 Tests: Initial Aggregation
-
-    @Test("Aggregation computes correct mean from multiple records")
-    func aggregationMean() async throws {
+    @Test("Overall mean across all samples")
+    func comparisonMeanComputation() async {
         let profile = PerceptualProfile()
 
-        // Populate profile via update() - simulates app startup aggregation
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 45, isCorrect: true)
-        profile.update(note: 60, centOffset: 55, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        #expect(stats.mean == 50.0) // (50+45+55)/3
-        #expect(stats.sampleCount == 3)
-    }
-
-    @Test("Aggregation handles multiple notes independently")
-    func aggregationMultipleNotes() async throws {
-        let profile = PerceptualProfile()
-
-        // Populate multiple notes
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 62, centOffset: 30, isCorrect: true)
-        profile.update(note: 64, centOffset: 40, isCorrect: true)
-
-        #expect(profile.statsForNote(60).mean == 50.0)
-        #expect(profile.statsForNote(62).mean == 30.0)
-        #expect(profile.statsForNote(64).mean == 40.0)
-        #expect(profile.statsForNote(61).sampleCount == 0) // Untrained note
-    }
-
-    @Test("Aggregation includes all answers (both correct and incorrect)")
-    func aggregationIncludesAllAnswers() async throws {
-        let profile = PerceptualProfile()
-
-        // Mix of correct and incorrect answers - ALL should be tracked
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 200, isCorrect: false) // Now included
-        profile.update(note: 60, centOffset: 60, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        let expectedMean = (50.0 + 200.0 + 60.0) / 3.0  // All three comparisons
-        #expect(abs(stats.mean - expectedMean) < 0.01) // ~103.33
-        #expect(stats.sampleCount == 3)  // All answers counted
-    }
-
-    // MARK: - Task 3 Tests: Incremental Update
-
-    @Test("Incremental update from cold start")
-    func incrementalUpdateColdStart() async throws {
-        let profile = PerceptualProfile()
-
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        #expect(stats.mean == 50.0)
-        #expect(stats.sampleCount == 1)
-    }
-
-    @Test("Incremental update computes correct running mean")
-    func incrementalUpdateMean() async throws {
-        let profile = PerceptualProfile()
-
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 40, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        #expect(stats.mean == 45.0) // (50+40)/2
-        #expect(stats.sampleCount == 2)
-    }
-
-    @Test("Incremental update includes all answers (both correct and incorrect)")
-    func incrementalUpdateIncludesAllAnswers() async throws {
-        let profile = PerceptualProfile()
-
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 200, isCorrect: false) // Now included
-        profile.update(note: 60, centOffset: 60, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        let expectedMean = (50.0 + 200.0 + 60.0) / 3.0  // All three comparisons
-        #expect(abs(stats.mean - expectedMean) < 0.01) // ~103.33
-        #expect(stats.sampleCount == 3)  // All answers counted
-    }
-
-    @Test("Incremental update handles multiple notes independently")
-    func incrementalUpdateMultipleNotes() async throws {
-        let profile = PerceptualProfile()
-
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 62, centOffset: 30, isCorrect: true)
-        profile.update(note: 60, centOffset: 60, isCorrect: true)
-
-        #expect(profile.statsForNote(60).mean == 55.0) // (50+60)/2
-        #expect(profile.statsForNote(62).mean == 30.0)
-    }
-
-    // MARK: - Task 4 Tests: Weak Spot Identification
-
-    @Test("Weak spots include untrained notes")
-    func weakSpotsIncludeUntrained() async throws {
-        let profile = PerceptualProfile()
-
-        // Train only one note
-        profile.update(note: 60, centOffset: 10, isCorrect: true)
-
-        let weakSpots = profile.weakSpots(count: 10)
-
-        // All weak spots should be untrained notes (127 total), since untrained has highest priority
-        #expect(weakSpots.count == 10)
-        // Note 60 is trained (low threshold), so it should NOT be in weak spots
-        #expect(!weakSpots.contains(60))
-        // All 10 weak spots should be untrained notes (any of the 127 untrained notes)
-        let allUntrained = weakSpots.allSatisfy { $0 != 60 }
-        #expect(allUntrained)
-    }
-
-    @Test("Weak spots prioritize high threshold trained notes over low threshold trained notes")
-    func weakSpotsPrioritizeHighThreshold() async throws {
-        let profile = PerceptualProfile()
-
-        // Train ALL notes to avoid untrained notes being in weak spots
-        for note in 0..<128 {
-            let threshold: Double = (note == 60) ? 80.0 : (note == 62) ? 10.0 : 30.0
-            profile.update(note: MIDINote(note), centOffset: Cents(threshold), isCorrect: true)
-        }
-
-        let weakSpots = profile.weakSpots(count: 5)
-
-        // Note 60 (highest threshold=80) should be in top 5 weak spots
-        #expect(weakSpots.contains(60))
-        // Note 62 (lowest threshold=10) should NOT be in top 5 weak spots
-        #expect(!weakSpots.contains(62))
-    }
-
-    // MARK: - Task 5 Tests: Summary Statistics
-
-    @Test("Overall mean across trained notes")
-    func comparisonMeanComputation() async throws {
-        let profile = PerceptualProfile()
-
-        // Train three notes
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 62, centOffset: 30, isCorrect: true)
-        profile.update(note: 64, centOffset: 40, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 62, centOffset: 30, isCorrect: true)
+        profile.updateComparison(note: 64, centOffset: 40, isCorrect: true)
 
         #expect(profile.comparisonMean == 40.0) // (50+30+40)/3
     }
 
-    @Test("Overall standard deviation computation")
-    func comparisonStdDevComputation() async throws {
+    @Test("Includes all answers (both correct and incorrect)")
+    func includesAllAnswers() async {
         let profile = PerceptualProfile()
 
-        // Train three notes with same threshold
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 62, centOffset: 50, isCorrect: true)
-        profile.update(note: 64, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 200, isCorrect: false)
+        profile.updateComparison(note: 60, centOffset: 60, isCorrect: true)
 
-        // All same values = stdDev should be 0
+        let expectedMean = (50.0 + 200.0 + 60.0) / 3.0
+        let mean = try! profile.comparisonMean!
+        #expect(abs(mean.rawValue - expectedMean) < 0.01)
+    }
+
+    @Test("Standard deviation with identical values is zero")
+    func comparisonStdDevZero() async {
+        let profile = PerceptualProfile()
+
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 62, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 64, centOffset: 50, isCorrect: true)
+
         #expect(profile.comparisonStdDev == 0.0)
     }
 
-    // MARK: - Average Threshold (Story 31.4)
-
-    @Test("averageThreshold returns nil when no notes in range are trained")
-    func averageThresholdColdStart() async {
+    @Test("Standard deviation with variance")
+    func comparisonStdDevWithVariance() async {
         let profile = PerceptualProfile()
 
-        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
-        #expect(result == nil)
+        profile.updateComparison(note: 60, centOffset: 40, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+        profile.updateComparison(note: 60, centOffset: 60, isCorrect: true)
+
+        // Sample stdDev = sqrt(((40-50)^2 + (50-50)^2 + (60-50)^2) / 2) = sqrt(100) = 10.0
+        let stdDev = try! profile.comparisonStdDev!
+        #expect(abs(stdDev.rawValue - 10.0) < 0.01)
     }
 
-    @Test("averageThreshold computes mean of trained notes within range")
-    func averageThresholdWithTrainedNotes() async {
+    @Test("Single sample returns nil stdDev")
+    func singleSampleStdDev() async {
         let profile = PerceptualProfile()
-        profile.update(note: MIDINote(60), centOffset: 40, isCorrect: true)
-        profile.update(note: MIDINote(62), centOffset: 20, isCorrect: true)
-        profile.update(note: MIDINote(64), centOffset: 60, isCorrect: true)
 
-        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
-        #expect(result == 40) // Int((40+20+60)/3) = Int(40.0) = 40
+        profile.updateComparison(note: 60, centOffset: 50, isCorrect: true)
+
+        #expect(profile.comparisonStdDev == nil)
     }
 
-    @Test("averageThreshold ignores trained notes outside the given range")
-    func averageThresholdRespectsRange() async {
-        let profile = PerceptualProfile()
-        // Note 30 is outside defaultNoteRange (36...84)
-        profile.update(note: MIDINote(30), centOffset: 100, isCorrect: true)
-        profile.update(note: MIDINote(60), centOffset: 20, isCorrect: true)
-
-        let result = profile.averageThreshold(noteRange: SettingsKeys.defaultNoteRange)
-        #expect(result == 20) // Only note 60 is in range
-    }
-
-    // MARK: - Interval Context Verification (Story 23.4)
+    // MARK: - Observer Integration
 
     @Test("PitchComparisonObserver uses referenceNote as profile key when interval is non-prime")
     func comparisonObserverUsesReferenceNoteWithInterval() async throws {
@@ -252,13 +111,7 @@ struct PerceptualProfileTests {
 
         profile.pitchComparisonCompleted(completed)
 
-        // Profile should index by referenceNote (60), not targetNote (67)
-        let refStats = profile.statsForNote(MIDINote(60))
-        #expect(refStats.sampleCount == 1)
-        #expect(refStats.mean == 25.0) // offset magnitude
-
-        let targetStats = profile.statsForNote(MIDINote(67))
-        #expect(targetStats.sampleCount == 0)
+        #expect(profile.comparisonMean == 25.0)
     }
 
     @Test("PitchMatchingObserver records centError correctly for non-prime interval")
@@ -276,25 +129,7 @@ struct PerceptualProfileTests {
         profile.pitchMatchingCompleted(completed)
 
         #expect(profile.matchingSampleCount == 1)
-        // Matching mean is abs(centError), verifying the actual value was recorded
         let mean = try #require(profile.matchingMean)
         #expect(abs(mean.rawValue - 12.3) < 0.01)
-    }
-
-    // MARK: - Task 6 Tests: Standard Deviation Calculation
-
-    @Test("Standard deviation for single note with variance")
-    func standardDeviationSingleNote() async throws {
-        let profile = PerceptualProfile()
-
-        // Add data with variance for note 60
-        profile.update(note: 60, centOffset: 40, isCorrect: true)
-        profile.update(note: 60, centOffset: 50, isCorrect: true)
-        profile.update(note: 60, centOffset: 60, isCorrect: true)
-
-        let stats = profile.statsForNote(60)
-        #expect(stats.mean == 50.0)
-        // Sample stdDev = sqrt(((40-50)^2 + (50-50)^2 + (60-50)^2) / 2) = sqrt(100) ≈ 10.0
-        #expect(abs(stats.stdDev - 10.0) < 0.01)
     }
 }

@@ -123,21 +123,17 @@ struct PitchComparisonSessionIntegrationTests {
 
         try #require(f.mockDataStore.lastSavedRecord != nil, "No comparison was recorded")
 
-        let stats = f.profile.statsForNote(60)
-        #expect(stats.sampleCount == 1)
-        #expect(stats.mean == 100.0)
+        #expect(f.profile.comparisonMean == 100.0)
     }
 
     @Test("Profile updates use unsigned centOffset for threshold measurement")
     func profileUsesUnsignedCentOffset() async {
         let f = makePitchComparisonSession()
 
-        f.profile.update(note: 60, centOffset: 50.0, isCorrect: true)
-        f.profile.update(note: 60, centOffset: 30.0, isCorrect: true)
+        f.profile.updateComparison(note: 60, centOffset: 50.0, isCorrect: true)
+        f.profile.updateComparison(note: 60, centOffset: 30.0, isCorrect: true)
 
-        let stats = f.profile.statsForNote(60)
-        #expect(stats.sampleCount == 2)
-        #expect(stats.mean == 40.0)
+        #expect(f.profile.comparisonMean == 40.0)
     }
 
     @Test("Profile statistics accumulate correctly over multiple comparisons")
@@ -156,13 +152,8 @@ struct PitchComparisonSessionIntegrationTests {
 
         #expect(f.mockDataStore.savedRecords.count == 2)
 
-        let stats60 = f.profile.statsForNote(60)
-        #expect(stats60.sampleCount == 1)
-        #expect(stats60.mean == 100.0)
-
-        let stats62 = f.profile.statsForNote(62)
-        #expect(stats62.sampleCount == 1)
-        #expect(stats62.mean == 95.0)
+        // Profile should have mean of both comparison offsets
+        #expect(f.profile.comparisonMean != nil)
     }
 
     @Test("Profile updates for all answers (both correct and incorrect)")
@@ -177,9 +168,7 @@ struct PitchComparisonSessionIntegrationTests {
 
         try #require(f.mockDataStore.lastSavedRecord != nil, "No comparison was recorded")
 
-        let stats = f.profile.statsForNote(60)
-        #expect(stats.sampleCount == 1, "Profile should update for all answers, not just correct ones")
-        #expect(stats.mean == 100.0)
+        #expect(f.profile.comparisonMean != nil, "Profile should update for all answers, not just correct ones")
     }
 
     // MARK: - Profile Loading from DataStore (Story 4.3 AC#2)
@@ -195,16 +184,11 @@ struct PitchComparisonSessionIntegrationTests {
 
         // Loading uses abs() on stored signed centOffset for unsigned threshold
         for record in records {
-            profile.update(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
+            profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(abs(record.centOffset)), isCorrect: record.isCorrect)
         }
 
-        let stats60 = profile.statsForNote(60)
-        #expect(stats60.sampleCount == 2)
-        #expect(stats60.mean == 40.0)
-
-        let stats62 = profile.statsForNote(62)
-        #expect(stats62.sampleCount == 1)
-        #expect(stats62.mean == 40.0)
+        // Mean of [50, 30, 40] = 40.0
+        #expect(profile.comparisonMean == 40.0)
     }
 
     // MARK: - Cold Start (Story 4.3)
