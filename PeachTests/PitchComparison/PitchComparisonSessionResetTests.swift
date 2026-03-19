@@ -87,32 +87,19 @@ struct PitchComparisonSessionResetTests {
         #expect(comparison.targetNote.offset.magnitude == 100.0)
     }
 
-    // MARK: - ProgressTimeline Reset
+    // MARK: - ProgressTimeline Reset via Profile
 
-    @Test("resetTrainingData clears ProgressTimeline data")
-    func resetTrainingDataClearsProgressTimeline() throws {
-        let records = (0..<30).map { i in
-            PitchComparisonRecord(
-                referenceNote: 60,
-                targetNote: 61,
-                centOffset: Double(i) + 1.0,
-                isCorrect: true,
-                interval: 0,
-                tuningSystem: "equalTemperament"
-            )
+    @Test("resetting profile clears ProgressTimeline data")
+    func resetProfileClearsProgressTimeline() throws {
+        let profile = PerceptualProfile()
+        let metrics = (0..<30).map { i in
+            MetricPoint(timestamp: Date().addingTimeInterval(Double(i) * 60), value: Double(i) + 1.0)
         }
-        let progressTimeline = ProgressTimeline(pitchComparisonRecords: records)
+        profile.rebuild(metrics: [.unisonPitchComparison: metrics])
+        let progressTimeline = ProgressTimeline(profile: profile)
         #expect(progressTimeline.state(for: .unisonPitchComparison) != .noData)
 
-        let profile = PerceptualProfile()
-        let session = PitchComparisonSession(
-            notePlayer: MockNotePlayer(),
-            strategy: MockNextPitchComparisonStrategy(),
-            profile: profile,
-            resettables: [progressTimeline]
-        )
-
-        try session.resetTrainingData()
+        profile.resetAll()
 
         #expect(progressTimeline.state(for: .unisonPitchComparison) == .noData)
     }

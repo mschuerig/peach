@@ -6,6 +6,16 @@ import SwiftUI
 @Suite("ExportChartView Tests")
 struct ExportChartViewTests {
 
+    private func makeTimeline(records: [PitchComparisonRecord]) -> ProgressTimeline {
+        let profile = PerceptualProfile()
+        let metrics = MetricPointMapper.extractMetrics(
+            pitchComparisonRecords: records,
+            pitchMatchingRecords: []
+        )
+        profile.rebuild(metrics: metrics)
+        return ProgressTimeline(profile: profile)
+    }
+
     @Test("renders without crashing with mock data")
     func rendersWithMockData() async {
         let now = Date()
@@ -20,7 +30,7 @@ struct ExportChartViewTests {
                 timestamp: now.addingTimeInterval(-Double(10 - i) * 3600)
             )
         }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let timeline = makeTimeline(records: records)
         let view = ExportChartView(mode: .unisonPitchComparison, progressTimeline: timeline, date: now)
 
         // Verify the view can be rendered by ImageRenderer without crashing
@@ -32,7 +42,7 @@ struct ExportChartViewTests {
 
     @Test("renders without crashing with empty data")
     func rendersWithEmptyData() async {
-        let timeline = ProgressTimeline()
+        let timeline = ProgressTimeline(profile: PerceptualProfile())
         let view = ExportChartView(mode: .unisonPitchComparison, progressTimeline: timeline)
 
         let renderer = ImageRenderer(content: view)
@@ -56,7 +66,7 @@ struct ExportChartViewTests {
                 timestamp: now.addingTimeInterval(-Double(5 - i) * 3600)
             )
         }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        let timeline = makeTimeline(records: records)
         let url = ChartImageRenderer.render(mode: .unisonPitchComparison, progressTimeline: timeline, date: now)
 
         #expect(url != nil)

@@ -38,55 +38,6 @@ enum TrainingMode: CaseIterable {
         case .intervalMatching: "interval-matching"
         }
     }
-
-    /// Extracts metric points for this mode from raw training records.
-    func extractMetrics(
-        pitchComparisonRecords: [PitchComparisonRecord],
-        pitchMatchingRecords: [PitchMatchingRecord]
-    ) -> [(timestamp: Date, value: Double)] {
-        switch self {
-        case .unisonPitchComparison:
-            pitchComparisonRecords.filter { $0.interval == 0 }
-                .map { (timestamp: $0.timestamp, value: abs($0.centOffset)) }
-        case .intervalPitchComparison:
-            pitchComparisonRecords.filter { $0.interval != 0 }
-                .map { (timestamp: $0.timestamp, value: abs($0.centOffset)) }
-        case .unisonMatching:
-            pitchMatchingRecords.filter { $0.interval == 0 }
-                .map { (timestamp: $0.timestamp, value: abs($0.userCentError)) }
-        case .intervalMatching:
-            pitchMatchingRecords.filter { $0.interval != 0 }
-                .map { (timestamp: $0.timestamp, value: abs($0.userCentError)) }
-        }
-    }
-
-    /// Returns a metric if this completed comparison belongs to this mode, nil otherwise.
-    func metric(from completed: CompletedPitchComparison) -> (timestamp: Date, value: Double)? {
-        let interval = (try? Interval.between(completed.pitchComparison.referenceNote, completed.pitchComparison.targetNote.note))?.rawValue ?? 0
-        let isUnison = interval == 0
-        switch self {
-        case .unisonPitchComparison where isUnison:
-            return (timestamp: completed.timestamp, value: completed.pitchComparison.targetNote.offset.magnitude)
-        case .intervalPitchComparison where !isUnison:
-            return (timestamp: completed.timestamp, value: completed.pitchComparison.targetNote.offset.magnitude)
-        default:
-            return nil
-        }
-    }
-
-    /// Returns a metric if this completed pitch matching belongs to this mode, nil otherwise.
-    func metric(from result: CompletedPitchMatching) -> (timestamp: Date, value: Double)? {
-        let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
-        let isUnison = interval == 0
-        switch self {
-        case .unisonMatching where isUnison:
-            return (timestamp: result.timestamp, value: result.userCentError.magnitude)
-        case .intervalMatching where !isUnison:
-            return (timestamp: result.timestamp, value: result.userCentError.magnitude)
-        default:
-            return nil
-        }
-    }
 }
 
 /// Whether a training mode has data for visualization.
@@ -119,15 +70,12 @@ struct TimeBucket {
 
 // MARK: - ProgressTimeline
 
-/// Tracks per-mode training progress using EWMA smoothing and adaptive time bucketing.
+/// Pure presentation layer for per-mode training progress charts.
 ///
-/// `ProgressTimeline` is the central analytics engine for the Profile screen.
-/// It receives training records (via `rebuild` or incrementally via observer conformances),
-/// groups them into adaptive time buckets, computes an exponentially weighted moving average
-/// (EWMA) for each mode, and determines trend direction.
-///
-/// Each training mode is tracked independently with its own
-/// `TrainingModeConfig` controlling smoothing, thresholds, and bucketing.
+/// `ProgressTimeline` reads metrics and statistics from `PerceptualProfile`
+/// and formats them into adaptive time buckets for the Profile screen.
+/// It contains no statistical computation of its own — all EWMA, trend,
+/// and record count queries delegate to the profile.
 @Observable
 final class ProgressTimeline {
 
@@ -145,34 +93,41 @@ final class ProgressTimeline {
     /// Number of calendar days in the day zone (before today).
     private static let dayZoneDays = 7
 
-    private var modeData: [TrainingMode: ModeState] = [:]
+    private let profile: PerceptualProfile
 
-    init(
-        pitchComparisonRecords: [PitchComparisonRecord] = [],
-        pitchMatchingRecords: [PitchMatchingRecord] = []
-    ) {
-        for mode in TrainingMode.allCases {
-            modeData[mode] = ModeState()
-        }
-        rebuild(pitchComparisonRecords: pitchComparisonRecords, pitchMatchingRecords: pitchMatchingRecords)
+    init(profile: PerceptualProfile = PerceptualProfile()) {
+        self.profile = profile
     }
 
-    // MARK: - Public API
+    // MARK: - Delegated to Profile
 
     /// Returns the display state for a training mode (no data or active).
     func state(for mode: TrainingMode) -> TrainingModeState {
-        guard let data = modeData[mode], data.recordCount > 0 else { return .noData }
-        return .active
-    }
-
-    /// Returns the adaptive time buckets for charting a mode's progress.
-    func buckets(for mode: TrainingMode) -> [TimeBucket] {
-        modeData[mode]?.buckets ?? []
+        profile.hasData(for: mode) ? .active : .noData
     }
 
     /// Returns the current EWMA value for a mode, or nil if no data.
     func currentEWMA(for mode: TrainingMode) -> Double? {
-        modeData[mode]?.ewma
+        profile.currentEWMA(for: mode)
+    }
+
+    /// Returns the total number of records ingested for a mode.
+    func recordCount(for mode: TrainingMode) -> Int {
+        profile.recordCount(for: mode)
+    }
+
+    /// Returns the trend direction for a mode, or nil if insufficient data.
+    func trend(for mode: TrainingMode) -> Trend? {
+        profile.trend(for: mode)
+    }
+
+    // MARK: - Bucketing (presentation-only)
+
+    /// Returns the adaptive time buckets for charting a mode's progress.
+    func buckets(for mode: TrainingMode) -> [TimeBucket] {
+        guard let stats = profile.statistics(for: mode), !stats.metrics.isEmpty else { return [] }
+        let now = Date()
+        return assignBuckets(stats.metrics, now: now, sessionGap: mode.config.sessionGap)
     }
 
     /// Returns concatenated multi-granularity buckets ordered chronologically.
@@ -184,10 +139,10 @@ final class ProgressTimeline {
     ///
     /// Only three granularity tiers are used: month, day, and session.
     func allGranularityBuckets(for mode: TrainingMode) -> [TimeBucket] {
-        guard let data = modeData[mode], !data.allMetrics.isEmpty else { return [] }
+        guard let stats = profile.statistics(for: mode), !stats.metrics.isEmpty else { return [] }
         let now = Date()
         let calendar = Calendar.current
-        return assignMultiGranularityBuckets(data.allMetrics, now: now, calendar: calendar, sessionGap: mode.config.sessionGap)
+        return assignMultiGranularityBuckets(stats.metrics, now: now, calendar: calendar, sessionGap: mode.config.sessionGap)
     }
 
     /// Returns sub-buckets at finer granularity for a given parent bucket.
@@ -196,169 +151,14 @@ final class ProgressTimeline {
     /// Returns an empty array for session buckets (finest granularity).
     func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket] {
         guard bucket.bucketSize != .session else { return [] }
-        guard let data = modeData[mode] else { return [] }
+        guard let stats = profile.statistics(for: mode) else { return [] }
 
-        let metrics = data.allMetrics.filter {
+        let metrics = stats.metrics.filter {
             $0.timestamp >= bucket.periodStart && $0.timestamp < bucket.periodEnd
         }
         guard !metrics.isEmpty else { return [] }
 
         return assignSubBuckets(metrics, parentSize: bucket.bucketSize, sessionGap: mode.config.sessionGap)
-    }
-
-    /// Returns the total number of records ingested for a mode.
-    func recordCount(for mode: TrainingMode) -> Int {
-        modeData[mode]?.recordCount ?? 0
-    }
-
-    /// Returns the trend direction for a mode, or nil if insufficient data.
-    func trend(for mode: TrainingMode) -> Trend? {
-        guard let data = modeData[mode], data.recordCount >= 2 else { return nil }
-        return data.computedTrend
-    }
-
-    // MARK: - Rebuild
-
-    /// Replaces all data and recomputes statistics from the given records.
-    func rebuild(pitchComparisonRecords: [PitchComparisonRecord], pitchMatchingRecords: [PitchMatchingRecord]) {
-        let now = Date()
-        for mode in TrainingMode.allCases {
-            let metrics = mode.extractMetrics(
-                pitchComparisonRecords: pitchComparisonRecords,
-                pitchMatchingRecords: pitchMatchingRecords
-            ).map { MetricPoint(timestamp: $0.timestamp, value: $0.value) }
-            modeData[mode] = buildModeState(from: metrics, config: mode.config, now: now)
-        }
-    }
-
-    // MARK: - Incremental Updates
-
-    private func addMetric(_ point: MetricPoint, to mode: TrainingMode) {
-        guard var data = modeData[mode] else { return }
-        data.addPoint(point, config: mode.config)
-        modeData[mode] = data
-    }
-
-    // MARK: - Internal State
-
-    private struct MetricPoint {
-        let timestamp: Date
-        let value: Double
-    }
-
-    private struct ModeState {
-        var buckets: [TimeBucket] = []
-        var ewma: Double?
-        var recordCount: Int = 0
-        var computedTrend: Trend?
-        var allMetrics: [MetricPoint] = []
-        var runningMean: Double = 0
-        var runningM2: Double = 0
-
-        var runningStddev: Double? {
-            recordCount >= 2 ? sqrt(runningM2 / Double(recordCount)) : nil
-        }
-
-        mutating func addPoint(_ point: MetricPoint, config: TrainingModeConfig) {
-            recordCount += 1
-            allMetrics.append(point)
-
-            let delta = point.value - runningMean
-            runningMean += delta / Double(recordCount)
-            let delta2 = point.value - runningMean
-            runningM2 += delta * delta2
-
-            let sessionGapSeconds = config.sessionGap / .seconds(1)
-
-            if let lastIndex = buckets.indices.last,
-               buckets[lastIndex].bucketSize == .session,
-               point.timestamp.timeIntervalSince(buckets[lastIndex].periodEnd) < sessionGapSeconds {
-                updateBucket(at: lastIndex, with: point.value)
-                buckets[lastIndex].periodEnd = point.timestamp
-            } else {
-                let bucket = TimeBucket(
-                    periodStart: point.timestamp,
-                    periodEnd: point.timestamp,
-                    bucketSize: .session,
-                    mean: point.value,
-                    stddev: 0,
-                    recordCount: 1
-                )
-                buckets.append(bucket)
-            }
-
-            recomputeEWMA(config: config)
-            recomputeTrend()
-        }
-
-        private mutating func updateBucket(at index: Int, with value: Double) {
-            var bucket = buckets[index]
-            let oldCount = Double(bucket.recordCount)
-            let newCount = oldCount + 1
-            let oldMean = bucket.mean
-            let newMean = oldMean + (value - oldMean) / newCount
-            // Welford's online algorithm for variance
-            let oldM2 = bucket.stddev * bucket.stddev * oldCount
-            let newM2 = oldM2 + (value - oldMean) * (value - newMean)
-            bucket.mean = newMean
-            bucket.stddev = newCount > 1 ? sqrt(newM2 / newCount) : 0
-            bucket.recordCount = Int(newCount)
-            buckets[index] = bucket
-        }
-
-        mutating func recomputeEWMA(config: TrainingModeConfig) {
-            guard !buckets.isEmpty else {
-                ewma = nil
-                return
-            }
-            let halflifeSeconds = config.ewmaHalflife / .seconds(1)
-            var currentEWMA = buckets[0].mean
-            for i in 1..<buckets.count {
-                let dt = buckets[i].periodStart.timeIntervalSince(buckets[i - 1].periodStart)
-                let alpha = 1.0 - exp(-log(2.0) * dt / halflifeSeconds)
-                currentEWMA = alpha * buckets[i].mean + (1.0 - alpha) * currentEWMA
-            }
-            ewma = currentEWMA
-        }
-
-        mutating func recomputeTrend() {
-            guard recordCount >= 2,
-                  let stddev = runningStddev,
-                  let ewma = ewma,
-                  let latest = allMetrics.last else {
-                computedTrend = nil
-                return
-            }
-
-            let value = latest.value
-            if value > runningMean + stddev {
-                computedTrend = .declining
-            } else if value >= ewma {
-                computedTrend = .stable
-            } else {
-                computedTrend = .improving
-            }
-        }
-    }
-
-    private func buildModeState(from metrics: [MetricPoint], config: TrainingModeConfig, now: Date) -> ModeState {
-        var state = ModeState()
-        guard !metrics.isEmpty else { return state }
-
-        let sorted = metrics.sorted { $0.timestamp < $1.timestamp }
-        state.allMetrics = sorted
-        for metric in sorted {
-            state.recordCount += 1
-            let delta = metric.value - state.runningMean
-            state.runningMean += delta / Double(state.recordCount)
-            let delta2 = metric.value - state.runningMean
-            state.runningM2 += delta * delta2
-        }
-        state.buckets = assignBuckets(sorted, now: now, sessionGap: config.sessionGap)
-        state.recomputeEWMA(config: config)
-        state.recomputeTrend()
-
-        return state
     }
 
     // MARK: - Bucket Assignment
@@ -525,40 +325,6 @@ final class ProgressTimeline {
 
         return groups.sorted { $0.key < $1.key }.map { group in
             Self.makeBucket(periodStart: group.key, periodEnd: group.end, bucketSize: childSize, points: group.points)
-        }
-    }
-}
-
-// MARK: - PitchComparisonObserver Conformance
-
-extension ProgressTimeline: PitchComparisonObserver {
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
-        for mode in TrainingMode.allCases {
-            if let metric = mode.metric(from: completed) {
-                addMetric(MetricPoint(timestamp: metric.timestamp, value: metric.value), to: mode)
-            }
-        }
-    }
-}
-
-// MARK: - PitchMatchingObserver Conformance
-
-extension ProgressTimeline: PitchMatchingObserver {
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
-        for mode in TrainingMode.allCases {
-            if let metric = mode.metric(from: result) {
-                addMetric(MetricPoint(timestamp: metric.timestamp, value: metric.value), to: mode)
-            }
-        }
-    }
-}
-
-// MARK: - Resettable Conformance
-
-extension ProgressTimeline: Resettable {
-    func reset() {
-        for mode in TrainingMode.allCases {
-            modeData[mode] = ModeState()
         }
     }
 }

@@ -359,22 +359,17 @@ struct SettingsTests {
         #expect(profile.comparisonStdDev == nil)
     }
 
-    @Test("ProgressTimeline reset clears all data")
-    func progressTimelineResetClearsData() async {
-        let records = (0..<30).map { i in
-            PitchComparisonRecord(
-                referenceNote: 60,
-                targetNote: 61,
-                centOffset: Double(i) + 1.0,
-                isCorrect: true,
-                interval: 0,
-                tuningSystem: "equalTemperament"
-            )
+    @Test("ProgressTimeline reflects profile reset")
+    func progressTimelineReflectsProfileReset() async {
+        let profile = PerceptualProfile()
+        let metrics = (0..<30).map { i in
+            MetricPoint(timestamp: Date().addingTimeInterval(Double(i) * 60), value: Double(i) + 1.0)
         }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        profile.rebuild(metrics: [.unisonPitchComparison: metrics])
+        let timeline = ProgressTimeline(profile: profile)
         #expect(timeline.state(for: .unisonPitchComparison) != .noData)
 
-        timeline.reset()
+        profile.resetAll()
 
         #expect(timeline.state(for: .unisonPitchComparison) == .noData)
     }

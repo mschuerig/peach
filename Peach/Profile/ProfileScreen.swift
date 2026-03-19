@@ -112,21 +112,18 @@ struct ProfileScreen: View {
     NavigationStack {
         ProfileScreen()
             .environment(\.progressTimeline, {
-                var comparisons: [PitchComparisonRecord] = []
+                let profile = PerceptualProfile()
+                var metrics: [MetricPoint] = []
                 for i in 0..<50 {
                     let baseOffset = 50.0 - Double(i) * 0.5
                     let noise = Double.random(in: -10...10)
-                    comparisons.append(PitchComparisonRecord(
-                        referenceNote: 60,
-                        targetNote: 60,
-                        centOffset: baseOffset + noise,
-                        isCorrect: true,
-                        interval: 0,
-                        tuningSystem: "equalTemperament",
-                        timestamp: Date().addingTimeInterval(Double(i - 50) * 3600)
+                    metrics.append(MetricPoint(
+                        timestamp: Date().addingTimeInterval(Double(i - 50) * 3600),
+                        value: abs(baseOffset + noise)
                     ))
                 }
-                return ProgressTimeline(pitchComparisonRecords: comparisons)
+                profile.rebuild(metrics: [.unisonPitchComparison: metrics])
+                return ProgressTimeline(profile: profile)
             }())
     }
 }

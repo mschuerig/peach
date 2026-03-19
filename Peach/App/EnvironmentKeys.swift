@@ -4,7 +4,7 @@ import SwiftUI
 
 extension EnvironmentValues {
     @Entry var soundSourceProvider: any SoundSourceProvider = PreviewSoundSourceProvider()
-    @Entry var progressTimeline = ProgressTimeline()
+    @Entry var progressTimeline = ProgressTimeline(profile: PerceptualProfile())
     @Entry var activeSession: (any TrainingSession)? = nil
     @Entry var perceptualProfile = PerceptualProfile()
     @Entry var dataStoreResetter: (() throws -> Void)? = nil

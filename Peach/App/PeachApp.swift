@@ -50,25 +50,19 @@ struct PeachApp: App {
             )
             _profile = State(wrappedValue: profile)
 
-            let progressTimeline = ProgressTimeline(
-                pitchComparisonRecords: existingRecords,
-                pitchMatchingRecords: pitchMatchingRecords
-            )
+            let progressTimeline = ProgressTimeline(profile: profile)
             _progressTimeline = State(wrappedValue: progressTimeline)
 
             _transferService = State(wrappedValue: TrainingDataTransferService(
                 dataStore: dataStore,
-                onDataChanged: { [dataStore, profile, progressTimeline] in
+                onDataChanged: { [dataStore, profile] in
                     let comparisons = (try? dataStore.fetchAllPitchComparisons()) ?? []
                     let pitchMatchings = (try? dataStore.fetchAllPitchMatchings()) ?? []
-                    profile.resetAll()
-                    for record in comparisons {
-                        profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(record.centOffset), isCorrect: record.isCorrect)
-                    }
-                    for record in pitchMatchings {
-                        profile.updateMatching(note: MIDINote(record.referenceNote), centError: Cents(record.userCentError))
-                    }
-                    progressTimeline.rebuild(pitchComparisonRecords: comparisons, pitchMatchingRecords: pitchMatchings)
+                    let metrics = MetricPointMapper.extractMetrics(
+                        pitchComparisonRecords: comparisons,
+                        pitchMatchingRecords: pitchMatchings
+                    )
+                    profile.rebuild(metrics: metrics)
                 }
             ))
 
@@ -78,15 +72,13 @@ struct PeachApp: App {
                 notePlayer: notePlayer,
                 strategy: strategy,
                 profile: profile,
-                dataStore: dataStore,
-                progressTimeline: progressTimeline
+                dataStore: dataStore
             ))
 
             _pitchMatchingSession = State(wrappedValue: Self.createPitchMatchingSession(
                 notePlayer: notePlayer,
                 profile: profile,
-                dataStore: dataStore,
-                progressTimeline: progressTimeline
+                dataStore: dataStore
             ))
             try? Tips.configure()
         } catch {
@@ -164,16 +156,11 @@ struct PeachApp: App {
     ) -> PerceptualProfile {
         let profile = PerceptualProfile()
         let startTime = CFAbsoluteTimeGetCurrent()
-        for record in pitchComparisonRecords {
-            profile.updateComparison(
-                note: MIDINote(record.referenceNote),
-                centOffset: Cents(record.centOffset),
-                isCorrect: record.isCorrect
-            )
-        }
-        for record in pitchMatchingRecords {
-            profile.updateMatching(note: MIDINote(record.referenceNote), centError: Cents(record.userCentError))
-        }
+        let metrics = MetricPointMapper.extractMetrics(
+            pitchComparisonRecords: pitchComparisonRecords,
+            pitchMatchingRecords: pitchMatchingRecords
+        )
+        profile.rebuild(metrics: metrics)
         let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
         logger.info("Profile loaded from \(pitchComparisonRecords.count) comparison + \(pitchMatchingRecords.count) matching records in \(elapsed, format: .fixed(precision: 1))ms")
         return profile
@@ -183,16 +170,14 @@ struct PeachApp: App {
         notePlayer: NotePlayer,
         strategy: NextPitchComparisonStrategy,
         profile: PerceptualProfile,
-        dataStore: TrainingDataStore,
-        progressTimeline: ProgressTimeline
+        dataStore: TrainingDataStore
     ) -> PitchComparisonSession {
         let hapticManager = HapticFeedbackManager()
-        let observers: [PitchComparisonObserver] = [dataStore, profile, hapticManager, progressTimeline]
+        let observers: [PitchComparisonObserver] = [dataStore, profile, hapticManager]
         return PitchComparisonSession(
             notePlayer: notePlayer,
             strategy: strategy,
             profile: profile,
-            resettables: [progressTimeline],
             observers: observers
         )
     }
@@ -200,13 +185,12 @@ struct PeachApp: App {
     private static func createPitchMatchingSession(
         notePlayer: NotePlayer,
         profile: PerceptualProfile,
-        dataStore: TrainingDataStore,
-        progressTimeline: ProgressTimeline
+        dataStore: TrainingDataStore
     ) -> PitchMatchingSession {
         PitchMatchingSession(
             notePlayer: notePlayer,
             profile: profile,
-            observers: [dataStore, profile, progressTimeline],
+            observers: [dataStore, profile],
             backgroundNotificationName: UIApplication.didEnterBackgroundNotification,
             foregroundNotificationName: UIApplication.willEnterForegroundNotification
         )

@@ -23,20 +23,16 @@ struct TrainingDataImportActionTests {
         parseResult: CSVImportParser.ImportResult,
         mode: TrainingDataImporter.ImportMode,
         dataStore: TrainingDataStore,
-        profile: PerceptualProfile,
-        progressTimeline: ProgressTimeline
+        profile: PerceptualProfile
     ) throws -> TrainingDataImporter.ImportSummary {
         let summary = try TrainingDataImporter.importData(parseResult, mode: mode, into: dataStore)
         let allComparisons = try dataStore.fetchAllPitchComparisons()
         let allPitchMatchings = try dataStore.fetchAllPitchMatchings()
-        profile.resetAll()
-        for record in allComparisons {
-            profile.updateComparison(note: MIDINote(record.referenceNote), centOffset: Cents(record.centOffset), isCorrect: record.isCorrect)
-        }
-        for record in allPitchMatchings {
-            profile.updateMatching(note: MIDINote(record.referenceNote), centError: Cents(record.userCentError))
-        }
-        progressTimeline.rebuild(pitchComparisonRecords: allComparisons, pitchMatchingRecords: allPitchMatchings)
+        let metrics = MetricPointMapper.extractMetrics(
+            pitchComparisonRecords: allComparisons,
+            pitchMatchingRecords: allPitchMatchings
+        )
+        profile.rebuild(metrics: metrics)
         return summary
     }
 
@@ -46,7 +42,6 @@ struct TrainingDataImportActionTests {
     func replaceImportsAndRebuildsProfile() async throws {
         let store = try makeStore()
         let profile = PerceptualProfile()
-        let progressTimeline = ProgressTimeline()
 
         let comparisons = [
             PitchComparisonRecord(referenceNote: 60, targetNote: 62, centOffset: 25.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate()),
@@ -56,7 +51,7 @@ struct TrainingDataImportActionTests {
 
         let summary = try performImportAction(
             parseResult: parseResult, mode: .replace,
-            dataStore: store, profile: profile, progressTimeline: progressTimeline
+            dataStore: store, profile: profile
         )
 
         #expect(summary.totalImported == 2)
@@ -69,7 +64,6 @@ struct TrainingDataImportActionTests {
     func mergeImportsNonDuplicatesAndRebuildsProfile() async throws {
         let store = try makeStore()
         let profile = PerceptualProfile()
-        let progressTimeline = ProgressTimeline()
 
         // Pre-existing record
         let existing = PitchComparisonRecord(referenceNote: 60, targetNote: 62, centOffset: 25.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate())
@@ -84,7 +78,7 @@ struct TrainingDataImportActionTests {
 
         let summary = try performImportAction(
             parseResult: parseResult, mode: .merge,
-            dataStore: store, profile: profile, progressTimeline: progressTimeline
+            dataStore: store, profile: profile
         )
 
         #expect(summary.pitchComparisonsImported == 1)
@@ -99,7 +93,6 @@ struct TrainingDataImportActionTests {
     func profileRebuiltFromAllRecords() async throws {
         let store = try makeStore()
         let profile = PerceptualProfile()
-        let progressTimeline = ProgressTimeline()
 
         // Pre-existing records
         for i in 0..<3 {
@@ -116,7 +109,7 @@ struct TrainingDataImportActionTests {
 
         _ = try performImportAction(
             parseResult: parseResult, mode: .merge,
-            dataStore: store, profile: profile, progressTimeline: progressTimeline
+            dataStore: store, profile: profile
         )
 
         // Profile should have all 5 records (3 existing + 2 imported)
@@ -124,10 +117,13 @@ struct TrainingDataImportActionTests {
         #expect(allRecords.count == 5)
     }
 
-    // MARK: - ProgressTimeline rebuild
+    // MARK: - ProgressTimeline reads from profile
 
-    @Test("ProgressTimeline rebuild matches fresh init behavior")
-    func progressTimelineRebuildMatchesFreshInit() async throws {
+    @Test("ProgressTimeline reflects profile state after import")
+    func progressTimelineReflectsProfileAfterImport() async throws {
+        let profile = PerceptualProfile()
+        let timeline = ProgressTimeline(profile: profile)
+
         let records = (0..<25).map { i in
             PitchComparisonRecord(
                 referenceNote: 60, targetNote: 60, centOffset: Double(50 - i), isCorrect: true,
@@ -136,10 +132,12 @@ struct TrainingDataImportActionTests {
             )
         }
 
-        let freshTimeline = ProgressTimeline(pitchComparisonRecords: records)
-        let rebuiltTimeline = ProgressTimeline()
-        rebuiltTimeline.rebuild(pitchComparisonRecords: records, pitchMatchingRecords: [])
+        let metrics = MetricPointMapper.extractMetrics(
+            pitchComparisonRecords: records,
+            pitchMatchingRecords: []
+        )
+        profile.rebuild(metrics: metrics)
 
-        #expect(rebuiltTimeline.state(for: .unisonPitchComparison) == freshTimeline.state(for: .unisonPitchComparison))
+        #expect(timeline.state(for: .unisonPitchComparison) == .active)
     }
 }

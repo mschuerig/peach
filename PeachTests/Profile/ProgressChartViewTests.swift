@@ -578,22 +578,15 @@ struct ProgressChartViewTests {
 
     private func makeTimeline(dayCount: Int, recordsPerDay: Int) -> ProgressTimeline {
         let now = Date()
-        var records: [PitchComparisonRecord] = []
+        var metrics: [MetricPoint] = []
         for day in 0..<dayCount {
             for record in 0..<recordsPerDay {
                 let timestamp = now.addingTimeInterval(Double(-day) * 86400 + Double(record) * 60)
-                let pitchRecord = PitchComparisonRecord(
-                    referenceNote: 60,
-                    targetNote: 60,
-                    centOffset: Double.random(in: 5...25),
-                    isCorrect: true,
-                    interval: 0,
-                    tuningSystem: "equalTemperament",
-                    timestamp: timestamp
-                )
-                records.append(pitchRecord)
+                metrics.append(MetricPoint(timestamp: timestamp, value: Double.random(in: 5...25)))
             }
         }
-        return ProgressTimeline(pitchComparisonRecords: records)
+        let profile = PerceptualProfile()
+        profile.rebuild(metrics: [.unisonPitchComparison: metrics])
+        return ProgressTimeline(profile: profile)
     }
 }

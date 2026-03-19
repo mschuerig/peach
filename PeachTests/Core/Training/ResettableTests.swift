@@ -22,15 +22,7 @@ struct ResettableTests {
         #expect(mock2.resetCallCount == 1)
     }
 
-    @Test("ProgressTimeline conforms to Resettable")
-    func progressTimelineConformsToResettable() async throws {
-        let timeline = ProgressTimeline()
-        let resettable: Resettable = timeline
-        try resettable.reset()
-        #expect(timeline.state(for: .unisonPitchComparison) == .noData)
-    }
-
-    @Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
+@Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
     func resetTrainingDataCallsAllResettables() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()

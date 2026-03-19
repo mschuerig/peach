@@ -9,18 +9,15 @@ struct ProfileScreenLayoutTests {
 
     @Test("Accessibility summary lists active modes")
     func accessibilitySummaryWithData() async throws {
-        let records = (0..<25).map { i in
-            PitchComparisonRecord(
-                referenceNote: 60,
-                targetNote: 60,
-                centOffset: Double(30 + i),
-                isCorrect: true,
-                interval: 0,
-                tuningSystem: "equalTemperament",
-                timestamp: Date().addingTimeInterval(Double(i - 25) * 3600)
+        let profile = PerceptualProfile()
+        let metrics = (0..<25).map { i in
+            MetricPoint(
+                timestamp: Date().addingTimeInterval(Double(i - 25) * 3600),
+                value: Double(30 + i)
             )
         }
-        let timeline = ProgressTimeline(pitchComparisonRecords: records)
+        profile.rebuild(metrics: [.unisonPitchComparison: metrics])
+        let timeline = ProgressTimeline(profile: profile)
 
         let summary = ProfileScreen.accessibilitySummary(progressTimeline: timeline)
 
@@ -30,7 +27,7 @@ struct ProfileScreenLayoutTests {
 
     @Test("Accessibility summary empty state is non-empty")
     func accessibilitySummaryEmpty() async throws {
-        let timeline = ProgressTimeline()
+        let timeline = ProgressTimeline(profile: PerceptualProfile())
         let summary = ProfileScreen.accessibilitySummary(progressTimeline: timeline)
 
         #expect(!summary.isEmpty)
