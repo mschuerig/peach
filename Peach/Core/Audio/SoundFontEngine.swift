@@ -14,7 +14,6 @@ final class SoundFontEngine {
 
     // MARK: - State
 
-    private var isSessionConfigured = false
     private var loadedPreset: SF2Preset
 
     // MARK: - Constants
@@ -44,6 +43,7 @@ final class SoundFontEngine {
         engine.attach(sampler)
         engine.connect(sampler, to: engine.mainMixerNode, format: nil)
 
+        try Self.configureAudioSession()
         try engine.start()
         try sampler.loadSoundBankInstrument(
             at: sf2URL,
@@ -57,15 +57,14 @@ final class SoundFontEngine {
         logger.info("SoundFontEngine initialized with \(library.sf2URL.lastPathComponent), preset \(preset.rawValue)")
     }
 
+    isolated deinit {
+        engine.stop()
+    }
+
     // MARK: - Audio Session & Engine Lifecycle
 
     func ensureAudioSessionConfigured() throws {
-        if !isSessionConfigured {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
-            try session.setActive(true)
-            isSessionConfigured = true
-        }
+        try Self.configureAudioSession()
     }
 
     func ensureEngineRunning() throws {
@@ -129,6 +128,14 @@ final class SoundFontEngine {
 
     func sendPitchBend(_ value: PitchBendValue) {
         sampler.sendPitchBend(value.rawValue, onChannel: Self.channel)
+    }
+
+    // MARK: - Audio Session
+
+    private static func configureAudioSession() throws {
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.playback, mode: .default, options: [])
+        try session.setActive(true)
     }
 
     // MARK: - MIDI Helpers
