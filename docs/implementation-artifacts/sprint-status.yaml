@@ -354,8 +354,8 @@ development_status:
   44-4-typed-metrics-generic-accumulator-incremental-profile-init: done
 
   # Epic 45: Rhythm Domain — Types and Contracts
-  epic-45: in-progress
+  epic-45: done
   45-1-tempobpm-domain-type: done
   45-2-rhythmoffset-and-rhythmdirection-domain-types: done
   45-3-rhythm-observer-protocols-and-result-types: done
-  45-4-rhythmprofile-protocol: review
+  45-4-rhythmprofile-protocol: done

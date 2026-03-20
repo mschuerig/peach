@@ -1,6 +1,6 @@
 # Story 45.4: RhythmProfile Protocol
 
-Status: review
+Status: done
 
 ## Story
 
