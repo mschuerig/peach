@@ -105,4 +105,134 @@ struct SoundFontEngineTests {
         await engine.stopAllNotes(stopPropagationDelay: .zero)
     }
 
+    // MARK: - Schedule Scanning (pure function)
+
+    @Test("scanSchedule dispatches events within buffer window")
+    func scanScheduleDispatchesEventsInWindow() async {
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 10, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 50, midiStatus: 0x80, midiNote: 60, velocity: 0),
+            ScheduledMIDIEvent(sampleOffset: 300, midiStatus: 0x90, midiNote: 64, velocity: 80),
+        ]
+        let result = SoundFontEngine.scanSchedule(events: events, fromIndex: 0, windowStart: 0, windowEnd: 240)
+        #expect(result.dispatched.count == 2)
+        #expect(result.dispatched[0].midiNote == 60)
+        #expect(result.dispatched[0].midiStatus == 0x90)
+        #expect(result.dispatched[1].midiNote == 60)
+        #expect(result.dispatched[1].midiStatus == 0x80)
+        #expect(result.nextIndex == 2)
+    }
+
+    @Test("scanSchedule dispatches multiple events within single buffer")
+    func scanScheduleMultipleEventsInBuffer() async {
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 0, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 100, midiStatus: 0x90, midiNote: 64, velocity: 90),
+            ScheduledMIDIEvent(sampleOffset: 200, midiStatus: 0x90, midiNote: 67, velocity: 80),
+        ]
+        let result = SoundFontEngine.scanSchedule(events: events, fromIndex: 0, windowStart: 0, windowEnd: 240)
+        #expect(result.dispatched.count == 3)
+        #expect(result.nextIndex == 3)
+    }
+
+    @Test("scanSchedule dispatches events spanning multiple buffers in order")
+    func scanScheduleSpansMultipleBuffers() async {
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 100, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 300, midiStatus: 0x80, midiNote: 60, velocity: 0),
+            ScheduledMIDIEvent(sampleOffset: 500, midiStatus: 0x90, midiNote: 64, velocity: 80),
+        ]
+
+        // First buffer: [0, 240)
+        let result1 = SoundFontEngine.scanSchedule(events: events, fromIndex: 0, windowStart: 0, windowEnd: 240)
+        #expect(result1.dispatched.count == 1)
+        #expect(result1.dispatched[0].midiNote == 60)
+        #expect(result1.dispatched[0].midiStatus == 0x90)
+        #expect(result1.nextIndex == 1)
+
+        // Second buffer: [240, 480)
+        let result2 = SoundFontEngine.scanSchedule(events: events, fromIndex: result1.nextIndex, windowStart: 240, windowEnd: 480)
+        #expect(result2.dispatched.count == 1)
+        #expect(result2.dispatched[0].midiNote == 60)
+        #expect(result2.dispatched[0].midiStatus == 0x80)
+        #expect(result2.nextIndex == 2)
+
+        // Third buffer: [480, 720)
+        let result3 = SoundFontEngine.scanSchedule(events: events, fromIndex: result2.nextIndex, windowStart: 480, windowEnd: 720)
+        #expect(result3.dispatched.count == 1)
+        #expect(result3.dispatched[0].midiNote == 64)
+        #expect(result3.nextIndex == 3)
+    }
+
+    @Test("scanSchedule returns empty when no events in window")
+    func scanScheduleNoEventsInWindow() async {
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 500, midiStatus: 0x90, midiNote: 60, velocity: 100),
+        ]
+        let result = SoundFontEngine.scanSchedule(events: events, fromIndex: 0, windowStart: 0, windowEnd: 240)
+        #expect(result.dispatched.isEmpty)
+        #expect(result.nextIndex == 0)
+    }
+
+    // MARK: - Schedule Management
+
+    @Test("clearSchedule resets event count to zero")
+    func clearScheduleResetsCount() async throws {
+        let engine = try makeEngine()
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 0, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 100, midiStatus: 0x80, midiNote: 60, velocity: 0),
+        ]
+        engine.scheduleEvents(events)
+        #expect(engine.scheduledEventCount == 2)
+        engine.clearSchedule()
+        #expect(engine.scheduledEventCount == 0)
+    }
+
+    @Test("scheduleEvents replaces existing schedule")
+    func scheduleEventsReplacesExisting() async throws {
+        let engine = try makeEngine()
+        let firstBatch = [
+            ScheduledMIDIEvent(sampleOffset: 0, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 100, midiStatus: 0x80, midiNote: 60, velocity: 0),
+        ]
+        engine.scheduleEvents(firstBatch)
+        #expect(engine.scheduledEventCount == 2)
+
+        let secondBatch = [
+            ScheduledMIDIEvent(sampleOffset: 0, midiStatus: 0x90, midiNote: 72, velocity: 80),
+        ]
+        engine.scheduleEvents(secondBatch)
+        #expect(engine.scheduledEventCount == 1)
+    }
+
+    // MARK: - Immediate Dispatch After Source Node
+
+    @Test("startNote still works after source node is added")
+    func startNoteWorksWithSourceNode() async throws {
+        let engine = try makeEngine()
+        engine.startNote(MIDINote(60), velocity: MIDIVelocity(100), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
+        engine.stopNote(MIDINote(60))
+    }
+
+    @Test("sendPitchBend still works after source node is added")
+    func sendPitchBendWorksWithSourceNode() async throws {
+        let engine = try makeEngine()
+        engine.sendPitchBend(.center)
+    }
+
+    // MARK: - Integration: Schedule and Play
+
+    @Test("scheduling events and letting them play does not crash")
+    func scheduleAndPlayNoCrash() async throws {
+        let engine = try makeEngine()
+        let events = [
+            ScheduledMIDIEvent(sampleOffset: 0, midiStatus: 0x90, midiNote: 60, velocity: 100),
+            ScheduledMIDIEvent(sampleOffset: 24000, midiStatus: 0x80, midiNote: 60, velocity: 0),
+        ]
+        engine.scheduleEvents(events)
+        try await Task.sleep(for: .milliseconds(100))
+        engine.clearSchedule()
+    }
+
 }

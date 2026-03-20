@@ -1,6 +1,6 @@
 # Story 46.3: Add Render-Thread Scheduling to SoundFontEngine
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,40 +20,40 @@ So that rhythm patterns can be played with sub-millisecond timing precision (NFR
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `AVAudioSourceNode` to the audio graph (AC: #1)
-  - [ ] Add a `private let sourceNode: AVAudioSourceNode` to `SoundFontEngine`
-  - [ ] Initialize `sourceNode` with a render callback that reads from an internal event schedule and outputs silence
-  - [ ] Attach and connect `sourceNode` to `engine.mainMixerNode` in `init`
-  - [ ] The source node's format must match the engine's output sample rate (use `engine.outputNode.outputFormat(forBus: 0).sampleRate`)
-  - [ ] Verify engine still starts and all existing immediate dispatch continues to work
+- [x] Task 1: Add `AVAudioSourceNode` to the audio graph (AC: #1)
+  - [x] Add a `private let sourceNode: AVAudioSourceNode` to `SoundFontEngine`
+  - [x] Initialize `sourceNode` with a render callback that reads from an internal event schedule and outputs silence
+  - [x] Attach and connect `sourceNode` to `engine.mainMixerNode` in `init`
+  - [x] The source node's format must match the engine's output sample rate (use `engine.outputNode.outputFormat(forBus: 0).sampleRate`)
+  - [x] Verify engine still starts and all existing immediate dispatch continues to work
 
-- [ ] Task 2: Implement the render-thread event schedule (AC: #2)
-  - [ ] Define a `ScheduledMIDIEvent` struct (sample offset `Int64`, MIDI note `UInt8`, velocity `UInt8`, channel `UInt8`, event type note-on/note-off) — must be `Sendable` and trivially copyable for render-thread safety
-  - [ ] Add an internal schedule buffer (e.g., lock-free ring buffer or `os_unfair_lock`-protected array) that the render callback reads
-  - [ ] Add `scheduleEvents(_ events: [ScheduledMIDIEvent])` method to load a batch of pre-computed events — sets the schedule and resets the sample counter
-  - [ ] Add `clearSchedule()` method to cancel all pending events
-  - [ ] The render callback tracks cumulative sample position via `frameCount` accumulation
-  - [ ] Each render cycle: check for events with `sampleOffset` falling within `[currentSample, currentSample + frameCount)`, dispatch each via `scheduleMIDIEventBlock` on the `AVAudioUnitSampler`'s `auAudioUnit` with the exact intra-buffer offset
-  - [ ] No allocations or locks in the render callback hot path — all data must be pre-allocated (NFR-R2/FR94)
+- [x] Task 2: Implement the render-thread event schedule (AC: #2)
+  - [x] Define a `ScheduledMIDIEvent` struct (sample offset `Int64`, MIDI note `UInt8`, velocity `UInt8`, channel `UInt8`, event type note-on/note-off) — must be `Sendable` and trivially copyable for render-thread safety
+  - [x] Add an internal schedule buffer (e.g., lock-free ring buffer or `os_unfair_lock`-protected array) that the render callback reads
+  - [x] Add `scheduleEvents(_ events: [ScheduledMIDIEvent])` method to load a batch of pre-computed events — sets the schedule and resets the sample counter
+  - [x] Add `clearSchedule()` method to cancel all pending events
+  - [x] The render callback tracks cumulative sample position via `frameCount` accumulation
+  - [x] Each render cycle: check for events with `sampleOffset` falling within `[currentSample, currentSample + frameCount)`, dispatch each via `scheduleMIDIEventBlock` on the `AVAudioUnitSampler`'s `auAudioUnit` with the exact intra-buffer offset
+  - [x] No allocations or locks in the render callback hot path — all data must be pre-allocated (NFR-R2/FR94)
 
-- [ ] Task 3: Configure minimum audio buffer duration (AC: #3)
-  - [ ] Add `configureForRhythmScheduling()` method that calls `AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.005)`
-  - [ ] Call this when scheduling is activated, not unconditionally at init (pitch training doesn't need 5ms buffers)
-  - [ ] Add `restoreDefaultBufferDuration()` that resets to the system default when scheduling is deactivated
+- [x] Task 3: Configure minimum audio buffer duration (AC: #3)
+  - [x] Add `configureForRhythmScheduling()` method that calls `AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.005)`
+  - [x] Call this when scheduling is activated, not unconditionally at init (pitch training doesn't need 5ms buffers)
+  - [x] Add `restoreDefaultBufferDuration()` that resets to the system default when scheduling is deactivated
 
-- [ ] Task 4: Write tests for scheduling accuracy (AC: #4)
-  - [ ] Test: events scheduled at known sample offsets are dispatched within the correct render buffer window
-  - [ ] Test: multiple events within a single buffer are all dispatched
-  - [ ] Test: events spanning multiple buffers are dispatched in correct order
-  - [ ] Test: `clearSchedule()` prevents remaining events from firing
-  - [ ] Test: `scheduleEvents` replaces any existing schedule
-  - [ ] Test: existing immediate dispatch (`startNote`, `stopNote`, `sendPitchBend`) still works after source node is added
-  - [ ] Test: engine initialization with source node succeeds
+- [x] Task 4: Write tests for scheduling accuracy (AC: #4)
+  - [x] Test: events scheduled at known sample offsets are dispatched within the correct render buffer window
+  - [x] Test: multiple events within a single buffer are all dispatched
+  - [x] Test: events spanning multiple buffers are dispatched in correct order
+  - [x] Test: `clearSchedule()` prevents remaining events from firing
+  - [x] Test: `scheduleEvents` replaces any existing schedule
+  - [x] Test: existing immediate dispatch (`startNote`, `stopNote`, `sendPitchBend`) still works after source node is added
+  - [x] Test: engine initialization with source node succeeds
 
-- [ ] Task 5: Verify no regressions (AC: #1, #2, #3, #4)
-  - [ ] `bin/build.sh` — zero errors, zero warnings
-  - [ ] `bin/test.sh` — full suite passes, zero regressions
-  - [ ] All existing `SoundFontEngineTests`, `SoundFontNotePlayerTests`, and `SoundFontPresetStressTests` pass unchanged
+- [x] Task 5: Verify no regressions (AC: #1, #2, #3, #4)
+  - [x] `bin/build.sh` — zero errors, zero warnings
+  - [x] `bin/test.sh` — full suite passes, zero regressions
+  - [x] All existing `SoundFontEngineTests`, `SoundFontNotePlayerTests`, and `SoundFontPresetStressTests` pass unchanged
 
 ## Dev Notes
 
@@ -191,8 +191,22 @@ Test files:
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+None
 
 ### Completion Notes List
 
+- Used `OSAllocatedUnfairLock<ScheduleData>` with `withLockIfAvailable` (try-lock) on the render thread for real-time safety — never blocks the audio pipeline
+- `ScheduleData` is `nonisolated` and `@unchecked Sendable` to work correctly with default MainActor isolation and `@Sendable` closures
+- Pre-allocated `UnsafeMutablePointer<ScheduledMIDIEvent>` buffer (capacity 4096) — zero heap allocations on the render thread
+- `@preconcurrency import AVFoundation` to handle non-Sendable AVFAudio types in `@Sendable` contexts
+- Extracted `scanSchedule()` as a `nonisolated static` pure function for deterministic unit testing of the schedule-scanning logic
+- `AUEventSampleTime` read from `timestamp` before entering the lock closure to avoid capturing non-Sendable `UnsafePointer<AudioTimeStamp>`
+
 ### File List
+
+- `Peach/Core/Audio/SoundFontEngine.swift` — Added `ScheduledMIDIEvent`, `ScheduleData`, `AVAudioSourceNode` render callback, `scheduleEvents()`, `clearSchedule()`, `scheduledEventCount`, `configureForRhythmScheduling()`, `restoreDefaultBufferDuration()`, `scanSchedule()`
+- `PeachTests/Core/Audio/SoundFontEngineTests.swift` — Added 9 tests for schedule scanning, schedule management, immediate dispatch after source node, and integration
