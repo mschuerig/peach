@@ -12,7 +12,7 @@ So that rhythm training results can be persisted locally.
 
 1. **Given** `RhythmComparisonRecord` `@Model`, **when** inspected, **then** it contains `tempoBPM: Int`, `offsetMs: Double` (signed, negative=early, positive=late), `isCorrect: Bool`, `timestamp: Date`.
 
-2. **Given** `RhythmMatchingRecord` `@Model`, **when** inspected, **then** it contains `tempoBPM: Int`, `expectedOffsetMs: Double` (always 0.0 for v0.4), `userOffsetMs: Double` (signed), `timestamp: Date`, **and** a comment reserves `inputMethod` for future non-tap input.
+2. **Given** `RhythmMatchingRecord` `@Model`, **when** inspected, **then** it contains `tempoBPM: Int`, `userOffsetMs: Double` (signed), `timestamp: Date`, **and** a comment reserves `inputMethod` for future non-tap input.
 
 3. **Given** the `ModelContainer` schema in `PeachApp.swift`, **when** updated, **then** it includes `RhythmComparisonRecord.self` and `RhythmMatchingRecord.self` alongside existing pitch records.
 
@@ -28,7 +28,7 @@ So that rhythm training results can be persisted locally.
 
 - [x] Task 2: Create `RhythmMatchingRecord` model (AC: #2, #4)
   - [x] Create `Peach/Core/Data/RhythmMatchingRecord.swift`
-  - [x] `@Model final class` with `tempoBPM: Int`, `expectedOffsetMs: Double`, `userOffsetMs: Double`, `timestamp: Date`
+  - [x] `@Model final class` with `tempoBPM: Int`, `userOffsetMs: Double`, `timestamp: Date`
   - [x] Add comment: `// Future: inputMethod property for non-tap input methods`
   - [x] Init with all properties, `timestamp: Date = Date()` default
   - [x] Write tests in `PeachTests/Core/Data/RhythmMatchingRecordTests.swift`
@@ -72,7 +72,6 @@ final class PitchComparisonRecord {
 |---|---|---|
 | `tempoBPM: Int` | `TempoBPM` | `TempoBPM(record.tempoBPM)` / `tempo.value` |
 | `offsetMs: Double` | `RhythmOffset` | `RhythmOffset(.milliseconds(record.offsetMs))` / `offset.duration.timeInterval * 1000` |
-| `expectedOffsetMs: Double` | `RhythmOffset` | Same as above (always 0.0 for v0.4) |
 | `userOffsetMs: Double` | `RhythmOffset` | Same as above |
 | `isCorrect: Bool` | `Bool` | Direct |
 | `timestamp: Date` | `Date` | Direct |
@@ -132,7 +131,7 @@ Claude Opus 4.6
 ### Completion Notes List
 
 - Created `RhythmComparisonRecord` SwiftData model following the existing `PitchComparisonRecord` pattern: `@Model final class` with raw types (`Int`, `Double`, `Bool`, `Date`) at the persistence boundary. Added sign convention comment on `offsetMs`.
-- Created `RhythmMatchingRecord` SwiftData model following `PitchMatchingRecord` pattern with `tempoBPM`, `expectedOffsetMs`, `userOffsetMs`, `timestamp`. Added future `inputMethod` comment.
+- Created `RhythmMatchingRecord` SwiftData model following `PitchMatchingRecord` pattern with `tempoBPM`, `userOffsetMs`, `timestamp`. Added future `inputMethod` comment.
 - Registered both new models in `ModelContainer` schema in `PeachApp.swift`.
 - All 1182 tests pass with no regressions.
 

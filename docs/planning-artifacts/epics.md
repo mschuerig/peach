@@ -92,7 +92,7 @@ FR73a: System returns to the Start Screen when the app is foregrounded after bei
 FR74: User can start rhythm matching training from the Start Screen via a dedicated button
 FR75: System plays 3 sixteenth notes at the user's chosen metronome tempo; user taps to produce the 4th note at the correct moment
 FR76: System accepts tap input only (clap and MIDI reserved for future; inputMethod field reserved in data model)
-FR77: System records rhythm matching results: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp
+FR77: System records rhythm matching results: tempoBPM, userOffsetMs, timestamp
 FR78: System tracks separate mean and stdDev for early vs. late errors in rhythm matching
 FR79: System discards incomplete rhythm matching exercises on interruption (same rules as FR73)
 FR79a: System returns to the Start Screen when the app is foregrounded after being backgrounded during rhythm matching
@@ -114,7 +114,7 @@ FR94: System pre-calculates all note timing before playback begins — no schedu
 FR95: System plays non-pitched percussion tones using available percussion presets
 FR96: System configures minimum audio buffer duration for timing-critical rhythm playback
 FR97: System stores rhythm comparison results as: tempoBPM, offsetMs (signed), isCorrect, timestamp
-FR98: System stores rhythm matching results as: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp (inputMethod field reserved for future)
+FR98: System stores rhythm matching results as: tempoBPM, userOffsetMs, timestamp (inputMethod field reserved for future)
 FR99: System derives early/late distinction from the sign of the stored time offset — no separate early/late field per record
 FR100: System uses CSV format version 2 for export/import with a trainingType discriminator
 FR101: Format version 2 introduces rhythmComparison and rhythmMatching as new trainingType values with type-specific columns
@@ -4954,7 +4954,7 @@ So that rhythm training results can be persisted locally.
 
 **Given** `RhythmMatchingRecord` `@Model`
 **When** inspected
-**Then** it contains `tempoBPM: Int`, `expectedOffsetMs: Double` (always 0.0 for v0.4), `userOffsetMs: Double` (signed), `timestamp: Date`
+**Then** it contains `tempoBPM: Int`, `userOffsetMs: Double` (signed), `timestamp: Date`
 **And** a comment reserves `inputMethod` for future non-tap input
 
 **Given** the `ModelContainer` schema in `PeachApp.swift`
@@ -5428,7 +5428,7 @@ So that rhythm training data can be exported alongside pitch data (FR100, FR101)
 
 **Given** rhythm matching records
 **When** exported
-**Then** type-specific columns include tempoBPM, expectedOffsetMs, userOffsetMs, timestamp
+**Then** type-specific columns include tempoBPM, userOffsetMs, timestamp
 
 **Given** `TrainingDataExporter`
 **When** updated

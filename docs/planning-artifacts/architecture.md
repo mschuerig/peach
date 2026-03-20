@@ -2060,7 +2060,6 @@ final class RhythmComparisonRecord {
 @Model
 final class RhythmMatchingRecord {
     var tempoBPM: Int
-    var expectedOffsetMs: Double    // always 0.0 for v0.4 (the correct beat)
     var userOffsetMs: Double        // signed — negative=early, positive=late
     var timestamp: Date
     // inputMethod field reserved for future (clap detection, MIDI input)
@@ -2068,7 +2067,6 @@ final class RhythmMatchingRecord {
 ```
 
 **Design notes:**
-- `expectedOffsetMs` is always 0.0 for v0.4 but stored for future flexibility (e.g., exercises where the target is intentionally off-beat)
 - `inputMethod` reserved as a comment, not a field — add the field when the first non-tap input is implemented
 - File location: `Core/Data/RhythmMatchingRecord.swift`
 

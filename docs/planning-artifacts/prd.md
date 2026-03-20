@@ -416,7 +416,7 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 - Per-interval-pitch-matching data model: reference note, target interval, user's final pitch, error in cents relative to correct interval, timestamp
 - Sample-accurate audio scheduling engine for pre-calculated, render-callback-level note timing
 - Per-rhythm-comparison data model: tempoBPM, offsetMs (signed), isCorrect, timestamp
-- Per-rhythm-matching data model: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp (inputMethod reserved for future)
+- Per-rhythm-matching data model: tempoBPM, userOffsetMs, timestamp (inputMethod reserved for future)
 - Spectrogram-style visualization component for tempo × accuracy × time display
 
 ## Functional Requirements
@@ -550,7 +550,7 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 - **FR74:** User can start rhythm matching training from the Start Screen via a dedicated button
 - **FR75:** System plays 3 sixteenth notes at the user's chosen metronome tempo; user taps to produce the 4th note at the correct moment
 - **FR76:** System accepts tap input only (clap and MIDI reserved for future; inputMethod field reserved in data model)
-- **FR77:** System records rhythm matching results: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp
+- **FR77:** System records rhythm matching results: tempoBPM, userOffsetMs, timestamp
 - **FR78:** System tracks separate mean and stdDev for early vs. late errors in rhythm matching
 - **FR79:** System discards incomplete rhythm matching exercises on interruption (same rules as FR73)
 - **FR79a:** System returns to the Start Screen when the app is foregrounded after being backgrounded during rhythm matching
@@ -590,7 +590,7 @@ Peach is an ear training app for iOS. It trains musicians' perception through pi
 ### Rhythm Data Storage
 
 - **FR97:** System stores rhythm comparison results as: tempoBPM, offsetMs (signed), isCorrect, timestamp — one record per exercise
-- **FR98:** System stores rhythm matching results as: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp — one record per exercise (inputMethod field reserved for future)
+- **FR98:** System stores rhythm matching results as: tempoBPM, userOffsetMs, timestamp — one record per exercise (inputMethod field reserved for future)
 - **FR99:** System derives early/late distinction from the sign of the stored time offset — no separate early/late field per record
 
 ### Rhythm Export/Import

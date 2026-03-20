@@ -60,7 +60,7 @@
 ## Data Storage
 
 - `RhythmComparisonRecord`: tempoBPM, offsetMs (signed), isCorrect, timestamp
-- `RhythmMatchingRecord`: tempoBPM, expectedOffsetMs, userOffsetMs, timestamp (inputMethod field reserved for future)
+- `RhythmMatchingRecord`: tempoBPM, userOffsetMs, timestamp (inputMethod field reserved for future)
 - Single record per exercise — early/late distinction derived from sign of offsetMs at the statistics layer
 - Stored via `TrainingDataStore` following existing patterns
 

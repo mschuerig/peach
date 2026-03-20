@@ -23,7 +23,6 @@ struct RhythmMatchingRecordTests {
         let timestamp = Date()
         let record = RhythmMatchingRecord(
             tempoBPM: 120,
-            expectedOffsetMs: 0.0,
             userOffsetMs: -12.5,
             timestamp: timestamp
         )
@@ -36,7 +35,6 @@ struct RhythmMatchingRecordTests {
 
         #expect(fetched.count == 1)
         #expect(fetched[0].tempoBPM == 120)
-        #expect(fetched[0].expectedOffsetMs == 0.0)
         #expect(fetched[0].userOffsetMs == -12.5)
         #expect(abs(fetched[0].timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
@@ -46,7 +44,6 @@ struct RhythmMatchingRecordTests {
         let before = Date()
         let record = RhythmMatchingRecord(
             tempoBPM: 90,
-            expectedOffsetMs: 0.0,
             userOffsetMs: 3.2
         )
         let after = Date()
@@ -62,12 +59,10 @@ struct RhythmMatchingRecordTests {
 
         let earlyRecord = RhythmMatchingRecord(
             tempoBPM: 100,
-            expectedOffsetMs: 0.0,
             userOffsetMs: -18.9
         )
         let lateRecord = RhythmMatchingRecord(
             tempoBPM: 100,
-            expectedOffsetMs: 0.0,
             userOffsetMs: 22.1
         )
 
@@ -93,7 +88,6 @@ struct RhythmMatchingRecordTests {
         let timestamp = Date()
         let record = RhythmMatchingRecord(
             tempoBPM: 60,
-            expectedOffsetMs: 0.0,
             userOffsetMs: -0.1,
             timestamp: timestamp
         )
@@ -107,7 +101,6 @@ struct RhythmMatchingRecordTests {
         #expect(fetched.count == 1)
         let retrieved = fetched[0]
         #expect(retrieved.tempoBPM == 60)
-        #expect(retrieved.expectedOffsetMs == 0.0)
         #expect(retrieved.userOffsetMs == -0.1)
         #expect(abs(retrieved.timestamp.timeIntervalSince(timestamp)) < 0.001)
     }
