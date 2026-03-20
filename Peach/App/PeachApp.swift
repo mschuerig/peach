@@ -23,7 +23,12 @@ struct PeachApp: App {
 
     init() {
         do {
-            let container = try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self)
+            let container = try ModelContainer(
+                for: PitchComparisonRecord.self,
+                PitchMatchingRecord.self,
+                RhythmComparisonRecord.self,
+                RhythmMatchingRecord.self
+            )
             _modelContainer = State(wrappedValue: container)
 
             let dataStore = TrainingDataStore(modelContext: container.mainContext)

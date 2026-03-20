@@ -1,6 +1,6 @@
 # Story 47.1: Rhythm SwiftData Records
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,25 +20,25 @@ So that rhythm training results can be persisted locally.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `RhythmComparisonRecord` model (AC: #1, #4)
-  - [ ] Create `Peach/Core/Data/RhythmComparisonRecord.swift`
-  - [ ] `@Model final class` with `tempoBPM: Int`, `offsetMs: Double`, `isCorrect: Bool`, `timestamp: Date`
-  - [ ] Init with all properties, `timestamp: Date = Date()` default
-  - [ ] Write tests in `PeachTests/Core/Data/RhythmComparisonRecordTests.swift`
+- [x] Task 1: Create `RhythmComparisonRecord` model (AC: #1, #4)
+  - [x] Create `Peach/Core/Data/RhythmComparisonRecord.swift`
+  - [x] `@Model final class` with `tempoBPM: Int`, `offsetMs: Double`, `isCorrect: Bool`, `timestamp: Date`
+  - [x] Init with all properties, `timestamp: Date = Date()` default
+  - [x] Write tests in `PeachTests/Core/Data/RhythmComparisonRecordTests.swift`
 
-- [ ] Task 2: Create `RhythmMatchingRecord` model (AC: #2, #4)
-  - [ ] Create `Peach/Core/Data/RhythmMatchingRecord.swift`
-  - [ ] `@Model final class` with `tempoBPM: Int`, `expectedOffsetMs: Double`, `userOffsetMs: Double`, `timestamp: Date`
-  - [ ] Add comment: `// Future: inputMethod property for non-tap input methods`
-  - [ ] Init with all properties, `timestamp: Date = Date()` default
-  - [ ] Write tests in `PeachTests/Core/Data/RhythmMatchingRecordTests.swift`
+- [x] Task 2: Create `RhythmMatchingRecord` model (AC: #2, #4)
+  - [x] Create `Peach/Core/Data/RhythmMatchingRecord.swift`
+  - [x] `@Model final class` with `tempoBPM: Int`, `expectedOffsetMs: Double`, `userOffsetMs: Double`, `timestamp: Date`
+  - [x] Add comment: `// Future: inputMethod property for non-tap input methods`
+  - [x] Init with all properties, `timestamp: Date = Date()` default
+  - [x] Write tests in `PeachTests/Core/Data/RhythmMatchingRecordTests.swift`
 
-- [ ] Task 3: Register models in `ModelContainer` schema (AC: #3)
-  - [ ] In `PeachApp.swift`, add `RhythmComparisonRecord.self` and `RhythmMatchingRecord.self` to the `ModelContainer(for:)` call
-  - [ ] Verify build succeeds
+- [x] Task 3: Register models in `ModelContainer` schema (AC: #3)
+  - [x] In `PeachApp.swift`, add `RhythmComparisonRecord.self` and `RhythmMatchingRecord.self` to the `ModelContainer(for:)` call
+  - [x] Verify build succeeds
 
-- [ ] Task 4: Run full test suite
-  - [ ] `bin/test.sh` — all tests pass, no regressions
+- [x] Task 4: Run full test suite
+  - [x] `bin/test.sh` — all tests pass, no regressions
 
 ## Dev Notes
 
@@ -125,10 +125,25 @@ Add both new types to this call. No migration strategy needed — these are new 
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Created `RhythmComparisonRecord` SwiftData model following the existing `PitchComparisonRecord` pattern: `@Model final class` with raw types (`Int`, `Double`, `Bool`, `Date`) at the persistence boundary. Added sign convention comment on `offsetMs`.
+- Created `RhythmMatchingRecord` SwiftData model following `PitchMatchingRecord` pattern with `tempoBPM`, `expectedOffsetMs`, `userOffsetMs`, `timestamp`. Added future `inputMethod` comment.
+- Registered both new models in `ModelContainer` schema in `PeachApp.swift`.
+- All 1182 tests pass with no regressions.
+
+### Change Log
+
+- 2026-03-20: Implemented story 47.1 — created `RhythmComparisonRecord` and `RhythmMatchingRecord` SwiftData models, registered in `ModelContainer`, added tests.
+
 ### File List
+
+- Peach/Core/Data/RhythmComparisonRecord.swift (new)
+- Peach/Core/Data/RhythmMatchingRecord.swift (new)
+- Peach/App/PeachApp.swift (modified — ModelContainer schema)
+- PeachTests/Core/Data/RhythmComparisonRecordTests.swift (new)
+- PeachTests/Core/Data/RhythmMatchingRecordTests.swift (new)
