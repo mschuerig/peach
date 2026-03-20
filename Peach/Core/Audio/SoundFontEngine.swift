@@ -81,9 +81,11 @@ final class SoundFontEngine {
         self.engine = engine
         self.sampler = sampler
 
-        // Pre-allocate event buffer
+        // Pre-allocate event buffer — deallocate on throw since deinit won't run
         let scheduleBuffer = UnsafeMutablePointer<ScheduledMIDIEvent>.allocate(capacity: Self.scheduleCapacity)
         self.scheduleBuffer = scheduleBuffer
+        var didFinishInit = false
+        defer { if !didFinishInit { scheduleBuffer.deallocate() } }
 
         // Attach and connect sampler
         engine.attach(sampler)
@@ -140,10 +142,8 @@ final class SoundFontEngine {
                         let absoluteSampleTime = hostSampleTime
                             + AUEventSampleTime(intraBufferOffset)
                         var midiBytes = (event.midiStatus, event.midiNote, event.velocity)
-                        withUnsafePointer(to: &midiBytes) { tuplePtr in
-                            tuplePtr.withMemoryRebound(to: UInt8.self, capacity: 3) { bytesPtr in
-                                midiBlock(absoluteSampleTime, 0, 3, bytesPtr)
-                            }
+                        withUnsafeBytes(of: &midiBytes) { rawBuffer in
+                            midiBlock(absoluteSampleTime, 0, 3, rawBuffer.baseAddress!.assumingMemoryBound(to: UInt8.self))
                         }
                     }
                     data.nextIndex += 1
@@ -160,6 +160,7 @@ final class SoundFontEngine {
         engine.connect(sourceNode, to: engine.mainMixerNode, format: sourceFormat)
 
         sendPitchBendRange()
+        didFinishInit = true
 
         logger.info("SoundFontEngine initialized with \(library.sf2URL.lastPathComponent), preset \(preset.rawValue)")
     }
