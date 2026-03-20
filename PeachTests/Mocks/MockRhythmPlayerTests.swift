@@ -102,11 +102,11 @@ struct MockRhythmPlayerTests {
         let events = (0..<eventCount).map { i in
             RhythmPattern.Event(
                 sampleOffset: Int64(i * 22050),
-                soundSourceID: SoundSourceTag(rawValue: "sf2:128:0:36"),
+                midiNote: MIDINote(36),
                 velocity: MIDIVelocity(100)
             )
         }
-        return RhythmPattern(events: events, sampleRate: 44100.0, totalDuration: .seconds(1))
+        return RhythmPattern(events: events, sampleRate: .standard44100, totalDuration: .seconds(1))
     }
 }
 

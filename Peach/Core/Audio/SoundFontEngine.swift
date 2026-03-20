@@ -30,7 +30,10 @@ final class SoundFontEngine {
 
     struct ChannelID: Hashable, Sendable {
         let rawValue: UInt8
-        init(_ rawValue: UInt8) { self.rawValue = rawValue }
+        init(_ rawValue: UInt8) {
+            precondition((0...15).contains(rawValue), "MIDI channel must be 0-15, got \(rawValue)")
+            self.rawValue = rawValue
+        }
     }
 
     // MARK: - Logger
@@ -249,12 +252,6 @@ final class SoundFontEngine {
         logger.info("Loaded preset \(preset.rawValue) on channel \(channel.rawValue)")
     }
 
-    // MARK: - Backward-Compatible Preset Loading (channel 0)
-
-    func loadPreset(_ preset: SF2Preset) async throws {
-        try await loadPreset(preset, channel: ChannelID(0))
-    }
-
     // MARK: - Immediate MIDI Dispatch
 
     func startNote(_ midiNote: MIDINote, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB, pitchBend: PitchBendValue, channel: ChannelID) {
@@ -287,24 +284,6 @@ final class SoundFontEngine {
         sampler.sendPitchBend(value.rawValue, onChannel: channel.rawValue)
     }
 
-    // MARK: - Backward-Compatible Immediate Dispatch (channel 0)
-
-    func startNote(_ midiNote: MIDINote, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB, pitchBend: PitchBendValue) {
-        startNote(midiNote, velocity: velocity, amplitudeDB: amplitudeDB, pitchBend: pitchBend, channel: ChannelID(0))
-    }
-
-    func stopNote(_ midiNote: MIDINote) {
-        stopNote(midiNote, channel: ChannelID(0))
-    }
-
-    func stopAllNotes(stopPropagationDelay: Duration) async {
-        await stopNotes(channel: ChannelID(0), stopPropagationDelay: stopPropagationDelay)
-    }
-
-    func sendPitchBend(_ value: PitchBendValue) {
-        sendPitchBend(value, channel: ChannelID(0))
-    }
-
     // MARK: - Volume Fade
 
     func muteForFade() {
@@ -335,6 +314,10 @@ final class SoundFontEngine {
     // MARK: - Render-Thread Scheduling
 
     func scheduleEvents(_ events: [ScheduledMIDIEvent]) {
+        if events.count > Self.scheduleCapacity {
+            logger.warning("Schedule overflow: \(events.count) events exceeds buffer capacity \(Self.scheduleCapacity), truncating")
+            assertionFailure("Schedule overflow: \(events.count) events exceeds buffer capacity \(Self.scheduleCapacity)")
+        }
         scheduleLockState.withLock { data in
             let count = min(events.count, data.capacity)
             for i in 0..<count {

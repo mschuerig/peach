@@ -13,7 +13,7 @@ final class SoundFontRhythmPlaybackHandle: RhythmPlaybackHandle {
         guard !hasStopped else { return }
         hasStopped = true
         engine.clearSchedule()
-        try engine.restoreDefaultBufferDuration()
         await engine.stopNotes(channel: channel, stopPropagationDelay: .zero)
+        try? engine.restoreDefaultBufferDuration()
     }
 }

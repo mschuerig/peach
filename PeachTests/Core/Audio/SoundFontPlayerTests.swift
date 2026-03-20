@@ -7,9 +7,10 @@ struct SoundFontPlayerTests {
 
     private static let testLibrary = TestSoundFont.makeLibrary()
 
-    private func makePlayer(userSettings: UserSettings = MockUserSettings()) throws -> SoundFontPlayer {
+    private func makePlayer(preset: SF2Preset? = nil) throws -> SoundFontPlayer {
         let engine = try SoundFontEngine(sf2URL: TestSoundFont.url)
-        return SoundFontPlayer(engine: engine, library: Self.testLibrary, userSettings: userSettings)
+        let resolvedPreset = preset ?? Self.testLibrary.resolve(SoundSourceTag(rawValue: "sf2:0:0"))
+        return SoundFontPlayer(engine: engine, preset: resolvedPreset)
     }
 
     // MARK: - Protocol Conformance
@@ -25,22 +26,6 @@ struct SoundFontPlayerTests {
         #expect(throws: Never.self) {
             _ = try self.makePlayer()
         }
-    }
-
-    // MARK: - SF2 Loading
-
-    @Test("Fails gracefully with missing SF2 file during preset load")
-    func failsWithMissingSF2() async throws {
-        let badLibrary = SoundFontLibrary(
-            sf2URL: URL(fileURLWithPath: "/nonexistent/NonExistent.sf2"),
-            defaultPreset: "sf2:0:0"
-        )
-        // Engine init no longer loads a preset, but play() triggers loadPreset which fails
-        let engine = try SoundFontEngine(sf2URL: TestSoundFont.url)
-        let player = SoundFontPlayer(engine: engine, library: badLibrary, userSettings: MockUserSettings())
-        // Play should still work because the bad library resolves to a fallback preset,
-        // and the engine uses the real SF2 URL for loading
-        try await player.play(frequency: 440.0, duration: .milliseconds(50), velocity: 63, amplitudeDB: 0.0)
     }
 
     // MARK: - Play/Stop Lifecycle
@@ -193,41 +178,6 @@ struct SoundFontPlayerTests {
         try await handle.stop()
     }
 
-    // MARK: - Preset Selection from UserSettings
-
-    @Test("play reads soundSource from UserSettings and uses the selected preset")
-    func playReadsSoundSource() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.soundSource = SoundSourceTag(rawValue: "sf2:0:0")
-
-        let player = try makePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
-    }
-
-    @Test("play falls back to default preset for unparseable soundSource")
-    func playFallsBackForUnparseableSource() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.soundSource = SoundSourceTag(rawValue: "garbage")
-        let player = try makePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
-    }
-
-    @Test("play falls back to default preset when loadPreset fails for invalid program")
-    func playFallsBackOnLoadFailure() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.soundSource = SoundSourceTag(rawValue: "sf2:0:999")
-        let player = try makePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
-    }
-
-    @Test("play falls back to default preset for legacy 'cello' tag")
-    func playFallsBackForLegacyCelloTag() async throws {
-        let mockSettings = MockUserSettings()
-        mockSettings.soundSource = SoundSourceTag(rawValue: "cello")
-        let player = try makePlayer(userSettings: mockSettings)
-        try await player.play(frequency: 440.0, duration: .milliseconds(100), velocity: 63, amplitudeDB: 0.0)
-    }
-
     // MARK: - Frequency Decomposition (Hz → MIDI note + cents)
 
     @Test("440 Hz decomposes to MIDI 69, 0 cents")
@@ -346,30 +296,30 @@ struct RhythmPatternTests {
     @Test("creates pattern with events")
     func createsPatternWithEvents() async {
         let events = [
-            RhythmPattern.Event(sampleOffset: 0, soundSourceID: SoundSourceTag(rawValue: "sf2:128:0:36"), velocity: MIDIVelocity(100)),
-            RhythmPattern.Event(sampleOffset: 22050, soundSourceID: SoundSourceTag(rawValue: "sf2:128:0:38"), velocity: MIDIVelocity(80)),
+            RhythmPattern.Event(sampleOffset: 0, midiNote: MIDINote(36), velocity: MIDIVelocity(100)),
+            RhythmPattern.Event(sampleOffset: 22050, midiNote: MIDINote(38), velocity: MIDIVelocity(80)),
         ]
-        let pattern = RhythmPattern(events: events, sampleRate: 44100.0, totalDuration: .seconds(1))
+        let pattern = RhythmPattern(events: events, sampleRate: .standard44100, totalDuration: .seconds(1))
         #expect(pattern.events.count == 2)
-        #expect(pattern.sampleRate == 44100.0)
+        #expect(pattern.sampleRate == .standard44100)
         #expect(pattern.totalDuration == .seconds(1))
     }
 
-    @Test("event stores sampleOffset, soundSourceID, velocity")
+    @Test("event stores sampleOffset, midiNote, velocity")
     func eventStoresProperties() async {
         let event = RhythmPattern.Event(
             sampleOffset: 44100,
-            soundSourceID: SoundSourceTag(rawValue: "sf2:128:0:42"),
+            midiNote: MIDINote(42),
             velocity: MIDIVelocity(90)
         )
         #expect(event.sampleOffset == 44100)
-        #expect(event.soundSourceID.rawValue == "sf2:128:0:42")
+        #expect(event.midiNote == MIDINote(42))
         #expect(event.velocity == MIDIVelocity(90))
     }
 
     @Test("empty pattern is valid")
     func emptyPatternValid() async {
-        let pattern = RhythmPattern(events: [], sampleRate: 44100.0, totalDuration: .zero)
+        let pattern = RhythmPattern(events: [], sampleRate: .standard44100, totalDuration: .zero)
         #expect(pattern.events.isEmpty)
     }
 }

@@ -3,12 +3,12 @@ import Foundation
 struct RhythmPattern: Sendable {
     struct Event: Sendable {
         let sampleOffset: Int64
-        let soundSourceID: any SoundSourceID
+        let midiNote: MIDINote
         let velocity: MIDIVelocity
     }
 
     let events: [Event]
-    let sampleRate: Double
+    let sampleRate: SampleRate
     let totalDuration: Duration
 }
 

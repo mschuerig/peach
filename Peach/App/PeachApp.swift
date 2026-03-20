@@ -12,10 +12,11 @@ struct PeachApp: App {
     @State private var profile: PerceptualProfile
     @State private var progressTimeline: ProgressTimeline
     @State private var soundFontLibrary: SoundFontLibrary
+    @State private var soundFontEngine: SoundFontEngine
     @State private var transferService: TrainingDataTransferService
     @State private var notePlayer: any NotePlayer
     @State private var activeSession: (any TrainingSession)?
-    @State private var userSettings: any UserSettings
+    @AppStorage(SettingsKeys.soundSource) private var soundSource: String = SettingsKeys.defaultSoundSource
 
     private static let logger = Logger(subsystem: "com.peach.app", category: "AppStartup")
 
@@ -32,13 +33,13 @@ struct PeachApp: App {
             _soundFontLibrary = State(wrappedValue: soundFontLibrary)
             SettingsKeys.validateSoundSource(against: soundFontLibrary)
 
-            let userSettings: any UserSettings = AppUserSettings()
-            _userSettings = State(wrappedValue: userSettings)
             let soundFontEngine = try SoundFontEngine(sf2URL: sf2URL)
+            _soundFontEngine = State(wrappedValue: soundFontEngine)
+
+            let preset = soundFontLibrary.resolve(SoundSourceTag(rawValue: SettingsKeys.defaultSoundSource))
             let notePlayer: any NotePlayer = SoundFontPlayer(
                 engine: soundFontEngine,
-                library: soundFontLibrary,
-                userSettings: userSettings,
+                preset: preset,
                 stopPropagationDelay: .zero
             )
             _notePlayer = State(wrappedValue: notePlayer)
@@ -87,11 +88,11 @@ struct PeachApp: App {
                 .environment(\.perceptualProfile, profile)
                 .environment(\.progressTimeline, progressTimeline)
                 .environment(\.soundSourceProvider, soundFontLibrary)
-                .environment(\.userSettings, userSettings)
-                .environment(\.soundPreviewPlay, { [notePlayer, userSettings] (duration: Duration) in
+                .environment(\.userSettings, AppUserSettings())
+                .environment(\.soundPreviewPlay, { [notePlayer] (duration: Duration) in
                     let frequency = TuningSystem.equalTemperament.frequency(
                         for: MIDINote(69),
-                        referencePitch: userSettings.referencePitch
+                        referencePitch: AppUserSettings().referencePitch
                     )
                     try? await notePlayer.play(
                         frequency: frequency,
@@ -117,6 +118,28 @@ struct PeachApp: App {
                 })
                 .environment(\.trainingDataTransferService, transferService)
                 .modelContainer(modelContainer)
+                .onChange(of: soundSource) { _, newSource in
+                    let preset = soundFontLibrary.resolve(SoundSourceTag(rawValue: newSource))
+                    let newPlayer = SoundFontPlayer(
+                        engine: soundFontEngine,
+                        preset: preset,
+                        stopPropagationDelay: .zero
+                    )
+                    notePlayer = newPlayer
+
+                    let strategy = KazezNoteStrategy()
+                    pitchComparisonSession = Self.createPitchComparisonSession(
+                        notePlayer: newPlayer,
+                        strategy: strategy,
+                        profile: profile,
+                        dataStore: dataStore
+                    )
+                    pitchMatchingSession = Self.createPitchMatchingSession(
+                        notePlayer: newPlayer,
+                        profile: profile,
+                        dataStore: dataStore
+                    )
+                }
                 .onChange(of: pitchComparisonSession.isIdle) { _, isIdle in
                     if !isIdle {
                         if activeSession !== pitchComparisonSession {

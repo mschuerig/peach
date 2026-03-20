@@ -26,10 +26,9 @@ final class SoundFontPlayer: NotePlayer, RhythmPlayer {
     /// fade-out entirely (notes stop immediately). 25ms covers 2+ render cycles at 44.1kHz/512.
     let stopPropagationDelay: Duration
 
-    // MARK: - Dependencies
+    // MARK: - Preset
 
-    private let library: SoundFontLibrary
-    private let userSettings: UserSettings
+    private let preset: SF2Preset
 
     // MARK: - Channel
 
@@ -37,20 +36,19 @@ final class SoundFontPlayer: NotePlayer, RhythmPlayer {
 
     // MARK: - Initialization
 
-    init(engine: SoundFontEngine, library: SoundFontLibrary, userSettings: UserSettings, channel: SoundFontEngine.ChannelID = SoundFontEngine.ChannelID(0), stopPropagationDelay: Duration = .milliseconds(25)) {
+    init(engine: SoundFontEngine, preset: SF2Preset, channel: SoundFontEngine.ChannelID = SoundFontEngine.ChannelID(0), stopPropagationDelay: Duration = .milliseconds(25)) {
         self.soundFontEngine = engine
-        self.library = library
-        self.userSettings = userSettings
+        self.preset = preset
         self.channel = channel
         self.stopPropagationDelay = stopPropagationDelay
 
-        logger.info("SoundFontPlayer initialized on channel \(channel.rawValue)")
+        logger.info("SoundFontPlayer initialized on channel \(channel.rawValue) with preset \(preset.rawValue)")
     }
 
     // MARK: - NotePlayer Protocol
 
     func play(frequency: Frequency, velocity: MIDIVelocity, amplitudeDB: AmplitudeDB) async throws -> PlaybackHandle {
-        try await ensureMelodicPresetLoaded()
+        try await soundFontEngine.loadPreset(preset, channel: channel)
         try validateFrequency(frequency)
         try soundFontEngine.ensureAudioSessionConfigured()
         try soundFontEngine.ensureEngineRunning()
@@ -64,34 +62,42 @@ final class SoundFontPlayer: NotePlayer, RhythmPlayer {
         try soundFontEngine.ensureAudioSessionConfigured()
         try soundFontEngine.ensureEngineRunning()
 
-        // Resolve percussion preset and load if needed
-        if let firstEvent = pattern.events.first {
-            if let preset = library.resolvePercussion(firstEvent.soundSourceID) {
-                try await soundFontEngine.loadPreset(preset, channel: channel)
-            }
-        }
+        // Load percussion preset
+        try await soundFontEngine.loadPreset(preset, channel: channel)
 
         // Convert pattern events to scheduled MIDI events
-        let noteOffDelaySamples = Int64(pattern.sampleRate * Self.percussionNoteOffDuration.timeInterval)
+        let noteOffDelaySamples = Int64(pattern.sampleRate.rawValue * Self.percussionNoteOffDuration.timeInterval)
+
+        // Cap note-off delay to avoid overlap with the next note-on
+        let minSpacing: Int64
+        if pattern.events.count >= 2 {
+            minSpacing = zip(pattern.events, pattern.events.dropFirst())
+                .map { $1.sampleOffset - $0.sampleOffset }
+                .min() ?? Int64.max
+        } else {
+            minSpacing = Int64.max
+        }
+        let cappedNoteOffDelay = min(noteOffDelaySamples, max(minSpacing - 1, 0))
+
         var scheduledEvents: [ScheduledMIDIEvent] = []
         scheduledEvents.reserveCapacity(pattern.events.count * 2)
 
         for event in pattern.events {
-            let midiNote = extractMIDINote(from: event.soundSourceID)
+            let midiNoteRaw = UInt8(clamping: event.midiNote.rawValue)
 
             // Note-on
             scheduledEvents.append(ScheduledMIDIEvent(
                 sampleOffset: event.sampleOffset,
                 midiStatus: SoundFontEngine.noteOnBase | channel.rawValue,
-                midiNote: midiNote,
+                midiNote: midiNoteRaw,
                 velocity: event.velocity.rawValue
             ))
 
             // Note-off
             scheduledEvents.append(ScheduledMIDIEvent(
-                sampleOffset: event.sampleOffset + noteOffDelaySamples,
+                sampleOffset: event.sampleOffset + cappedNoteOffDelay,
                 midiStatus: SoundFontEngine.noteOffBase | channel.rawValue,
-                midiNote: midiNote,
+                midiNote: midiNoteRaw,
                 velocity: 0
             ))
         }
@@ -108,21 +114,11 @@ final class SoundFontPlayer: NotePlayer, RhythmPlayer {
 
     func stopAll() async throws {
         soundFontEngine.clearSchedule()
-        try soundFontEngine.restoreDefaultBufferDuration()
         await soundFontEngine.stopNotes(channel: channel, stopPropagationDelay: stopPropagationDelay)
+        try? soundFontEngine.restoreDefaultBufferDuration()
     }
 
     // MARK: - Melodic Play Sub-operations
-
-    private func ensureMelodicPresetLoaded() async throws {
-        let resolved = library.resolve(userSettings.soundSource)
-        do {
-            try await soundFontEngine.loadPreset(resolved, channel: channel)
-        } catch {
-            let fallback = library.resolve(SoundSourceTag(rawValue: SettingsKeys.defaultSoundSource))
-            try await soundFontEngine.loadPreset(fallback, channel: channel)
-        }
-    }
 
     private func validateFrequency(_ frequency: Frequency) throws {
         let freq = frequency.rawValue
@@ -139,24 +135,6 @@ final class SoundFontPlayer: NotePlayer, RhythmPlayer {
         let bendValue = Self.pitchBendValue(forCents: decomposed.cents)
         soundFontEngine.startNote(midiNote, velocity: velocity, amplitudeDB: amplitudeDB, pitchBend: bendValue, channel: channel)
         return midiNote
-    }
-
-    // MARK: - Percussion Helpers
-
-    /// Extracts the MIDI note number from a SoundSourceID.
-    /// Expected format: "sf2:{bank}:{program}:{midiNote}" for percussion.
-    /// Falls back to the program number if the 4-component format is not used.
-    private func extractMIDINote(from soundSourceID: any SoundSourceID) -> UInt8 {
-        let raw = soundSourceID.rawValue
-        let parts = raw.split(separator: ":")
-        if parts.count == 4, let note = UInt8(parts[3]) {
-            return note
-        }
-        // Fallback: use program number as MIDI note (General MIDI drum map)
-        if parts.count >= 3, let program = UInt8(parts[2]) {
-            return program
-        }
-        return 36 // Default to bass drum
     }
 
     // MARK: - Static Helpers

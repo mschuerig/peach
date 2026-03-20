@@ -23,7 +23,7 @@ final class SoundFontLibrary: SoundSourceProvider {
             for preset in allPresets {
                 if preset.isPercussion {
                     percussion.append(preset)
-                } else {
+                } else if preset.program < 120 {
                     melodic.append(preset)
                 }
             }

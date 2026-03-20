@@ -38,10 +38,9 @@ struct SoundFontPresetStressTests {
         Self.testLibrary
     }
 
-    private func makePlayer(userSettings: MockUserSettings = MockUserSettings()) throws -> (player: SoundFontPlayer, settings: MockUserSettings) {
+    private func makePlayer(preset: SF2Preset) throws -> SoundFontPlayer {
         let engine = try SoundFontEngine(sf2URL: TestSoundFont.url)
-        let player = SoundFontPlayer(engine: engine, library: Self.testLibrary, userSettings: userSettings)
-        return (player, userSettings)
+        return SoundFontPlayer(engine: engine, preset: preset)
     }
 
     // MARK: - Task 2: Per-Preset Smoke Test
@@ -52,9 +51,8 @@ struct SoundFontPresetStressTests {
         #expect(!allPresets.isEmpty, "SoundFontLibrary discovered no presets")
 
         for preset in allPresets {
-            let (player, settings) = try makePlayer()
             do {
-                settings.soundSource = SoundSourceTag(rawValue: preset.rawValue)
+                let player = try makePlayer(preset: preset)
                 let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
                 try await Task.sleep(for: .milliseconds(100))
                 try await handle.stop()
@@ -76,8 +74,7 @@ struct SoundFontPresetStressTests {
         #expect(!presets.isEmpty, "No representative presets found")
 
         for preset in presets {
-            let (player, settings) = try makePlayer()
-            settings.soundSource = SoundSourceTag(rawValue: preset.rawValue)
+            let player = try makePlayer(preset: preset)
 
             for midiNote in Self.midiNoteValues {
                 let frequency = TuningSystem.equalTemperament.frequency(
@@ -109,8 +106,7 @@ struct SoundFontPresetStressTests {
         let durations: [Duration] = [.milliseconds(10), .milliseconds(100), .milliseconds(500)]
 
         for preset in presets {
-            let (player, settings) = try makePlayer()
-            settings.soundSource = SoundSourceTag(rawValue: preset.rawValue)
+            let player = try makePlayer(preset: preset)
 
             for duration in durations {
                 do {
@@ -136,8 +132,7 @@ struct SoundFontPresetStressTests {
         let velocities: [MIDIVelocity] = [1, 63, 127]
 
         for preset in presets {
-            let (player, settings) = try makePlayer()
-            settings.soundSource = SoundSourceTag(rawValue: preset.rawValue)
+            let player = try makePlayer(preset: preset)
 
             for velocity in velocities {
                 do {
@@ -157,13 +152,12 @@ struct SoundFontPresetStressTests {
 
     // MARK: - Task 6: Rapid Preset Switching
 
-    @Test("Rapid preset switching via settings does not crash")
+    @Test("Rapid preset switching creates new player per preset without crash")
     func rapidPresetSwitching() async throws {
-        let (player, settings) = try makePlayer()
         let presets = Array(makeLibrary().melodicPresets.prefix(15))
 
         for preset in presets {
-            settings.soundSource = SoundSourceTag(rawValue: preset.rawValue)
+            let player = try makePlayer(preset: preset)
             let handle = try await player.play(frequency: 440.0, velocity: 63, amplitudeDB: 0.0)
             try await Task.sleep(for: .milliseconds(50))
             try await handle.stop()

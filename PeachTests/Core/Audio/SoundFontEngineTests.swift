@@ -5,6 +5,8 @@ import Testing
 @Suite("SoundFontEngine")
 struct SoundFontEngineTests {
 
+    private static let channel0 = SoundFontEngine.ChannelID(0)
+
     private func makeEngine() throws -> SoundFontEngine {
         try SoundFontEngine(sf2URL: TestSoundFont.url)
     }
@@ -40,19 +42,19 @@ struct SoundFontEngineTests {
     @Test("loadPreset succeeds for valid preset")
     func loadPresetValid() async throws {
         let engine = try makeEngine()
-        try await engine.loadPreset(SF2Preset(name: "Piano", program: 42, bank: 0))
+        try await engine.loadPreset(SF2Preset(name: "Piano", program: 42, bank: 0), channel: Self.channel0)
     }
 
     @Test("loadPreset skips reload when same preset is already loaded")
     func loadPresetSkipsSame() async throws {
         let engine = try makeEngine()
-        try await engine.loadPreset(SF2Preset(name: "Yamaha Grand Piano", program: 0, bank: 0))
+        try await engine.loadPreset(SF2Preset(name: "Yamaha Grand Piano", program: 0, bank: 0), channel: Self.channel0)
     }
 
     @Test("loadPreset loads different preset")
     func loadPresetDifferent() async throws {
         let engine = try makeEngine()
-        try await engine.loadPreset(SF2Preset(name: "Strings", program: 6, bank: 8))
+        try await engine.loadPreset(SF2Preset(name: "Strings", program: 6, bank: 8), channel: Self.channel0)
     }
 
     // MARK: - Immediate MIDI Dispatch
@@ -60,44 +62,44 @@ struct SoundFontEngineTests {
     @Test("startNote does not crash")
     func startNoteDoesNotCrash() async throws {
         let engine = try makeEngine()
-        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
+        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
     }
 
     @Test("stopNote does not crash")
     func stopNoteDoesNotCrash() async throws {
         let engine = try makeEngine()
-        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
-        engine.stopNote(MIDINote(69))
+        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
+        engine.stopNote(MIDINote(69), channel: Self.channel0)
     }
 
     @Test("sendPitchBend does not crash")
     func sendPitchBendDoesNotCrash() async throws {
         let engine = try makeEngine()
-        engine.sendPitchBend(PitchBendValue(10000))
+        engine.sendPitchBend(PitchBendValue(10000), channel: Self.channel0)
     }
 
-    // MARK: - stopAllNotes
+    // MARK: - stopNotes
 
-    @Test("stopAllNotes does not crash when no notes are playing")
-    func stopAllNotesNoNotes() async throws {
+    @Test("stopNotes does not crash when no notes are playing")
+    func stopNotesNoNotes() async throws {
         let engine = try makeEngine()
-        await engine.stopAllNotes(stopPropagationDelay: .zero)
+        await engine.stopNotes(channel: Self.channel0, stopPropagationDelay: .zero)
     }
 
-    @Test("stopAllNotes with propagation delay restores volume")
-    func stopAllNotesRestoresVolume() async throws {
+    @Test("stopNotes with propagation delay restores volume")
+    func stopNotesRestoresVolume() async throws {
         let engine = try makeEngine()
-        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
-        await engine.stopAllNotes(stopPropagationDelay: .milliseconds(25))
-        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
-        engine.stopNote(MIDINote(69))
+        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
+        await engine.stopNotes(channel: Self.channel0, stopPropagationDelay: .milliseconds(25))
+        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
+        engine.stopNote(MIDINote(69), channel: Self.channel0)
     }
 
-    @Test("stopAllNotes silences a playing note")
-    func stopAllNotesSilencesNote() async throws {
+    @Test("stopNotes silences a playing note")
+    func stopNotesSilencesNote() async throws {
         let engine = try makeEngine()
-        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
-        await engine.stopAllNotes(stopPropagationDelay: .zero)
+        engine.startNote(MIDINote(69), velocity: MIDIVelocity(63), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
+        await engine.stopNotes(channel: Self.channel0, stopPropagationDelay: .zero)
     }
 
     // MARK: - Schedule Scanning (pure function)
@@ -206,14 +208,14 @@ struct SoundFontEngineTests {
     @Test("startNote still works after source node is added")
     func startNoteWorksWithSourceNode() async throws {
         let engine = try makeEngine()
-        engine.startNote(MIDINote(60), velocity: MIDIVelocity(100), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center)
-        engine.stopNote(MIDINote(60))
+        engine.startNote(MIDINote(60), velocity: MIDIVelocity(100), amplitudeDB: AmplitudeDB(0.0), pitchBend: .center, channel: Self.channel0)
+        engine.stopNote(MIDINote(60), channel: Self.channel0)
     }
 
     @Test("sendPitchBend still works after source node is added")
     func sendPitchBendWorksWithSourceNode() async throws {
         let engine = try makeEngine()
-        engine.sendPitchBend(.center)
+        engine.sendPitchBend(.center, channel: Self.channel0)
     }
 
     // MARK: - Integration: Schedule and Play

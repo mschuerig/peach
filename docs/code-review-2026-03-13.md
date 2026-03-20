@@ -207,7 +207,7 @@ Removed `PianoKeyboardLayout` struct entirely — only used in tests. Replaced t
 
 ---
 
-### L10: Remove unused `@State previousScenePhase`
+### ✅ L10: Remove unused `@State previousScenePhase`
 
 `Peach/App/ContentView.swift:14` — written but never read.
 
