@@ -878,7 +878,7 @@ If app launch takes noticeable time as the dataset grows, the system splash scre
 - Data write failure → logged internally, training continues (one comparison's data may be lost)
 - The user never sees an error screen, error alert, or error message
 
-This is a deliberate design choice: errors are handled by the system (PitchComparisonSession as error boundary), not by the user.
+This is a deliberate design choice: errors are handled by the system (PitchDiscriminationSession as error boundary), not by the user.
 
 ### Orientation & Device Patterns
 
@@ -1407,7 +1407,7 @@ Identical behavior. The interruption contract is universal across all training m
 
 #### Loading & Error States — No Change
 
-Same as pitch comparison training: no loading states (everything local), no user-visible error states (PitchMatchingSession as error boundary, same pattern as PitchComparisonSession).
+Same as pitch comparison training: no loading states (everything local), no user-visible error states (PitchMatchingSession as error boundary, same pattern as PitchDiscriminationSession).
 
 ### Pitch Matching — Responsive & Accessibility
 

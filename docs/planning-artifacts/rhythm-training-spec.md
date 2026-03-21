@@ -59,7 +59,7 @@
 
 ## Data Storage
 
-- `RhythmComparisonRecord`: tempoBPM, offsetMs (signed), isCorrect, timestamp
+- `RhythmOffsetDetectionRecord`: tempoBPM, offsetMs (signed), isCorrect, timestamp
 - `RhythmMatchingRecord`: tempoBPM, userOffsetMs, timestamp (inputMethod field reserved for future)
 - Single record per exercise — early/late distinction derived from sign of offsetMs at the statistics layer
 - Stored via `TrainingDataStore` following existing patterns
@@ -67,7 +67,7 @@
 ## Export/Import
 
 - Bump to CSV format version 2
-- New `trainingType` values: `rhythmComparison`, `rhythmMatching`
+- New `trainingType` values: `rhythmOffsetDetection`, `rhythmMatching`
 - Type-specific columns for rhythm fields
 - V1 parser unchanged; new V2 parser handles all types (chain-of-responsibility pattern)
 - Merge deduplication key: timestamp + tempoBPM + trainingType
@@ -143,7 +143,7 @@
 
 **Context:** New training types need to be stored and included in export/import.
 
-**Decision:** Bump to format version 2. New `trainingType` discriminator values (`rhythmComparison`, `rhythmMatching`) with type-specific columns. V1 parser remains untouched; V2 parser handles all types.
+**Decision:** Bump to format version 2. New `trainingType` discriminator values (`rhythmOffsetDetection`, `rhythmMatching`) with type-specific columns. V1 parser remains untouched; V2 parser handles all types.
 
 **Alternatives considered:**
 - Separate CSV files per training type: Complicates import/export UX and breaks unified timeline.

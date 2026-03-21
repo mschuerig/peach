@@ -185,11 +185,11 @@ States: `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `s
 ### Naming Conventions
 
 **All code follows standard Swift conventions:**
-- Types & protocols: `PascalCase` — `TrainingSession`, `PitchComparisonRecord`, `NotePlayer`
+- Types & protocols: `PascalCase` — `TrainingSession`, `PitchDiscriminationRecord`, `NotePlayer`
 - Properties, methods, parameters: `camelCase` — `isCorrect`, `playNote(frequency:)`, `detectionThreshold`
 - Protocols: noun describing capability — `NotePlayer`, `NextNoteStrategy` (not `NotePlayable`, `NoteStrategyProtocol`)
 - Protocol implementations: descriptive prefix — `SoundFontNotePlayer`, `AdaptiveNoteStrategy`
-- SwiftData models: singular noun — `PitchComparisonRecord`, not `PitchComparisonRecords`
+- SwiftData models: singular noun — `PitchDiscriminationRecord`, not `PitchDiscriminationRecords`
 - Files: match the primary type they contain — `TrainingSession.swift`, `NotePlayer.swift`
 
 ### Project Organization (By Feature)
@@ -207,7 +207,7 @@ Peach/
 │   │   ├── NextNoteStrategy.swift    # Protocol
 │   │   └── AdaptiveNoteStrategy.swift
 │   ├── Data/
-│   │   ├── PitchComparisonRecord.swift    # SwiftData model
+│   │   ├── PitchDiscriminationRecord.swift    # SwiftData model
 │   │   └── TrainingDataStore.swift
 │   └── Profile/
 │       └── PerceptualProfile.swift
@@ -290,11 +290,11 @@ Peach/
 │   │   ├── NotePlayer.swift              # Protocol: play(frequency:, duration:, envelope:)
 │   │   └── SoundFontNotePlayer.swift      # AVAudioEngine + AVAudioUnitSampler SF2 implementation
 │   ├── Algorithm/
-│   │   ├── NextNoteStrategy.swift        # Protocol: nextPitchComparison(profile:, settings:) -> PitchComparison
+│   │   ├── NextNoteStrategy.swift        # Protocol: nextPitchDiscriminationTrial(profile:, settings:) -> PitchDiscriminationTrial
 │   │   └── AdaptiveNoteStrategy.swift    # Weak-spot targeting, difficulty adjustment
 │   ├── Data/
-│   │   ├── PitchComparisonRecord.swift        # SwiftData @Model
-│   │   └── TrainingDataStore.swift       # CRUD operations on PitchComparisonRecord
+│   │   ├── PitchDiscriminationRecord.swift        # SwiftData @Model
+│   │   └── TrainingDataStore.swift       # CRUD operations on PitchDiscriminationRecord
 │   └── Profile/
 │       └── PerceptualProfile.swift       # In-memory profile indexed by MIDI note (0–127)
 ├── Training/
@@ -330,8 +330,8 @@ PeachTests/
 
 **Service Boundaries:**
 - `NotePlayer` — knows only about frequencies, durations, and envelopes. Has no concept of musical notes, comparisons, or training. Boundary: receives frequency in Hz, plays sound.
-- `NextNoteStrategy` — knows about the perceptual profile and settings. Returns a `PitchComparison` value type (note1, note2, centDifference). Has no concept of audio playback or UI. Boundary: reads profile, produces pitch comparison.
-- `TrainingDataStore` — pure persistence. Stores and retrieves `PitchComparisonRecord` models. No computation, no aggregation. Boundary: SwiftData CRUD only.
+- `NextNoteStrategy` — knows about the perceptual profile and settings. Returns a `PitchDiscriminationTrial` value type (note1, note2, centDifference). Has no concept of audio playback or UI. Boundary: reads profile, produces pitch comparison.
+- `TrainingDataStore` — pure persistence. Stores and retrieves `PitchDiscriminationRecord` models. No computation, no aggregation. Boundary: SwiftData CRUD only.
 - `PerceptualProfile` — pure computation. Aggregates comparison data into per-MIDI-note statistics. No persistence, no UI awareness. Boundary: receives comparison results, exposes detection thresholds.
 - `TrainingSession` — the only component that crosses boundaries. Orchestrates the above four services. Boundary: the integration layer.
 
@@ -343,7 +343,7 @@ PeachTests/
 
 **Data Boundaries:**
 - SwiftData `ModelContainer` initialized in `PeachApp.swift`, passed via SwiftUI environment
-- `TrainingDataStore` is the sole accessor of `PitchComparisonRecord` — no other component queries SwiftData directly
+- `TrainingDataStore` is the sole accessor of `PitchDiscriminationRecord` — no other component queries SwiftData directly
 - `PerceptualProfile` receives data from `TrainingDataStore` at startup and incremental updates from `TrainingSession` during training
 
 ### Requirements to Structure Mapping
@@ -354,7 +354,7 @@ PeachTests/
 | Adaptive Algorithm (FR9–FR15) | `NextNoteStrategy`, `AdaptiveNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
 | Audio Engine (FR16–FR20) | `NotePlayer`, `SoundFontNotePlayer` | `Core/Audio/` |
 | Profile & Statistics (FR21–FR26) | `PerceptualProfile`, `ProfileScreen` | `Core/Profile/`, `Profile/` |
-| Data Persistence (FR27–FR29) | `PitchComparisonRecord`, `TrainingDataStore` | `Core/Data/` |
+| Data Persistence (FR27–FR29) | `PitchDiscriminationRecord`, `TrainingDataStore` | `Core/Data/` |
 | Settings (FR30–FR36) | `SettingsScreen`, `@AppStorage` | `Settings/` |
 | Localization (FR37–FR38) | `Localizable.xcstrings` | `Resources/` |
 | Device & Platform (FR39–FR42) | All screens (responsive layouts) | All feature directories |
@@ -439,7 +439,7 @@ PeachTests/
 - Architecture complexity matches project complexity — not over-engineered
 
 **Areas for Future Enhancement (Post-MVP):**
-- iCloud sync will require SwiftData CloudKit integration — may affect `TrainingDataStore` and `PitchComparisonRecord`
+- iCloud sync will require SwiftData CloudKit integration — may affect `TrainingDataStore` and `PitchDiscriminationRecord`
 - Swappable sound sources already supported by `NotePlayer` protocol — just add new implementations
 - Profile caching/snapshots for temporal progress visualization if performance demands it
 
@@ -452,7 +452,7 @@ PeachTests/
 - Refer to this document for all architectural questions
 
 **First Implementation Priority:**
-Create Xcode 26.3 project → iOS → App → SwiftUI lifecycle, Swift language, SwiftData storage. Establish folder structure as defined. Then begin with `PitchComparisonRecord` + `TrainingDataStore` (the data foundation everything depends on).
+Create Xcode 26.3 project → iOS → App → SwiftUI lifecycle, Swift language, SwiftData storage. Establish folder structure as defined. Then begin with `PitchDiscriminationRecord` + `TrainingDataStore` (the data foundation everything depends on).
 
 ## v0.2 Architecture Amendment — Pitch Matching
 
@@ -471,17 +471,17 @@ With two training modes, several MVP names are now ambiguous. These renames must
 
 | Current Name | New Name | Reason |
 |---|---|---|
-| `TrainingSession` | `PitchComparisonSession` | Only handles comparison training; "Training" is now ambiguous |
-| `TrainingState` | `PitchComparisonSessionState` | States are comparison-specific |
-| `TrainingScreen` | `PitchComparisonScreen` | The comparison training UI, not all training |
-| `Training/` directory | `PitchComparison/` | Feature directory for comparison training |
-| `FeedbackIndicator` | `PitchComparisonFeedbackIndicator` | Distinguishes from pitch matching feedback |
-| `NextNoteStrategy` | `NextPitchComparisonStrategy` | Returns a `PitchComparison`, not a generic note; method is `nextPitchComparison()` |
+| `TrainingSession` | `PitchDiscriminationSession` | Only handles comparison training; "Training" is now ambiguous |
+| `TrainingState` | `PitchDiscriminationSessionState` | States are comparison-specific |
+| `TrainingScreen` | `PitchDiscriminationScreen` | The comparison training UI, not all training |
+| `Training/` directory | `PitchDiscrimination/` | Feature directory for comparison training |
+| `FeedbackIndicator` | `PitchDiscriminationFeedbackIndicator` | Distinguishes from pitch matching feedback |
+| `NextNoteStrategy` | `NextPitchDiscriminationStrategy` | Returns a `PitchDiscriminationTrial`, not a generic note; method is `nextPitchDiscriminationTrial()` |
 
 **Names that remain unchanged:**
 - `TrainingDataStore` — stores all training data (both modes); "training" means "ear training"
 - `TrainingSettings` — shared settings (note range, reference pitch, note duration) apply to both modes
-- `PitchComparisonObserver`, `PitchComparison`, `CompletedPitchComparison` — already specific
+- `PitchDiscriminationObserver`, `PitchDiscriminationTrial`, `CompletedPitchDiscriminationTrial` — already specific
 - `PerceptualProfile` — the concrete class conforms to both pitch comparison and matching protocols
 - `NotePlayer` — generic by design, serves both training modes
 - `HapticFeedbackManager` — comparison-only behavior, but name doesn't claim "training"
@@ -540,13 +540,13 @@ extension NotePlayer {
 
 **`PlaybackHandle` is a protocol** for testability. `SoundFontNotePlayer` returns `SoundFontPlaybackHandle`; `MockNotePlayer` returns `MockPlaybackHandle`.
 
-**Impact on PitchComparisonSession (formerly TrainingSession):**
+**Impact on PitchDiscriminationSession (formerly TrainingSession):**
 
 The comparison training loop continues to use the fixed-duration convenience method — no call-site changes required. The session holds `currentHandle: PlaybackHandle?` for interruption cleanup only when using the handle-returning method directly (e.g., for early termination on navigate-away). The `stop()` method calls `currentHandle?.stop()`.
 
 ### PitchMatchingSession State Machine
 
-`PitchMatchingSession` is a new `@Observable final class` that orchestrates the pitch matching training loop. It follows the same patterns as `PitchComparisonSession` (error boundary, observer injection, environment injection) but with different state semantics.
+`PitchMatchingSession` is a new `@Observable final class` that orchestrates the pitch matching training loop. It follows the same patterns as `PitchDiscriminationSession` (error boundary, observer injection, environment injection) but with different state semantics.
 
 **States:**
 
@@ -598,7 +598,7 @@ init(
 )
 ```
 
-No `NextPitchComparisonStrategy` dependency — note selection is random for v0.2 (see Note Selection below).
+No `NextPitchDiscriminationStrategy` dependency — note selection is random for v0.2 (see Note Selection below).
 
 **Service table (addition):**
 
@@ -650,14 +650,14 @@ Follows the same decoupled observer pattern as comparison training:
 
 ```swift
 protocol PitchMatchingObserver {
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching)
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial)
 }
 ```
 
 **Value type:**
 
 ```swift
-struct CompletedPitchMatching {
+struct CompletedPitchMatchingTrial {
     let referenceNote: Int
     let initialCentOffset: Double
     let userCentError: Double
@@ -672,16 +672,16 @@ struct CompletedPitchMatching {
 **Not conforming (by design):**
 - `HapticFeedbackManager` — no haptics for pitch matching (UX spec decision)
 
-**File locations:** `PitchMatching/PitchMatchingObserver.swift`, `PitchMatching/CompletedPitchMatching.swift`
+**File locations:** `PitchMatching/PitchMatchingObserver.swift`, `PitchMatching/CompletedPitchMatchingTrial.swift`
 
-### Profile Protocol Split — PitchComparisonProfile & PitchMatchingProfile
+### Profile Protocol Split — PitchDiscriminationProfile & PitchMatchingProfile
 
 The existing `PerceptualProfile` class is split into two protocols representing the two distinct skills being trained:
 
-**PitchComparisonProfile** (existing behavior, extracted to protocol):
+**PitchDiscriminationProfile** (existing behavior, extracted to protocol):
 
 ```swift
-protocol PitchComparisonProfile: AnyObject {
+protocol PitchDiscriminationProfile: AnyObject {
     func update(note: Int, centOffset: Double, isCorrect: Bool)
     func weakSpots(count: Int) -> [Int]
     var overallMean: Double? { get }
@@ -713,7 +713,7 @@ protocol PitchMatchingProfile {
 
 ```swift
 @Observable
-final class PerceptualProfile: PitchComparisonProfile, PitchMatchingProfile {
+final class PerceptualProfile: PitchDiscriminationProfile, PitchMatchingProfile {
     // Existing: 128-slot noteStats array for pitch comparison
     // New: aggregate matching statistics (overall, not per-note for v0.2)
 }
@@ -722,14 +722,14 @@ final class PerceptualProfile: PitchComparisonProfile, PitchMatchingProfile {
 **v0.2 matching statistics:** Overall aggregates only (mean absolute error, standard deviation, sample count). Per-note matching breakdown deferred until data shows meaningful per-note variation. The protocol allows expansion.
 
 **Dependency boundaries:**
-- `PitchComparisonSession` depends on `PitchComparisonProfile`
+- `PitchDiscriminationSession` depends on `PitchDiscriminationProfile`
 - `PitchMatchingSession` depends on `PitchMatchingProfile`
-- `NextPitchComparisonStrategy` depends on `PitchComparisonProfile`
+- `NextPitchDiscriminationStrategy` depends on `PitchDiscriminationProfile`
 - Profile Screen depends on both (shows pitch comparison visualization + matching stats)
 
-**Loading on startup:** `PerceptualProfile` rebuilt from both `PitchComparisonRecord` (pitch comparison) and `PitchMatchingRecord` (matching) data on app startup.
+**Loading on startup:** `PerceptualProfile` rebuilt from both `PitchDiscriminationRecord` (pitch comparison) and `PitchMatchingRecord` (matching) data on app startup.
 
-**Observer conformance:** `PerceptualProfile` conforms to both `PitchComparisonObserver` and `PitchMatchingObserver`.
+**Observer conformance:** `PerceptualProfile` conforms to both `PitchDiscriminationObserver` and `PitchMatchingObserver`.
 
 ### TrainingDataStore Extension
 
@@ -745,7 +745,7 @@ Extend the existing `TrainingDataStore` with pitch matching CRUD. It remains the
 **Schema update:** Register `PitchMatchingRecord.self` in the `ModelContainer` schema in `PeachApp.swift`:
 
 ```swift
-let container = try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self)
+let container = try ModelContainer(for: PitchDiscriminationRecord.self, PitchMatchingRecord.self)
 ```
 
 ### Note Selection (v0.2)
@@ -760,13 +760,13 @@ No adaptive algorithm for pitch matching in v0.2. Selection is random:
 **Value type for a challenge:**
 
 ```swift
-struct PitchMatchingChallenge {
+struct PitchMatchingTrial {
     let referenceNote: Int        // MIDI note (0-127)
     let initialCentOffset: Double // Random ±100 cents
 }
 ```
 
-**File location:** `PitchMatching/PitchMatchingChallenge.swift`
+**File location:** `PitchMatching/PitchMatchingTrial.swift`
 
 ### Updated Project Structure (v0.2)
 
@@ -786,34 +786,34 @@ Peach/
 │   │   ├── SF2PresetParser.swift
 │   │   └── FrequencyCalculation.swift
 │   ├── Algorithm/
-│   │   ├── NextPitchComparisonStrategy.swift  # Renamed from NextNoteStrategy
+│   │   ├── NextPitchDiscriminationStrategy.swift  # Renamed from NextNoteStrategy
 │   │   ├── KazezNoteStrategy.swift
 │   │   └── AdaptiveNoteStrategy.swift
 │   ├── Data/
-│   │   ├── PitchComparisonRecord.swift
+│   │   ├── PitchDiscriminationRecord.swift
 │   │   ├── PitchMatchingRecord.swift     # New
 │   │   ├── TrainingDataStore.swift       # Updated: pitch matching CRUD + PitchMatchingObserver
-│   │   ├── PitchComparisonRecordStoring.swift
+│   │   ├── PitchDiscriminationRecordStoring.swift
 │   │   └── DataStoreError.swift
 │   └── Profile/
 │       ├── PerceptualProfile.swift           # Updated: conforms to both profile protocols
-│       ├── PitchComparisonProfile.swift  # New: protocol extracted from PerceptualProfile
+│       ├── PitchDiscriminationProfile.swift  # New: protocol extracted from PerceptualProfile
 │       ├── PitchMatchingProfile.swift        # New: protocol for matching statistics
 │       ├── TrendAnalyzer.swift
 │       └── ThresholdTimeline.swift
-├── PitchComparison/                           # Renamed from Training/
-│   ├── PitchComparisonSession.swift           # Renamed from TrainingSession
-│   ├── PitchComparisonScreen.swift            # Renamed from TrainingScreen
-│   ├── PitchComparison.swift
-│   ├── PitchComparisonObserver.swift
+├── PitchDiscrimination/                           # Renamed from Training/
+│   ├── PitchDiscriminationSession.swift           # Renamed from TrainingSession
+│   ├── PitchDiscriminationScreen.swift            # Renamed from TrainingScreen
+│   ├── PitchDiscriminationTrial.swift
+│   ├── PitchDiscriminationObserver.swift
 │   ├── HapticFeedbackManager.swift
-│   ├── PitchComparisonFeedbackIndicator.swift # Renamed from FeedbackIndicator
+│   ├── PitchDiscriminationFeedbackIndicator.swift # Renamed from FeedbackIndicator
 │   └── DifficultyDisplayView.swift
 ├── PitchMatching/                        # New feature directory
 │   ├── PitchMatchingSession.swift
 │   ├── PitchMatchingScreen.swift
-│   ├── PitchMatchingChallenge.swift
-│   ├── CompletedPitchMatching.swift
+│   ├── PitchMatchingTrial.swift
+│   ├── CompletedPitchMatchingTrial.swift
 │   ├── PitchMatchingObserver.swift
 │   ├── PitchMatchingFeedbackIndicator.swift
 │   └── VerticalPitchSlider.swift
@@ -850,8 +850,8 @@ PeachTests/
 │   └── Profile/
 │       ├── PerceptualProfileTests.swift      # Updated for matching stats
 │       └── ...
-├── PitchComparison/                               # Renamed from Training/
-│   └── PitchComparisonSessionTests.swift          # Renamed from TrainingSessionTests
+├── PitchDiscrimination/                               # Renamed from Training/
+│   └── PitchDiscriminationSessionTests.swift          # Renamed from TrainingSessionTests
 ├── PitchMatching/                            # New
 │   └── PitchMatchingSessionTests.swift
 └── Mocks/
@@ -864,12 +864,12 @@ PeachTests/
 
 | FR Category | Component(s) | Directory |
 |---|---|---|
-| Training Loop (FR1–FR8) | `PitchComparisonSession`, `PitchComparisonScreen` | `PitchComparison/` |
+| Training Loop (FR1–FR8) | `PitchDiscriminationSession`, `PitchDiscriminationScreen` | `PitchDiscrimination/` |
 | Pitch Matching (FR44–FR50a) | `PitchMatchingSession`, `PitchMatchingScreen` | `PitchMatching/` |
-| Adaptive Algorithm (FR9–FR15) | `NextPitchComparisonStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
+| Adaptive Algorithm (FR9–FR15) | `NextPitchDiscriminationStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
 | Audio Engine (FR16–FR20, FR51–FR52) | `NotePlayer`, `PlaybackHandle`, `SoundFontNotePlayer`, `SoundFontPlaybackHandle` | `Core/Audio/` |
 | Profile & Statistics (FR21–FR26) | `PerceptualProfile`, `ProfileScreen` | `Core/Profile/`, `Profile/` |
-| Data Persistence (FR27–FR29, FR48) | `PitchComparisonRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
+| Data Persistence (FR27–FR29, FR48) | `PitchDiscriminationRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
 | Settings (FR30–FR36) | `SettingsScreen`, `@AppStorage` | `Settings/` |
 | Localization (FR37–FR38) | `Localizable.xcstrings` | `Resources/` |
 | Device & Platform (FR39–FR42) | All screens (responsive layouts) | All feature directories |
@@ -879,19 +879,19 @@ PeachTests/
 
 | Concern | Affected Components | Resolution |
 |---|---|---|
-| Audio interruption (comparison) | `SoundFontNotePlayer`, `PitchComparisonSession` | `PlaybackHandle` reports interruption → `PitchComparisonSession` discards current comparison |
+| Audio interruption (comparison) | `SoundFontNotePlayer`, `PitchDiscriminationSession` | `PlaybackHandle` reports interruption → `PitchDiscriminationSession` discards current comparison |
 | Audio interruption (pitch matching) | `SoundFontNotePlayer`, `PitchMatchingSession` | `PlaybackHandle` reports interruption → `PitchMatchingSession` discards current attempt |
-| Settings propagation | `SettingsScreen`, `PitchComparisonSession`, `PitchMatchingSession`, `NextPitchComparisonStrategy`, `NotePlayer` | Both sessions read `@AppStorage` when starting next challenge; `NotePlayer` reads `soundSource` on each `play()` call |
+| Settings propagation | `SettingsScreen`, `PitchDiscriminationSession`, `PitchMatchingSession`, `NextPitchDiscriminationStrategy`, `NotePlayer` | Both sessions read `@AppStorage` when starting next challenge; `NotePlayer` reads `soundSource` on each `play()` call |
 | Data integrity | `TrainingDataStore` | SwiftData atomic writes; sessions write only complete results |
-| App lifecycle | `PeachApp`, `PitchComparisonSession`, `PitchMatchingSession` | Backgrounding → active session stops; foregrounding → returns to Start Screen |
-| Note ownership | `PitchComparisonSession`, `PitchMatchingSession` | PlaybackHandle pattern ensures every started note has an explicit owner responsible for stopping it |
+| App lifecycle | `PeachApp`, `PitchDiscriminationSession`, `PitchMatchingSession` | Backgrounding → active session stops; foregrounding → returns to Start Screen |
+| Note ownership | `PitchDiscriminationSession`, `PitchMatchingSession` | PlaybackHandle pattern ensures every started note has an explicit owner responsible for stopping it |
 
 ### v0.2 Implementation Sequence
 
 1. **Prerequisite renames** (no functional changes — pure refactoring)
-2. **PlaybackHandle protocol + NotePlayer redesign** (refactors audio layer and PitchComparisonSession)
+2. **PlaybackHandle protocol + NotePlayer redesign** (refactors audio layer and PitchDiscriminationSession)
 3. **PitchMatchingRecord + TrainingDataStore extension** (data layer)
-4. **Profile protocol split** (PitchComparisonProfile + PitchMatchingProfile)
+4. **Profile protocol split** (PitchDiscriminationProfile + PitchMatchingProfile)
 5. **PitchMatchingSession** (state machine, integrates NotePlayer + observers + profile)
 6. **PitchMatchingScreen + custom components** (VerticalPitchSlider, PitchMatchingFeedbackIndicator)
 7. **Start Screen integration + navigation** (Pitch Matching button, routing)
@@ -901,7 +901,7 @@ PeachTests/
 
 **Decision Compatibility:** All v0.2 additions use the same first-party Apple frameworks. PlaybackHandle is a protocol-level change with no new dependencies. PitchMatchingRecord integrates into the existing SwiftData container.
 
-**Pattern Consistency:** PitchMatchingSession follows the same patterns as PitchComparisonSession (observable, error boundary, observer injection, environment injection). Profile protocols follow protocol-first design. PlaybackHandle follows the existing protocol-based testability pattern.
+**Pattern Consistency:** PitchMatchingSession follows the same patterns as PitchDiscriminationSession (observable, error boundary, observer injection, environment injection). Profile protocols follow protocol-first design. PlaybackHandle follows the existing protocol-based testability pattern.
 
 **Backward Compatibility:** The fixed-duration `play()` convenience method in the NotePlayer protocol extension preserves existing call semantics. Pitch comparison training is functionally unchanged after renames.
 
@@ -1080,22 +1080,22 @@ Across all training modes, the abstract concept is the same: a **reference note*
 
 | Current | New | Where |
 |---|---|---|
-| `note1` | `referenceNote` | `PitchComparisonRecord`, `PitchComparison`, `CompletedPitchComparison` |
-| `note2` | `targetNote` | `PitchComparisonRecord`, `PitchComparison`, `CompletedPitchComparison` |
-| `note2CentOffset` | `centOffset` | `PitchComparisonRecord` |
-| `centDifference` | `centOffset` | `PitchComparison` |
+| `note1` | `referenceNote` | `PitchDiscriminationRecord`, `PitchDiscriminationTrial`, `CompletedPitchDiscriminationTrial` |
+| `note2` | `targetNote` | `PitchDiscriminationRecord`, `PitchDiscriminationTrial`, `CompletedPitchDiscriminationTrial` |
+| `note2CentOffset` | `centOffset` | `PitchDiscriminationRecord` |
+| `centDifference` | `centOffset` | `PitchDiscriminationTrial` |
 
-**Rename scope:** Code files, class/struct/enum field names, all references in `PitchComparisonSession`, `NextPitchComparisonStrategy`, `KazezNoteStrategy`, `PitchComparisonObserver` conformances, `TrainingDataStore`, tests, and `docs/project-context.md`.
+**Rename scope:** Code files, class/struct/enum field names, all references in `PitchDiscriminationSession`, `NextPitchDiscriminationStrategy`, `KazezNoteStrategy`, `PitchDiscriminationObserver` conformances, `TrainingDataStore`, tests, and `docs/project-context.md`.
 
 **Names that remain unchanged:**
 - `PitchMatchingRecord.referenceNote` — already correct
-- `PitchMatchingChallenge.referenceNote` — already correct
-- `CompletedPitchMatching.referenceNote` — already correct
+- `PitchMatchingTrial.referenceNote` — already correct
+- `CompletedPitchMatchingTrial.referenceNote` — already correct
 
 **Names that gain a field:**
 - `PitchMatchingRecord` — gains `targetNote` (see Data Model section)
-- `PitchMatchingChallenge` — gains `targetNote`
-- `CompletedPitchMatching` — gains `targetNote`
+- `PitchMatchingTrial` — gains `targetNote`
+- `CompletedPitchMatchingTrial` — gains `targetNote`
 
 #### E. SoundSourceProvider Protocol
 
@@ -1114,12 +1114,12 @@ protocol SoundSourceProvider {
 
 ### Session Parameterization
 
-Both `PitchComparisonSession` and `PitchMatchingSession` are parameterized with an interval set — not duplicated into separate interval session classes.
+Both `PitchDiscriminationSession` and `PitchMatchingSession` are parameterized with an interval set — not duplicated into separate interval session classes.
 
 **Start methods renamed — intervals read from `userSettings`:**
 
 ```swift
-// PitchComparisonSession + PitchMatchingSession (both conform to TrainingSession)
+// PitchDiscriminationSession + PitchMatchingSession (both conform to TrainingSession)
 func start()  // reads intervals and tuningSystem from injected userSettings
 ```
 
@@ -1142,24 +1142,24 @@ var isIntervalMode: Bool { currentInterval != .prime }
 `currentInterval` updates each exercise. The screen conditionally shows the target interval label based on `isIntervalMode`.
 
 **What stays unchanged:**
-- One `PitchComparisonSession` instance, one `PitchMatchingSession` instance in PeachApp
+- One `PitchDiscriminationSession` instance, one `PitchMatchingSession` instance in PeachApp
 - `activeSession` tracking (only one active at a time)
 - Observer pattern — observers notified the same way
 - Feedback timing (0.4s), haptic behavior, interruption handling — all identical
 
-### NextPitchComparisonStrategy Update
+### NextPitchDiscriminationStrategy Update
 
 The strategy protocol gains interval and tuning system parameters:
 
 ```swift
-protocol NextPitchComparisonStrategy {
-    func nextPitchComparison(
-        profile: PitchComparisonProfile,
+protocol NextPitchDiscriminationStrategy {
+    func nextPitchDiscriminationTrial(
+        profile: PitchDiscriminationProfile,
         settings: TrainingSettings,
-        lastPitchComparison: CompletedPitchComparison?,
+        lastPitchDiscriminationTrial: CompletedPitchDiscriminationTrial?,
         interval: Interval,
         tuningSystem: TuningSystem
-    ) -> PitchComparison
+    ) -> PitchDiscriminationTrial
 }
 ```
 
@@ -1172,7 +1172,7 @@ The strategy selects a reference note and difficulty (cent offset magnitude) as 
 ```swift
 let interval = intervals.randomElement()!  // safe — set is non-empty
 let targetNote = referenceNote.transposed(by: interval)
-let challenge = PitchMatchingChallenge(
+let challenge = PitchMatchingTrial(
     referenceNote: referenceNote,
     targetNote: targetNote,
     initialCentOffset: randomOffset
@@ -1181,11 +1181,11 @@ let challenge = PitchMatchingChallenge(
 
 ### Data Model Updates
 
-#### PitchComparisonRecord
+#### PitchDiscriminationRecord
 
 ```swift
 @Model
-final class PitchComparisonRecord {
+final class PitchDiscriminationRecord {
     var referenceNote: Int       // was note1
     var targetNote: Int          // was note2
     var centOffset: Double       // was note2CentOffset
@@ -1213,47 +1213,47 @@ final class PitchMatchingRecord {
 }
 ```
 
-**SwiftData migration:** Adding `targetNote` and `tuningSystem` alongside existing fields is a schema change. As with `PitchComparisonRecord`, there is no production user base yet — existing data loss from schema changes is acceptable. No `SchemaMigrationPlan` needed.
+**SwiftData migration:** Adding `targetNote` and `tuningSystem` alongside existing fields is a schema change. As with `PitchDiscriminationRecord`, there is no production user base yet — existing data loss from schema changes is acceptable. No `SchemaMigrationPlan` needed.
 
 #### Value Types
 
-**PitchComparison** (updated):
+**PitchDiscriminationTrial** (updated):
 
 ```swift
-struct PitchComparison {
+struct PitchDiscriminationTrial {
     let referenceNote: MIDINote  // was note1
     let targetNote: MIDINote     // was note2
     let centOffset: Cents        // was centDifference — offset from correct target pitch
 }
 ```
 
-**CompletedPitchComparison** (updated):
+**CompletedPitchDiscriminationTrial** (updated):
 
 ```swift
-struct CompletedPitchComparison {
-    let pitchComparison: PitchComparison
+struct CompletedPitchDiscriminationTrial {
+    let pitchDiscriminationTrial: PitchDiscriminationTrial
     let userAnsweredHigher: Bool
     let tuningSystem: TuningSystem    // NEW — recorded for data integrity
     let timestamp: Date
 }
 ```
 
-`PitchComparisonSession` populates `tuningSystem` from its session-level parameter so that `TrainingDataStore` (as `PitchComparisonObserver`) can persist it to `PitchComparisonRecord`.
+`PitchDiscriminationSession` populates `tuningSystem` from its session-level parameter so that `TrainingDataStore` (as `PitchDiscriminationObserver`) can persist it to `PitchDiscriminationRecord`.
 
-**PitchMatchingChallenge** (updated):
+**PitchMatchingTrial** (updated):
 
 ```swift
-struct PitchMatchingChallenge {
+struct PitchMatchingTrial {
     let referenceNote: MIDINote
     let targetNote: MIDINote          // NEW
     let initialCentOffset: Double
 }
 ```
 
-**CompletedPitchMatching** (updated):
+**CompletedPitchMatchingTrial** (updated):
 
 ```swift
-struct CompletedPitchMatching {
+struct CompletedPitchMatchingTrial {
     let referenceNote: MIDINote
     let targetNote: MIDINote          // NEW
     let initialCentOffset: Double
@@ -1269,26 +1269,26 @@ struct CompletedPitchMatching {
 
 ```swift
 enum NavigationDestination: Hashable {
-    case pitchComparison(intervals: Set<Interval>)   // renamed from .training
+    case pitchDiscrimination(intervals: Set<Interval>)   // renamed from .training
     case pitchMatching(intervals: Set<Interval>)
     case settings
     case profile
 }
 ```
 
-No separate interval cases. The interval set is a parameter — FR66 (unison = prime case) is reflected in the navigation model. Renaming `.training` → `.pitchComparison` aligns with the v0.2 session/screen renames.
+No separate interval cases. The interval set is a parameter — FR66 (unison = prime case) is reflected in the navigation model. Renaming `.training` → `.pitchDiscrimination` aligns with the v0.2 session/screen renames.
 
 **Start Screen routing — four buttons, two screens:**
 
 ```swift
 // Unison modes
-NavigationLink(value: .pitchComparison(intervals: [.prime]))       { Text("Pitch Comparison") }
+NavigationLink(value: .pitchDiscrimination(intervals: [.prime]))       { Text("Pitch Comparison") }
 NavigationLink(value: .pitchMatching(intervals: [.prime]))    { Text("Pitch Matching") }
 
 // Visual separator
 
 // Interval modes
-NavigationLink(value: .pitchComparison(intervals: [.perfectFifth]))    { Text("Interval Pitch Comparison") }
+NavigationLink(value: .pitchDiscrimination(intervals: [.perfectFifth]))    { Text("Interval Pitch Comparison") }
 NavigationLink(value: .pitchMatching(intervals: [.perfectFifth])) { Text("Interval Pitch Matching") }
 ```
 
@@ -1305,8 +1305,8 @@ Subtle visual separator (spacing or divider) between unison and interval groups.
 ```swift
 .navigationDestination(for: NavigationDestination.self) { destination in
     switch destination {
-    case .pitchComparison(let intervals):
-        PitchComparisonScreen(intervals: intervals)
+    case .pitchDiscrimination(let intervals):
+        PitchDiscriminationScreen(intervals: intervals)
     case .pitchMatching(let intervals):
         PitchMatchingScreen(intervals: intervals)
     case .settings:
@@ -1326,11 +1326,11 @@ Subtle visual separator (spacing or divider) between unison and interval groups.
 ### Profile Impact
 
 Record everything, defer computation changes. For v0.3:
-- Interval comparison results flow through the same `PitchComparisonObserver` path
+- Interval comparison results flow through the same `PitchDiscriminationObserver` path
 - Interval pitch matching results flow through the same `PitchMatchingObserver` path
 - Profiles receive all data regardless of interval — no filtering, no interval-aware aggregation
 - All records carry full context (referenceNote, targetNote, tuningSystem) so future profile work has solid data to work with
-- No changes to `PitchComparisonProfile` or `PitchMatchingProfile` protocols or computation
+- No changes to `PitchDiscriminationProfile` or `PitchMatchingProfile` protocols or computation
 
 ### Updated Project Structure (v0.3)
 
@@ -1338,7 +1338,7 @@ Record everything, defer computation changes. For v0.3:
 Peach/
 ├── App/
 │   ├── PeachApp.swift                    # Updated: SoundSourceProvider wiring
-│   ├── ContentView.swift                 # Updated: .pitchComparison/.pitchMatching destinations
+│   ├── ContentView.swift                 # Updated: .pitchDiscrimination/.pitchMatching destinations
 │   ├── NavigationDestination.swift       # Updated: parameterized with intervals
 │   └── EnvironmentKeys.swift             # Updated: SoundSourceProvider entry
 ├── Core/
@@ -1362,39 +1362,39 @@ Peach/
 │   │   ├── SoundSourceID.swift
 │   │   └── AudioSessionInterruptionMonitor.swift
 │   ├── Algorithm/
-│   │   ├── NextPitchComparisonStrategy.swift  # Updated: interval + tuningSystem parameters
+│   │   ├── NextPitchDiscriminationStrategy.swift  # Updated: interval + tuningSystem parameters
 │   │   └── KazezNoteStrategy.swift       # Updated: computes targetNote from interval
 │   ├── Data/
-│   │   ├── PitchComparisonRecord.swift        # Updated: renamed fields, tuningSystem
+│   │   ├── PitchDiscriminationRecord.swift        # Updated: renamed fields, tuningSystem
 │   │   ├── PitchMatchingRecord.swift     # Updated: targetNote, tuningSystem
-│   │   ├── PitchComparisonRecordStoring.swift
+│   │   ├── PitchDiscriminationRecordStoring.swift
 │   │   ├── DataStoreError.swift
 │   │   └── TrainingDataStore.swift       # Updated: renamed fields in queries/saves
 │   ├── Profile/
 │   │   ├── PerceptualProfile.swift       # Updated: handles renamed fields
-│   │   ├── PitchComparisonProfile.swift
+│   │   ├── PitchDiscriminationProfile.swift
 │   │   ├── PitchMatchingProfile.swift
 │   │   ├── TrendAnalyzer.swift
 │   │   └── ThresholdTimeline.swift
 │   ├── Training/
-│   │   ├── PitchComparison.swift              # Updated: referenceNote, targetNote, centOffset
-│   │   ├── PitchComparisonObserver.swift
-│   │   ├── CompletedPitchMatching.swift  # Updated: targetNote, tuningSystem
+│   │   ├── PitchDiscriminationTrial.swift              # Updated: referenceNote, targetNote, centOffset
+│   │   ├── PitchDiscriminationObserver.swift
+│   │   ├── CompletedPitchMatchingTrial.swift  # Updated: targetNote, tuningSystem
 │   │   ├── PitchMatchingObserver.swift
 │   │   └── Resettable.swift
 │   ├── TrainingSession.swift
 │   ├── Comparable+Clamped.swift
 │   └── UnitInterval.swift
-├── PitchComparison/
-│   ├── PitchComparisonSession.swift           # Updated: intervals + tuningSystem params, currentInterval
-│   ├── PitchComparisonScreen.swift            # Updated: receives intervals, shows interval label
-│   ├── PitchComparisonFeedbackIndicator.swift
+├── PitchDiscrimination/
+│   ├── PitchDiscriminationSession.swift           # Updated: intervals + tuningSystem params, currentInterval
+│   ├── PitchDiscriminationScreen.swift            # Updated: receives intervals, shows interval label
+│   ├── PitchDiscriminationFeedbackIndicator.swift
 │   ├── DifficultyDisplayView.swift
 │   └── HapticFeedbackManager.swift
 ├── PitchMatching/
 │   ├── PitchMatchingSession.swift        # Updated: intervals + tuningSystem params, currentInterval
 │   ├── PitchMatchingScreen.swift         # Updated: receives intervals, shows interval label
-│   ├── PitchMatchingChallenge.swift      # Updated: targetNote
+│   ├── PitchMatchingTrial.swift      # Updated: targetNote
 │   ├── PitchMatchingFeedbackIndicator.swift
 │   └── VerticalPitchSlider.swift
 ├── Profile/
@@ -1431,8 +1431,8 @@ PeachTests/
 │   ├── PitchTests.swift                  # NEW
 │   ├── SoundFontNotePlayerTests.swift    # Updated for Pitch
 │   └── MIDINoteTests.swift               # Updated: transposed(by:), pitch(at:in:)
-├── PitchComparison/
-│   └── PitchComparisonSessionTests.swift      # Updated: interval parameterization
+├── PitchDiscrimination/
+│   └── PitchDiscriminationSessionTests.swift      # Updated: interval parameterization
 ├── PitchMatching/
 │   └── PitchMatchingSessionTests.swift   # Updated: interval parameterization
 └── Mocks/
@@ -1444,17 +1444,17 @@ PeachTests/
 
 | FR Category | Component(s) | Directory |
 |---|---|---|
-| Training Loop (FR1–FR8) | `PitchComparisonSession`, `PitchComparisonScreen` | `PitchComparison/` |
+| Training Loop (FR1–FR8) | `PitchDiscriminationSession`, `PitchDiscriminationScreen` | `PitchDiscrimination/` |
 | Pitch Matching (FR44–FR50a) | `PitchMatchingSession`, `PitchMatchingScreen` | `PitchMatching/` |
 | Interval Domain (FR53–FR55) | `Interval`, `TuningSystem`, `Pitch` | `Core/Audio/` |
-| Interval Pitch Comparison (FR56–FR59) | `PitchComparisonSession` (parameterized), `PitchComparisonScreen`, `NextPitchComparisonStrategy` | `PitchComparison/`, `Core/Algorithm/` |
+| Interval Pitch Comparison (FR56–FR59) | `PitchDiscriminationSession` (parameterized), `PitchDiscriminationScreen`, `NextPitchDiscriminationStrategy` | `PitchDiscrimination/`, `Core/Algorithm/` |
 | Interval Pitch Matching (FR60–FR64) | `PitchMatchingSession` (parameterized), `PitchMatchingScreen` | `PitchMatching/` |
 | Start Screen Integration (FR65–FR66) | `StartScreen`, `NavigationDestination` | `Start/`, `App/` |
 | Fixed Interval Scope (FR67) | Hardcoded `[.perfectFifth]` in Start Screen navigation links | `Start/` |
-| Adaptive Algorithm (FR9–FR15) | `NextPitchComparisonStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
+| Adaptive Algorithm (FR9–FR15) | `NextPitchDiscriminationStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
 | Audio Engine (FR16–FR20, FR51–FR52) | `NotePlayer`, `PlaybackHandle`, `SoundFontNotePlayer` | `Core/Audio/` |
 | Profile & Statistics (FR21–FR26) | `PerceptualProfile`, `ProfileScreen` | `Core/Profile/`, `Profile/` |
-| Data Persistence (FR27–FR29, FR48, FR64) | `PitchComparisonRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
+| Data Persistence (FR27–FR29, FR48, FR64) | `PitchDiscriminationRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
 | Settings (FR30–FR36) | `SettingsScreen`, `SoundSourceProvider`, `@AppStorage` | `Settings/`, `Core/Audio/` |
 | Localization (FR37–FR38) | `Localizable.xcstrings` | `Resources/` |
 | Device & Platform (FR39–FR42) | All screens (responsive layouts) | All feature directories |
@@ -1464,13 +1464,13 @@ PeachTests/
 
 | Concern | Affected Components | Resolution |
 |---|---|---|
-| Audio interruption (comparison) | `SoundFontNotePlayer`, `PitchComparisonSession` | PlaybackHandle reports interruption → session discards current comparison (same as v0.2) |
+| Audio interruption (comparison) | `SoundFontNotePlayer`, `PitchDiscriminationSession` | PlaybackHandle reports interruption → session discards current comparison (same as v0.2) |
 | Audio interruption (pitch matching) | `SoundFontNotePlayer`, `PitchMatchingSession` | PlaybackHandle reports interruption → session discards current attempt (same as v0.2) |
-| Settings propagation | `SettingsScreen`, `PitchComparisonSession`, `PitchMatchingSession`, `NextPitchComparisonStrategy`, `NotePlayer` | Both sessions read `@AppStorage` when starting next challenge (same as v0.2) |
+| Settings propagation | `SettingsScreen`, `PitchDiscriminationSession`, `PitchMatchingSession`, `NextPitchDiscriminationStrategy`, `NotePlayer` | Both sessions read `@AppStorage` when starting next challenge (same as v0.2) |
 | Data integrity | `TrainingDataStore` | SwiftData atomic writes; sessions write only complete results with full context (reference, target, tuningSystem) |
-| App lifecycle | `PeachApp`, `PitchComparisonSession`, `PitchMatchingSession` | Backgrounding → active session stops; foregrounding → returns to Start Screen (same as v0.2) |
-| Note ownership | `PitchComparisonSession`, `PitchMatchingSession` | PlaybackHandle pattern ensures every started note has an explicit owner (same as v0.2) |
-| Interval consistency | `PitchComparisonSession`, `PitchMatchingSession`, `NextPitchComparisonStrategy` | Interval and tuning system are set once per training run; all exercises in a run use the same set |
+| App lifecycle | `PeachApp`, `PitchDiscriminationSession`, `PitchMatchingSession` | Backgrounding → active session stops; foregrounding → returns to Start Screen (same as v0.2) |
+| Note ownership | `PitchDiscriminationSession`, `PitchMatchingSession` | PlaybackHandle pattern ensures every started note has an explicit owner (same as v0.2) |
+| Interval consistency | `PitchDiscriminationSession`, `PitchMatchingSession`, `NextPitchDiscriminationStrategy` | Interval and tuning system are set once per training run; all exercises in a run use the same set |
 | Tuning system precision (NFR) | `TuningSystem`, `Pitch`, `MIDINote` | Interval frequency computations accurate to 0.1 cent; precision preserved from `FrequencyCalculation` |
 | Sound source decoupling | `SettingsScreen`, `SoundSourceProvider`, `SoundFontLibrary` | SettingsScreen depends on protocol, not concrete library |
 
@@ -1479,27 +1479,27 @@ PeachTests/
 1. **New domain types** — `Interval`, `TuningSystem`, `Pitch` with full test coverage (no dependencies on existing code)
 2. **MIDINote extensions** — `transposed(by:)`, `pitch(at:in:)`, `frequency` updated to use `Pitch` internally
 3. **FrequencyCalculation migration** — move logic to domain types, update all call sites, delete `FrequencyCalculation.swift`
-4. **Prerequisite renames** — `note1`→`referenceNote`, `note2`→`targetNote`, `note2CentOffset`→`centOffset`, `.training`→`.pitchComparison`
+4. **Prerequisite renames** — `note1`→`referenceNote`, `note2`→`targetNote`, `note2CentOffset`→`centOffset`, `.training`→`.pitchDiscrimination`
 5. **NotePlayer protocol change** — `Frequency` → `Pitch`, update `SoundFontNotePlayer` and all call sites
 6. **SoundSourceProvider protocol** — extract from `SoundFontLibrary`, update `SettingsScreen`
 7. **Data model updates** — add `targetNote` and `tuningSystem` fields to records, SwiftData migration
-8. **Value type updates** — `PitchComparison`, `CompletedPitchComparison`, `PitchMatchingChallenge`, `CompletedPitchMatching` gain target/tuning fields
+8. **Value type updates** — `PitchDiscriminationTrial`, `CompletedPitchDiscriminationTrial`, `PitchMatchingTrial`, `CompletedPitchMatchingTrial` gain target/tuning fields
 9. **Session parameterization** — `start()` reads `intervals` and `tuningSystem` from `userSettings`; `currentInterval` observable state
-10. **NextPitchComparisonStrategy update** — receives `interval`, computes `targetNote`
+10. **NextPitchDiscriminationStrategy update** — receives `interval`, computes `targetNote`
 11. **NavigationDestination update** — parameterized with `intervals: Set<Interval>`
 12. **Start Screen update** — four buttons with visual separator, interval sets
-13. **Training screen updates** — conditional target interval label on `PitchComparisonScreen` and `PitchMatchingScreen`
-14. **Observer/profile pass-through** — verify PitchComparisonObserver and PitchMatchingObserver handle updated value types
+13. **Training screen updates** — conditional target interval label on `PitchDiscriminationScreen` and `PitchMatchingScreen`
+14. **Observer/profile pass-through** — verify PitchDiscriminationObserver and PitchMatchingObserver handle updated value types
 
 ### v0.3 Architecture Validation
 
 **Decision Compatibility:** All v0.3 additions use the same first-party Apple frameworks. `Interval`, `TuningSystem`, and `Pitch` are pure Swift value types with no dependencies. `NotePlayer` protocol change is internal to the app module. No new third-party dependencies.
 
-**Pattern Consistency:** `Interval` and `TuningSystem` follow existing value type patterns (`MIDINote`, `Cents`, `Frequency`). Session parameterization follows existing patterns (sessions already accept configuration via init/start parameters). `SoundSourceProvider` follows the protocol-first pattern used throughout (`NotePlayer`, `NextPitchComparisonStrategy`, `PitchComparisonProfile`).
+**Pattern Consistency:** `Interval` and `TuningSystem` follow existing value type patterns (`MIDINote`, `Cents`, `Frequency`). Session parameterization follows existing patterns (sessions already accept configuration via init/start parameters). `SoundSourceProvider` follows the protocol-first pattern used throughout (`NotePlayer`, `NextPitchDiscriminationStrategy`, `PitchDiscriminationProfile`).
 
 **FR66 Compliance:** Unison modes use the same code paths as interval modes with `intervals: [.prime]`. No code duplication, no conditional branching based on "is this interval mode" — the prime case flows through the same generalized logic.
 
-**Backward Compatibility:** Existing data migrates cleanly — `targetNote` defaults to `referenceNote` (unison), `tuningSystem` defaults to `.equalTemperament`. `NavigationDestination.pitchComparison(intervals: [.prime])` replaces `.training` with the same behavior. The NotePlayer protocol change requires updating all call sites but preserves the same semantics.
+**Backward Compatibility:** Existing data migrates cleanly — `targetNote` defaults to `referenceNote` (unison), `tuningSystem` defaults to `.equalTemperament`. `NavigationDestination.pitchDiscrimination(intervals: [.prime])` replaces `.training` with the same behavior. The NotePlayer protocol change requires updating all call sites but preserves the same semantics.
 
 **Requirements Coverage:** All 15 new FRs (FR53–FR67) mapped to specific components. All prerequisite refactorings have clear scope and rationale. NFR for tuning system precision (0.1 cent) preserved through domain type migration.
 
@@ -1517,10 +1517,10 @@ Raw `Double`/`Int`/`TimeInterval` values have been replaced with domain types at
 
 | Interface | Before | After |
 |---|---|---|
-| `PitchComparisonProfile` methods | `Double` for cent values | `Cents` |
+| `PitchDiscriminationProfile` methods | `Double` for cent values | `Cents` |
 | `PitchMatchingProfile` methods | `Double` for cent values | `Cents` |
-| `CompletedPitchMatching` fields | `Double` for offsets/errors | `Cents` |
-| `PitchMatchingChallenge.initialCentOffset` | `Double` | `Cents` |
+| `CompletedPitchMatchingTrial` fields | `Double` for offsets/errors | `Cents` |
+| `PitchMatchingTrial.initialCentOffset` | `Double` | `Cents` |
 | Session `sessionBestCentError` | `Double` | `Cents` |
 | Session `referenceFrequency` | `Double` | `Frequency` |
 | Session `feedbackDuration` | `TimeInterval` | `Duration` |
@@ -1528,7 +1528,7 @@ Raw `Double`/`Int`/`TimeInterval` values have been replaced with domain types at
 
 **Deliberate exceptions** (raw types preserved):
 - `PerceptualNote` internals — Welford's algorithm arithmetic would be noisy with `Cents` wrappers
-- Persistence records (`PitchComparisonRecord`, `PitchMatchingRecord`) — SwiftData boundary uses raw `Double`/`Int`
+- Persistence records (`PitchDiscriminationRecord`, `PitchMatchingRecord`) — SwiftData boundary uses raw `Double`/`Int`
 - `NotePlayer.play(duration:)` — uses `Duration`; `TimeInterval` only at platform API boundaries
 
 ### Constant Extraction
@@ -1543,8 +1543,8 @@ Magic numbers have been extracted to named constants:
 | `TrainingConstants.feedbackDuration` | `TrainingConstants.swift` | `.milliseconds(400)` |
 | `TrainingConstants.defaultNoteVelocity` | `TrainingConstants.swift` | `MIDIVelocity(63)` |
 | `TrainingConstants.defaultAmplitudeDB` | `TrainingConstants.swift` | `AmplitudeDB(0.0)` |
-| `TrainingModeConfig.defaultEWMAHalflife` | `TrainingModeConfig.swift` | `.seconds(7 * 86400)` |
-| `TrainingModeConfig.defaultSessionGap` | `TrainingModeConfig.swift` | `.seconds(1800)` |
+| `TrainingDisciplineConfig.defaultEWMAHalflife` | `TrainingDisciplineConfig.swift` | `.seconds(7 * 86400)` |
+| `TrainingDisciplineConfig.defaultSessionGap` | `TrainingDisciplineConfig.swift` | `.seconds(1800)` |
 | `ProgressTimeline` bucket thresholds | `ProgressTimeline.swift` | Named constants |
 | `KazezNoteStrategy` coefficients | `KazezNoteStrategy.swift` | Named via `KazezConfiguration` |
 
@@ -1553,15 +1553,15 @@ Magic numbers have been extracted to named constants:
 Four training modes are now formally tracked:
 
 ```
-enum TrainingMode: CaseIterable {
-    case unisonPitchComparison
-    case intervalPitchComparison
+enum TrainingDiscipline: CaseIterable {
+    case unisonPitchDiscrimination
+    case intervalPitchDiscrimination
     case unisonMatching
     case intervalMatching
 }
 ```
 
-Each mode has a `TrainingModeConfig` with independent parameters for:
+Each mode has a `TrainingDisciplineConfig` with independent parameters for:
 - Display name and unit label
 - Optimal baseline (expert-level target)
 - EWMA half-life for smoothing
@@ -1572,7 +1572,7 @@ Each mode has a `TrainingModeConfig` with independent parameters for:
 ### Logging Standards
 
 - `TrainingDataStore` migrated from `print()` to `os.Logger` at `.warning` level for save errors
-- `PitchMatchingSession` and `PitchComparisonSession` use `os.Logger` for lifecycle events
+- `PitchMatchingSession` and `PitchDiscriminationSession` use `os.Logger` for lifecycle events
 - `PeachApp` uses `os.Logger` for startup timing
 - `bin/check-dependencies.sh` now enforces: no `print()` calls in production code
 
@@ -1581,7 +1581,7 @@ Each mode has a `TrainingModeConfig` with independent parameters for:
 | Component | Responsibility |
 |---|---|
 | `TrainingConstants` | Shared configuration constants used by both sessions: feedback duration, default velocity, default amplitude |
-| `TrainingModeConfig` | Per-mode configuration for progress tracking: display names, EWMA parameters, baselines |
+| `TrainingDisciplineConfig` | Per-mode configuration for progress tracking: display names, EWMA parameters, baselines |
 | `ProgressTimeline` | Progress tracking across four training modes with EWMA smoothing, adaptive bucketing, and trend analysis. Conforms to both observer protocols |
 | `DirectedInterval` | Value type combining `Interval` + `Direction` (up/down) for settings and session parameterization |
 
@@ -1660,7 +1660,7 @@ PRD mandates pre-work: remove stale MIDI-note-indexed comparison tracking, norma
 Specific cleanup:
 - Review and remove any unused per-MIDI-note tracking that doesn't serve current pitch training functionality
 - Ensure `PerceptualProfile` has clean extension points for new protocol conformances
-- Normalize internal naming to align with the protocol-first pattern (`PitchComparisonProfile`, `PitchMatchingProfile`, new `RhythmProfile`)
+- Normalize internal naming to align with the protocol-first pattern (`PitchDiscriminationProfile`, `PitchMatchingProfile`, new `RhythmProfile`)
 
 ### New Domain Types
 
@@ -1760,7 +1760,7 @@ File location: `Core/Music/RhythmDirection.swift`
 - `NotePlayer` protocol: unchanged
 - `PlaybackHandle` protocol: unchanged
 - `SoundFontPlaybackHandle`: updated to use engine's immediate dispatch
-- `PitchComparisonSession`, `PitchMatchingSession`: no changes — they depend on `NotePlayer`, not the engine
+- `PitchDiscriminationSession`, `PitchMatchingSession`: no changes — they depend on `NotePlayer`, not the engine
 
 #### Layer 3: RhythmPlayer Protocol and Implementation
 
@@ -1833,14 +1833,14 @@ final class SoundFontRhythmPlayer: RhythmPlayer {
 
 ### Rhythm Sessions
 
-#### RhythmComparisonSession
+#### RhythmOffsetDetectionSession
 
 `@Observable final class` following established session patterns: error boundary, observer injection, environment injection, `RhythmPlaybackHandle`-based interruption cleanup.
 
 **States:**
 
 ```swift
-enum RhythmComparisonSessionState {
+enum RhythmOffsetDetectionSessionState {
     case idle
     case playingPattern      // 4 sixteenth notes playing, 4th offset early or late
     case awaitingAnswer      // pattern finished, waiting for "Early"/"Late" tap
@@ -1871,7 +1871,7 @@ init(
     rhythmPlayer: RhythmPlayer,
     strategy: NextRhythmOffsetStrategy,
     profile: RhythmProfile,
-    observers: [RhythmComparisonObserver] = [],
+    observers: [RhythmOffsetDetectionObserver] = [],
     settingsOverride: TrainingSettings? = nil,
     notificationCenter: NotificationCenter = .default
 )
@@ -1882,7 +1882,7 @@ init(
 2. Session builds a `RhythmPattern` from the challenge: 4 events at sixteenth-note intervals, with the 4th event shifted by the offset
 3. Session calls `rhythmPlayer.play(pattern)` and `await`s the handle
 
-**File location:** `RhythmComparison/RhythmComparisonSession.swift`
+**File location:** `RhythmOffsetDetection/RhythmOffsetDetectionSession.swift`
 
 #### RhythmMatchingSession
 
@@ -1935,12 +1935,12 @@ protocol NextRhythmOffsetStrategy {
     func nextRhythmChallenge(
         profile: RhythmProfile,
         settings: TrainingSettings,
-        lastResult: CompletedRhythmComparison?
+        lastResult: CompletedRhythmOffsetDetectionTrial?
     ) -> RhythmChallenge
 }
 ```
 
-The strategy decides **both** direction (early/late) and magnitude based on the profile's asymmetric tracking and the last completed result. This mirrors `NextPitchComparisonStrategy` receiving `lastPitchComparison`.
+The strategy decides **both** direction (early/late) and magnitude based on the profile's asymmetric tracking and the last completed result. This mirrors `NextPitchDiscriminationStrategy` receiving `lastPitchDiscriminationTrial`.
 
 **RhythmChallenge:**
 
@@ -1958,26 +1958,26 @@ struct RhythmChallenge {
 ### Observer Protocols
 
 ```swift
-protocol RhythmComparisonObserver {
-    func rhythmComparisonCompleted(_ result: CompletedRhythmComparison)
+protocol RhythmOffsetDetectionObserver {
+    func rhythmOffsetDetectionCompleted(_ result: CompletedRhythmOffsetDetectionTrial)
 }
 
 protocol RhythmMatchingObserver {
-    func rhythmMatchingCompleted(_ result: CompletedRhythmMatching)
+    func rhythmMatchingCompleted(_ result: CompletedRhythmMatchingTrial)
 }
 ```
 
 **Value types:**
 
 ```swift
-struct CompletedRhythmComparison {
+struct CompletedRhythmOffsetDetectionTrial {
     let tempo: TempoBPM
     let offset: RhythmOffset        // the offset that was presented
     let isCorrect: Bool
     let timestamp: Date
 }
 
-struct CompletedRhythmMatching {
+struct CompletedRhythmMatchingTrial {
     let tempo: TempoBPM
     let expectedOffset: RhythmOffset  // always zero (the correct beat position)
     let userOffset: RhythmOffset      // signed timing error
@@ -1986,24 +1986,24 @@ struct CompletedRhythmMatching {
 ```
 
 **Conforming types:**
-- `TrainingDataStore` — persists `RhythmComparisonRecord` and `RhythmMatchingRecord`
+- `TrainingDataStore` — persists `RhythmOffsetDetectionRecord` and `RhythmMatchingRecord`
 - `PerceptualProfile` — updates rhythm statistics via `RhythmProfile` protocol
 - `ProgressTimeline` — tracks rhythm training modes for trend analysis
 - `HapticFeedbackManager` — haptic on incorrect rhythm comparison answers (FR71), same as pitch comparison
 
 **File locations:**
-- `Core/Training/RhythmComparisonObserver.swift`
+- `Core/Training/RhythmOffsetDetectionObserver.swift`
 - `Core/Training/RhythmMatchingObserver.swift`
-- `Core/Training/CompletedRhythmComparison.swift`
-- `Core/Training/CompletedRhythmMatching.swift`
-- `RhythmComparison/RhythmChallenge.swift`
+- `Core/Training/CompletedRhythmOffsetDetectionTrial.swift`
+- `Core/Training/CompletedRhythmMatchingTrial.swift`
+- `RhythmOffsetDetection/RhythmChallenge.swift`
 
 ### RhythmProfile Protocol
 
 ```swift
 protocol RhythmProfile {
     /// Updates with a rhythm comparison result.
-    func updateRhythmComparison(tempo: TempoBPM, offset: RhythmOffset, isCorrect: Bool)
+    func updateRhythmOffsetDetection(tempo: TempoBPM, offset: RhythmOffset, isCorrect: Bool)
 
     /// Updates with a rhythm matching result.
     func updateRhythmMatching(tempo: TempoBPM, userOffset: RhythmOffset)
@@ -2028,19 +2028,19 @@ struct RhythmTempoStats {
 }
 ```
 
-**`PerceptualProfile` conforms to `RhythmProfile`** (in addition to existing `PitchComparisonProfile` and `PitchMatchingProfile`).
+**`PerceptualProfile` conforms to `RhythmProfile`** (in addition to existing `PitchDiscriminationProfile` and `PitchMatchingProfile`).
 
 **v0.4 rhythm statistics:** Per-tempo aggregates split by early/late direction. Each (tempo, direction) pair tracks: mean, stdDev, sampleCount, currentDifficulty (FR86). This is a different indexing scheme from pitch (MIDI-note-indexed) — rhythm is tempo-indexed.
 
-**Loading on startup:** `PerceptualProfile` rebuilt from `RhythmComparisonRecord` and `RhythmMatchingRecord` data alongside existing pitch data on app startup.
+**Loading on startup:** `PerceptualProfile` rebuilt from `RhythmOffsetDetectionRecord` and `RhythmMatchingRecord` data alongside existing pitch data on app startup.
 
 ### Data Models
 
-#### RhythmComparisonRecord
+#### RhythmOffsetDetectionRecord
 
 ```swift
 @Model
-final class RhythmComparisonRecord {
+final class RhythmOffsetDetectionRecord {
     var tempoBPM: Int               // raw Int for SwiftData boundary
     var offsetMs: Double            // signed milliseconds — negative=early, positive=late
     var isCorrect: Bool
@@ -2052,7 +2052,7 @@ final class RhythmComparisonRecord {
 - `tempoBPM` as `Int` and `offsetMs` as `Double` at the SwiftData boundary (consistent with pitch record pattern — raw types for persistence)
 - Early/late derived from sign (FR99) — no separate direction field
 - Registered in `ModelContainer` schema in `PeachApp.swift`
-- File location: `Core/Data/RhythmComparisonRecord.swift`
+- File location: `Core/Data/RhythmOffsetDetectionRecord.swift`
 
 #### RhythmMatchingRecord
 
@@ -2075,22 +2075,22 @@ final class RhythmMatchingRecord {
 Extend the existing `TrainingDataStore` with rhythm CRUD. It remains the sole SwiftData accessor.
 
 **New methods:**
-- `save(_ record: RhythmComparisonRecord) throws`
+- `save(_ record: RhythmOffsetDetectionRecord) throws`
 - `save(_ record: RhythmMatchingRecord) throws`
-- `fetchAllRhythmComparisons() throws -> [RhythmComparisonRecord]`
+- `fetchAllRhythmOffsetDetections() throws -> [RhythmOffsetDetectionRecord]`
 - `fetchAllRhythmMatching() throws -> [RhythmMatchingRecord]`
-- `deleteAllRhythmComparisons() throws`
+- `deleteAllRhythmOffsetDetections() throws`
 - `deleteAllRhythmMatching() throws`
 
-**Observer conformance:** `TrainingDataStore` conforms to `RhythmComparisonObserver` and `RhythmMatchingObserver`, automatically persisting completed results.
+**Observer conformance:** `TrainingDataStore` conforms to `RhythmOffsetDetectionObserver` and `RhythmMatchingObserver`, automatically persisting completed results.
 
 **Schema update:**
 
 ```swift
 let container = try ModelContainer(for:
-    PitchComparisonRecord.self,
+    PitchDiscriminationRecord.self,
     PitchMatchingRecord.self,
-    RhythmComparisonRecord.self,
+    RhythmOffsetDetectionRecord.self,
     RhythmMatchingRecord.self
 )
 ```
@@ -2100,7 +2100,7 @@ let container = try ModelContainer(for:
 The existing chain-of-responsibility pattern (`CSVVersionedParser` protocol, `CSVImportParserV1`) is extended with a v2 parser.
 
 **Format changes:**
-- V2 adds a `trainingType` discriminator column: `pitchComparison`, `pitchMatching`, `rhythmComparison`, `rhythmMatching` (FR100–FR101)
+- V2 adds a `trainingType` discriminator column: `pitchDiscrimination`, `pitchMatching`, `rhythmOffsetDetection`, `rhythmMatching` (FR100–FR101)
 - Type-specific columns follow the discriminator
 - V1 records remain importable — V1 parser handles them as before; V2 parser handles all types (FR102)
 - Deduplication by timestamp + tempo + training type for rhythm records (FR103)
@@ -2117,20 +2117,20 @@ The existing chain-of-responsibility pattern (`CSVVersionedParser` protocol, `CS
 
 ### Training Modes Extension
 
-`TrainingMode` grows from four to six cases:
+`TrainingDiscipline` grows from four to six cases:
 
 ```swift
-enum TrainingMode: CaseIterable {
-    case unisonPitchComparison
-    case intervalPitchComparison
+enum TrainingDiscipline: CaseIterable {
+    case unisonPitchDiscrimination
+    case intervalPitchDiscrimination
     case unisonMatching
     case intervalMatching
-    case rhythmComparison          // NEW
+    case rhythmOffsetDetection          // NEW
     case rhythmMatching            // NEW
 }
 ```
 
-Each new mode gets a `TrainingModeConfig` with:
+Each new mode gets a `TrainingDisciplineConfig` with:
 - Display name and unit label (percentage of sixteenth note, per FR87)
 - Optimal baseline (expert-level target for rhythm accuracy)
 - EWMA half-life for smoothing
@@ -2150,7 +2150,7 @@ Non-informative dots during rhythm training — dots light up in sequence as acc
 **Implementation:** SwiftUI view components in the respective feature directories.
 
 **File locations:**
-- `RhythmComparison/RhythmDotView.swift`
+- `RhythmOffsetDetection/RhythmDotView.swift`
 - `RhythmMatching/RhythmDotView.swift` (or shared if identical)
 
 #### Spectrogram Profile Visualization (FR89–FR92)
@@ -2175,9 +2175,9 @@ New profile visualization for rhythm training:
 
 ```swift
 enum NavigationDestination: Hashable {
-    case pitchComparison(intervals: Set<Interval>)
+    case pitchDiscrimination(intervals: Set<Interval>)
     case pitchMatching(intervals: Set<Interval>)
-    case rhythmComparison      // NEW
+    case rhythmOffsetDetection      // NEW
     case rhythmMatching        // NEW
     case settings
     case profile
@@ -2190,15 +2190,15 @@ No parameterization for rhythm destinations — tempo is read from settings, not
 
 ```swift
 // Pitch modes
-NavigationLink(value: .pitchComparison(intervals: [.prime]))       { Text("Pitch Comparison") }
+NavigationLink(value: .pitchDiscrimination(intervals: [.prime]))       { Text("Pitch Comparison") }
 NavigationLink(value: .pitchMatching(intervals: [.prime]))          { Text("Pitch Matching") }
 
 // Interval modes
-NavigationLink(value: .pitchComparison(intervals: [.perfectFifth])) { Text("Interval Pitch Comparison") }
+NavigationLink(value: .pitchDiscrimination(intervals: [.perfectFifth])) { Text("Interval Pitch Comparison") }
 NavigationLink(value: .pitchMatching(intervals: [.perfectFifth]))   { Text("Interval Pitch Matching") }
 
 // Rhythm modes
-NavigationLink(value: .rhythmComparison)                            { Text("Rhythm Comparison") }
+NavigationLink(value: .rhythmOffsetDetection)                            { Text("Rhythm Comparison") }
 NavigationLink(value: .rhythmMatching)                              { Text("Rhythm Matching") }
 ```
 
@@ -2209,7 +2209,7 @@ Peach/
 ├── App/
 │   ├── PeachApp.swift                    # Updated: wire rhythm sessions, register rhythm records, SoundFontEngine
 │   ├── ContentView.swift                 # Updated: rhythm navigation destinations
-│   ├── NavigationDestination.swift       # Updated: .rhythmComparison, .rhythmMatching
+│   ├── NavigationDestination.swift       # Updated: .rhythmOffsetDetection, .rhythmMatching
 │   ├── EnvironmentKeys.swift             # Updated: RhythmPlayer, RhythmProfile entries
 │   ├── CentsFormatting.swift
 │   ├── HelpContentView.swift
@@ -2247,15 +2247,15 @@ Peach/
 │   │   ├── SoundSourceProvider.swift
 │   │   └── AudioSessionInterruptionMonitor.swift
 │   ├── Algorithm/
-│   │   ├── NextPitchComparisonStrategy.swift
+│   │   ├── NextPitchDiscriminationStrategy.swift
 │   │   ├── KazezNoteStrategy.swift
 │   │   ├── NextRhythmOffsetStrategy.swift     # NEW — protocol
 │   │   └── AdaptiveRhythmOffsetStrategy.swift # NEW — implementation
 │   ├── Data/
-│   │   ├── PitchComparisonRecord.swift
-│   │   ├── PitchComparisonRecordStoring.swift
+│   │   ├── PitchDiscriminationRecord.swift
+│   │   ├── PitchDiscriminationRecordStoring.swift
 │   │   ├── PitchMatchingRecord.swift
-│   │   ├── RhythmComparisonRecord.swift  # NEW
+│   │   ├── RhythmOffsetDetectionRecord.swift  # NEW
 │   │   ├── RhythmMatchingRecord.swift    # NEW
 │   │   ├── TrainingDataStore.swift       # Updated: rhythm CRUD + observer conformance
 │   │   ├── DataStoreError.swift
@@ -2273,46 +2273,46 @@ Peach/
 │   │   └── TrainingDataTransferService.swift
 │   ├── Profile/
 │   │   ├── PerceptualProfile.swift       # Updated: conforms to RhythmProfile, cleaned up
-│   │   ├── PitchComparisonProfile.swift
+│   │   ├── PitchDiscriminationProfile.swift
 │   │   ├── PitchMatchingProfile.swift
 │   │   ├── RhythmProfile.swift           # NEW — protocol
 │   │   ├── ProgressTimeline.swift        # Updated: 6 training modes, rhythm observers
-│   │   ├── TrainingModeConfig.swift      # Updated: rhythm mode configs
+│   │   ├── TrainingDisciplineConfig.swift      # Updated: rhythm mode configs
 │   │   ├── ChartLayoutCalculator.swift
 │   │   └── GranularityZoneConfig.swift
 │   ├── Training/
-│   │   ├── PitchComparison.swift
-│   │   ├── PitchComparisonObserver.swift
-│   │   ├── PitchComparisonTrainingSettings.swift
-│   │   ├── CompletedPitchMatching.swift
+│   │   ├── PitchDiscriminationTrial.swift
+│   │   ├── PitchDiscriminationObserver.swift
+│   │   ├── PitchDiscriminationSettings.swift
+│   │   ├── CompletedPitchMatchingTrial.swift
 │   │   ├── PitchMatchingObserver.swift
-│   │   ├── PitchMatchingTrainingSettings.swift
-│   │   ├── CompletedRhythmComparison.swift    # NEW
-│   │   ├── RhythmComparisonObserver.swift     # NEW
-│   │   ├── CompletedRhythmMatching.swift      # NEW
+│   │   ├── PitchMatchingSettings.swift
+│   │   ├── CompletedRhythmOffsetDetectionTrial.swift    # NEW
+│   │   ├── RhythmOffsetDetectionObserver.swift     # NEW
+│   │   ├── CompletedRhythmMatchingTrial.swift      # NEW
 │   │   ├── RhythmMatchingObserver.swift       # NEW
 │   │   └── Resettable.swift
 │   ├── TrainingSession.swift
 │   ├── Comparable+Clamped.swift
 │   └── UnitInterval.swift
-├── PitchComparison/
-│   ├── PitchComparisonSession.swift
-│   ├── PitchComparisonScreen.swift
-│   ├── PitchComparisonFeedbackIndicator.swift
-│   ├── HapticFeedbackManager.swift       # Updated: conforms to RhythmComparisonObserver
+├── PitchDiscrimination/
+│   ├── PitchDiscriminationSession.swift
+│   ├── PitchDiscriminationScreen.swift
+│   ├── PitchDiscriminationFeedbackIndicator.swift
+│   ├── HapticFeedbackManager.swift       # Updated: conforms to RhythmOffsetDetectionObserver
 │   └── (other existing files)
 ├── PitchMatching/
 │   ├── PitchMatchingSession.swift
 │   ├── PitchMatchingScreen.swift
-│   ├── PitchMatchingChallenge.swift
+│   ├── PitchMatchingTrial.swift
 │   ├── PitchMatchingFeedbackIndicator.swift
 │   ├── PitchSlider.swift
 │   └── (other existing files)
-├── RhythmComparison/                     # NEW feature directory
-│   ├── RhythmComparisonSession.swift
-│   ├── RhythmComparisonScreen.swift
+├── RhythmOffsetDetection/                     # NEW feature directory
+│   ├── RhythmOffsetDetectionSession.swift
+│   ├── RhythmOffsetDetectionScreen.swift
 │   ├── RhythmChallenge.swift
-│   ├── RhythmComparisonFeedbackIndicator.swift
+│   ├── RhythmOffsetDetectionFeedbackIndicator.swift
 │   └── RhythmDotView.swift
 ├── RhythmMatching/                       # NEW feature directory
 │   ├── RhythmMatchingSession.swift
@@ -2389,11 +2389,11 @@ PeachTests/
 │   │   ├── ProgressTimelineTests.swift          # Updated: 6 modes
 │   │   └── (other existing test files)
 │   └── Training/
-│       ├── CompletedRhythmComparisonTests.swift # NEW
-│       ├── CompletedRhythmMatchingTests.swift   # NEW
+│       ├── CompletedRhythmOffsetDetectionTrialTests.swift # NEW
+│       ├── CompletedRhythmMatchingTrialTests.swift   # NEW
 │       └── (other existing test files)
-├── RhythmComparison/                     # NEW
-│   ├── RhythmComparisonSessionTests.swift
+├── RhythmOffsetDetection/                     # NEW
+│   ├── RhythmOffsetDetectionSessionTests.swift
 │   └── RhythmChallengeTests.swift
 ├── RhythmMatching/                       # NEW
 │   └── RhythmMatchingSessionTests.swift
@@ -2410,25 +2410,25 @@ PeachTests/
 
 | FR Category | Component(s) | Directory |
 |---|---|---|
-| Training Loop (FR1–FR8) | `PitchComparisonSession`, `PitchComparisonScreen` | `PitchComparison/` |
+| Training Loop (FR1–FR8) | `PitchDiscriminationSession`, `PitchDiscriminationScreen` | `PitchDiscrimination/` |
 | Pitch Matching (FR44–FR50a) | `PitchMatchingSession`, `PitchMatchingScreen` | `PitchMatching/` |
 | Interval Domain (FR53–FR55) | `Interval`, `TuningSystem`, `DetunedMIDINote` | `Core/Music/` |
-| Interval Pitch Comparison (FR56–FR59) | `PitchComparisonSession`, `NextPitchComparisonStrategy` | `PitchComparison/`, `Core/Algorithm/` |
+| Interval Pitch Comparison (FR56–FR59) | `PitchDiscriminationSession`, `NextPitchDiscriminationStrategy` | `PitchDiscrimination/`, `Core/Algorithm/` |
 | Interval Pitch Matching (FR60–FR64) | `PitchMatchingSession`, `PitchMatchingScreen` | `PitchMatching/` |
-| Rhythm Comparison (FR68–FR73a) | `RhythmComparisonSession`, `RhythmComparisonScreen`, `RhythmDotView` | `RhythmComparison/` |
+| Rhythm Comparison (FR68–FR73a) | `RhythmOffsetDetectionSession`, `RhythmOffsetDetectionScreen`, `RhythmDotView` | `RhythmOffsetDetection/` |
 | Rhythm Matching (FR74–FR79a) | `RhythmMatchingSession`, `RhythmMatchingScreen`, `RhythmDotView` | `RhythmMatching/` |
-| Rhythm Visualization (FR80–FR82) | `RhythmDotView` | `RhythmComparison/`, `RhythmMatching/` |
+| Rhythm Visualization (FR80–FR82) | `RhythmDotView` | `RhythmOffsetDetection/`, `RhythmMatching/` |
 | Rhythm Difficulty Model (FR83–FR86) | `NextRhythmOffsetStrategy`, `RhythmProfile`, `RhythmTempoStats` | `Core/Algorithm/`, `Core/Profile/` |
 | Rhythm Units (FR87–FR88) | `RhythmOffset.percentageOfSixteenthNote(at:)`, `TempoBPM` | `Core/Music/` |
 | Rhythm Perceptual Profile (FR89–FR92) | `RhythmProfile`, `RhythmSpectrogramView`, `RhythmProfileCardView` | `Core/Profile/`, `Profile/` |
 | Rhythm Audio Engine (FR93–FR96) | `SoundFontEngine`, `RhythmPlayer`, `SoundFontRhythmPlayer` | `Core/Audio/` |
-| Rhythm Data Storage (FR97–FR99) | `RhythmComparisonRecord`, `RhythmMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
+| Rhythm Data Storage (FR97–FR99) | `RhythmOffsetDetectionRecord`, `RhythmMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
 | Rhythm Export/Import (FR100–FR103) | `CSVImportParserV2`, `CSVExportSchemaV2`, `TrainingDataExporter`, `TrainingDataImporter` | `Core/Data/` |
 | Rhythm Start Screen (FR104) | `StartScreen`, `NavigationDestination` | `Start/`, `App/` |
-| Adaptive Algorithm (FR9–FR15) | `NextPitchComparisonStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
+| Adaptive Algorithm (FR9–FR15) | `NextPitchDiscriminationStrategy`, `KazezNoteStrategy`, `PerceptualProfile` | `Core/Algorithm/`, `Core/Profile/` |
 | Audio Engine (FR16–FR20, FR51–FR52) | `NotePlayer`, `PlaybackHandle`, `SoundFontNotePlayer` | `Core/Audio/` |
 | Profile & Statistics (FR21–FR26) | `PerceptualProfile`, `ProfileScreen` | `Core/Profile/`, `Profile/` |
-| Data Persistence (FR27–FR29, FR48, FR64) | `PitchComparisonRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
+| Data Persistence (FR27–FR29, FR48, FR64) | `PitchDiscriminationRecord`, `PitchMatchingRecord`, `TrainingDataStore` | `Core/Data/` |
 | Settings (FR30–FR36) | `SettingsScreen`, `SoundSourceProvider`, `@AppStorage` | `Settings/`, `Core/Audio/` |
 | Localization (FR37–FR38) | `Localizable.xcstrings` | `Resources/` |
 | Device & Platform (FR39–FR42) | All screens (responsive layouts) | All feature directories |
@@ -2439,13 +2439,13 @@ PeachTests/
 
 | Concern | Affected Components | Resolution |
 |---|---|---|
-| Audio interruption (pitch) | `SoundFontNotePlayer`, `PitchComparisonSession`, `PitchMatchingSession` | PlaybackHandle reports interruption → session discards (unchanged) |
-| Audio interruption (rhythm) | `SoundFontRhythmPlayer`, `RhythmComparisonSession`, `RhythmMatchingSession` | RhythmPlaybackHandle reports interruption → session discards, transitions to idle |
-| Settings propagation | `SettingsScreen`, all sessions, `NextPitchComparisonStrategy`, `NextRhythmOffsetStrategy` | Sessions read settings when starting next challenge (same pattern as pitch) |
+| Audio interruption (pitch) | `SoundFontNotePlayer`, `PitchDiscriminationSession`, `PitchMatchingSession` | PlaybackHandle reports interruption → session discards (unchanged) |
+| Audio interruption (rhythm) | `SoundFontRhythmPlayer`, `RhythmOffsetDetectionSession`, `RhythmMatchingSession` | RhythmPlaybackHandle reports interruption → session discards, transitions to idle |
+| Settings propagation | `SettingsScreen`, all sessions, `NextPitchDiscriminationStrategy`, `NextRhythmOffsetStrategy` | Sessions read settings when starting next challenge (same pattern as pitch) |
 | Data integrity | `TrainingDataStore` | SwiftData atomic writes; sessions write only complete results (same pattern) |
 | App lifecycle | `PeachApp`, all sessions | Backgrounding → active session stops; foregrounding → returns to Start Screen (same pattern) |
-| Note ownership (pitch) | `PitchComparisonSession`, `PitchMatchingSession` | PlaybackHandle pattern (unchanged) |
-| Pattern ownership (rhythm) | `RhythmComparisonSession`, `RhythmMatchingSession` | RhythmPlaybackHandle pattern — mirrors PlaybackHandle |
+| Note ownership (pitch) | `PitchDiscriminationSession`, `PitchMatchingSession` | PlaybackHandle pattern (unchanged) |
+| Pattern ownership (rhythm) | `RhythmOffsetDetectionSession`, `RhythmMatchingSession` | RhythmPlaybackHandle pattern — mirrors PlaybackHandle |
 | Shared audio engine | `SoundFontNotePlayer`, `SoundFontRhythmPlayer` | Both delegate to `SoundFontEngine`; engine manages sampler sharing and preset switching |
 | Percussion/melodic bank switching | `SoundFontEngine` | Engine handles internal bank/preset management; callers use `SoundSourceID` |
 | Timing precision (rhythm NFR) | `SoundFontEngine`, `SoundFontRhythmPlayer` | Render-thread scheduling via `AVAudioSourceNode` + `scheduleMIDIEventBlock`; jitter < 0.01ms |
@@ -2455,7 +2455,7 @@ PeachTests/
 
 *Supersedes: "Profile Protocol Split" (v0.2), "RhythmProfile Protocol" (v0.4 above), and "Training Modes Extension / ProgressTimeline" descriptions above.*
 
-**Problem:** `PerceptualProfile` accumulated domain-specific convenience methods with each training domain — pitch legacy accessors (`comparisonMean`, `matchingMean`, `matchingStdDev`, `matchingSampleCount`), rhythm aggregation helpers (`trainedTempoRanges`, `rhythmOverallAccuracy`), and TrainingMode-based shortcuts that silently routed through `.pitch(mode)` keys. Adding rhythm modes required new convenience methods rather than working through the existing generic API. This violates the open-closed principle and creates an ever-growing surface area.
+**Problem:** `PerceptualProfile` accumulated domain-specific convenience methods with each training domain — pitch legacy accessors (`comparisonMean`, `matchingMean`, `matchingStdDev`, `matchingSampleCount`), rhythm aggregation helpers (`trainedTempoRanges`, `rhythmOverallAccuracy`), and TrainingDiscipline-based shortcuts that silently routed through `.pitch(mode)` keys. Adding rhythm modes required new convenience methods rather than working through the existing generic API. This violates the open-closed principle and creates an ever-growing surface area.
 
 **Solution:** Three design moves that make PerceptualProfile a domain-agnostic measurement store:
 
@@ -2465,7 +2465,7 @@ The return type from profile queries becomes a sum type. Each variant wraps meas
 
 ```swift
 enum StatisticalSummary: Sendable {
-    case continuous(TrainingModeStatistics)
+    case continuous(TrainingDisciplineStatistics)
     // Future: case ordinal(OrdinalStatistics)
     // Future: case spatial(SpatialStatistics)
 
@@ -2477,25 +2477,25 @@ enum StatisticalSummary: Sendable {
 }
 ```
 
-`TrainingModeStatistics` (Welford + EWMA + trend + time-ordered metrics) becomes the payload of the `.continuous` case rather than the raw return type. Most consumers use the common computed properties and never need to `switch`. Only consumers that need continuous-specific data (e.g., `welford.mean` for adaptive difficulty) pattern-match on `.continuous(let stats)`.
+`TrainingDisciplineStatistics` (Welford + EWMA + trend + time-ordered metrics) becomes the payload of the `.continuous` case rather than the raw return type. Most consumers use the common computed properties and never need to `switch`. Only consumers that need continuous-specific data (e.g., `welford.mean` for adaptive difficulty) pattern-match on `.continuous(let stats)`.
 
 **Future extension:** When a training mode produces non-continuous measurements (ordinal, 2D), add a new `StatisticalSummary` case with its own statistics type. `PerceptualProfile`'s storage and `TrainingProfile`'s API don't change — the new variant flows through the existing infrastructure. At that point, `MetricPoint.value: Double` should also become a sum type (`MeasuredValue`) — see deferred design note.
 
-#### 2. TrainingMode Key Expansion
+#### 2. TrainingDiscipline Key Expansion
 
-Each `TrainingMode` knows how to expand itself into the set of `StatisticsKey`s that contribute to its aggregate view:
+Each `TrainingDiscipline` knows how to expand itself into the set of `StatisticsKey`s that contribute to its aggregate view:
 
 ```swift
-extension TrainingMode {
+extension TrainingDiscipline {
     var statisticsKeys: [StatisticsKey] {
         switch self {
-        case .unisonPitchComparison: [.pitch(.unisonPitchComparison)]
-        case .intervalPitchComparison: [.pitch(.intervalPitchComparison)]
-        case .unisonMatching: [.pitch(.unisonMatching)]
-        case .intervalMatching: [.pitch(.intervalMatching)]
-        case .rhythmComparison:
+        case .unisonPitchDiscrimination: [.pitch(.unisonPitchDiscrimination)]
+        case .intervalPitchDiscrimination: [.pitch(.intervalPitchDiscrimination)]
+        case .unisonPitchMatching: [.pitch(.unisonPitchMatching)]
+        case .intervalPitchMatching: [.pitch(.intervalPitchMatching)]
+        case .rhythmOffsetDetection:
             TempoRange.allRanges.flatMap { range in
-                RhythmDirection.allCases.map { .rhythm(.rhythmComparison, range, $0) }
+                RhythmDirection.allCases.map { .rhythm(.rhythmOffsetDetection, range, $0) }
             }
         case .rhythmMatching:
             TempoRange.allRanges.flatMap { range in
@@ -2506,7 +2506,7 @@ extension TrainingMode {
 }
 ```
 
-Pitch modes expand 1:1 (one key each). Rhythm modes expand across tempoRange × direction (currently 3 × 2 = 6 keys each). The expansion is training-mode knowledge that belongs with `TrainingMode`, not with `PerceptualProfile`.
+Pitch modes expand 1:1 (one key each). Rhythm modes expand across tempoRange × direction (currently 3 × 2 = 6 keys each). The expansion is training-mode knowledge that belongs with `TrainingDiscipline`, not with `PerceptualProfile`.
 
 #### 3. Generic Merge on TrainingProfile
 
@@ -2524,7 +2524,7 @@ extension TrainingProfile {
             .sorted { $0.timestamp < $1.timestamp }
         guard !allMetrics.isEmpty,
               let config = keys.first?.statisticsConfig else { return nil }
-        var stats = TrainingModeStatistics()
+        var stats = TrainingDisciplineStatistics()
         stats.rebuild(from: allMetrics, config: config)
         return .continuous(stats)
     }
@@ -2535,20 +2535,20 @@ This collects metrics from multiple keys, merges them chronologically, and rebui
 
 #### Resulting Architecture
 
-**PerceptualProfile** — typed key-value store for measurement series. Stores `[StatisticsKey: TrainingModeStatistics]`. Returns `StatisticalSummary.continuous(stats)` from `statistics(for:)`. Observer conformances remain as thin routing (domain event → `StatisticsKey` + value → store). All legacy convenience methods removed.
+**PerceptualProfile** — typed key-value store for measurement series. Stores `[StatisticsKey: TrainingDisciplineStatistics]`. Returns `StatisticalSummary.continuous(stats)` from `statistics(for:)`. Observer conformances remain as thin routing (domain event → `StatisticsKey` + value → store). All legacy convenience methods removed.
 
 **ProgressTimeline** — pure presentation layer, uniform for all modes:
 
 ```swift
-func state(for mode: TrainingMode) -> TrainingModeState {
+func state(for mode: TrainingDiscipline) -> TrainingDisciplineState {
     profile.mergedStatistics(for: mode.statisticsKeys) != nil ? .active : .noData
 }
 
-func currentEWMA(for mode: TrainingMode) -> Double? {
+func currentEWMA(for mode: TrainingDiscipline) -> Double? {
     profile.mergedStatistics(for: mode.statisticsKeys)?.ewma
 }
 
-func buckets(for mode: TrainingMode) -> [TimeBucket] {
+func buckets(for mode: TrainingDiscipline) -> [TimeBucket] {
     guard let summary = profile.mergedStatistics(for: mode.statisticsKeys) else { return [] }
     return assignBuckets(summary.metrics, now: Date(), sessionGap: mode.config.sessionGap)
 }
@@ -2574,26 +2574,26 @@ No rhythm special cases. No pitch special cases. One code path for all modes.
 4. **SoundFontEngine** — extract audio hardware ownership from `SoundFontNotePlayer`; implement render-thread scheduling
 5. **SoundFontNotePlayer refactoring** — delegate to `SoundFontEngine`, verify existing pitch tests pass
 6. **RhythmPlayer protocol + SoundFontRhythmPlayer** — sample-accurate pattern playback
-7. **Data models** — `RhythmComparisonRecord`, `RhythmMatchingRecord`, `TrainingDataStore` extension
+7. **Data models** — `RhythmOffsetDetectionRecord`, `RhythmMatchingRecord`, `TrainingDataStore` extension
 8. **RhythmProfile protocol** — profile protocol, `PerceptualProfile` conformance
 9. **NextRhythmOffsetStrategy** — protocol + initial implementation
-10. **Observer protocols** — `RhythmComparisonObserver`, `RhythmMatchingObserver`, conformances on `TrainingDataStore`, `PerceptualProfile`, `ProgressTimeline`, `HapticFeedbackManager`
-11. **RhythmComparisonSession** — state machine with full test coverage
+10. **Observer protocols** — `RhythmOffsetDetectionObserver`, `RhythmMatchingObserver`, conformances on `TrainingDataStore`, `PerceptualProfile`, `ProgressTimeline`, `HapticFeedbackManager`
+11. **RhythmOffsetDetectionSession** — state machine with full test coverage
 12. **RhythmMatchingSession** — state machine with full test coverage
-13. **RhythmComparisonScreen + RhythmDotView** — UI
+13. **RhythmOffsetDetectionScreen + RhythmDotView** — UI
 14. **RhythmMatchingScreen + RhythmDotView** — UI
 15. **Start Screen + navigation** — 6 buttons, new destinations
 16. **Profile Screen + spectrogram** — `RhythmSpectrogramView`, `RhythmProfileCardView`
 17. **Settings** — tempo setting for rhythm training
 18. **CSV format v2** — `CSVImportParserV2`, `CSVExportSchemaV2`, exporter/importer updates
-19. **TrainingMode extension** — 6 modes, `TrainingModeConfig` for rhythm modes
+19. **TrainingDiscipline extension** — 6 modes, `TrainingDisciplineConfig` for rhythm modes
 20. **Localization** — rhythm UI strings (English + German)
 
 ### v0.4 Architecture Validation
 
 **Decision Compatibility:** All v0.4 additions use the same first-party Apple frameworks. `SoundFontEngine` consolidates existing `AVAudioEngine` ownership — no new framework dependencies. `RhythmPlayer`/`RhythmPlaybackHandle` are protocol-level additions. New domain types (`TempoBPM`, `RhythmOffset`) follow the established value type pattern.
 
-**Pattern Consistency:** Rhythm sessions follow identical patterns to pitch sessions (observable, error boundary, observer injection, handle-based interruption). `NextRhythmOffsetStrategy` mirrors `NextPitchComparisonStrategy`. `RhythmProfile` mirrors `PitchComparisonProfile`/`PitchMatchingProfile`. CSV v2 extends the existing chain-of-responsibility pattern.
+**Pattern Consistency:** Rhythm sessions follow identical patterns to pitch sessions (observable, error boundary, observer injection, handle-based interruption). `NextRhythmOffsetStrategy` mirrors `NextPitchDiscriminationStrategy`. `RhythmProfile` mirrors `PitchDiscriminationProfile`/`PitchMatchingProfile`. CSV v2 extends the existing chain-of-responsibility pattern.
 
 **Three-Layer Audio Validation:** `NotePlayer` (pitch) and `RhythmPlayer` (rhythm) are independent high-level protocols with no API overlap. Both delegate to `SoundFontEngine` which owns the hardware. Adding a future third player type (e.g., for real-time audio input processing) would follow the same pattern — new high-level protocol, new mid-level implementation, same engine.
 

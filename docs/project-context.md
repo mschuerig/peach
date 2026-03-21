@@ -52,7 +52,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Value types by default** — `struct` for data carriers; `class` only for `@Observable` or reference semantics
 - **`final class`** — mark classes `final` unless inheritance is explicitly designed for
 - **No force unwrapping (`!`)** — no `@IBOutlet`, no implicit unwraps
-- **Domain types everywhere, not just "interfaces"** — use `Cents`, `Frequency`, `MIDINote`, `MIDIVelocity`, `AmplitudeDB`, `NoteDuration`, `SoundSourceID`, `TuningSystem`, `Duration` for all values that have domain meaning: constants, defaults, parameters, return types, local variables where clarity matters. Unwrap to `.rawValue` only at: (1) the literal `UserDefaults` read/write call site, (2) SwiftData `@Model` stored properties, (3) arithmetic-heavy internals (Welford's algorithm in `PerceptualProfile`), (4) display formatting. Protocol signatures (`PitchComparisonProfile`, `PitchMatchingProfile`) use `Cents` for all cent-valued properties. **A constant like `36` is meaningless; `MIDINote(36)` communicates intent.**
+- **Domain types everywhere, not just "interfaces"** — use `Cents`, `Frequency`, `MIDINote`, `MIDIVelocity`, `AmplitudeDB`, `NoteDuration`, `SoundSourceID`, `TuningSystem`, `Duration` for all values that have domain meaning: constants, defaults, parameters, return types, local variables where clarity matters. Unwrap to `.rawValue` only at: (1) the literal `UserDefaults` read/write call site, (2) SwiftData `@Model` stored properties, (3) arithmetic-heavy internals (Welford's algorithm in `PerceptualProfile`), (4) display formatting. Protocol signatures (`PitchDiscriminationProfile`, `PitchMatchingProfile`) use `Cents` for all cent-valued properties. **A constant like `36` is meaningless; `MIDINote(36)` communicates intent.**
 - **`Duration` for time intervals** — use Swift `Duration` (e.g., `.milliseconds(400)`, `.seconds(2)`) for all timing values: feedback durations, preview durations, configuration constants, `NotePlayer.play(duration:)`. `TimeInterval` must not appear in any public interface; convert to `TimeInterval` only where platform APIs require it (e.g., `Date.addingTimeInterval()`, `Task.sleep`)
 
 **Error Handling:**
@@ -63,15 +63,15 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **SwiftUI Views:**
 - **Views are thin** — observe state, render, send actions; no business logic in views
-- **Views only interact with `PitchComparisonSession`, `PitchMatchingSession`, `PerceptualProfile`, `ProgressTimeline`, and `TrainingSession`** — never import or reference `NotePlayer`, `NextPitchComparisonStrategy`, or `TrainingDataStore` from views
-- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var pitchComparisonSession = PitchComparisonSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
+- **Views only interact with `PitchDiscriminationSession`, `PitchMatchingSession`, `PerceptualProfile`, `ProgressTimeline`, and `TrainingSession`** — never import or reference `NotePlayer`, `NextPitchDiscriminationStrategy`, or `TrainingDataStore` from views
+- **`@Environment` for dependency injection** — use `@Entry` macro on `EnvironmentValues` extensions (e.g., `@Entry var pitchDiscriminationSession = PitchDiscriminationSession(...)`); **never use `@EnvironmentObject`** (incompatible with `@Observable`); **never use manual `EnvironmentKey` structs** — `@Entry` eliminates the boilerplate
 - **Extract subviews at ~40 lines** — when a view body exceeds ~40 lines, extract child views
 - **Responsive layout** — detect `@Environment(\.verticalSizeClass)` for compact/regular; extract layout parameters to `static` methods for unit testability
 - **`NavigationDestination` enum** for type-safe routing — no string-based navigation
 
 **SwiftData:**
 - **`TrainingDataStore` is the sole data accessor** — all CRUD goes through this single service
-- **`PitchComparisonRecord` and `PitchMatchingRecord` are the `@Model` types** — `PitchComparisonRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `interval`, `tuningSystem`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `targetNote`, `initialCentOffset`, `userCentError`, `interval`, `tuningSystem`, `timestamp`
+- **`PitchDiscriminationRecord` and `PitchMatchingRecord` are the `@Model` types** — `PitchDiscriminationRecord`: `referenceNote`, `targetNote`, `centOffset`, `isCorrect`, `interval`, `tuningSystem`, `timestamp`; `PitchMatchingRecord`: `referenceNote`, `targetNote`, `initialCentOffset`, `userCentError`, `interval`, `tuningSystem`, `timestamp`
 - **`ModelContainer` initialized once in `PeachApp.swift`** — passed via SwiftUI environment; new models must be registered in the schema there
 
 **AVAudioEngine:**
@@ -84,12 +84,12 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Two-world architecture** — logical world (`MIDINote`, `DetunedMIDINote`, `Interval`, `Cents` in `Core/Music/`) and physical world (`Frequency` in `Core/Music/`), bridged by `TuningSystem.frequency(for:referencePitch:)`. Forward conversion (logical → physical) always goes through `TuningSystem`; inverse (Hz → MIDI note + cents) is `SoundFontPlayer.decompose(frequency:)` (internal for testability, used only within the SoundFont layer). All bridge parameters are explicit (no defaults)
 
 **State Management:**
-- **`PitchComparisonSession` state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
+- **`PitchDiscriminationSession` state machine** — `idle` → `playingNote1` → `playingNote2` → `awaitingAnswer` → `showingFeedback` → (loop)
 - **`PitchMatchingSession` state machine** — `idle` → `playingReference` → `awaitingSliderTouch` → `playingTunable` → `showingFeedback` → (loop). Any state → `idle` via `stop()`
 - **Both sessions conform to `TrainingSession` protocol** — `stop()`, `isIdle`. `PeachApp` tracks `activeSession` to ensure only one runs at a time
 - **State transitions are guarded** — preconditions enforced; never skip states
-- **Observer pattern** — `PitchComparisonObserver` and `PitchMatchingObserver` protocols; observers injected as arrays into their respective sessions. Both `TrainingDataStore`, `PerceptualProfile`, and `ProgressTimeline` conform to both observer protocols
-- **Session-specific settings types** — `PitchComparisonTrainingSettings` and `PitchMatchingTrainingSettings` are value-type snapshots created at `start()` time via `from(userSettings, intervals:)` factory methods. Each contains all tunable parameters with sensible defaults. Sessions receive these as parameters to `start(settings:)` and are decoupled from `UserSettings`
+- **Observer pattern** — `PitchDiscriminationObserver` and `PitchMatchingObserver` protocols; observers injected as arrays into their respective sessions. Both `TrainingDataStore`, `PerceptualProfile`, and `ProgressTimeline` conform to both observer protocols
+- **Session-specific settings types** — `PitchDiscriminationSettings` and `PitchMatchingSettings` are value-type snapshots created at `start()` time via `from(userSettings, intervals:)` factory methods. Each contains all tunable parameters with sensible defaults. Sessions receive these as parameters to `start(settings:)` and are decoupled from `UserSettings`
 - **Settings flow** — Views read `@Environment(\.userSettings)`, construct the appropriate settings type via factory method, and pass it to `session.start(settings:)`. `SoundFontPlayer` reads `soundSource` on each `play()` call. `AppUserSettings` reads `UserDefaults.standard` under the hood, staying in sync with `@AppStorage` writes from `SettingsScreen`
 
 **Composition Root (`PeachApp.swift`):**
@@ -98,10 +98,10 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **When Adding New Components:**
 - New injectable service → add `@Entry var myService = MyService()` in `App/EnvironmentKeys.swift`, wire in `PeachApp.swift`
-- New `PitchComparisonObserver` or `PitchMatchingObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
+- New `PitchDiscriminationObserver` or `PitchMatchingObserver` → add to observer array in `PeachApp.swift`; inject only needed mocks in tests
 - New SwiftData `@Model` → register in `ModelContainer` schema in `PeachApp.swift`
 - New layout logic → extract to `static` methods for unit testability
-- New state transitions → respect existing guards in `PitchComparisonSession`; use `waitForState` helper in tests
+- New state transitions → respect existing guards in `PitchDiscriminationSession`; use `waitForState` helper in tests
 
 ### Testing Rules
 
@@ -135,8 +135,8 @@ Never run only specific test files — always the complete suite.
 - Provide `reset()` method for cleanup
 
 **Test Helpers:**
-- **`waitForState` helper** — async assertion for `PitchComparisonSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
-- **Factory methods return tuples** — `makePitchComparisonSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
+- **`waitForState` helper** — async assertion for `PitchDiscriminationSession` state transitions; **never use raw `#expect` immediately after an async action** — the state change races
+- **Factory methods return tuples** — `makePitchDiscriminationSession() -> (session:, notePlayer:, strategy:, ...)` so each test accesses specific mocks for verification
 - **Layout tests use `static` methods** — test layout logic without instantiating SwiftUI views
 
 **Coverage:**
@@ -145,18 +145,18 @@ Never run only specific test files — always the complete suite.
 ### Code Quality & Style Rules
 
 **Project-Specific Naming (non-obvious conventions):**
-- **Protocols:** nouns for roles (`NotePlayer`, `NextPitchComparisonStrategy`, `TrainingSession`), `-able`/`-ible` for capabilities (`Resettable`, `Sendable`) per [Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/) (not `-Protocol` suffix)
+- **Protocols:** nouns for roles (`NotePlayer`, `NextPitchDiscriminationStrategy`, `TrainingSession`), `-able`/`-ible` for capabilities (`Resettable`, `Sendable`) per [Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/) (not `-Protocol` suffix)
 - **Protocol implementations:** descriptive prefix — `SoundFontPlayer`, `KazezNoteStrategy`
 - **Screens:** `{Name}Screen.swift` — not `{Name}View` or `{Name}ViewController`
-- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `PitchComparisonFeedbackIndicator.swift`
+- **Subviews:** `{Name}View.swift` — `PianoKeyboardView.swift`, `PitchDiscriminationFeedbackIndicator.swift`
 - **Mocks:** `Mock{Name}.swift` — not `{Name}Mock`, `Fake{Name}`, or `Stub{Name}`
 - **Boolean properties:** `is`/`has`/`should` prefix — `isCorrect`, `isCompact`, `shouldThrowError`
 - **Enum cases:** `lowerCamelCase` — `case playingNote1`, not `case PlayingNote1`
-- **SwiftData models:** singular noun — `PitchComparisonRecord`, not `PitchComparisonRecords`
+- **SwiftData models:** singular noun — `PitchDiscriminationRecord`, not `PitchDiscriminationRecords`
 
 **File Placement (decision tree):**
 - Protocol or service used across features → `Core/{subdomain}/`
-- Shared training domain types (PitchComparison, observers, Resettable) → `Core/Training/`
+- Shared training domain types (PitchDiscrimination, observers, Resettable) → `Core/Training/`
 - Musical domain value types (MIDINote, Frequency, Interval, NoteDuration, etc.) → `Core/Music/`
 - New `@Entry` environment key → `App/EnvironmentKeys.swift` (not co-located with domain types)
 - Screen the user navigates to → `{Feature}/{Feature}Screen.swift`
@@ -168,8 +168,8 @@ Never run only specific test files — always the complete suite.
 **Dependency Direction Rules (enforced by `bin/check-dependencies.sh`):**
 - **Core/ is framework-free** — no `import SwiftUI`, `import UIKit`, or `import Charts` in any Core/ file
 - **SwiftData is encapsulated** — `import SwiftData` only in `Core/Data/` and `App/`; all other code accesses persistence through `TrainingDataStore`
-- **UIKit is injected** — `import UIKit` only in `PitchComparison/HapticFeedbackManager.swift` (protocol abstraction) and `App/` (composition root); nowhere else
-- **No cross-feature coupling** — feature directories (`PitchComparison/`, `PitchMatching/`, `Profile/`, `Settings/`, `Info/`) must not reference types from other feature directories; shared types belong in `Core/`; `Start/` is exempt as the navigation router
+- **UIKit is injected** — `import UIKit` only in `PitchDiscrimination/HapticFeedbackManager.swift` (protocol abstraction) and `App/` (composition root); nowhere else
+- **No cross-feature coupling** — feature directories (`PitchDiscrimination/`, `PitchMatching/`, `Profile/`, `Settings/`, `Info/`) must not reference types from other feature directories; shared types belong in `Core/`; `Start/` is exempt as the navigation router
 - **No Combine** — use `async/await` throughout; `import Combine` is forbidden
 - **Views must not orchestrate services** — if a view needs to coordinate multiple services (e.g., reset data + reset profile + reset session), wrap that coordination in a closure or method owned by the composition root (`PeachApp`) and inject the closure; the view should call one thing, not three
 - **Minimize a view's `@Environment` surface** — each `@Environment` dependency is a coupling point; if a view only uses a dependency to pass it to another call, the dependency belongs higher up
@@ -223,17 +223,17 @@ Never run only specific test files — always the complete suite.
 - **Leave the code cleaner than you found it** — if you encounter a failing test, a code smell, a type violation, or any other issue while working on a task, you must either fix it immediately or create a tracked issue (story/spec). "Pre-existing condition" is never an acceptable reason to ignore a problem. Dismissing issues as pre-existing is explicitly forbidden — every problem has an owner, and if you're looking at it, that owner is you
 
 **Architectural Boundaries (hard rules):**
-- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `PitchComparisonSession` or `PerceptualProfile` as computed properties
-- **`PitchComparisonSession` is the ONLY component that understands "pitch comparisons" as a training sequence** — `NotePlayer` knows frequencies, `NextPitchComparisonStrategy` knows note selection, neither knows about the loop
-- **`PerceptualProfile` is in-memory only** — rebuilt from `PitchComparisonRecord` on startup, updated incrementally; never persist it to SwiftData
+- **Views contain zero business logic** — no computation, no conditional logic beyond rendering; derived values come from `PitchDiscriminationSession` or `PerceptualProfile` as computed properties
+- **`PitchDiscriminationSession` is the ONLY component that understands "pitch discriminations" as a training sequence** — `NotePlayer` knows frequencies, `NextPitchDiscriminationStrategy` knows note selection, neither knows about the loop
+- **`PerceptualProfile` is in-memory only** — rebuilt from `PitchDiscriminationRecord` on startup, updated incrementally; never persist it to SwiftData
 
 **Domain Rules Agents Will Get Wrong:**
 - **MIDI note range: 0–127** — `PerceptualProfile` is indexed by MIDI note (128 slots, 0-based); out-of-range = crash
 - **Cent offset applies to target note only** — reference note is exact MIDI note, target note = reference note + cent offset; never offset both notes
 - **Use `TuningSystem.frequency(for:referencePitch:)` for all Hz conversions** — accepts `MIDINote` or `DetunedMIDINote`; always requires explicit `tuningSystem` and `referencePitch` parameters; the app requires 0.1-cent precision
-- **Feedback phase is 400ms** — default in both `PitchComparisonTrainingSettings` and `PitchMatchingTrainingSettings`; it's a perceptual learning design decision
+- **Feedback phase is 400ms** — default in both `PitchDiscriminationSettings` and `PitchMatchingSettings`; it's a perceptual learning design decision
 - **Interval training constrains note range** — when interval > prime, the upper bound of the note selection range shrinks by `interval.semitones` to keep the target note within valid MIDI range (0-127)
-- **Four training modes** — unison comparison, interval comparison, unison matching, interval matching. Each has independent progress tracking via `TrainingModeConfig`. `ProgressTimeline` tracks all four
+- **Four training modes** — unison comparison, interval comparison, unison matching, interval matching. Each has independent progress tracking via `TrainingDisciplineConfig`. `ProgressTimeline` tracks all four
 
 **Never Do This:**
 - `ObservableObject` / `@Published` → use `@Observable`
@@ -253,7 +253,7 @@ Never run only specific test files — always the complete suite.
 - Raw `Double`/`Int`/`String` where domain types exist → use `Cents`, `Frequency`, `MIDINote`, `NoteDuration`, `SoundSourceID`, `TuningSystem`, `Duration`, etc. This applies everywhere: default values, constants, function parameters, return types. The *only* place raw types are acceptable is at the literal `UserDefaults.set()`/`UserDefaults.value(forKey:)` call site and SwiftData `@Model` stored properties
 
 **Error Resilience:**
-- **Both sessions are error boundaries** — `PitchComparisonSession` and `PitchMatchingSession` catch all service errors; training loops continue gracefully
+- **Both sessions are error boundaries** — `PitchDiscriminationSession` and `PitchMatchingSession` catch all service errors; training loops continue gracefully
 - **Audio interruption** → discard incomplete exercise, stop the active session
 - **App backgrounding** → stop the active session; return to Start Screen on foreground
 - **Empty profile (cold start)** → `KazezNoteStrategy` starts at `maxCentDifference` (or `profile.overallMean` if some pitch comparison training exists); handle gracefully
