@@ -96,12 +96,12 @@ struct StartScreen: View {
                 .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.pitchComparison(isIntervalMode: false)) {
-                trainingCard("Hear & Compare", systemImage: "ear", mode: .unisonPitchComparison)
+                trainingCard("Hear & Compare", systemImage: "ear", mode: .unisonPitchDiscrimination)
             }
             .buttonStyle(TrainingCardButtonStyle())
 
             NavigationLink(value: NavigationDestination.pitchMatching(isIntervalMode: false)) {
-                trainingCard("Tune & Match", systemImage: "target", mode: .unisonMatching)
+                trainingCard("Tune & Match", systemImage: "target", mode: .unisonPitchMatching)
             }
             .buttonStyle(TrainingCardButtonStyle())
         }
@@ -114,12 +114,12 @@ struct StartScreen: View {
                 .foregroundStyle(.secondary)
 
             NavigationLink(value: NavigationDestination.pitchComparison(isIntervalMode: true)) {
-                trainingCard("Hear & Compare", systemImage: "ear", mode: .intervalPitchComparison)
+                trainingCard("Hear & Compare", systemImage: "ear", mode: .intervalPitchDiscrimination)
             }
             .buttonStyle(TrainingCardButtonStyle())
 
             NavigationLink(value: NavigationDestination.pitchMatching(isIntervalMode: true)) {
-                trainingCard("Tune & Match", systemImage: "target", mode: .intervalMatching)
+                trainingCard("Tune & Match", systemImage: "target", mode: .intervalPitchMatching)
             }
             .buttonStyle(TrainingCardButtonStyle())
         }
@@ -148,7 +148,7 @@ struct StartScreen: View {
     private func trainingCard(
         _ title: LocalizedStringKey,
         systemImage: String,
-        mode: TrainingMode
+        mode: TrainingDiscipline
     ) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: systemImage)

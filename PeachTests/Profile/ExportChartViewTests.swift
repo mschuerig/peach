@@ -28,7 +28,7 @@ struct ExportChartViewTests {
             )
         }
         let timeline = makeTimeline(records: records)
-        let view = ExportChartView(mode: .unisonPitchComparison, progressTimeline: timeline, date: now)
+        let view = ExportChartView(mode: .unisonPitchDiscrimination, progressTimeline: timeline, date: now)
 
         // Verify the view can be rendered by ImageRenderer without crashing
         let renderer = ImageRenderer(content: view)
@@ -40,7 +40,7 @@ struct ExportChartViewTests {
     @Test("renders without crashing with empty data")
     func rendersWithEmptyData() async {
         let timeline = ProgressTimeline(profile: PerceptualProfile())
-        let view = ExportChartView(mode: .unisonPitchComparison, progressTimeline: timeline)
+        let view = ExportChartView(mode: .unisonPitchDiscrimination, progressTimeline: timeline)
 
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2.0
@@ -64,11 +64,11 @@ struct ExportChartViewTests {
             )
         }
         let timeline = makeTimeline(records: records)
-        let url = ChartImageRenderer.render(mode: .unisonPitchComparison, progressTimeline: timeline, date: now)
+        let url = ChartImageRenderer.render(mode: .unisonPitchDiscrimination, progressTimeline: timeline, date: now)
 
         #expect(url != nil)
         if let url {
-            #expect(url.lastPathComponent.hasPrefix("peach-pitch-comparison-"))
+            #expect(url.lastPathComponent.hasPrefix("peach-pitch-discrimination-"))
             #expect(url.lastPathComponent.hasSuffix(".png"))
             // Verify file exists and has content
             let data = try? Data(contentsOf: url)

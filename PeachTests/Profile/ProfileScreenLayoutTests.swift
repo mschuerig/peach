@@ -13,7 +13,7 @@ struct ProfileScreenLayoutTests {
             for i in 0..<25 {
                 builder.addPoint(
                     MetricPoint(timestamp: Date().addingTimeInterval(Double(i - 25) * 3600), value: Double(30 + i)),
-                    for: .pitch(.unisonPitchComparison)
+                    for: .pitch(.unisonPitchDiscrimination)
                 )
             }
         }
@@ -21,7 +21,7 @@ struct ProfileScreenLayoutTests {
 
         let summary = ProfileScreen.accessibilitySummary(progressTimeline: timeline)
 
-        let expectedName = TrainingModeConfig.unisonPitchComparison.displayName
+        let expectedName = TrainingDisciplineConfig.unisonPitchDiscrimination.displayName
         #expect(summary.contains(expectedName))
     }
 

@@ -2,12 +2,12 @@ import Testing
 import Foundation
 @testable import Peach
 
-@Suite("TrainingModeConfig Tests")
-struct TrainingModeConfigTests {
+@Suite("TrainingDisciplineConfig Tests")
+struct TrainingDisciplineConfigTests {
 
     @Test("unison comparison has expected parameters")
     func unisonComparison() async {
-        let config = TrainingModeConfig.unisonPitchComparison
+        let config = TrainingDisciplineConfig.unisonPitchDiscrimination
         #expect(config.optimalBaseline == 8.0)
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -15,7 +15,7 @@ struct TrainingModeConfigTests {
 
     @Test("interval comparison has expected parameters")
     func intervalComparison() async {
-        let config = TrainingModeConfig.intervalPitchComparison
+        let config = TrainingDisciplineConfig.intervalPitchDiscrimination
         #expect(config.optimalBaseline == 12.0)
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -23,7 +23,7 @@ struct TrainingModeConfigTests {
 
     @Test("unison matching has expected parameters")
     func unisonMatching() async {
-        let config = TrainingModeConfig.unisonMatching
+        let config = TrainingDisciplineConfig.unisonPitchMatching
         #expect(config.optimalBaseline == 5.0)
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -31,7 +31,7 @@ struct TrainingModeConfigTests {
 
     @Test("interval matching has expected parameters")
     func intervalMatching() async {
-        let config = TrainingModeConfig.intervalMatching
+        let config = TrainingDisciplineConfig.intervalPitchMatching
         #expect(config.optimalBaseline == 8.0)
         #expect(config.ewmaHalflife == .seconds(7 * 86400))
         #expect(config.sessionGap == .seconds(1800))
@@ -39,22 +39,22 @@ struct TrainingModeConfigTests {
 
     @Test("rhythm comparison has expected parameters")
     func rhythmComparison() async {
-        let config = TrainingModeConfig.rhythmComparison
+        let config = TrainingDisciplineConfig.rhythmOffsetDetection
         #expect(config.optimalBaseline == 15.0)
         #expect(config.unitLabel == "ms")
     }
 
     @Test("rhythm matching has expected parameters")
     func rhythmMatching() async {
-        let config = TrainingModeConfig.rhythmMatching
+        let config = TrainingDisciplineConfig.rhythmMatching
         #expect(config.optimalBaseline == 20.0)
         #expect(config.unitLabel == "ms")
     }
 
     @Test("all configurations have unique display names")
     func uniqueDisplayNames() async {
-        let configs = TrainingMode.allCases.map(\.config)
+        let configs = TrainingDiscipline.allCases.map(\.config)
         let names = Set(configs.map(\.displayName))
-        #expect(names.count == TrainingMode.allCases.count)
+        #expect(names.count == TrainingDiscipline.allCases.count)
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProgressSparklineView: View {
-    let mode: TrainingMode
+    let mode: TrainingDiscipline
 
     @Environment(\.progressTimeline) private var progressTimeline
 

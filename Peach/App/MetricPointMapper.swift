@@ -16,7 +16,7 @@ enum MetricPointMapper {
 
     static func feedPitchComparisons(_ records: [PitchComparisonRecord], into builder: PerceptualProfile.Builder) {
         for record in records {
-            let mode: TrainingMode = record.interval == 0 ? .unisonPitchComparison : .intervalPitchComparison
+            let mode: TrainingDiscipline = record.interval == 0 ? .unisonPitchDiscrimination : .intervalPitchDiscrimination
             builder.addPoint(
                 MetricPoint(timestamp: record.timestamp, value: abs(record.centOffset)),
                 for: .pitch(mode),
@@ -27,7 +27,7 @@ enum MetricPointMapper {
 
     static func feedPitchMatchings(_ records: [PitchMatchingRecord], into builder: PerceptualProfile.Builder) {
         for record in records {
-            let mode: TrainingMode = record.interval == 0 ? .unisonMatching : .intervalMatching
+            let mode: TrainingDiscipline = record.interval == 0 ? .unisonPitchMatching : .intervalPitchMatching
             builder.addPoint(
                 MetricPoint(timestamp: record.timestamp, value: abs(record.userCentError)),
                 for: .pitch(mode)
@@ -41,7 +41,7 @@ enum MetricPointMapper {
             guard let range = TempoRange.range(for: TempoBPM(record.tempoBPM)) else { continue }
             builder.addPoint(
                 MetricPoint(timestamp: record.timestamp, value: abs(record.offsetMs)),
-                for: .rhythm(.rhythmComparison, range, offset.direction),
+                for: .rhythm(.rhythmOffsetDetection, range, offset.direction),
                 isCorrect: record.isCorrect
             )
         }

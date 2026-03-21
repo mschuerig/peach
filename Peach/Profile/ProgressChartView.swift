@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 struct ProgressChartView: View {
-    let mode: TrainingMode
+    let mode: TrainingDiscipline
 
     @Environment(\.progressTimeline) private var progressTimeline
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -15,7 +15,7 @@ struct ProgressChartView: View {
     @State private var selectedBucketIndex: Int?
     @State private var shareImageURL: URL?
 
-    private var config: TrainingModeConfig { mode.config }
+    private var config: TrainingDisciplineConfig { mode.config }
     private var isIncreaseContrast: Bool { colorSchemeContrast == .increased }
 
     var body: some View {
@@ -513,7 +513,7 @@ struct ProgressChartView: View {
         "±\(Cents(value).formatted())"
     }
 
-    static func zoneAccessibilitySummary(buckets: [TimeBucket], zone: ZoneInfo, config: TrainingModeConfig) -> String? {
+    static func zoneAccessibilitySummary(buckets: [TimeBucket], zone: ZoneInfo, config: TrainingDisciplineConfig) -> String? {
         guard zone.startIndex >= 0, zone.endIndex < buckets.count, zone.startIndex <= zone.endIndex else { return nil }
 
         let zoneBuckets = Array(buckets[zone.startIndex...zone.endIndex])

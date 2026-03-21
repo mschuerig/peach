@@ -4,7 +4,7 @@ import Foundation
 final class MockTrainingProfile: TrainingProfile {
     // MARK: - Test State
 
-    private var stubbedStatistics: [StatisticsKey: TrainingModeStatistics] = [:]
+    private var stubbedStatistics: [StatisticsKey: TrainingDisciplineStatistics] = [:]
 
     // MARK: - TrainingProfile Protocol
 
@@ -16,7 +16,7 @@ final class MockTrainingProfile: TrainingProfile {
     // MARK: - Test Helpers
 
     func stub(_ key: StatisticsKey, mean: Double, count: Int = 1) {
-        var stats = TrainingModeStatistics()
+        var stats = TrainingDisciplineStatistics()
         for i in 0..<count {
             stats.addPoint(
                 MetricPoint(timestamp: Date().addingTimeInterval(Double(i)), value: mean),

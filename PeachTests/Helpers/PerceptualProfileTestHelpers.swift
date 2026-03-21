@@ -20,30 +20,30 @@ extension StatisticalSummary {
 extension PerceptualProfile {
 
     func comparisonMean(for interval: DirectedInterval) -> Cents? {
-        let mode: TrainingMode = interval == .prime ? .unisonPitchComparison : .intervalPitchComparison
+        let mode: TrainingDiscipline = interval == .prime ? .unisonPitchDiscrimination : .intervalPitchDiscrimination
         guard case .continuous(let stats) = statistics(for: .pitch(mode)) else { return nil }
         return Cents(stats.welford.mean)
     }
 
     var matchingMean: Cents? {
-        let unisonCount = statistics(for: .pitch(.unisonMatching))?.recordCount ?? 0
-        let intervalCount = statistics(for: .pitch(.intervalMatching))?.recordCount ?? 0
+        let unisonCount = statistics(for: .pitch(.unisonPitchMatching))?.recordCount ?? 0
+        let intervalCount = statistics(for: .pitch(.intervalPitchMatching))?.recordCount ?? 0
         let total = unisonCount + intervalCount
         guard total > 0 else { return nil }
 
         var sum = 0.0
-        if case .continuous(let s) = statistics(for: .pitch(.unisonMatching)) {
+        if case .continuous(let s) = statistics(for: .pitch(.unisonPitchMatching)) {
             sum += s.welford.mean * Double(unisonCount)
         }
-        if case .continuous(let s) = statistics(for: .pitch(.intervalMatching)) {
+        if case .continuous(let s) = statistics(for: .pitch(.intervalPitchMatching)) {
             sum += s.welford.mean * Double(intervalCount)
         }
         return Cents(sum / Double(total))
     }
 
     var matchingStdDev: Cents? {
-        let unisonCount = statistics(for: .pitch(.unisonMatching))?.recordCount ?? 0
-        let intervalCount = statistics(for: .pitch(.intervalMatching))?.recordCount ?? 0
+        let unisonCount = statistics(for: .pitch(.unisonPitchMatching))?.recordCount ?? 0
+        let intervalCount = statistics(for: .pitch(.intervalPitchMatching))?.recordCount ?? 0
         let total = unisonCount + intervalCount
         guard total >= 2 else { return nil }
 
@@ -51,7 +51,7 @@ extension PerceptualProfile {
         var combinedMean = 0.0
         var combinedCount = 0
 
-        for mode in [TrainingMode.unisonMatching, .intervalMatching] {
+        for mode in [TrainingDiscipline.unisonPitchMatching, .intervalPitchMatching] {
             guard case .continuous(let stats) = statistics(for: .pitch(mode)),
                   stats.recordCount > 0 else { continue }
             let n = stats.recordCount
@@ -83,23 +83,23 @@ extension PerceptualProfile {
     }
 
     var matchingSampleCount: Int {
-        (statistics(for: .pitch(.unisonMatching))?.recordCount ?? 0)
-            + (statistics(for: .pitch(.intervalMatching))?.recordCount ?? 0)
+        (statistics(for: .pitch(.unisonPitchMatching))?.recordCount ?? 0)
+            + (statistics(for: .pitch(.intervalPitchMatching))?.recordCount ?? 0)
     }
 
-    func hasData(for mode: TrainingMode) -> Bool {
+    func hasData(for mode: TrainingDiscipline) -> Bool {
         statistics(for: .pitch(mode)) != nil
     }
 
-    func recordCount(for mode: TrainingMode) -> Int {
+    func recordCount(for mode: TrainingDiscipline) -> Int {
         statistics(for: .pitch(mode))?.recordCount ?? 0
     }
 
-    func trend(for mode: TrainingMode) -> Trend? {
+    func trend(for mode: TrainingDiscipline) -> Trend? {
         statistics(for: .pitch(mode))?.trend
     }
 
-    func currentEWMA(for mode: TrainingMode) -> Double? {
+    func currentEWMA(for mode: TrainingDiscipline) -> Double? {
         statistics(for: .pitch(mode))?.ewma
     }
 
@@ -107,7 +107,7 @@ extension PerceptualProfile {
         var ranges = Set<TempoRange>()
         for range in TempoRange.defaultRanges {
             for direction in RhythmDirection.allCases {
-                for mode in [TrainingMode.rhythmComparison, .rhythmMatching] {
+                for mode in [TrainingDiscipline.rhythmOffsetDetection, .rhythmMatching] {
                     if statistics(for: .rhythm(mode, range, direction)) != nil {
                         ranges.insert(range)
                     }
@@ -122,7 +122,7 @@ extension PerceptualProfile {
         var weightedSum = 0.0
         for range in TempoRange.defaultRanges {
             for direction in RhythmDirection.allCases {
-                for mode in [TrainingMode.rhythmComparison, .rhythmMatching] {
+                for mode in [TrainingDiscipline.rhythmOffsetDetection, .rhythmMatching] {
                     if case .continuous(let stats) = statistics(for: .rhythm(mode, range, direction)),
                        stats.recordCount > 0 {
                         totalCount += stats.recordCount

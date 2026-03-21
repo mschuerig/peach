@@ -4,7 +4,7 @@ import OSLog
 @Observable
 final class PerceptualProfile: TrainingProfile {
 
-    private var statisticsStore: [StatisticsKey: TrainingModeStatistics] = [:]
+    private var statisticsStore: [StatisticsKey: TrainingDisciplineStatistics] = [:]
 
     private let logger = Logger(subsystem: "com.peach.app", category: "PerceptualProfile")
 
@@ -66,14 +66,14 @@ final class PerceptualProfile: TrainingProfile {
 
     private func update(_ key: StatisticsKey, timestamp: Date, value: Double) {
         let point = MetricPoint(timestamp: timestamp, value: value)
-        statisticsStore[key, default: TrainingModeStatistics()]
+        statisticsStore[key, default: TrainingDisciplineStatistics()]
             .addPoint(point, config: key.statisticsConfig)
     }
 
     private func finalize(from builder: Builder) {
         statisticsStore.removeAll()
         for (key, points) in builder.points where !points.isEmpty {
-            var stats = TrainingModeStatistics()
+            var stats = TrainingDisciplineStatistics()
             stats.rebuild(from: points.sorted { $0.timestamp < $1.timestamp }, config: key.statisticsConfig)
             statisticsStore[key] = stats
         }
@@ -87,7 +87,7 @@ extension PerceptualProfile: PitchComparisonObserver {
         let pc = completed.pitchComparison
         let interval = (try? Interval.between(pc.referenceNote, pc.targetNote.note))?.rawValue ?? 0
         let isUnison = interval == 0
-        let mode: TrainingMode = isUnison ? .unisonPitchComparison : .intervalPitchComparison
+        let mode: TrainingDiscipline = isUnison ? .unisonPitchDiscrimination : .intervalPitchDiscrimination
 
         guard completed.isCorrect else { return }
 
@@ -101,7 +101,7 @@ extension PerceptualProfile: PitchMatchingObserver {
     func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
         let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
         let isUnison = interval == 0
-        let mode: TrainingMode = isUnison ? .unisonMatching : .intervalMatching
+        let mode: TrainingDiscipline = isUnison ? .unisonPitchMatching : .intervalPitchMatching
 
         update(.pitch(mode), timestamp: result.timestamp, value: result.userCentError.magnitude)
     }
@@ -113,7 +113,7 @@ extension PerceptualProfile: RhythmComparisonObserver {
     func rhythmComparisonCompleted(_ result: CompletedRhythmComparison) {
         guard result.isCorrect else { return }
         guard let range = TempoRange.range(for: result.tempo) else { return }
-        update(.rhythm(.rhythmComparison, range, result.offset.direction),
+        update(.rhythm(.rhythmOffsetDetection, range, result.offset.direction),
                timestamp: result.timestamp,
                value: abs(result.offset.statisticalValue))
     }

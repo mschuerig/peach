@@ -106,16 +106,16 @@ struct PitchComparisonSessionResetTests {
             for i in 0..<30 {
                 builder.addPoint(
                     MetricPoint(timestamp: Date().addingTimeInterval(Double(i) * 60), value: Double(i) + 1.0),
-                    for: .pitch(.unisonPitchComparison)
+                    for: .pitch(.unisonPitchDiscrimination)
                 )
             }
         }
         let progressTimeline = ProgressTimeline(profile: profile)
-        #expect(progressTimeline.state(for: .unisonPitchComparison) != .noData)
+        #expect(progressTimeline.state(for: .unisonPitchDiscrimination) != .noData)
 
         profile.resetAll()
 
-        #expect(progressTimeline.state(for: .unisonPitchComparison) == .noData)
+        #expect(progressTimeline.state(for: .unisonPitchDiscrimination) == .noData)
     }
 
     // MARK: - Stop Before Reset

@@ -1,18 +1,18 @@
 import Testing
 @testable import Peach
 
-@Suite("Comparison Training Mode Tests")
-struct ComparisonTrainingModeTests {
+@Suite("Comparison Training Discipline Tests")
+struct ComparisonTrainingDisciplineTests {
 
-    @Test("trainingMode returns unisonComparison for prime intervals")
-    func trainingModeUnison() async {
-        let mode = PitchComparisonScreen.trainingMode(for: [.prime])
-        #expect(mode == .unisonPitchComparison)
+    @Test("trainingDiscipline returns unisonComparison for prime intervals")
+    func trainingDisciplineUnison() async {
+        let mode = PitchComparisonScreen.trainingDiscipline(for: [.prime])
+        #expect(mode == .unisonPitchDiscrimination)
     }
 
-    @Test("trainingMode returns intervalComparison for non-prime intervals")
-    func trainingModeInterval() async {
-        let mode = PitchComparisonScreen.trainingMode(for: [.up(.perfectFifth)])
-        #expect(mode == .intervalPitchComparison)
+    @Test("trainingDiscipline returns intervalComparison for non-prime intervals")
+    func trainingDisciplineInterval() async {
+        let mode = PitchComparisonScreen.trainingDiscipline(for: [.up(.perfectFifth)])
+        #expect(mode == .intervalPitchDiscrimination)
     }
 }

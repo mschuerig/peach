@@ -55,8 +55,8 @@ struct PitchComparisonScreen: View {
         verticalSizeClass == .compact
     }
 
-    private var trainingMode: TrainingMode {
-        Self.trainingMode(for: intervals)
+    private var trainingDiscipline: TrainingDiscipline {
+        Self.trainingDiscipline(for: intervals)
     }
 
     var body: some View {
@@ -97,7 +97,7 @@ struct PitchComparisonScreen: View {
                 TrainingStatsView(
                     latestValue: pitchComparisonSession.lastCompletedCentDifference,
                     sessionBest: pitchComparisonSession.sessionBestCentDifference,
-                    trend: progressTimeline.trend(for: trainingMode)
+                    trend: progressTimeline.trend(for: trainingDiscipline)
                 )
 
                 if pitchComparisonSession.isIntervalMode, let interval = pitchComparisonSession.currentInterval {
@@ -245,8 +245,8 @@ struct PitchComparisonScreen: View {
 
     // MARK: - Helpers
 
-    static func trainingMode(for intervals: Set<DirectedInterval>) -> TrainingMode {
-        intervals == [.prime] ? .unisonPitchComparison : .intervalPitchComparison
+    static func trainingDiscipline(for intervals: Set<DirectedInterval>) -> TrainingDiscipline {
+        intervals == [.prime] ? .unisonPitchDiscrimination : .intervalPitchDiscrimination
     }
 
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states

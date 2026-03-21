@@ -19,7 +19,7 @@ extension TrainingProfile {
             .sorted { $0.timestamp < $1.timestamp }
         guard !allMetrics.isEmpty,
               let config = keys.first?.statisticsConfig else { return nil }
-        var stats = TrainingModeStatistics()
+        var stats = TrainingDisciplineStatistics()
         stats.rebuild(from: allMetrics, config: config)
         return .continuous(stats)
     }

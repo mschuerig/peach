@@ -14,32 +14,32 @@ enum Trend: Equatable {
 
 // MARK: - Supporting Types
 
-/// The training mode categories tracked independently.
-enum TrainingMode: CaseIterable {
-    case unisonPitchComparison
-    case intervalPitchComparison
-    case unisonMatching
-    case intervalMatching
-    case rhythmComparison
+/// The training discipline categories tracked independently.
+enum TrainingDiscipline: CaseIterable {
+    case unisonPitchDiscrimination
+    case intervalPitchDiscrimination
+    case unisonPitchMatching
+    case intervalPitchMatching
+    case rhythmOffsetDetection
     case rhythmMatching
 
-    var config: TrainingModeConfig {
+    var config: TrainingDisciplineConfig {
         switch self {
-        case .unisonPitchComparison: .unisonPitchComparison
-        case .intervalPitchComparison: .intervalPitchComparison
-        case .unisonMatching: .unisonMatching
-        case .intervalMatching: .intervalMatching
-        case .rhythmComparison: .rhythmComparison
+        case .unisonPitchDiscrimination: .unisonPitchDiscrimination
+        case .intervalPitchDiscrimination: .intervalPitchDiscrimination
+        case .unisonPitchMatching: .unisonPitchMatching
+        case .intervalPitchMatching: .intervalPitchMatching
+        case .rhythmOffsetDetection: .rhythmOffsetDetection
         case .rhythmMatching: .rhythmMatching
         }
     }
 
     var statisticsKeys: [StatisticsKey] {
         switch self {
-        case .unisonPitchComparison, .intervalPitchComparison,
-             .unisonMatching, .intervalMatching:
+        case .unisonPitchDiscrimination, .intervalPitchDiscrimination,
+             .unisonPitchMatching, .intervalPitchMatching:
             [.pitch(self)]
-        case .rhythmComparison, .rhythmMatching:
+        case .rhythmOffsetDetection, .rhythmMatching:
             TempoRange.defaultRanges.flatMap { range in
                 RhythmDirection.allCases.map { direction in
                     .rhythm(self, range, direction)
@@ -50,18 +50,18 @@ enum TrainingMode: CaseIterable {
 
     var slug: String {
         switch self {
-        case .unisonPitchComparison: "pitch-comparison"
-        case .intervalPitchComparison: "interval-comparison"
-        case .unisonMatching: "pitch-matching"
-        case .intervalMatching: "interval-matching"
-        case .rhythmComparison: "rhythm-comparison"
+        case .unisonPitchDiscrimination: "pitch-discrimination"
+        case .intervalPitchDiscrimination: "interval-discrimination"
+        case .unisonPitchMatching: "pitch-matching"
+        case .intervalPitchMatching: "interval-matching"
+        case .rhythmOffsetDetection: "rhythm-offset-detection"
         case .rhythmMatching: "rhythm-matching"
         }
     }
 }
 
-/// Whether a training mode has data for visualization.
-enum TrainingModeState: Equatable {
+/// Whether a training discipline has data for visualization.
+enum TrainingDisciplineState: Equatable {
     /// No records at all — card is hidden.
     case noData
     /// Has data — show chart/sparkline.
@@ -121,30 +121,30 @@ final class ProgressTimeline {
 
     // MARK: - Delegated to Profile
 
-    /// Returns the display state for a training mode (no data or active).
-    func state(for mode: TrainingMode) -> TrainingModeState {
+    /// Returns the display state for a training discipline (no data or active).
+    func state(for mode: TrainingDiscipline) -> TrainingDisciplineState {
         profile.mergedStatistics(for: mode.statisticsKeys) != nil ? .active : .noData
     }
 
     /// Returns the current EWMA value for a mode, or nil if no data.
-    func currentEWMA(for mode: TrainingMode) -> Double? {
+    func currentEWMA(for mode: TrainingDiscipline) -> Double? {
         profile.mergedStatistics(for: mode.statisticsKeys)?.ewma
     }
 
     /// Returns the total number of records ingested for a mode.
-    func recordCount(for mode: TrainingMode) -> Int {
+    func recordCount(for mode: TrainingDiscipline) -> Int {
         profile.mergedStatistics(for: mode.statisticsKeys)?.recordCount ?? 0
     }
 
     /// Returns the trend direction for a mode, or nil if insufficient data.
-    func trend(for mode: TrainingMode) -> Trend? {
+    func trend(for mode: TrainingDiscipline) -> Trend? {
         profile.mergedStatistics(for: mode.statisticsKeys)?.trend
     }
 
     // MARK: - Bucketing (presentation-only)
 
     /// Returns the adaptive time buckets for charting a mode's progress.
-    func buckets(for mode: TrainingMode) -> [TimeBucket] {
+    func buckets(for mode: TrainingDiscipline) -> [TimeBucket] {
         guard let summary = profile.mergedStatistics(for: mode.statisticsKeys),
               !summary.metrics.isEmpty else { return [] }
         let now = Date()
@@ -159,7 +159,7 @@ final class ProgressTimeline {
     /// - **Month zone**: everything older, with the last monthly bucket truncated at the day zone start
     ///
     /// Only three granularity tiers are used: month, day, and session.
-    func allGranularityBuckets(for mode: TrainingMode) -> [TimeBucket] {
+    func allGranularityBuckets(for mode: TrainingDiscipline) -> [TimeBucket] {
         guard let summary = profile.mergedStatistics(for: mode.statisticsKeys),
               !summary.metrics.isEmpty else { return [] }
         let now = Date()
@@ -171,7 +171,7 @@ final class ProgressTimeline {
     ///
     /// Splits a month bucket into days, or a day into sessions.
     /// Returns an empty array for session buckets (finest granularity).
-    func subBuckets(for mode: TrainingMode, expanding bucket: TimeBucket) -> [TimeBucket] {
+    func subBuckets(for mode: TrainingDiscipline, expanding bucket: TimeBucket) -> [TimeBucket] {
         guard bucket.bucketSize != .session else { return [] }
         guard let summary = profile.mergedStatistics(for: mode.statisticsKeys) else { return [] }
 

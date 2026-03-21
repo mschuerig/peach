@@ -111,8 +111,8 @@ struct PerceptualProfileTests {
         profile.pitchComparisonCompleted(completed)
 
         #expect(profile.comparisonMean(for: .up(.perfectFifth)) == 25.0)
-        #expect(profile.hasData(for: .intervalPitchComparison))
-        #expect(!profile.hasData(for: .unisonPitchComparison))
+        #expect(profile.hasData(for: .intervalPitchDiscrimination))
+        #expect(!profile.hasData(for: .unisonPitchDiscrimination))
     }
 
     @Test("PitchMatchingObserver records centError correctly for non-prime interval")
@@ -132,8 +132,8 @@ struct PerceptualProfileTests {
         #expect(profile.matchingSampleCount == 1)
         let mean = try #require(profile.matchingMean)
         #expect(abs(mean.rawValue - 12.3) < 0.01)
-        #expect(profile.hasData(for: .intervalMatching))
-        #expect(!profile.hasData(for: .unisonMatching))
+        #expect(profile.hasData(for: .intervalPitchMatching))
+        #expect(!profile.hasData(for: .unisonPitchMatching))
     }
 
     // MARK: - Per-Mode Query API
@@ -141,7 +141,7 @@ struct PerceptualProfileTests {
     @Test("hasData returns false for empty modes")
     func hasDataEmptyProfile() async {
         let profile = PerceptualProfile()
-        for mode in [TrainingMode.unisonPitchComparison, .intervalPitchComparison, .unisonMatching, .intervalMatching] {
+        for mode in [TrainingDiscipline.unisonPitchDiscrimination, .intervalPitchDiscrimination, .unisonPitchMatching, .intervalPitchMatching] {
             #expect(!profile.hasData(for: mode))
         }
     }
@@ -163,8 +163,8 @@ struct PerceptualProfileTests {
         )
         profile.pitchComparisonCompleted(intervalComparison)
 
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 1)
-        #expect(profile.recordCount(for: .intervalPitchComparison) == 1)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 1)
+        #expect(profile.recordCount(for: .intervalPitchDiscrimination) == 1)
     }
 
     // MARK: - Builder Init
@@ -174,15 +174,15 @@ struct PerceptualProfileTests {
         let now = Date()
 
         let profile = PerceptualProfile { builder in
-            builder.addPoint(MetricPoint(timestamp: now, value: 10), for: .pitch(.unisonPitchComparison))
-            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20), for: .pitch(.unisonPitchComparison))
-            builder.addPoint(MetricPoint(timestamp: now, value: 5), for: .pitch(.intervalMatching))
+            builder.addPoint(MetricPoint(timestamp: now, value: 10), for: .pitch(.unisonPitchDiscrimination))
+            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20), for: .pitch(.unisonPitchDiscrimination))
+            builder.addPoint(MetricPoint(timestamp: now, value: 5), for: .pitch(.intervalPitchMatching))
         }
 
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 2)
-        #expect(profile.recordCount(for: .intervalMatching) == 1)
-        #expect(profile.recordCount(for: .intervalPitchComparison) == 0)
-        #expect(profile.recordCount(for: .unisonMatching) == 0)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 2)
+        #expect(profile.recordCount(for: .intervalPitchMatching) == 1)
+        #expect(profile.recordCount(for: .intervalPitchDiscrimination) == 0)
+        #expect(profile.recordCount(for: .unisonPitchMatching) == 0)
     }
 
     // MARK: - Reset
@@ -196,7 +196,7 @@ struct PerceptualProfileTests {
 
         profile.resetAll()
 
-        for mode in [TrainingMode.unisonPitchComparison, .intervalPitchComparison, .unisonMatching, .intervalMatching] {
+        for mode in [TrainingDiscipline.unisonPitchDiscrimination, .intervalPitchDiscrimination, .unisonPitchMatching, .intervalPitchMatching] {
             #expect(!profile.hasData(for: mode))
         }
         #expect(profile.comparisonMean(for: .prime) == nil)
@@ -230,15 +230,15 @@ struct PerceptualProfileTests {
         let now = Date()
 
         let profile = PerceptualProfile { builder in
-            builder.addPoint(MetricPoint(timestamp: now, value: 10), for: .pitch(.unisonPitchComparison))
-            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20), for: .pitch(.unisonPitchComparison))
-            builder.addPoint(MetricPoint(timestamp: now, value: 5), for: .pitch(.intervalMatching))
+            builder.addPoint(MetricPoint(timestamp: now, value: 10), for: .pitch(.unisonPitchDiscrimination))
+            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20), for: .pitch(.unisonPitchDiscrimination))
+            builder.addPoint(MetricPoint(timestamp: now, value: 5), for: .pitch(.intervalPitchMatching))
         }
 
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 2)
-        #expect(profile.recordCount(for: .intervalMatching) == 1)
-        #expect(profile.recordCount(for: .intervalPitchComparison) == 0)
-        #expect(profile.recordCount(for: .unisonMatching) == 0)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 2)
+        #expect(profile.recordCount(for: .intervalPitchMatching) == 1)
+        #expect(profile.recordCount(for: .intervalPitchDiscrimination) == 0)
+        #expect(profile.recordCount(for: .unisonPitchMatching) == 0)
     }
 
     @Test("init(build:) computes correct statistics for multiple points")
@@ -249,53 +249,53 @@ struct PerceptualProfileTests {
             for i in 0..<5 {
                 builder.addPoint(
                     MetricPoint(timestamp: now.addingTimeInterval(Double(i) * 3600), value: Double(i * 10 + 5)),
-                    for: .pitch(.unisonPitchComparison)
+                    for: .pitch(.unisonPitchDiscrimination)
                 )
             }
         }
 
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 5)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 5)
         // Mean of [5, 15, 25, 35, 45] = 25.0
         #expect(profile.comparisonMean(for: .prime) == 25.0)
-        #expect(profile.trend(for: .unisonPitchComparison) != nil)
+        #expect(profile.trend(for: .unisonPitchDiscrimination) != nil)
     }
 
     @Test("Builder is received via closure, not constructed directly")
     func builderViaInit() async {
         let profile = PerceptualProfile { builder in
-            builder.addPoint(MetricPoint(timestamp: Date(), value: 10.0), for: .pitch(.unisonPitchComparison))
+            builder.addPoint(MetricPoint(timestamp: Date(), value: 10.0), for: .pitch(.unisonPitchDiscrimination))
         }
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 1)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 1)
     }
 
     @Test("replaceAll updates same instance with new data")
     func replaceAllUpdatesInstance() async {
         let now = Date()
         let profile = PerceptualProfile { builder in
-            builder.addPoint(MetricPoint(timestamp: now, value: 50.0), for: .pitch(.unisonPitchComparison))
+            builder.addPoint(MetricPoint(timestamp: now, value: 50.0), for: .pitch(.unisonPitchDiscrimination))
         }
 
         #expect(profile.comparisonMean(for: .prime) == 50.0)
 
         profile.replaceAll { builder in
-            builder.addPoint(MetricPoint(timestamp: now, value: 10.0), for: .pitch(.unisonPitchComparison))
-            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20.0), for: .pitch(.unisonPitchComparison))
+            builder.addPoint(MetricPoint(timestamp: now, value: 10.0), for: .pitch(.unisonPitchDiscrimination))
+            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 20.0), for: .pitch(.unisonPitchDiscrimination))
         }
 
         #expect(profile.comparisonMean(for: .prime) == 15.0)
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 2)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 2)
     }
 
     @Test("Builder skips incorrect comparison points")
     func builderSkipsIncorrect() async {
         let now = Date()
         let profile = PerceptualProfile { builder in
-            builder.addPoint(MetricPoint(timestamp: now, value: 50.0), for: .pitch(.unisonPitchComparison), isCorrect: true)
-            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 200.0), for: .pitch(.unisonPitchComparison), isCorrect: false)
-            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(2), value: 30.0), for: .pitch(.unisonPitchComparison), isCorrect: true)
+            builder.addPoint(MetricPoint(timestamp: now, value: 50.0), for: .pitch(.unisonPitchDiscrimination), isCorrect: true)
+            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(1), value: 200.0), for: .pitch(.unisonPitchDiscrimination), isCorrect: false)
+            builder.addPoint(MetricPoint(timestamp: now.addingTimeInterval(2), value: 30.0), for: .pitch(.unisonPitchDiscrimination), isCorrect: true)
         }
 
-        #expect(profile.recordCount(for: .unisonPitchComparison) == 2)
+        #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 2)
         #expect(profile.comparisonMean(for: .prime) == 40.0) // (50+30)/2
     }
 
@@ -312,7 +312,7 @@ struct PerceptualProfileTests {
         )
         profile.rhythmComparisonCompleted(result)
 
-        let stats = profile.statistics(for: .rhythm(.rhythmComparison, .fast, .early))
+        let stats = profile.statistics(for: .rhythm(.rhythmOffsetDetection, .fast, .early))
         #expect(stats?.recordCount == 1)
         #expect(abs((stats?.welfordMean ?? 0) - 20.0) < 0.01)
     }
@@ -328,7 +328,7 @@ struct PerceptualProfileTests {
         )
         profile.rhythmComparisonCompleted(result)
 
-        #expect(profile.statistics(for: .rhythm(.rhythmComparison, .fast, .early)) == nil)
+        #expect(profile.statistics(for: .rhythm(.rhythmOffsetDetection, .fast, .early)) == nil)
     }
 
     // MARK: - Rhythm Matching via Observer
@@ -358,17 +358,17 @@ struct PerceptualProfileTests {
         let profile = PerceptualProfile { builder in
             builder.addPoint(
                 MetricPoint(timestamp: now, value: 15.0),
-                for: .rhythm(.rhythmComparison, .fast, .early),
+                for: .rhythm(.rhythmOffsetDetection, .fast, .early),
                 isCorrect: true
             )
             builder.addPoint(
                 MetricPoint(timestamp: now.addingTimeInterval(1), value: 25.0),
-                for: .rhythm(.rhythmComparison, .fast, .early),
+                for: .rhythm(.rhythmOffsetDetection, .fast, .early),
                 isCorrect: true
             )
         }
 
-        let stats = profile.statistics(for: .rhythm(.rhythmComparison, .fast, .early))
+        let stats = profile.statistics(for: .rhythm(.rhythmOffsetDetection, .fast, .early))
         #expect(stats?.recordCount == 2)
         #expect(abs((stats?.welfordMean ?? 0) - 20.0) < 0.01) // (15+25)/2
     }
@@ -396,17 +396,17 @@ struct PerceptualProfileTests {
         let profile = PerceptualProfile { builder in
             builder.addPoint(
                 MetricPoint(timestamp: now, value: 15.0),
-                for: .rhythm(.rhythmComparison, .fast, .early),
+                for: .rhythm(.rhythmOffsetDetection, .fast, .early),
                 isCorrect: true
             )
             builder.addPoint(
                 MetricPoint(timestamp: now.addingTimeInterval(1), value: 100.0),
-                for: .rhythm(.rhythmComparison, .fast, .early),
+                for: .rhythm(.rhythmOffsetDetection, .fast, .early),
                 isCorrect: false
             )
         }
 
-        let stats = profile.statistics(for: .rhythm(.rhythmComparison, .fast, .early))
+        let stats = profile.statistics(for: .rhythm(.rhythmOffsetDetection, .fast, .early))
         #expect(stats?.recordCount == 1)
     }
 

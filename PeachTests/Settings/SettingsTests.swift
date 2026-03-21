@@ -369,16 +369,16 @@ struct SettingsTests {
             for i in 0..<30 {
                 builder.addPoint(
                     MetricPoint(timestamp: Date().addingTimeInterval(Double(i) * 60), value: Double(i) + 1.0),
-                    for: .pitch(.unisonPitchComparison)
+                    for: .pitch(.unisonPitchDiscrimination)
                 )
             }
         }
         let timeline = ProgressTimeline(profile: profile)
-        #expect(timeline.state(for: .unisonPitchComparison) != .noData)
+        #expect(timeline.state(for: .unisonPitchDiscrimination) != .noData)
 
         profile.resetAll()
 
-        #expect(timeline.state(for: .unisonPitchComparison) == .noData)
+        #expect(timeline.state(for: .unisonPitchDiscrimination) == .noData)
     }
 
     @Test("Reset deletes all records from SwiftData")

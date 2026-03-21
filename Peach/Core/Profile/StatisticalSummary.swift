@@ -6,7 +6,7 @@
 /// for adaptive difficulty) match on `.continuous(let stats)`.
 enum StatisticalSummary: Sendable {
     /// Statistics for continuous numeric measurements (cents, milliseconds).
-    case continuous(TrainingModeStatistics)
+    case continuous(TrainingDisciplineStatistics)
 
     var recordCount: Int {
         switch self { case .continuous(let s): s.recordCount }

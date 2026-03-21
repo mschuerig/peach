@@ -132,6 +132,6 @@ struct TrainingDataImportActionTests {
             MetricPointMapper.feedPitchComparisons(records, into: builder)
         }
 
-        #expect(timeline.state(for: .unisonPitchComparison) == .active)
+        #expect(timeline.state(for: .unisonPitchDiscrimination) == .active)
     }
 }

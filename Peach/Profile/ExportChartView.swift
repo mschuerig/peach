@@ -2,17 +2,17 @@ import SwiftUI
 import Charts
 
 struct ExportChartView: View {
-    let mode: TrainingMode
+    let mode: TrainingDiscipline
     let progressTimeline: ProgressTimeline
     let date: Date
 
-    init(mode: TrainingMode, progressTimeline: ProgressTimeline, date: Date = Date()) {
+    init(mode: TrainingDiscipline, progressTimeline: ProgressTimeline, date: Date = Date()) {
         self.mode = mode
         self.progressTimeline = progressTimeline
         self.date = date
     }
 
-    private var config: TrainingModeConfig { mode.config }
+    private var config: TrainingDisciplineConfig { mode.config }
 
     var body: some View {
         let buckets = progressTimeline.allGranularityBuckets(for: mode)

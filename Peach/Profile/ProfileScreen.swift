@@ -18,7 +18,7 @@ struct ProfileScreen: View {
                 if let currentTip = tipGroup.currentTip {
                     TipView(currentTip)
                 }
-                ForEach(TrainingMode.allCases, id: \.self) { mode in
+                ForEach(TrainingDiscipline.allCases, id: \.self) { mode in
                     let state = progressTimeline.state(for: mode)
                     if state != .noData {
                         ProgressChartView(mode: mode)
@@ -99,7 +99,7 @@ struct ProfileScreen: View {
     // MARK: - Accessibility
 
     static func accessibilitySummary(progressTimeline: ProgressTimeline) -> String {
-        let activeModes = TrainingMode.allCases.filter { progressTimeline.state(for: $0) != .noData }
+        let activeModes = TrainingDiscipline.allCases.filter { progressTimeline.state(for: $0) != .noData }
         guard !activeModes.isEmpty else {
             return String(localized: "Profile. No training data available.")
         }
@@ -119,7 +119,7 @@ struct ProfileScreen: View {
                         builder.addPoint(MetricPoint(
                             timestamp: Date().addingTimeInterval(Double(i - 50) * 3600),
                             value: abs(baseOffset + noise)
-                        ), for: .pitch(.unisonPitchComparison))
+                        ), for: .pitch(.unisonPitchDiscrimination))
                     }
                 }
                 return ProgressTimeline(profile: profile)

@@ -41,8 +41,8 @@ struct PitchMatchingScreen: View {
         verticalSizeClass == .compact
     }
 
-    private var trainingMode: TrainingMode {
-        Self.trainingMode(for: intervals)
+    private var trainingDiscipline: TrainingDiscipline {
+        Self.trainingDiscipline(for: intervals)
     }
 
     var body: some View {
@@ -93,7 +93,7 @@ struct PitchMatchingScreen: View {
                 TrainingStatsView(
                     latestValue: pitchMatchingSession.lastResult.map { Cents($0.userCentError.magnitude) },
                     sessionBest: pitchMatchingSession.sessionBestCentError,
-                    trend: progressTimeline.trend(for: trainingMode)
+                    trend: progressTimeline.trend(for: trainingDiscipline)
                 )
 
                 if pitchMatchingSession.isIntervalMode, let interval = pitchMatchingSession.currentInterval {
@@ -168,8 +168,8 @@ struct PitchMatchingScreen: View {
 
     // MARK: - Helpers
 
-    static func trainingMode(for intervals: Set<DirectedInterval>) -> TrainingMode {
-        intervals == [.prime] ? .unisonMatching : .intervalMatching
+    static func trainingDiscipline(for intervals: Set<DirectedInterval>) -> TrainingDiscipline {
+        intervals == [.prime] ? .unisonPitchMatching : .intervalPitchMatching
     }
 
     // MARK: - Layout Parameters (extracted for testability)

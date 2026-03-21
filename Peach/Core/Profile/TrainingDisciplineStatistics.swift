@@ -1,7 +1,7 @@
 import Foundation
 
 /// Per-mode statistical state: Welford accumulator, EWMA, trend, and time-ordered metrics.
-struct TrainingModeStatistics: Sendable {
+struct TrainingDisciplineStatistics: Sendable {
     private(set) var welford = WelfordAccumulator()
     private(set) var ewma: Double?
     private(set) var trend: Trend?

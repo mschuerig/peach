@@ -1,46 +1,46 @@
 import Testing
 @testable import Peach
 
-@Suite("TrainingMode Tests")
-struct TrainingModeTests {
+@Suite("TrainingDiscipline Tests")
+struct TrainingDisciplineTests {
 
     // MARK: - Slug
 
     @Test("slug returns pitch-comparison for unison pitch comparison")
     func slugUnisonPitchComparison() async {
-        #expect(TrainingMode.unisonPitchComparison.slug == "pitch-comparison")
+        #expect(TrainingDiscipline.unisonPitchDiscrimination.slug == "pitch-discrimination")
     }
 
     @Test("slug returns interval-comparison for interval pitch comparison")
     func slugIntervalPitchComparison() async {
-        #expect(TrainingMode.intervalPitchComparison.slug == "interval-comparison")
+        #expect(TrainingDiscipline.intervalPitchDiscrimination.slug == "interval-discrimination")
     }
 
     @Test("slug returns pitch-matching for unison matching")
     func slugUnisonMatching() async {
-        #expect(TrainingMode.unisonMatching.slug == "pitch-matching")
+        #expect(TrainingDiscipline.unisonPitchMatching.slug == "pitch-matching")
     }
 
     @Test("slug returns interval-matching for interval matching")
     func slugIntervalMatching() async {
-        #expect(TrainingMode.intervalMatching.slug == "interval-matching")
+        #expect(TrainingDiscipline.intervalPitchMatching.slug == "interval-matching")
     }
 
     @Test("slug returns rhythm-comparison for rhythm comparison")
     func slugRhythmComparison() async {
-        #expect(TrainingMode.rhythmComparison.slug == "rhythm-comparison")
+        #expect(TrainingDiscipline.rhythmOffsetDetection.slug == "rhythm-offset-detection")
     }
 
     @Test("slug returns rhythm-matching for rhythm matching")
     func slugRhythmMatching() async {
-        #expect(TrainingMode.rhythmMatching.slug == "rhythm-matching")
+        #expect(TrainingDiscipline.rhythmMatching.slug == "rhythm-matching")
     }
 
     // MARK: - statisticsKeys
 
     @Test("pitch modes return single key")
     func pitchModesReturnSingleKey() async {
-        for mode in [TrainingMode.unisonPitchComparison, .intervalPitchComparison, .unisonMatching, .intervalMatching] {
+        for mode in [TrainingDiscipline.unisonPitchDiscrimination, .intervalPitchDiscrimination, .unisonPitchMatching, .intervalPitchMatching] {
             #expect(mode.statisticsKeys.count == 1)
             #expect(mode.statisticsKeys.first == .pitch(mode))
         }
@@ -48,7 +48,7 @@ struct TrainingModeTests {
 
     @Test("rhythm modes return 6 keys (3 tempo ranges x 2 directions)")
     func rhythmModesReturn6Keys() async {
-        for mode in [TrainingMode.rhythmComparison, .rhythmMatching] {
+        for mode in [TrainingDiscipline.rhythmOffsetDetection, .rhythmMatching] {
             let keys = mode.statisticsKeys
             #expect(keys.count == 6)
             for range in TempoRange.defaultRanges {
