@@ -65,7 +65,7 @@ final class TrainingDataStore {
             try modelContext.transaction {
                 try modelContext.delete(model: PitchDiscriminationRecord.self)
                 try modelContext.delete(model: PitchMatchingRecord.self)
-                try modelContext.delete(model: RhythmComparisonRecord.self)
+                try modelContext.delete(model: RhythmOffsetDetectionRecord.self)
                 try modelContext.delete(model: RhythmMatchingRecord.self)
             }
         } catch {
@@ -87,7 +87,7 @@ final class TrainingDataStore {
             try modelContext.transaction {
                 try modelContext.delete(model: PitchDiscriminationRecord.self)
                 try modelContext.delete(model: PitchMatchingRecord.self)
-                try modelContext.delete(model: RhythmComparisonRecord.self)
+                try modelContext.delete(model: RhythmOffsetDetectionRecord.self)
                 try modelContext.delete(model: RhythmMatchingRecord.self)
                 for record in pitchDiscriminations {
                     modelContext.insert(record)
@@ -101,36 +101,36 @@ final class TrainingDataStore {
         }
     }
 
-    // MARK: - Rhythm Comparison CRUD
+    // MARK: - Rhythm Offset Detection CRUD
 
-    func save(_ record: RhythmComparisonRecord) throws {
+    func save(_ record: RhythmOffsetDetectionRecord) throws {
         do {
             try modelContext.transaction {
                 modelContext.insert(record)
             }
         } catch {
-            throw DataStoreError.saveFailed("Failed to save RhythmComparisonRecord: \(error.localizedDescription)")
+            throw DataStoreError.saveFailed("Failed to save RhythmOffsetDetectionRecord: \(error.localizedDescription)")
         }
     }
 
-    func fetchAllRhythmComparisons() throws -> [RhythmComparisonRecord] {
-        let descriptor = FetchDescriptor<RhythmComparisonRecord>(
+    func fetchAllRhythmOffsetDetections() throws -> [RhythmOffsetDetectionRecord] {
+        let descriptor = FetchDescriptor<RhythmOffsetDetectionRecord>(
             sortBy: [SortDescriptor(\.timestamp, order: .forward)]
         )
         do {
             return try modelContext.fetch(descriptor)
         } catch {
-            throw DataStoreError.fetchFailed("Failed to fetch rhythm comparison records: \(error.localizedDescription)")
+            throw DataStoreError.fetchFailed("Failed to fetch rhythm offset detection records: \(error.localizedDescription)")
         }
     }
 
-    func deleteAllRhythmComparisons() throws {
+    func deleteAllRhythmOffsetDetections() throws {
         do {
             try modelContext.transaction {
-                try modelContext.delete(model: RhythmComparisonRecord.self)
+                try modelContext.delete(model: RhythmOffsetDetectionRecord.self)
             }
         } catch {
-            throw DataStoreError.deleteFailed("Failed to delete all rhythm comparison records: \(error.localizedDescription)")
+            throw DataStoreError.deleteFailed("Failed to delete all rhythm offset detection records: \(error.localizedDescription)")
         }
     }
 
@@ -205,11 +205,11 @@ extension TrainingDataStore: Resettable {
     }
 }
 
-// MARK: - RhythmComparisonObserver Conformance
+// MARK: - RhythmOffsetDetectionObserver Conformance
 
-extension TrainingDataStore: RhythmComparisonObserver {
-    func rhythmComparisonCompleted(_ result: CompletedRhythmComparison) {
-        let record = RhythmComparisonRecord(
+extension TrainingDataStore: RhythmOffsetDetectionObserver {
+    func rhythmOffsetDetectionCompleted(_ result: CompletedRhythmOffsetDetectionTrial) {
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: result.tempo.value,
             offsetMs: result.offset.duration / .milliseconds(1),
             isCorrect: result.isCorrect,
@@ -218,9 +218,9 @@ extension TrainingDataStore: RhythmComparisonObserver {
         do {
             try save(record)
         } catch let error as DataStoreError {
-            Self.logger.warning("Rhythm comparison save error: \(error.localizedDescription)")
+            Self.logger.warning("Rhythm offset detection save error: \(error.localizedDescription)")
         } catch {
-            Self.logger.warning("Rhythm comparison unexpected error: \(error.localizedDescription)")
+            Self.logger.warning("Rhythm offset detection unexpected error: \(error.localizedDescription)")
         }
     }
 }
@@ -228,7 +228,7 @@ extension TrainingDataStore: RhythmComparisonObserver {
 // MARK: - RhythmMatchingObserver Conformance
 
 extension TrainingDataStore: RhythmMatchingObserver {
-    func rhythmMatchingCompleted(_ result: CompletedRhythmMatching) {
+    func rhythmMatchingCompleted(_ result: CompletedRhythmMatchingTrial) {
         let record = RhythmMatchingRecord(
             tempoBPM: result.tempo.value,
             userOffsetMs: result.userOffset.duration / .milliseconds(1),

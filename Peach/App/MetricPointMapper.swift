@@ -10,7 +10,7 @@ enum MetricPointMapper {
     static func feedAllRecords(from dataStore: TrainingDataStore, into builder: PerceptualProfile.Builder) throws {
         feedPitchDiscriminations(try dataStore.fetchAllPitchDiscriminations(), into: builder)
         feedPitchMatchings(try dataStore.fetchAllPitchMatchings(), into: builder)
-        feedRhythmComparisons(try dataStore.fetchAllRhythmComparisons(), into: builder)
+        feedRhythmOffsetDetections(try dataStore.fetchAllRhythmOffsetDetections(), into: builder)
         feedRhythmMatchings(try dataStore.fetchAllRhythmMatchings(), into: builder)
     }
 
@@ -35,7 +35,7 @@ enum MetricPointMapper {
         }
     }
 
-    static func feedRhythmComparisons(_ records: [RhythmComparisonRecord], into builder: PerceptualProfile.Builder) {
+    static func feedRhythmOffsetDetections(_ records: [RhythmOffsetDetectionRecord], into builder: PerceptualProfile.Builder) {
         for record in records {
             let offset = RhythmOffset(.milliseconds(record.offsetMs))
             guard let range = TempoRange.range(for: TempoBPM(record.tempoBPM)) else { continue }

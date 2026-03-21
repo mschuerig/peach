@@ -1,6 +1,6 @@
 import Foundation
 
-struct CompletedRhythmMatching: Sendable {
+struct CompletedRhythmMatchingTrial: Sendable {
     let tempo: TempoBPM
     let expectedOffset: RhythmOffset
     let userOffset: RhythmOffset

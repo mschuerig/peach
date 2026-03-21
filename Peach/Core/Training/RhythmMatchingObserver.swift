@@ -1,5 +1,5 @@
 import Foundation
 
 protocol RhythmMatchingObserver {
-    func rhythmMatchingCompleted(_ result: CompletedRhythmMatching)
+    func rhythmMatchingCompleted(_ result: CompletedRhythmMatchingTrial)
 }

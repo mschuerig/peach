@@ -2,7 +2,7 @@ import SwiftData
 import Foundation
 
 @Model
-final class RhythmComparisonRecord {
+final class RhythmOffsetDetectionRecord {
     var tempoBPM: Int
 
     /// Signed offset in milliseconds: negative = early, positive = late

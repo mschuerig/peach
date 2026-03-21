@@ -26,8 +26,8 @@ struct TrainingDisciplineTests {
         #expect(TrainingDiscipline.intervalPitchMatching.slug == "interval-matching")
     }
 
-    @Test("slug returns rhythm-comparison for rhythm comparison")
-    func slugRhythmComparison() async {
+    @Test("slug returns rhythm-offset-detection for rhythm offset detection")
+    func slugRhythmOffsetDetection() async {
         #expect(TrainingDiscipline.rhythmOffsetDetection.slug == "rhythm-offset-detection")
     }
 

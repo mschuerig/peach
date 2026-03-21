@@ -2,8 +2,8 @@ import Foundation
 import Testing
 @testable import Peach
 
-@Suite("CompletedRhythmMatching")
-struct CompletedRhythmMatchingTests {
+@Suite("CompletedRhythmMatchingTrial")
+struct CompletedRhythmMatchingTrialTests {
 
     @Test("stored properties are accessible and correct")
     func storedPropertiesAreAccessibleAndCorrect() async {
@@ -12,7 +12,7 @@ struct CompletedRhythmMatchingTests {
         let userOffset = RhythmOffset(.milliseconds(-25))
         let timestamp = Date(timeIntervalSince1970: 2000)
 
-        let result = CompletedRhythmMatching(
+        let result = CompletedRhythmMatchingTrial(
             tempo: tempo,
             expectedOffset: expectedOffset,
             userOffset: userOffset,
@@ -30,7 +30,7 @@ struct CompletedRhythmMatchingTests {
         let expected = RhythmOffset(.zero)
         let user = RhythmOffset(.milliseconds(42))
 
-        let result = CompletedRhythmMatching(
+        let result = CompletedRhythmMatchingTrial(
             tempo: TempoBPM(120),
             expectedOffset: expected,
             userOffset: user
@@ -44,7 +44,7 @@ struct CompletedRhythmMatchingTests {
     @Test("default timestamp is populated")
     func defaultTimestampIsPopulated() async {
         let before = Date()
-        let result = CompletedRhythmMatching(
+        let result = CompletedRhythmMatchingTrial(
             tempo: TempoBPM(120),
             expectedOffset: RhythmOffset(.zero),
             userOffset: RhythmOffset(.milliseconds(10))
@@ -57,13 +57,13 @@ struct CompletedRhythmMatchingTests {
 
     @Test("conforms to Sendable")
     func conformsToSendable() async {
-        let result = CompletedRhythmMatching(
+        let result = CompletedRhythmMatchingTrial(
             tempo: TempoBPM(120),
             expectedOffset: RhythmOffset(.zero),
             userOffset: RhythmOffset(.milliseconds(5))
         )
 
         let sendable: any Sendable = result
-        #expect(sendable is CompletedRhythmMatching)
+        #expect(sendable is CompletedRhythmMatchingTrial)
     }
 }

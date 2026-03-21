@@ -3,14 +3,14 @@ import SwiftData
 import Foundation
 @testable import Peach
 
-@Suite("RhythmComparisonRecord Tests")
-struct RhythmComparisonRecordTests {
+@Suite("RhythmOffsetDetectionRecord Tests")
+struct RhythmOffsetDetectionRecordTests {
 
     // MARK: - Test Helpers
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: RhythmComparisonRecord.self, configurations: config)
+        return try ModelContainer(for: RhythmOffsetDetectionRecord.self, configurations: config)
     }
 
     // MARK: - Field Storage Tests
@@ -21,7 +21,7 @@ struct RhythmComparisonRecordTests {
         let context = ModelContext(container)
 
         let timestamp = Date()
-        let record = RhythmComparisonRecord(
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: 120,
             offsetMs: -15.3,
             isCorrect: true,
@@ -31,7 +31,7 @@ struct RhythmComparisonRecordTests {
         context.insert(record)
         try context.save()
 
-        let descriptor = FetchDescriptor<RhythmComparisonRecord>()
+        let descriptor = FetchDescriptor<RhythmOffsetDetectionRecord>()
         let fetched = try context.fetch(descriptor)
 
         #expect(fetched.count == 1)
@@ -44,7 +44,7 @@ struct RhythmComparisonRecordTests {
     @Test("Default timestamp is populated")
     func defaultTimestamp() async throws {
         let before = Date()
-        let record = RhythmComparisonRecord(
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: 90,
             offsetMs: 5.0,
             isCorrect: false
@@ -60,7 +60,7 @@ struct RhythmComparisonRecordTests {
         let container = try makeTestContainer()
         let context = ModelContext(container)
 
-        let record = RhythmComparisonRecord(
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: 100,
             offsetMs: -25.7,
             isCorrect: false
@@ -69,7 +69,7 @@ struct RhythmComparisonRecordTests {
         context.insert(record)
         try context.save()
 
-        let descriptor = FetchDescriptor<RhythmComparisonRecord>()
+        let descriptor = FetchDescriptor<RhythmOffsetDetectionRecord>()
         let fetched = try context.fetch(descriptor)
 
         #expect(fetched.count == 1)
@@ -81,7 +81,7 @@ struct RhythmComparisonRecordTests {
         let container = try makeTestContainer()
         let context = ModelContext(container)
 
-        let record = RhythmComparisonRecord(
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: 100,
             offsetMs: 30.2,
             isCorrect: true
@@ -90,7 +90,7 @@ struct RhythmComparisonRecordTests {
         context.insert(record)
         try context.save()
 
-        let descriptor = FetchDescriptor<RhythmComparisonRecord>()
+        let descriptor = FetchDescriptor<RhythmOffsetDetectionRecord>()
         let fetched = try context.fetch(descriptor)
 
         #expect(fetched.count == 1)
@@ -103,7 +103,7 @@ struct RhythmComparisonRecordTests {
         let context = ModelContext(container)
 
         let timestamp = Date()
-        let record = RhythmComparisonRecord(
+        let record = RhythmOffsetDetectionRecord(
             tempoBPM: 200,
             offsetMs: -0.5,
             isCorrect: true,
@@ -113,7 +113,7 @@ struct RhythmComparisonRecordTests {
         context.insert(record)
         try context.save()
 
-        let descriptor = FetchDescriptor<RhythmComparisonRecord>()
+        let descriptor = FetchDescriptor<RhythmOffsetDetectionRecord>()
         let fetched = try context.fetch(descriptor)
 
         #expect(fetched.count == 1)

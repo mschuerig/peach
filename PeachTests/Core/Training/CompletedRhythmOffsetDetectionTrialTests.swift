@@ -2,8 +2,8 @@ import Foundation
 import Testing
 @testable import Peach
 
-@Suite("CompletedRhythmComparison")
-struct CompletedRhythmComparisonTests {
+@Suite("CompletedRhythmOffsetDetectionTrial")
+struct CompletedRhythmOffsetDetectionTrialTests {
 
     @Test("stored properties are accessible and correct")
     func storedPropertiesAreAccessibleAndCorrect() async {
@@ -11,7 +11,7 @@ struct CompletedRhythmComparisonTests {
         let offset = RhythmOffset(.milliseconds(50))
         let timestamp = Date(timeIntervalSince1970: 1000)
 
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: tempo,
             offset: offset,
             isCorrect: true,
@@ -26,7 +26,7 @@ struct CompletedRhythmComparisonTests {
 
     @Test("isCorrect stores false value")
     func isCorrectStoresFalseValue() async {
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(90),
             offset: RhythmOffset(.milliseconds(-30)),
             isCorrect: false,
@@ -39,7 +39,7 @@ struct CompletedRhythmComparisonTests {
     @Test("default timestamp is populated")
     func defaultTimestampIsPopulated() async {
         let before = Date()
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(120),
             offset: RhythmOffset(.zero),
             isCorrect: true
@@ -52,13 +52,13 @@ struct CompletedRhythmComparisonTests {
 
     @Test("conforms to Sendable")
     func conformsToSendable() async {
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(120),
             offset: RhythmOffset(.milliseconds(10)),
             isCorrect: true
         )
 
         let sendable: any Sendable = result
-        #expect(sendable is CompletedRhythmComparison)
+        #expect(sendable is CompletedRhythmOffsetDetectionTrial)
     }
 }

@@ -13,13 +13,13 @@ struct ProgressTimelineTests {
     private func makeTimeline(
         pitchComparisonRecords: [PitchDiscriminationRecord] = [],
         pitchMatchingRecords: [PitchMatchingRecord] = [],
-        rhythmComparisonRecords: [RhythmComparisonRecord] = [],
+        rhythmOffsetDetectionRecords: [RhythmOffsetDetectionRecord] = [],
         rhythmMatchingRecords: [RhythmMatchingRecord] = []
     ) -> ProgressTimeline {
         let profile = PerceptualProfile { builder in
             MetricPointMapper.feedPitchDiscriminations(pitchComparisonRecords, into: builder)
             MetricPointMapper.feedPitchMatchings(pitchMatchingRecords, into: builder)
-            MetricPointMapper.feedRhythmComparisons(rhythmComparisonRecords, into: builder)
+            MetricPointMapper.feedRhythmOffsetDetections(rhythmOffsetDetectionRecords, into: builder)
             MetricPointMapper.feedRhythmMatchings(rhythmMatchingRecords, into: builder)
         }
         return ProgressTimeline(profile: profile)
@@ -879,21 +879,21 @@ struct ProgressTimelineTests {
 
     // MARK: - Rhythm Mode Tests
 
-    @Test("rhythmComparison state is active with rhythm comparison data")
-    func rhythmComparisonActive() async {
+    @Test("rhythmOffsetDetection state is active with rhythm offset detection data")
+    func rhythmOffsetDetectionActive() async {
         let records = [
-            RhythmComparisonRecord(tempoBPM: 120, offsetMs: -20.0, isCorrect: true, timestamp: now.addingTimeInterval(-3600))
+            RhythmOffsetDetectionRecord(tempoBPM: 120, offsetMs: -20.0, isCorrect: true, timestamp: now.addingTimeInterval(-3600))
         ]
-        let timeline = makeTimeline(rhythmComparisonRecords: records)
+        let timeline = makeTimeline(rhythmOffsetDetectionRecords: records)
         #expect(timeline.state(for: .rhythmOffsetDetection) == .active)
     }
 
-    @Test("rhythmComparison remains noData when only incorrect records exist")
-    func rhythmComparisonNoDataWhenIncorrect() async {
+    @Test("rhythmOffsetDetection remains noData when only incorrect records exist")
+    func rhythmOffsetDetectionNoDataWhenIncorrect() async {
         let records = [
-            RhythmComparisonRecord(tempoBPM: 120, offsetMs: -20.0, isCorrect: false, timestamp: now.addingTimeInterval(-3600))
+            RhythmOffsetDetectionRecord(tempoBPM: 120, offsetMs: -20.0, isCorrect: false, timestamp: now.addingTimeInterval(-3600))
         ]
-        let timeline = makeTimeline(rhythmComparisonRecords: records)
+        let timeline = makeTimeline(rhythmOffsetDetectionRecords: records)
         #expect(timeline.state(for: .rhythmOffsetDetection) == .noData)
     }
 
@@ -906,17 +906,17 @@ struct ProgressTimelineTests {
         #expect(timeline.state(for: .rhythmMatching) == .active)
     }
 
-    @Test("rhythmComparison buckets are produced from rhythm data")
-    func rhythmComparisonBuckets() async {
+    @Test("rhythmOffsetDetection buckets are produced from rhythm data")
+    func rhythmOffsetDetectionBuckets() async {
         let records = (0..<5).map { i in
-            RhythmComparisonRecord(
+            RhythmOffsetDetectionRecord(
                 tempoBPM: 120,
                 offsetMs: -20.0 + Double(i),
                 isCorrect: true,
                 timestamp: now.addingTimeInterval(-3600 + Double(i) * 60)
             )
         }
-        let timeline = makeTimeline(rhythmComparisonRecords: records)
+        let timeline = makeTimeline(rhythmOffsetDetectionRecords: records)
         let buckets = timeline.buckets(for: .rhythmOffsetDetection)
         #expect(!buckets.isEmpty)
         let totalRecords = buckets.reduce(0) { $0 + $1.recordCount }
@@ -927,11 +927,11 @@ struct ProgressTimelineTests {
     func rhythmModesMergeAcrossKeys() async {
         let records = [
             // slow tempo (60 BPM), early
-            RhythmComparisonRecord(tempoBPM: 60, offsetMs: -10.0, isCorrect: true, timestamp: now.addingTimeInterval(-3600)),
+            RhythmOffsetDetectionRecord(tempoBPM: 60, offsetMs: -10.0, isCorrect: true, timestamp: now.addingTimeInterval(-3600)),
             // fast tempo (180 BPM), late
-            RhythmComparisonRecord(tempoBPM: 180, offsetMs: 15.0, isCorrect: true, timestamp: now.addingTimeInterval(-3500)),
+            RhythmOffsetDetectionRecord(tempoBPM: 180, offsetMs: 15.0, isCorrect: true, timestamp: now.addingTimeInterval(-3500)),
         ]
-        let timeline = makeTimeline(rhythmComparisonRecords: records)
+        let timeline = makeTimeline(rhythmOffsetDetectionRecords: records)
         #expect(timeline.recordCount(for: .rhythmOffsetDetection) == 2)
         #expect(timeline.currentEWMA(for: .rhythmOffsetDetection) != nil)
     }

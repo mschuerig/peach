@@ -27,7 +27,7 @@ struct PeachApp: App {
             let container = try ModelContainer(
                 for: PitchDiscriminationRecord.self,
                 PitchMatchingRecord.self,
-                RhythmComparisonRecord.self,
+                RhythmOffsetDetectionRecord.self,
                 RhythmMatchingRecord.self
             )
             _modelContainer = State(wrappedValue: container)

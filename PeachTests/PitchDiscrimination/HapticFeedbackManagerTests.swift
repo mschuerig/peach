@@ -2,42 +2,42 @@ import Testing
 import Foundation
 @testable import Peach
 
-@Suite("HapticFeedbackManager RhythmComparisonObserver Tests")
+@Suite("HapticFeedbackManager RhythmOffsetDetectionObserver Tests")
 struct HapticFeedbackManagerRhythmTests {
 
-    @Test("rhythmComparisonCompleted triggers haptic on incorrect answer")
+    @Test("rhythmOffsetDetectionCompleted triggers haptic on incorrect answer")
     func triggersHapticOnIncorrect() async {
         let manager = HapticFeedbackManager()
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(120),
             offset: RhythmOffset(.milliseconds(-20)),
             isCorrect: false
         )
         // Calling on device would trigger haptic; on simulator we verify no crash.
-        manager.rhythmComparisonCompleted(result)
+        manager.rhythmOffsetDetectionCompleted(result)
     }
 
-    @Test("rhythmComparisonCompleted does NOT trigger on correct answer")
+    @Test("rhythmOffsetDetectionCompleted does NOT trigger on correct answer")
     func noHapticOnCorrect() async {
         let manager = HapticFeedbackManager()
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(120),
             offset: RhythmOffset(.milliseconds(-20)),
             isCorrect: true
         )
-        manager.rhythmComparisonCompleted(result)
+        manager.rhythmOffsetDetectionCompleted(result)
     }
 
-    @Test("mock tracks rhythm comparison calls")
+    @Test("mock tracks rhythm offset detection calls")
     func mockTracksRhythmCalls() async {
         let mock = MockHapticFeedbackManager()
-        let result = CompletedRhythmComparison(
+        let result = CompletedRhythmOffsetDetectionTrial(
             tempo: TempoBPM(120),
             offset: RhythmOffset(.milliseconds(-20)),
             isCorrect: false
         )
-        mock.rhythmComparisonCompleted(result)
-        #expect(mock.rhythmComparisonCompletedCallCount == 1)
-        #expect(mock.lastRhythmComparison != nil)
+        mock.rhythmOffsetDetectionCompleted(result)
+        #expect(mock.rhythmOffsetDetectionCompletedCallCount == 1)
+        #expect(mock.lastRhythmOffsetDetection != nil)
     }
 }

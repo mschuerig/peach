@@ -107,10 +107,10 @@ extension PerceptualProfile: PitchMatchingObserver {
     }
 }
 
-// MARK: - RhythmComparisonObserver
+// MARK: - RhythmOffsetDetectionObserver
 
-extension PerceptualProfile: RhythmComparisonObserver {
-    func rhythmComparisonCompleted(_ result: CompletedRhythmComparison) {
+extension PerceptualProfile: RhythmOffsetDetectionObserver {
+    func rhythmOffsetDetectionCompleted(_ result: CompletedRhythmOffsetDetectionTrial) {
         guard result.isCorrect else { return }
         guard let range = TempoRange.range(for: result.tempo) else { return }
         update(.rhythm(.rhythmOffsetDetection, range, result.offset.direction),
@@ -122,7 +122,7 @@ extension PerceptualProfile: RhythmComparisonObserver {
 // MARK: - RhythmMatchingObserver
 
 extension PerceptualProfile: RhythmMatchingObserver {
-    func rhythmMatchingCompleted(_ result: CompletedRhythmMatching) {
+    func rhythmMatchingCompleted(_ result: CompletedRhythmMatchingTrial) {
         guard let range = TempoRange.range(for: result.tempo) else { return }
         update(.rhythm(.rhythmMatching, range, result.userOffset.direction),
                timestamp: result.timestamp,

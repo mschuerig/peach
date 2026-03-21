@@ -37,8 +37,8 @@ struct TrainingDisciplineConfigTests {
         #expect(config.sessionGap == .seconds(1800))
     }
 
-    @Test("rhythm comparison has expected parameters")
-    func rhythmComparison() async {
+    @Test("rhythm offset detection has expected parameters")
+    func rhythmOffsetDetection() async {
         let config = TrainingDisciplineConfig.rhythmOffsetDetection
         #expect(config.optimalBaseline == 15.0)
         #expect(config.unitLabel == "ms")

@@ -1,6 +1,6 @@
 import Foundation
 
-struct CompletedRhythmComparison: Sendable {
+struct CompletedRhythmOffsetDetectionTrial: Sendable {
     let tempo: TempoBPM
     let offset: RhythmOffset
     let isCorrect: Bool
