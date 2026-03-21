@@ -12,7 +12,7 @@ import OSLog
 ///   Kazez, D., Kazez, B., Zembar, M. J., & Andrews, D. (2001).
 ///   A Computer Program for Testing (and Improving?) Pitch Perception.
 ///   College Music Society National Conference.
-final class KazezNoteStrategy: NextPitchComparisonStrategy {
+final class KazezNoteStrategy: NextPitchDiscriminationStrategy {
 
     // MARK: - Algorithm Parameters
 
@@ -34,20 +34,20 @@ final class KazezNoteStrategy: NextPitchComparisonStrategy {
         logger.info("KazezNoteStrategy initialized")
     }
 
-    // MARK: - NextPitchComparisonStrategy Protocol
+    // MARK: - NextPitchDiscriminationStrategy Protocol
 
-    func nextPitchComparison(
+    func nextPitchDiscriminationTrial(
         profile: TrainingProfile,
         settings: PitchComparisonTrainingSettings,
-        lastPitchComparison: CompletedPitchComparison?,
+        lastTrial: CompletedPitchDiscriminationTrial?,
         interval: DirectedInterval
-    ) -> PitchComparison {
+    ) -> PitchDiscriminationTrial {
         let magnitude: Double
 
         let difficultyRange = settings.minCentDifference.rawValue...settings.maxCentDifference.rawValue
 
-        if let last = lastPitchComparison {
-            let p = last.pitchComparison.targetNote.offset.magnitude
+        if let last = lastTrial {
+            let p = last.trial.targetNote.offset.magnitude
             magnitude = last.isCorrect
                 ? kazezNarrow(p: p).clamped(to: difficultyRange)
                 : kazezWiden(p: p).clamped(to: difficultyRange)
@@ -73,7 +73,7 @@ final class KazezNoteStrategy: NextPitchComparisonStrategy {
 
         logger.info("note=\(note.rawValue), interval=\(interval.interval.semitones), target=\(targetBaseNote.rawValue), offset=\(magnitude, format: .fixed(precision: 1))")
 
-        return PitchComparison(
+        return PitchDiscriminationTrial(
             referenceNote: note,
             targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(signed))
         )

@@ -10,7 +10,7 @@ struct TrainingDataExporterTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchDiscriminationRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
     }
 
     private func fixedDate(minutesOffset: Double = 0) -> Date {
@@ -33,7 +33,7 @@ struct TrainingDataExporterTests {
     func exportMixedRecords() async throws {
         let store = try makeStore()
 
-        let comparison = PitchComparisonRecord(
+        let comparison = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 1)
         )
@@ -75,7 +75,7 @@ struct TrainingDataExporterTests {
     func exportComparisonOnly() async throws {
         let store = try makeStore()
 
-        let record = PitchComparisonRecord(
+        let record = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate()
         )
@@ -132,7 +132,7 @@ struct TrainingDataExporterTests {
             referenceNote: 60, targetNote: 60, initialCentOffset: 10.0, userCentError: 1.0,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
         )
-        let comp1 = PitchComparisonRecord(
+        let comp1 = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 62, centOffset: 5.0, isCorrect: true,
             interval: 2, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 1)
         )
@@ -140,7 +140,7 @@ struct TrainingDataExporterTests {
             referenceNote: 64, targetNote: 64, initialCentOffset: 20.0, userCentError: -2.0,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 2)
         )
-        let comp2 = PitchComparisonRecord(
+        let comp2 = PitchDiscriminationRecord(
             referenceNote: 67, targetNote: 72, centOffset: -10.0, isCorrect: false,
             interval: 5, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 3)
         )
@@ -167,7 +167,7 @@ struct TrainingDataExporterTests {
         let store = try makeStore()
 
         let timestamp = fixedDate()
-        let comparison = PitchComparisonRecord(
+        let comparison = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: timestamp
         )
@@ -192,7 +192,7 @@ struct TrainingDataExporterTests {
     func csvStartsWithMetadataAndHeader() async throws {
         let store = try makeStore()
 
-        let record = PitchComparisonRecord(
+        let record = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 60, centOffset: 0.0, isCorrect: true,
             interval: 0, tuningSystem: "equalTemperament", timestamp: fixedDate()
         )
@@ -212,7 +212,7 @@ struct TrainingDataExporterTests {
     func rowCountEqualsRecordsPlusMetadataAndHeader() async throws {
         let store = try makeStore()
 
-        let comp = PitchComparisonRecord(
+        let comp = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
         )
@@ -241,7 +241,7 @@ struct TrainingDataExporterTests {
     func roundTripExportImport() async throws {
         let store = try makeStore()
 
-        let comparison = PitchComparisonRecord(
+        let comparison = PitchDiscriminationRecord(
             referenceNote: 60, targetNote: 64, centOffset: 15.5, isCorrect: true,
             interval: 4, tuningSystem: "equalTemperament", timestamp: fixedDate(minutesOffset: 0)
         )
@@ -256,10 +256,10 @@ struct TrainingDataExporterTests {
         let result = CSVImportParser.parse(csv)
 
         #expect(result.errors.isEmpty)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.pitchMatchings.count == 1)
 
-        let importedComp = result.pitchComparisons[0]
+        let importedComp = result.pitchDiscriminations[0]
         #expect(importedComp.referenceNote == 60)
         #expect(importedComp.targetNote == 64)
         #expect(importedComp.centOffset == 15.5)

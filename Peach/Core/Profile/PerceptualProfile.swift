@@ -80,11 +80,11 @@ final class PerceptualProfile: TrainingProfile {
     }
 }
 
-// MARK: - PitchComparisonObserver
+// MARK: - PitchDiscriminationObserver
 
-extension PerceptualProfile: PitchComparisonObserver {
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
-        let pc = completed.pitchComparison
+extension PerceptualProfile: PitchDiscriminationObserver {
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
+        let pc = completed.trial
         let interval = (try? Interval.between(pc.referenceNote, pc.targetNote.note))?.rawValue ?? 0
         let isUnison = interval == 0
         let mode: TrainingDiscipline = isUnison ? .unisonPitchDiscrimination : .intervalPitchDiscrimination

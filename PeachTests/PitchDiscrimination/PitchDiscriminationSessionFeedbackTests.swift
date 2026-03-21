@@ -1,15 +1,15 @@
 import Testing
 @testable import Peach
 
-/// Tests for PitchComparisonSession feedback state management (Story 3.3)
-@Suite("PitchComparisonSession Feedback Tests")
-struct PitchComparisonSessionFeedbackTests {
+/// Tests for PitchDiscriminationSession feedback state management (Story 3.3)
+@Suite("PitchDiscriminationSession Feedback Tests")
+struct PitchDiscriminationSessionFeedbackTests {
 
     // MARK: - Feedback State Tests
 
     @Test("Initial feedback state is hidden")
     func initialFeedbackState() async {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         #expect(f.session.showFeedback == false)
         #expect(f.session.isLastAnswerCorrect == nil)
@@ -17,7 +17,7 @@ struct PitchComparisonSessionFeedbackTests {
 
     @Test("Feedback shows after correct answer")
     func feedbackShowsAfterCorrectAnswer() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)
@@ -38,7 +38,7 @@ struct PitchComparisonSessionFeedbackTests {
 
     @Test("Feedback shows after incorrect answer")
     func feedbackShowsAfterIncorrectAnswer() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)
@@ -60,7 +60,7 @@ struct PitchComparisonSessionFeedbackTests {
 
     @Test("Feedback clears before next comparison")
     func feedbackClearsBeforeNextComparison() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)
@@ -88,7 +88,7 @@ struct PitchComparisonSessionFeedbackTests {
 
     @Test("Haptic fires on incorrect answer")
     func hapticFiresOnIncorrectAnswer() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)
@@ -103,13 +103,13 @@ struct PitchComparisonSessionFeedbackTests {
         f.session.handleAnswer(isHigher: !isSecondHigher)
 
         // Verify observer was notified with incorrect comparison
-        #expect(f.mockHaptic!.pitchComparisonCompletedCallCount == 1)
-        #expect(f.mockHaptic!.lastPitchComparison?.isCorrect == false)
+        #expect(f.mockHaptic!.pitchDiscriminationCompletedCallCount == 1)
+        #expect(f.mockHaptic!.lastTrial?.isCorrect == false)
     }
 
     @Test("Haptic does NOT fire on correct answer")
     func hapticDoesNotFireOnCorrectAnswer() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)
@@ -124,13 +124,13 @@ struct PitchComparisonSessionFeedbackTests {
         f.session.handleAnswer(isHigher: isSecondHigher)
 
         // Verify observer was notified with correct comparison
-        #expect(f.mockHaptic!.pitchComparisonCompletedCallCount == 1)
-        #expect(f.mockHaptic!.lastPitchComparison?.isCorrect == true)
+        #expect(f.mockHaptic!.pitchDiscriminationCompletedCallCount == 1)
+        #expect(f.mockHaptic!.lastTrial?.isCorrect == true)
     }
 
     @Test("Feedback state clears when training stops")
     func feedbackClearsWhenTrainingStops() async throws {
-        let f = makePitchComparisonSession(includeHaptic: true)
+        let f = makePitchDiscriminationSession(includeHaptic: true)
 
         // Start training
         f.session.start(settings: defaultTestSettings)

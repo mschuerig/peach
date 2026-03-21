@@ -11,7 +11,7 @@ struct TrainingDataStoreEdgeCaseTests {
 
     private func makeTestContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
+        return try ModelContainer(for: PitchDiscriminationRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
     }
 
     // MARK: - Edge Case Tests
@@ -22,13 +22,13 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record1 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
-        let record2 = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record1 = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record2 = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(record1)
         try store.save(record2)
 
-        let fetched = try store.fetchAllPitchComparisons()
+        let fetched = try store.fetchAllPitchDiscriminations()
         #expect(fetched.count == 2)
     }
 
@@ -38,13 +38,13 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let minRecord = PitchComparisonRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
-        let maxRecord = PitchComparisonRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
+        let minRecord = PitchDiscriminationRecord(referenceNote: 0, targetNote: 0, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let maxRecord = PitchDiscriminationRecord(referenceNote: 127, targetNote: 127, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
 
         try store.save(minRecord)
         try store.save(maxRecord)
 
-        let fetched = try store.fetchAllPitchComparisons()
+        let fetched = try store.fetchAllPitchDiscriminations()
         #expect(fetched.count == 2)
         #expect(fetched.contains { $0.referenceNote == 0 })
         #expect(fetched.contains { $0.referenceNote == 127 })
@@ -56,7 +56,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = PitchComparisonRecord(
+        let record = PitchDiscriminationRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: 12.3,
@@ -67,7 +67,7 @@ struct TrainingDataStoreEdgeCaseTests {
 
         try store.save(record)
 
-        let fetched = try store.fetchAllPitchComparisons()
+        let fetched = try store.fetchAllPitchDiscriminations()
         #expect(fetched.count == 1)
         #expect(fetched[0].centOffset == 12.3)
     }
@@ -80,11 +80,11 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {
-            _ = try store.fetchAllPitchComparisons()
+            _ = try store.fetchAllPitchDiscriminations()
         } catch let error as Peach.DataStoreError {
             switch error {
             case .fetchFailed(let message):
@@ -101,7 +101,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
 
         do {
             try store.save(record)
@@ -121,7 +121,7 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let record = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let record = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(record)
 
         do {
@@ -144,15 +144,15 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let existing = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let existing = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         try store.save(existing)
 
-        let newComparison = PitchComparisonRecord(referenceNote: 72, targetNote: 72, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
+        let newComparison = PitchDiscriminationRecord(referenceNote: 72, targetNote: 72, centOffset: 20.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament")
         let newMatching = PitchMatchingRecord(referenceNote: 69, targetNote: 69, initialCentOffset: 30.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
 
-        try store.replaceAllRecords(pitchComparisons: [newComparison], pitchMatchings: [newMatching])
+        try store.replaceAllRecords(pitchDiscriminations: [newComparison], pitchMatchings: [newMatching])
 
-        let comparisons = try store.fetchAllPitchComparisons()
+        let comparisons = try store.fetchAllPitchDiscriminations()
         let matchings = try store.fetchAllPitchMatchings()
 
         #expect(comparisons.count == 1)
@@ -167,14 +167,14 @@ struct TrainingDataStoreEdgeCaseTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let comparison = PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+        let comparison = PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 10.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         let matching = PitchMatchingRecord(referenceNote: 69, targetNote: 69, initialCentOffset: 30.0, userCentError: 5.0, interval: 0, tuningSystem: "equalTemperament")
         try store.save(comparison)
         try store.save(matching)
 
-        try store.replaceAllRecords(pitchComparisons: [], pitchMatchings: [])
+        try store.replaceAllRecords(pitchDiscriminations: [], pitchMatchings: [])
 
-        let comparisons = try store.fetchAllPitchComparisons()
+        let comparisons = try store.fetchAllPitchDiscriminations()
         let matchings = try store.fetchAllPitchMatchings()
 
         #expect(comparisons.isEmpty)
@@ -188,15 +188,15 @@ struct TrainingDataStoreEdgeCaseTests {
         let store = TrainingDataStore(modelContext: context)
 
         let comparisons = (0..<5).map { i in
-            PitchComparisonRecord(referenceNote: 60 + i, targetNote: 60 + i, centOffset: Double(i) * 10, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
+            PitchDiscriminationRecord(referenceNote: 60 + i, targetNote: 60 + i, centOffset: Double(i) * 10, isCorrect: true, interval: 0, tuningSystem: "equalTemperament")
         }
         let matchings = (0..<3).map { i in
             PitchMatchingRecord(referenceNote: 69 + i, targetNote: 69 + i, initialCentOffset: Double(i) * 15, userCentError: Double(i), interval: 0, tuningSystem: "equalTemperament")
         }
 
-        try store.replaceAllRecords(pitchComparisons: comparisons, pitchMatchings: matchings)
+        try store.replaceAllRecords(pitchDiscriminations: comparisons, pitchMatchings: matchings)
 
-        let fetchedComparisons = try store.fetchAllPitchComparisons()
+        let fetchedComparisons = try store.fetchAllPitchDiscriminations()
         let fetchedMatchings = try store.fetchAllPitchMatchings()
 
         #expect(fetchedComparisons.count == 5)

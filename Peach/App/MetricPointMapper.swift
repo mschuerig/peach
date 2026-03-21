@@ -8,13 +8,13 @@ enum MetricPointMapper {
 
     /// Feeds all training records from the data store into a profile builder.
     static func feedAllRecords(from dataStore: TrainingDataStore, into builder: PerceptualProfile.Builder) throws {
-        feedPitchComparisons(try dataStore.fetchAllPitchComparisons(), into: builder)
+        feedPitchDiscriminations(try dataStore.fetchAllPitchDiscriminations(), into: builder)
         feedPitchMatchings(try dataStore.fetchAllPitchMatchings(), into: builder)
         feedRhythmComparisons(try dataStore.fetchAllRhythmComparisons(), into: builder)
         feedRhythmMatchings(try dataStore.fetchAllRhythmMatchings(), into: builder)
     }
 
-    static func feedPitchComparisons(_ records: [PitchComparisonRecord], into builder: PerceptualProfile.Builder) {
+    static func feedPitchDiscriminations(_ records: [PitchDiscriminationRecord], into builder: PerceptualProfile.Builder) {
         for record in records {
             let mode: TrainingDiscipline = record.interval == 0 ? .unisonPitchDiscrimination : .intervalPitchDiscrimination
             builder.addPoint(

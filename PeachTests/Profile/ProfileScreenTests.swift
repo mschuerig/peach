@@ -17,8 +17,8 @@ struct ProfileScreenTests {
     @Test("PerceptualProfile environment key can be set and retrieved")
     func environmentKeySetAndGet() async throws {
         let profile = PerceptualProfile()
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 

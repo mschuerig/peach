@@ -17,7 +17,7 @@ protocol HapticFeedback {
 ///
 /// # Testing Note
 /// Haptics don't work in iOS Simulator - must test on real device.
-final class HapticFeedbackManager: HapticFeedback, PitchComparisonObserver {
+final class HapticFeedbackManager: HapticFeedback, PitchDiscriminationObserver {
     /// UIKit haptic generator
     private let generator: UIImpactFeedbackGenerator
 
@@ -44,12 +44,12 @@ final class HapticFeedbackManager: HapticFeedback, PitchComparisonObserver {
         generator.prepare()
     }
 
-    // MARK: - PitchComparisonObserver
+    // MARK: - PitchDiscriminationObserver
 
     /// Called when a comparison is completed - triggers haptic feedback if incorrect
     ///
     /// - Parameter completed: The completed comparison with result
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
         if !completed.isCorrect {
             playIncorrectFeedback()
         }

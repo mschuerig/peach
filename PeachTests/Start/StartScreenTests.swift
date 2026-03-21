@@ -27,12 +27,12 @@ struct StartScreenTests {
 
     @Test("Comparison Screen can be instantiated for unison mode")
     func comparisonScreenCanBeInstantiatedUnison() async {
-        _ = PitchComparisonScreen(isIntervalMode: false)
+        _ = PitchDiscriminationScreen(isIntervalMode: false)
     }
 
     @Test("Comparison Screen can be instantiated for interval mode")
     func comparisonScreenCanBeInstantiatedInterval() async {
-        _ = PitchComparisonScreen(isIntervalMode: true)
+        _ = PitchDiscriminationScreen(isIntervalMode: true)
     }
 
     @Test("Pitch Matching Screen can be instantiated for interval mode")
@@ -68,8 +68,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination enum has comparison case with interval mode flag")
     func navigationDestinationHasComparison() async {
-        let destination = NavigationDestination.pitchComparison(isIntervalMode: false)
-        #expect(destination == NavigationDestination.pitchComparison(isIntervalMode: false))
+        let destination = NavigationDestination.pitchDiscrimination(isIntervalMode: false)
+        #expect(destination == NavigationDestination.pitchDiscrimination(isIntervalMode: false))
     }
 
     @Test("NavigationDestination enum has pitchMatching case with interval mode flag")
@@ -92,8 +92,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination enum is Hashable")
     func navigationDestinationIsHashable() async {
-        let destination1 = NavigationDestination.pitchComparison(isIntervalMode: false)
-        let destination2 = NavigationDestination.pitchComparison(isIntervalMode: false)
+        let destination1 = NavigationDestination.pitchDiscrimination(isIntervalMode: false)
+        let destination2 = NavigationDestination.pitchDiscrimination(isIntervalMode: false)
         let destination3 = NavigationDestination.settings
 
         #expect(destination1.hashValue == destination2.hashValue)
@@ -102,8 +102,8 @@ struct StartScreenTests {
 
     @Test("NavigationDestination comparison cases with different modes are not equal")
     func navigationDestinationComparisonDifferentModes() async {
-        let unison = NavigationDestination.pitchComparison(isIntervalMode: false)
-        let interval = NavigationDestination.pitchComparison(isIntervalMode: true)
+        let unison = NavigationDestination.pitchDiscrimination(isIntervalMode: false)
+        let interval = NavigationDestination.pitchDiscrimination(isIntervalMode: true)
         #expect(unison != interval)
     }
 
@@ -116,10 +116,10 @@ struct StartScreenTests {
 
     @Test("NavigationDestination cases are not equal when different")
     func navigationDestinationCasesAreDistinct() async {
-        #expect(NavigationDestination.pitchComparison(isIntervalMode: false) != NavigationDestination.settings)
+        #expect(NavigationDestination.pitchDiscrimination(isIntervalMode: false) != NavigationDestination.settings)
         #expect(NavigationDestination.settings != NavigationDestination.profile)
-        #expect(NavigationDestination.pitchComparison(isIntervalMode: false) != NavigationDestination.profile)
-        #expect(NavigationDestination.pitchComparison(isIntervalMode: false) != NavigationDestination.pitchMatching(isIntervalMode: false))
+        #expect(NavigationDestination.pitchDiscrimination(isIntervalMode: false) != NavigationDestination.profile)
+        #expect(NavigationDestination.pitchDiscrimination(isIntervalMode: false) != NavigationDestination.pitchMatching(isIntervalMode: false))
     }
 
     // MARK: - Info Screen Content Tests
@@ -194,8 +194,8 @@ struct StartScreenTests {
 
     @Test("All navigation destinations can be created")
     func allNavigationDestinationsCanBeCreated() async {
-        let comparison = PitchComparisonScreen(isIntervalMode: false)
-        let intervalComparison = PitchComparisonScreen(isIntervalMode: true)
+        let comparison = PitchDiscriminationScreen(isIntervalMode: false)
+        let intervalComparison = PitchDiscriminationScreen(isIntervalMode: true)
         let pitchMatching = PitchMatchingScreen(isIntervalMode: false)
         let intervalPitchMatching = PitchMatchingScreen(isIntervalMode: true)
         let settings = SettingsScreen()

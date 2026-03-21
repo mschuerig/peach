@@ -12,10 +12,10 @@ struct PerceptualProfileTests {
         targetNote: MIDINote = MIDINote(60),
         centOffset: Cents,
         isCorrect: Bool = true
-    ) -> CompletedPitchComparison {
+    ) -> CompletedPitchDiscriminationTrial {
         let isTargetHigher = centOffset > 0
-        return CompletedPitchComparison(
-            pitchComparison: PitchComparison(
+        return CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(
                 referenceNote: referenceNote,
                 targetNote: DetunedMIDINote(note: targetNote, offset: centOffset)
             ),
@@ -55,7 +55,7 @@ struct PerceptualProfileTests {
     func singleUpdateSetsMean() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 50))
 
         #expect(profile.comparisonMean(for: .prime) == 50.0)
     }
@@ -64,8 +64,8 @@ struct PerceptualProfileTests {
     func multipleUpdatesComputeMean() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 40))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 50))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 40))
 
         #expect(profile.comparisonMean(for: .prime) == 45.0) // (50+40)/2
     }
@@ -74,9 +74,9 @@ struct PerceptualProfileTests {
     func comparisonMeanComputation() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 30))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 40))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 50))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 30))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 40))
 
         #expect(profile.comparisonMean(for: .prime) == 40.0) // (50+30+40)/3
     }
@@ -85,30 +85,30 @@ struct PerceptualProfileTests {
     func onlyCorrectAnswersContribute() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50, isCorrect: true))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 200, isCorrect: false))
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 60, isCorrect: true))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 50, isCorrect: true))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 200, isCorrect: false))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 60, isCorrect: true))
 
         #expect(profile.comparisonMean(for: .prime) == 55.0) // (50+60)/2, incorrect answer excluded
     }
 
     // MARK: - Observer Integration
 
-    @Test("PitchComparisonObserver routes interval comparison to correct mode")
+    @Test("PitchDiscriminationObserver routes interval comparison to correct mode")
     func comparisonObserverRoutesIntervalCorrectly() async {
         let profile = PerceptualProfile()
 
-        let pitchComparison = PitchComparison(
+        let trial = PitchDiscriminationTrial(
             referenceNote: MIDINote(60),
             targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(25.0))
         )
-        let completed = CompletedPitchComparison(
-            pitchComparison: pitchComparison,
+        let completed = CompletedPitchDiscriminationTrial(
+            trial: trial,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
 
-        profile.pitchComparisonCompleted(completed)
+        profile.pitchDiscriminationCompleted(completed)
 
         #expect(profile.comparisonMean(for: .up(.perfectFifth)) == 25.0)
         #expect(profile.hasData(for: .intervalPitchDiscrimination))
@@ -151,17 +151,17 @@ struct PerceptualProfileTests {
         let profile = PerceptualProfile()
 
         // Unison comparison
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 10))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 10))
         // Interval comparison
-        let intervalComparison = CompletedPitchComparison(
-            pitchComparison: PitchComparison(
+        let intervalComparison = CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(
                 referenceNote: MIDINote(60),
                 targetNote: DetunedMIDINote(note: MIDINote(67), offset: Cents(20.0))
             ),
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(intervalComparison)
+        profile.pitchDiscriminationCompleted(intervalComparison)
 
         #expect(profile.recordCount(for: .unisonPitchDiscrimination) == 1)
         #expect(profile.recordCount(for: .intervalPitchDiscrimination) == 1)
@@ -191,7 +191,7 @@ struct PerceptualProfileTests {
     func resetAllClearsAllModes() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 10))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 10))
         profile.pitchMatchingCompleted(makeMatchingCompleted(centError: 5))
 
         profile.resetAll()
@@ -473,7 +473,7 @@ struct PerceptualProfileTests {
     func resetAllClearsEverythingIncludingRhythm() async {
         let profile = PerceptualProfile()
 
-        profile.pitchComparisonCompleted(makeComparisonCompleted(centOffset: 50))
+        profile.pitchDiscriminationCompleted(makeComparisonCompleted(centOffset: 50))
         profile.rhythmComparisonCompleted(CompletedRhythmComparison(
             tempo: TempoBPM(120), offset: RhythmOffset(.milliseconds(-10)), isCorrect: true
         ))

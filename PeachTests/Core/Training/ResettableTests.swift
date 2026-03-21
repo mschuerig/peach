@@ -22,13 +22,13 @@ struct ResettableTests {
         #expect(mock2.resetCallCount == 1)
     }
 
-    @Test("PitchComparisonSession.resetTrainingData calls reset on all resettables")
+    @Test("PitchDiscriminationSession.resetTrainingData calls reset on all resettables")
     func resetTrainingDataCallsAllResettables() async throws {
         let mock1 = MockResettable()
         let mock2 = MockResettable()
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: MockNotePlayer(),
-            strategy: MockNextPitchComparisonStrategy(),
+            strategy: MockNextPitchDiscriminationStrategy(),
             profile: PerceptualProfile(),
             resettables: [mock1, mock2]
         )

@@ -346,12 +346,12 @@ struct SettingsTests {
         let profile = PerceptualProfile()
 
         // Add some training data via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(5.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(5.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(3.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(3.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
         #expect(profile.comparisonMean(for: .prime) != nil)
@@ -384,11 +384,11 @@ struct SettingsTests {
     @Test("Reset deletes all records from SwiftData")
     func resetDeletesAllRecords() async throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: PitchComparisonRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
+        let container = try ModelContainer(for: PitchDiscriminationRecord.self, PitchMatchingRecord.self, RhythmComparisonRecord.self, RhythmMatchingRecord.self, configurations: config)
         let context = container.mainContext
 
         // Insert comparison records
-        let comparison1 = PitchComparisonRecord(
+        let comparison1 = PitchDiscriminationRecord(
             referenceNote: 60,
             targetNote: 61,
             centOffset: 2.0,
@@ -396,7 +396,7 @@ struct SettingsTests {
             interval: 1,
             tuningSystem: "equalTemperament"
         )
-        let comparison2 = PitchComparisonRecord(
+        let comparison2 = PitchDiscriminationRecord(
             referenceNote: 72,
             targetNote: 73,
             centOffset: 2.5,
@@ -420,7 +420,7 @@ struct SettingsTests {
         try context.save()
 
         // Verify records exist
-        let comparisonCountBefore = try context.fetchCount(FetchDescriptor<PitchComparisonRecord>())
+        let comparisonCountBefore = try context.fetchCount(FetchDescriptor<PitchDiscriminationRecord>())
         #expect(comparisonCountBefore == 2)
         let pitchCountBefore = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
         #expect(pitchCountBefore == 1)
@@ -430,7 +430,7 @@ struct SettingsTests {
         try dataStore.deleteAll()
 
         // Verify all records deleted
-        let comparisonCountAfter = try context.fetchCount(FetchDescriptor<PitchComparisonRecord>())
+        let comparisonCountAfter = try context.fetchCount(FetchDescriptor<PitchDiscriminationRecord>())
         #expect(comparisonCountAfter == 0)
         let pitchCountAfter = try context.fetchCount(FetchDescriptor<PitchMatchingRecord>())
         #expect(pitchCountAfter == 0)

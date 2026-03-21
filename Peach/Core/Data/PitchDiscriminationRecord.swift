@@ -2,7 +2,7 @@ import SwiftData
 import Foundation
 
 @Model
-final class PitchComparisonRecord {
+final class PitchDiscriminationRecord {
     /// Reference note - always an exact MIDI note (0-127)
     var referenceNote: Int
 

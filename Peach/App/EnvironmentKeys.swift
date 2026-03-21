@@ -21,12 +21,12 @@ extension EnvironmentValues {
 // MARK: - Session Environment Keys
 
 extension EnvironmentValues {
-    @Entry var pitchComparisonSession: PitchComparisonSession = {
-        let dataStore = PreviewPitchComparisonDataStore()
+    @Entry var pitchDiscriminationSession: PitchDiscriminationSession = {
+        let dataStore = PreviewPitchDiscriminationDataStore()
         let profile = PerceptualProfile()
-        let strategy = PreviewPitchComparisonStrategy()
-        let observers: [PitchComparisonObserver] = [dataStore, profile]
-        return PitchComparisonSession(
+        let strategy = PreviewPitchDiscriminationStrategy()
+        let observers: [PitchDiscriminationObserver] = [dataStore, profile]
+        return PitchDiscriminationSession(
             notePlayer: PreviewNotePlayer(),
             strategy: strategy,
             profile: profile,
@@ -57,26 +57,26 @@ private final class PreviewPlaybackHandle: PlaybackHandle {
     func adjustFrequency(_ frequency: Frequency) async throws {}
 }
 
-private final class PreviewPitchComparisonDataStore: PitchComparisonRecordStoring, PitchComparisonObserver {
-    func save(_ record: PitchComparisonRecord) throws {}
-    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] { [] }
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {}
+private final class PreviewPitchDiscriminationDataStore: PitchDiscriminationRecordStoring, PitchDiscriminationObserver {
+    func save(_ record: PitchDiscriminationRecord) throws {}
+    func fetchAllPitchDiscriminations() throws -> [PitchDiscriminationRecord] { [] }
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {}
 }
 
 private struct PreviewSoundSourceProvider: SoundSourceProvider {
     var availableSources: [any SoundSourceID] { [] }
 }
 
-private final class PreviewPitchComparisonStrategy: NextPitchComparisonStrategy {
-    func nextPitchComparison(
+private final class PreviewPitchDiscriminationStrategy: NextPitchDiscriminationStrategy {
+    func nextPitchDiscriminationTrial(
         profile: TrainingProfile,
         settings: PitchComparisonTrainingSettings,
-        lastPitchComparison: CompletedPitchComparison?,
+        lastTrial: CompletedPitchDiscriminationTrial?,
         interval: DirectedInterval
-    ) -> PitchComparison {
+    ) -> PitchDiscriminationTrial {
         let referenceNote = MIDINote(60)
         let targetBaseNote = referenceNote.transposed(by: interval)
-        return PitchComparison(referenceNote: referenceNote, targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(50.0)))
+        return PitchDiscriminationTrial(referenceNote: referenceNote, targetNote: DetunedMIDINote(note: targetBaseNote, offset: Cents(50.0)))
     }
 }
 

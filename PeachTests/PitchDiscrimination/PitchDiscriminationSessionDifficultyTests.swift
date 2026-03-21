@@ -1,21 +1,21 @@
 import Testing
 @testable import Peach
 
-/// Tests for difficulty display support in PitchComparisonSession (session best tracking, current difficulty)
-@Suite("PitchComparisonSession Difficulty Tests")
-struct PitchComparisonSessionDifficultyTests {
+/// Tests for difficulty display support in PitchDiscriminationSession (session best tracking, current difficulty)
+@Suite("PitchDiscriminationSession Difficulty Tests")
+struct PitchDiscriminationSessionDifficultyTests {
 
     // MARK: - currentDifficulty Tests
 
     @Test("currentDifficulty is nil before training starts")
     func currentDifficultyNilBeforeTraining() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
         #expect(f.session.currentDifficulty == nil)
     }
 
     @Test("currentDifficulty returns cent difference of current comparison during training")
     func currentDifficultyReturnsCentDifference() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -25,7 +25,7 @@ struct PitchComparisonSessionDifficultyTests {
 
     @Test("currentDifficulty is nil after stopping training")
     func currentDifficultyNilAfterStop() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -38,16 +38,16 @@ struct PitchComparisonSessionDifficultyTests {
 
     @Test("sessionBestCentDifference is nil before any correct answer")
     func sessionBestNilBeforeCorrectAnswer() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
         #expect(f.session.sessionBestCentDifference == nil)
     }
 
     @Test("sessionBestCentDifference updates on first correct answer")
     func sessionBestUpdatesOnFirstCorrectAnswer() async throws {
         let comparisons = [
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
         ]
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -61,9 +61,9 @@ struct PitchComparisonSessionDifficultyTests {
     @Test("sessionBestCentDifference does not update on incorrect answer")
     func sessionBestDoesNotUpdateOnIncorrectAnswer() async throws {
         let comparisons = [
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
         ]
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -77,10 +77,10 @@ struct PitchComparisonSessionDifficultyTests {
     @Test("sessionBestCentDifference tracks smallest cent difference across correct answers")
     func sessionBestTracksSmallestDifference() async throws {
         let comparisons = [
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0))),
-            PitchComparison(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(50.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0))),
+            PitchDiscriminationTrial(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(50.0)))
         ]
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         // First comparison: 100 cents, answer correctly
         f.session.start(settings: defaultTestSettings)
@@ -100,10 +100,10 @@ struct PitchComparisonSessionDifficultyTests {
     @Test("sessionBestCentDifference does not increase when larger difference answered correctly")
     func sessionBestDoesNotIncrease() async throws {
         let comparisons = [
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
-            PitchComparison(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(100.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
+            PitchDiscriminationTrial(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(100.0)))
         ]
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         // First comparison: 50 cents, answer correctly
         f.session.start(settings: defaultTestSettings)
@@ -123,9 +123,9 @@ struct PitchComparisonSessionDifficultyTests {
     @Test("sessionBestCentDifference resets when training stops")
     func sessionBestResetsOnStop() async throws {
         let comparisons = [
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
         ]
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)

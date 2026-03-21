@@ -3,7 +3,7 @@ import Foundation
 nonisolated enum CSVImportParser {
 
     struct ImportResult {
-        var pitchComparisons: [PitchComparisonRecord]
+        var pitchDiscriminations: [PitchDiscriminationRecord]
         var pitchMatchings: [PitchMatchingRecord]
         var errors: [CSVImportError]
     }
@@ -15,11 +15,11 @@ nonisolated enum CSVImportParser {
 
         switch versionResult {
         case .failure(let error):
-            return ImportResult(pitchComparisons: [], pitchMatchings: [], errors: [error])
+            return ImportResult(pitchDiscriminations: [], pitchMatchings: [], errors: [error])
 
         case .success(let version, let remainingLines):
             guard let parser = parsers.first(where: { $0.supportedVersion == version }) else {
-                return ImportResult(pitchComparisons: [], pitchMatchings: [], errors: [.unsupportedVersion(version: version)])
+                return ImportResult(pitchDiscriminations: [], pitchMatchings: [], errors: [.unsupportedVersion(version: version)])
             }
             return parser.parse(lines: remainingLines)
         }

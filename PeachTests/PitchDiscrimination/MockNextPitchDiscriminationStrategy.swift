@@ -1,44 +1,44 @@
 import Foundation
 @testable import Peach
 
-final class MockNextPitchComparisonStrategy: NextPitchComparisonStrategy {
+final class MockNextPitchDiscriminationStrategy: NextPitchDiscriminationStrategy {
     // MARK: - Test State Tracking
 
-    var comparisons: [PitchComparison]
+    var comparisons: [PitchDiscriminationTrial]
     var currentIndex = 0
     var callCount = 0
     var lastReceivedProfile: TrainingProfile?
     var lastReceivedSettings: PitchComparisonTrainingSettings?
-    var lastReceivedLastComparison: CompletedPitchComparison?
+    var lastReceivedLastComparison: CompletedPitchDiscriminationTrial?
     var lastReceivedInterval: DirectedInterval?
 
     // MARK: - Initialization
 
-    init(comparisons: [PitchComparison] = [
-        PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+    init(comparisons: [PitchDiscriminationTrial] = [
+        PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
     ]) {
         self.comparisons = comparisons
     }
 
     // MARK: - Test Control
 
-    var onNextPitchComparisonCalled: (() -> Void)?
+    var onNextTrialCalled: (() -> Void)?
 
-    // MARK: - NextPitchComparisonStrategy Protocol
+    // MARK: - NextPitchDiscriminationStrategy Protocol
 
-    func nextPitchComparison(
+    func nextPitchDiscriminationTrial(
         profile: TrainingProfile,
         settings: PitchComparisonTrainingSettings,
-        lastPitchComparison: CompletedPitchComparison?,
+        lastTrial: CompletedPitchDiscriminationTrial?,
         interval: DirectedInterval
-    ) -> PitchComparison {
+    ) -> PitchDiscriminationTrial {
         callCount += 1
         lastReceivedProfile = profile
         lastReceivedSettings = settings
-        lastReceivedLastComparison = lastPitchComparison
+        lastReceivedLastComparison = lastTrial
         lastReceivedInterval = interval
 
-        onNextPitchComparisonCalled?()
+        onNextTrialCalled?()
 
         let comparison = comparisons[currentIndex % comparisons.count]
         currentIndex += 1
@@ -54,6 +54,6 @@ final class MockNextPitchComparisonStrategy: NextPitchComparisonStrategy {
         lastReceivedSettings = nil
         lastReceivedLastComparison = nil
         lastReceivedInterval = nil
-        onNextPitchComparisonCalled = nil
+        onNextTrialCalled = nil
     }
 }

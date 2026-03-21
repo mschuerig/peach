@@ -6,9 +6,9 @@ import SwiftUI
 @Suite("ExportChartView Tests")
 struct ExportChartViewTests {
 
-    private func makeTimeline(records: [PitchComparisonRecord]) -> ProgressTimeline {
+    private func makeTimeline(records: [PitchDiscriminationRecord]) -> ProgressTimeline {
         let profile = PerceptualProfile { builder in
-            MetricPointMapper.feedPitchComparisons(records, into: builder)
+            MetricPointMapper.feedPitchDiscriminations(records, into: builder)
         }
         return ProgressTimeline(profile: profile)
     }
@@ -17,7 +17,7 @@ struct ExportChartViewTests {
     func rendersWithMockData() async {
         let now = Date()
         let records = (0..<10).map { i in
-            PitchComparisonRecord(
+            PitchDiscriminationRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: Double(10 + i),
@@ -53,7 +53,7 @@ struct ExportChartViewTests {
     func renderProducesFileURL() async {
         let now = Date()
         let records = (0..<5).map { i in
-            PitchComparisonRecord(
+            PitchDiscriminationRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: Double(10 + i),

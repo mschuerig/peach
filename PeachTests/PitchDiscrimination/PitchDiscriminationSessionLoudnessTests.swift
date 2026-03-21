@@ -1,12 +1,12 @@
 import Testing
 @testable import Peach
 
-@Suite("PitchComparisonSession Loudness Variation Tests")
-struct PitchComparisonSessionLoudnessTests {
+@Suite("PitchDiscriminationSession Loudness Variation Tests")
+struct PitchDiscriminationSessionLoudnessTests {
 
     @Test("Both notes play at amplitudeDB 0.0 when varyLoudness is 0.0")
     func zeroVariationBothNotesAtZero() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -18,7 +18,7 @@ struct PitchComparisonSessionLoudnessTests {
 
     @Test("Reference always at 0.0 and target within ±10.0 dB at full slider")
     func fullVariationTargetHasOffset() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),
@@ -39,9 +39,9 @@ struct PitchComparisonSessionLoudnessTests {
     @Test("Target amplitude varies across multiple comparisons at full slider")
     func fullVariationProducesVariation() async throws {
         let comparisons = (0..<10).map { i in
-            PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(i % 2 == 0 ? 100.0 : -100.0)))
+            PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(i % 2 == 0 ? 100.0 : -100.0)))
         }
-        let f = makePitchComparisonSession(comparisons: comparisons)
+        let f = makePitchDiscriminationSession(comparisons: comparisons)
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),
@@ -70,7 +70,7 @@ struct PitchComparisonSessionLoudnessTests {
 
     @Test("Target amplitude within ±5.0 dB at slider 0.5")
     func midSliderHalvesRange() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),
@@ -90,7 +90,7 @@ struct PitchComparisonSessionLoudnessTests {
 
     @Test("Loudness offset is clamped within valid range")
     func offsetClampedToValidRange() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),
@@ -107,7 +107,7 @@ struct PitchComparisonSessionLoudnessTests {
 
     @Test("Default settings passes varyLoudness 0.0")
     func defaultSettingsPassesZeroLoudness() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)

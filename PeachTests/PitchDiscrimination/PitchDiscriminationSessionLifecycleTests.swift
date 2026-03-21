@@ -2,16 +2,16 @@ import Testing
 @testable import Peach
 
 /// Tests for Story 3.4: Training Interruption and App Lifecycle Handling
-@Suite("PitchComparisonSession Lifecycle Tests")
-struct PitchComparisonSessionLifecycleTests {
+@Suite("PitchDiscriminationSession Lifecycle Tests")
+struct PitchDiscriminationSessionLifecycleTests {
 
     // MARK: - Data Integrity Tests (AC#4)
 
     @Test("stop() during playingNote1 discards incomplete comparison")
     func stopDuringNote1DiscardsComparison() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
-        var stateWhenPlayCalled: PitchComparisonSessionState?
+        var stateWhenPlayCalled: PitchDiscriminationSessionState?
         f.mockPlayer.onPlayCalled = {
             // Capture state and stop immediately when first note starts
             if stateWhenPlayCalled == nil {
@@ -33,7 +33,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() during playingNote2 discards incomplete comparison")
     func stopDuringNote2DiscardsComparison() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.mockPlayer.instantPlayback = false
         f.mockPlayer.simulatedPlaybackDuration = .milliseconds(500)
@@ -55,7 +55,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() during awaitingAnswer discards incomplete comparison")
     func stopDuringAwaitingAnswerDiscardsComparison() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -70,7 +70,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() during showingFeedback preserves already-saved data")
     func stopDuringFeedbackPreservesData() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -91,7 +91,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() clears feedback state")
     func stopClearsFeedbackState() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -107,7 +107,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() is safe to call multiple times")
     func stopIsSafeToCallMultipleTimes() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         // Call stop when already idle
         f.session.stop()
@@ -128,7 +128,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() transitions to idle and cancels training")
     func stopTransitionsToIdleAndCancelsTraining() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         await f.mockPlayer.waitForPlay()
@@ -142,7 +142,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("Simulated onDisappear triggers stop")
     func simulatedOnDisappearTriggersStop() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         await f.mockPlayer.waitForPlay()
@@ -158,7 +158,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("Rapid stop and start sequence")
     func rapidStopAndStartSequence() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         await Task.yield()
@@ -176,7 +176,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() during transition between states")
     func stopDuringStateTransition() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         await Task.yield()
@@ -191,7 +191,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("stop() calls notePlayer.stopAll() for audio cleanup")
     func stopCallsStopAll() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         await f.mockPlayer.waitForPlay()
@@ -204,7 +204,7 @@ struct PitchComparisonSessionLifecycleTests {
 
     @Test("handleAnswer during target calls notePlayer.stopAll()")
     func handleAnswerDuringTargetCallsStopAll() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
         f.mockPlayer.instantPlayback = false
         f.mockPlayer.simulatedPlaybackDuration = .milliseconds(500)
 

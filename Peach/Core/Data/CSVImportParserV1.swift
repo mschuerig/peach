@@ -17,18 +17,18 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
     // MARK: - Parse
 
     func parse(lines: [String]) -> CSVImportParser.ImportResult {
-        var pitchComparisons: [PitchComparisonRecord] = []
+        var pitchDiscriminations: [PitchDiscriminationRecord] = []
         var pitchMatchings: [PitchMatchingRecord] = []
         var errors: [CSVImportError] = []
 
         guard let headerLine = lines.first, !headerLine.isEmpty else {
             errors.append(.invalidHeader(expected: CSVExportSchema.headerRow, actual: "(empty)"))
-            return CSVImportParser.ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
+            return CSVImportParser.ImportResult(pitchDiscriminations: pitchDiscriminations, pitchMatchings: pitchMatchings, errors: errors)
         }
 
         if let headerError = validateHeader(headerLine) {
             errors.append(headerError)
-            return CSVImportParser.ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
+            return CSVImportParser.ImportResult(pitchDiscriminations: pitchDiscriminations, pitchMatchings: pitchMatchings, errors: errors)
         }
 
         let dataLines = lines.dropFirst()
@@ -37,7 +37,7 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
             let rowNumber = index + 1
             switch parseRow(line, rowNumber: rowNumber) {
             case .pitchComparison(let record):
-                pitchComparisons.append(record)
+                pitchDiscriminations.append(record)
             case .pitchMatching(let record):
                 pitchMatchings.append(record)
             case .error(let error):
@@ -45,7 +45,7 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
             }
         }
 
-        return CSVImportParser.ImportResult(pitchComparisons: pitchComparisons, pitchMatchings: pitchMatchings, errors: errors)
+        return CSVImportParser.ImportResult(pitchDiscriminations: pitchDiscriminations, pitchMatchings: pitchMatchings, errors: errors)
     }
 
     // MARK: - Header Validation
@@ -118,7 +118,7 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
     // MARK: - Row Parsing
 
     private enum RowResult {
-        case pitchComparison(PitchComparisonRecord)
+        case pitchComparison(PitchDiscriminationRecord)
         case pitchMatching(PitchMatchingRecord)
         case error(CSVImportError)
     }
@@ -183,7 +183,7 @@ nonisolated struct CSVImportParserV1: CSVVersionedParser {
 
             let isCorrect = isCorrectStr == "true"
 
-            let record = PitchComparisonRecord(
+            let record = PitchDiscriminationRecord(
                 referenceNote: referenceNote,
                 targetNote: targetNote,
                 centOffset: centOffset,

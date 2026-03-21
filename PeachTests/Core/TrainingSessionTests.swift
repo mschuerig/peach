@@ -5,9 +5,9 @@ import Testing
 @Suite("TrainingSession Protocol")
 struct TrainingSessionTests {
 
-    @Test("PitchComparisonSession conforms to TrainingSession")
-    func pitchComparisonSessionConformsToTrainingSession() async {
-        let fixture = makePitchComparisonSession()
+    @Test("PitchDiscriminationSession conforms to TrainingSession")
+    func pitchDiscriminationSessionConformsToTrainingSession() async {
+        let fixture = makePitchDiscriminationSession()
         let trainingSession: TrainingSession = fixture.session
         #expect(trainingSession.isIdle)
     }
@@ -19,9 +19,9 @@ struct TrainingSessionTests {
         #expect(trainingSession.isIdle)
     }
 
-    @Test("PitchComparisonSession.isIdle returns false when active")
-    func pitchComparisonSessionIsIdleFalseWhenActive() async throws {
-        let fixture = makePitchComparisonSession()
+    @Test("PitchDiscriminationSession.isIdle returns false when active")
+    func pitchDiscriminationSessionIsIdleFalseWhenActive() async throws {
+        let fixture = makePitchDiscriminationSession()
         fixture.session.start(settings: defaultTestSettings)
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session
@@ -39,9 +39,9 @@ struct TrainingSessionTests {
         trainingSession.stop()
     }
 
-    @Test("stop() through TrainingSession protocol stops PitchComparisonSession")
-    func stopThroughProtocolStopsPitchComparisonSession() async throws {
-        let fixture = makePitchComparisonSession()
+    @Test("stop() through TrainingSession protocol stops PitchDiscriminationSession")
+    func stopThroughProtocolStopsPitchDiscriminationSession() async throws {
+        let fixture = makePitchDiscriminationSession()
         fixture.session.start(settings: defaultTestSettings)
         try await waitForState(fixture.session, .awaitingAnswer)
         let trainingSession: TrainingSession = fixture.session

@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import os
 
-enum PitchComparisonSessionState {
+enum PitchDiscriminationSessionState {
     case idle
     case playingNote1
     case playingNote2
@@ -11,14 +11,14 @@ enum PitchComparisonSessionState {
 }
 
 @Observable
-final class PitchComparisonSession: TrainingSession {
+final class PitchDiscriminationSession: TrainingSession {
     // MARK: - Logger
 
-    private let logger = Logger(subsystem: "com.peach.app", category: "PitchComparisonSession")
+    private let logger = Logger(subsystem: "com.peach.app", category: "PitchDiscriminationSession")
 
     // MARK: - Observable State
 
-    private(set) var state: PitchComparisonSessionState = .idle
+    private(set) var state: PitchDiscriminationSessionState = .idle
     private(set) var showFeedback: Bool = false
     private(set) var isLastAnswerCorrect: Bool? = nil
     private(set) var sessionBestCentDifference: Cents? = nil
@@ -27,17 +27,17 @@ final class PitchComparisonSession: TrainingSession {
     // MARK: - Dependencies
 
     private let notePlayer: NotePlayer
-    private let strategy: NextPitchComparisonStrategy
+    private let strategy: NextPitchDiscriminationStrategy
     private let profile: TrainingProfile
     private let resettables: [Resettable]
-    private let observers: [PitchComparisonObserver]
+    private let observers: [PitchDiscriminationObserver]
     private var interruptionMonitor: AudioSessionInterruptionMonitor?
 
     // MARK: - Training State
 
     private var settings: PitchComparisonTrainingSettings?
-    private var currentPitchComparison: PitchComparison?
-    private var lastCompletedPitchComparison: CompletedPitchComparison?
+    private var currentTrial: PitchDiscriminationTrial?
+    private var lastCompletedTrial: CompletedPitchDiscriminationTrial?
     private var trainingTask: Task<Void, Never>?
     private var feedbackTask: Task<Void, Never>?
 
@@ -49,10 +49,10 @@ final class PitchComparisonSession: TrainingSession {
 
     init(
         notePlayer: NotePlayer,
-        strategy: NextPitchComparisonStrategy,
+        strategy: NextPitchDiscriminationStrategy,
         profile: TrainingProfile,
         resettables: [Resettable] = [],
-        observers: [PitchComparisonObserver] = [],
+        observers: [PitchDiscriminationObserver] = [],
         notificationCenter: NotificationCenter = .default
     ) {
         self.notePlayer = notePlayer
@@ -77,11 +77,11 @@ final class PitchComparisonSession: TrainingSession {
     }
 
     var currentDifficulty: Cents? {
-        currentPitchComparison.map { Cents($0.targetNote.offset.magnitude) }
+        currentTrial.map { Cents($0.targetNote.offset.magnitude) }
     }
 
     var lastCompletedCentDifference: Cents? {
-        lastCompletedPitchComparison.map { Cents($0.pitchComparison.targetNote.offset.magnitude) }
+        lastCompletedTrial.map { Cents($0.trial.targetNote.offset.magnitude) }
     }
 
     func start(settings: PitchComparisonTrainingSettings) {
@@ -104,8 +104,8 @@ final class PitchComparisonSession: TrainingSession {
             logger.warning("handleAnswer() called but state is \(String(describing: self.state))")
             return
         }
-        guard let pitchComparison = currentPitchComparison else {
-            logger.error("handleAnswer() called but currentPitchComparison is nil")
+        guard let trial = currentTrial else {
+            logger.error("handleAnswer() called but currentTrial is nil")
             return
         }
 
@@ -113,12 +113,12 @@ final class PitchComparisonSession: TrainingSession {
 
         stopTargetNoteIfPlaying()
 
-        let completed = CompletedPitchComparison(pitchComparison: pitchComparison, userAnsweredHigher: isHigher, tuningSystem: sessionTuningSystem)
-        logger.info("Answer was \(completed.isCorrect ? "✓ CORRECT" : "✗ WRONG") (target was \(pitchComparison.isTargetHigher ? "higher" : "lower"))")
+        let completed = CompletedPitchDiscriminationTrial(trial: trial, userAnsweredHigher: isHigher, tuningSystem: sessionTuningSystem)
+        logger.info("Answer was \(completed.isCorrect ? "✓ CORRECT" : "✗ WRONG") (target was \(trial.isTargetHigher ? "higher" : "lower"))")
 
-        lastCompletedPitchComparison = completed
+        lastCompletedTrial = completed
         trackSessionBest(completed)
-        recordPitchComparison(completed)
+        recordTrial(completed)
         transitionToFeedback(completed)
     }
 
@@ -127,7 +127,7 @@ final class PitchComparisonSession: TrainingSession {
             stop()
         }
 
-        lastCompletedPitchComparison = nil
+        lastCompletedTrial = nil
         sessionBestCentDifference = nil
         for resettable in resettables {
             try resettable.reset()
@@ -155,8 +155,8 @@ final class PitchComparisonSession: TrainingSession {
         feedbackTask = nil
 
         state = .idle
-        currentPitchComparison = nil
-        lastCompletedPitchComparison = nil
+        currentTrial = nil
+        lastCompletedTrial = nil
         sessionBestCentDifference = nil
         currentInterval = nil
         settings = nil
@@ -170,7 +170,7 @@ final class PitchComparisonSession: TrainingSession {
     private func runTrainingLoop() async {
         logger.info("runTrainingLoop() started")
 
-        await playNextPitchComparison()
+        await playNextTrial()
 
         while state != .idle && !Task.isCancelled {
             try? await Task.sleep(for: .milliseconds(100))
@@ -179,25 +179,25 @@ final class PitchComparisonSession: TrainingSession {
         logger.info("runTrainingLoop() ended, state: \(String(describing: self.state))")
     }
 
-    private func playNextPitchComparison() async {
+    private func playNextTrial() async {
         guard let settings else { return }
 
         guard let interval = settings.intervals.randomElement() else { return }
         currentInterval = interval
 
-        let pitchComparison = strategy.nextPitchComparison(
+        let trial = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: settings,
-            lastPitchComparison: lastCompletedPitchComparison,
+            lastTrial: lastCompletedTrial,
             interval: interval
         )
-        currentPitchComparison = pitchComparison
+        currentTrial = trial
 
         let amplitudeDB = calculateTargetAmplitude()
 
         do {
-            try await playPitchComparisonNotes(
-                pitchComparison: pitchComparison,
+            try await playTrialNotes(
+                trial: trial,
                 amplitudeDB: amplitudeDB
             )
         } catch is CancellationError {
@@ -220,15 +220,15 @@ final class PitchComparisonSession: TrainingSession {
         return AmplitudeDB(offset)
     }
 
-    private func playPitchComparisonNotes(
-        pitchComparison: PitchComparison,
+    private func playTrialNotes(
+        trial: PitchDiscriminationTrial,
         amplitudeDB: AmplitudeDB
     ) async throws {
         guard let settings else { return }
 
-        let freq1 = pitchComparison.referenceFrequency(tuningSystem: settings.tuningSystem, referencePitch: settings.referencePitch)
-        let freq2 = pitchComparison.targetFrequency(tuningSystem: settings.tuningSystem, referencePitch: settings.referencePitch)
-        logger.info("PitchComparison: ref=\(pitchComparison.referenceNote.rawValue) \(freq1.rawValue)Hz @0.0dB, target \(freq2.rawValue)Hz @\(amplitudeDB.rawValue)dB, offset=\(pitchComparison.targetNote.offset.rawValue), higher=\(pitchComparison.isTargetHigher)")
+        let freq1 = trial.referenceFrequency(tuningSystem: settings.tuningSystem, referencePitch: settings.referencePitch)
+        let freq2 = trial.targetFrequency(tuningSystem: settings.tuningSystem, referencePitch: settings.referencePitch)
+        logger.info("PitchDiscriminationTrial: ref=\(trial.referenceNote.rawValue) \(freq1.rawValue)Hz @0.0dB, target \(freq2.rawValue)Hz @\(amplitudeDB.rawValue)dB, offset=\(trial.targetNote.offset.rawValue), higher=\(trial.isTargetHigher)")
 
         state = .playingNote1
         try await notePlayer.play(frequency: freq1, duration: .seconds(settings.noteDuration.rawValue), velocity: settings.velocity, amplitudeDB: AmplitudeDB(0.0))
@@ -272,9 +272,9 @@ final class PitchComparisonSession: TrainingSession {
         }
     }
 
-    private func trackSessionBest(_ completed: CompletedPitchComparison) {
+    private func trackSessionBest(_ completed: CompletedPitchDiscriminationTrial) {
         guard completed.isCorrect else { return }
-        let diff = Cents(completed.pitchComparison.targetNote.offset.magnitude)
+        let diff = Cents(completed.trial.targetNote.offset.magnitude)
         if let best = sessionBestCentDifference {
             if diff < best { sessionBestCentDifference = diff }
         } else {
@@ -282,7 +282,7 @@ final class PitchComparisonSession: TrainingSession {
         }
     }
 
-    private func transitionToFeedback(_ completed: CompletedPitchComparison) {
+    private func transitionToFeedback(_ completed: CompletedPitchDiscriminationTrial) {
         guard let settings else { return }
 
         isLastAnswerCorrect = completed.isCorrect
@@ -296,14 +296,14 @@ final class PitchComparisonSession: TrainingSession {
             if state == .showingFeedback && !Task.isCancelled {
                 showFeedback = false
                 logger.info("Feedback complete, starting next comparison")
-                await playNextPitchComparison()
+                await playNextTrial()
             }
         }
     }
 
-    private func recordPitchComparison(_ completed: CompletedPitchComparison) {
+    private func recordTrial(_ completed: CompletedPitchDiscriminationTrial) {
         observers.forEach { observer in
-            observer.pitchComparisonCompleted(completed)
+            observer.pitchDiscriminationCompleted(completed)
         }
     }
 

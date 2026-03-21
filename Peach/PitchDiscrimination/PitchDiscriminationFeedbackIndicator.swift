@@ -7,8 +7,8 @@ import SwiftUI
 ///
 /// # Accessibility
 /// - Provides VoiceOver labels ("Correct" or "Incorrect")
-/// - Reduce Motion: The parent view (PitchComparisonScreen) conditionally applies animation — when Reduce Motion is enabled, the opacity transition is instant (no animation)
-struct PitchComparisonFeedbackIndicator: View {
+/// - Reduce Motion: The parent view (PitchDiscriminationScreen) conditionally applies animation — when Reduce Motion is enabled, the opacity transition is instant (no animation)
+struct PitchDiscriminationFeedbackIndicator: View {
     /// Whether the answer was correct (nil = no feedback to show)
     let isCorrect: Bool?
 
@@ -35,16 +35,16 @@ struct PitchComparisonFeedbackIndicator: View {
 // MARK: - Previews
 
 #Preview("Correct") {
-    PitchComparisonFeedbackIndicator(isCorrect: true)
+    PitchDiscriminationFeedbackIndicator(isCorrect: true)
         .padding()
 }
 
 #Preview("Incorrect") {
-    PitchComparisonFeedbackIndicator(isCorrect: false)
+    PitchDiscriminationFeedbackIndicator(isCorrect: false)
         .padding()
 }
 
 #Preview("No Feedback") {
-    PitchComparisonFeedbackIndicator(isCorrect: nil)
+    PitchDiscriminationFeedbackIndicator(isCorrect: nil)
         .padding()
 }

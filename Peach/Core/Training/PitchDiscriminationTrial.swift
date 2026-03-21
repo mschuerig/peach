@@ -1,6 +1,6 @@
 import Foundation
 
-struct PitchComparison {
+struct PitchDiscriminationTrial {
     let referenceNote: MIDINote
     let targetNote: DetunedMIDINote
 
@@ -21,19 +21,19 @@ struct PitchComparison {
     }
 }
 
-struct CompletedPitchComparison {
-    let pitchComparison: PitchComparison
+struct CompletedPitchDiscriminationTrial {
+    let trial: PitchDiscriminationTrial
     let userAnsweredHigher: Bool
     let tuningSystem: TuningSystem
 
     var isCorrect: Bool {
-        pitchComparison.isCorrect(userAnswerHigher: userAnsweredHigher)
+        trial.isCorrect(userAnswerHigher: userAnsweredHigher)
     }
 
     let timestamp: Date
 
-    init(pitchComparison: PitchComparison, userAnsweredHigher: Bool, tuningSystem: TuningSystem, timestamp: Date = Date()) {
-        self.pitchComparison = pitchComparison
+    init(trial: PitchDiscriminationTrial, userAnsweredHigher: Bool, tuningSystem: TuningSystem, timestamp: Date = Date()) {
+        self.trial = trial
         self.userAnsweredHigher = userAnsweredHigher
         self.tuningSystem = tuningSystem
         self.timestamp = timestamp

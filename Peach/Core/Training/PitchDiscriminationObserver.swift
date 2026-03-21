@@ -3,7 +3,7 @@ import Foundation
 /// Observer protocol for pitch comparison completion events
 ///
 /// Observers are notified when a pitch comparison is completed during training.
-/// This allows decoupling PitchComparisonSession from specific implementations
+/// This allows decoupling PitchDiscriminationSession from specific implementations
 /// of data storage, analytics, and feedback mechanisms.
 ///
 /// ## Conforming Types
@@ -14,16 +14,16 @@ import Foundation
 ///
 /// ## Usage
 /// ```swift
-/// extension TrainingDataStore: PitchComparisonObserver {
-///     func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
-///         let record = PitchComparisonRecord(...)
+/// extension TrainingDataStore: PitchDiscriminationObserver {
+///     func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
+///         let record = PitchDiscriminationRecord(...)
 ///         try? save(record)
 ///     }
 /// }
 /// ```
-protocol PitchComparisonObserver {
+protocol PitchDiscriminationObserver {
     /// Called when a pitch comparison is completed during training
     ///
     /// - Parameter completed: The completed pitch comparison with user's answer and result
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison)
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial)
 }

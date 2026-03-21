@@ -1,11 +1,11 @@
 import SwiftUI
 import os
 
-struct PitchComparisonScreen: View {
+struct PitchDiscriminationScreen: View {
     let isIntervalMode: Bool
 
     /// Training session injected via environment
-    @Environment(\.pitchComparisonSession) private var pitchComparisonSession
+    @Environment(\.pitchDiscriminationSession) private var pitchDiscriminationSession
 
     /// User settings for building training configuration
     @Environment(\.userSettings) private var userSettings
@@ -22,7 +22,7 @@ struct PitchComparisonScreen: View {
     @State private var showHelpSheet = false
 
     /// Logger for debugging lifecycle events
-    private let logger = Logger(subsystem: "com.peach.app", category: "PitchComparisonScreen")
+    private let logger = Logger(subsystem: "com.peach.app", category: "PitchDiscriminationScreen")
 
     static let helpSections: [HelpSection] = [
         HelpSection(
@@ -72,20 +72,20 @@ struct PitchComparisonScreen: View {
         .onChange(of: showHelpSheet) { _, isShowing in
             if isShowing {
                 logger.info("Help sheet shown - stopping training")
-                pitchComparisonSession.stop()
+                pitchDiscriminationSession.stop()
             } else {
                 logger.info("Help sheet dismissed - restarting training")
-                pitchComparisonSession.start(settings: .from(userSettings, intervals: intervals))
+                pitchDiscriminationSession.start(settings: .from(userSettings, intervals: intervals))
             }
         }
         .onAppear {
-            logger.info("PitchComparisonScreen appeared - (re)starting training")
-            pitchComparisonSession.stop()
-            pitchComparisonSession.start(settings: .from(userSettings, intervals: intervals))
+            logger.info("PitchDiscriminationScreen appeared - (re)starting training")
+            pitchDiscriminationSession.stop()
+            pitchDiscriminationSession.start(settings: .from(userSettings, intervals: intervals))
         }
         .onDisappear {
-            logger.info("PitchComparisonScreen disappeared - stopping training")
-            pitchComparisonSession.stop()
+            logger.info("PitchDiscriminationScreen disappeared - stopping training")
+            pitchDiscriminationSession.stop()
         }
     }
 
@@ -95,32 +95,32 @@ struct PitchComparisonScreen: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading) {
                 TrainingStatsView(
-                    latestValue: pitchComparisonSession.lastCompletedCentDifference,
-                    sessionBest: pitchComparisonSession.sessionBestCentDifference,
+                    latestValue: pitchDiscriminationSession.lastCompletedCentDifference,
+                    sessionBest: pitchDiscriminationSession.sessionBestCentDifference,
                     trend: progressTimeline.trend(for: trainingDiscipline)
                 )
 
-                if pitchComparisonSession.isIntervalMode, let interval = pitchComparisonSession.currentInterval {
+                if pitchDiscriminationSession.isIntervalMode, let interval = pitchDiscriminationSession.currentInterval {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(interval.displayName)
                             .font(.title3)
-                        Text(pitchComparisonSession.sessionTuningSystem.displayName)
+                        Text(pitchDiscriminationSession.sessionTuningSystem.displayName)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel(String(localized: "Target interval: \(interval.displayName), \(pitchComparisonSession.sessionTuningSystem.displayName)"))
+                    .accessibilityLabel(String(localized: "Target interval: \(interval.displayName), \(pitchDiscriminationSession.sessionTuningSystem.displayName)"))
                 }
             }
 
             Spacer()
 
-            PitchComparisonFeedbackIndicator(
-                isCorrect: pitchComparisonSession.isLastAnswerCorrect
+            PitchDiscriminationFeedbackIndicator(
+                isCorrect: pitchDiscriminationSession.isLastAnswerCorrect
             )
-            .opacity(pitchComparisonSession.showFeedback ? 1 : 0)
-            .accessibilityHidden(!pitchComparisonSession.showFeedback)
-            .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: pitchComparisonSession.showFeedback)
+            .opacity(pitchDiscriminationSession.showFeedback ? 1 : 0)
+            .accessibilityHidden(!pitchDiscriminationSession.showFeedback)
+            .animation(Self.feedbackAnimation(reduceMotion: reduceMotion), value: pitchDiscriminationSession.showFeedback)
         }
         .padding(.horizontal)
     }
@@ -210,7 +210,7 @@ struct PitchComparisonScreen: View {
 
     private func answerButton(direction: AnswerDirection) -> some View {
         Button {
-            pitchComparisonSession.handleAnswer(isHigher: direction.isHigher)
+            pitchDiscriminationSession.handleAnswer(isHigher: direction.isHigher)
         } label: {
             VStack(spacing: 12) {
                 Image(systemName: direction.iconName)
@@ -251,7 +251,7 @@ struct PitchComparisonScreen: View {
 
     /// Buttons are enabled when in playingNote2 or awaitingAnswer states
     private var buttonsEnabled: Bool {
-        pitchComparisonSession.state == .playingNote2 || pitchComparisonSession.state == .awaitingAnswer
+        pitchDiscriminationSession.state == .playingNote2 || pitchDiscriminationSession.state == .awaitingAnswer
     }
 
     /// Returns the animation for feedback indicator transitions
@@ -265,6 +265,6 @@ struct PitchComparisonScreen: View {
 
 #Preview {
     NavigationStack {
-        PitchComparisonScreen(isIntervalMode: false)
+        PitchDiscriminationScreen(isIntervalMode: false)
     }
 }

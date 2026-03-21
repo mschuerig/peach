@@ -2,12 +2,12 @@ import Testing
 import Foundation
 @testable import Peach
 
-@Suite("PitchComparisonSession Settings Snapshot Tests")
-struct PitchComparisonSessionUserDefaultsTests {
+@Suite("PitchDiscriminationSession Settings Snapshot Tests")
+struct PitchDiscriminationSessionUserDefaultsTests {
 
     @Test("Settings values are passed to strategy")
     func settingsValuesPassedToStrategy() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(50), upperBound: MIDINote(70)),
@@ -26,7 +26,7 @@ struct PitchComparisonSessionUserDefaultsTests {
 
     @Test("Note duration from settings is passed to NotePlayer")
     func noteDurationPassedToPlayer() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),
@@ -46,11 +46,11 @@ struct PitchComparisonSessionUserDefaultsTests {
         let mockPlayer = MockNotePlayer()
         let mockDataStore = MockTrainingDataStore()
         let profile = PerceptualProfile()
-        let mockStrategy = MockNextPitchComparisonStrategy(comparisons: [
-            PitchComparison(referenceNote: 69, targetNote: DetunedMIDINote(note: 69, offset: Cents(100.0)))
+        let mockStrategy = MockNextPitchDiscriminationStrategy(comparisons: [
+            PitchDiscriminationTrial(referenceNote: 69, targetNote: DetunedMIDINote(note: 69, offset: Cents(100.0)))
         ])
 
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: mockPlayer,
             strategy: mockStrategy,
             profile: profile,

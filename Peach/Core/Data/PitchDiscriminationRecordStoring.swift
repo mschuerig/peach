@@ -2,22 +2,22 @@ import Foundation
 
 /// Protocol for pitch comparison record persistence operations
 ///
-/// This protocol enables testable dependency injection for PitchComparisonSession.
+/// This protocol enables testable dependency injection for PitchDiscriminationSession.
 /// TrainingDataStore conforms to this protocol, allowing mock implementations in tests.
-protocol PitchComparisonRecordStoring {
+protocol PitchDiscriminationRecordStoring {
     /// Saves a pitch comparison record to persistent storage
-    /// - Parameter record: The PitchComparisonRecord to save
+    /// - Parameter record: The PitchDiscriminationRecord to save
     /// - Throws: DataStoreError.saveFailed if save operation fails
-    func save(_ record: PitchComparisonRecord) throws
+    func save(_ record: PitchDiscriminationRecord) throws
 
     /// Fetches all pitch comparison records from persistent storage
-    /// - Returns: All PitchComparisonRecord instances
+    /// - Returns: All PitchDiscriminationRecord instances
     /// - Throws: DataStoreError.fetchFailed if fetch operation fails
-    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord]
+    func fetchAllPitchDiscriminations() throws -> [PitchDiscriminationRecord]
 }
 
 /// Extension to make TrainingDataStore conform to the protocol
-extension TrainingDataStore: PitchComparisonRecordStoring {
-    // TrainingDataStore already implements save() and fetchAllPitchComparisons()
+extension TrainingDataStore: PitchDiscriminationRecordStoring {
+    // TrainingDataStore already implements save() and fetchAllPitchDiscriminations()
     // This extension just declares conformance
 }

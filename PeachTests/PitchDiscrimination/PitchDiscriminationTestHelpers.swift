@@ -12,31 +12,31 @@ let defaultTestSettings = PitchComparisonTrainingSettings(
 
 // MARK: - Shared Test Fixture
 
-struct PitchComparisonSessionFixture {
-    let session: PitchComparisonSession
+struct PitchDiscriminationSessionFixture {
+    let session: PitchDiscriminationSession
     let mockPlayer: MockNotePlayer
     let mockDataStore: MockTrainingDataStore
     let profile: PerceptualProfile
-    let mockStrategy: MockNextPitchComparisonStrategy
+    let mockStrategy: MockNextPitchDiscriminationStrategy
     let mockHaptic: MockHapticFeedbackManager?
     let notificationCenter: NotificationCenter?
 }
 
-func makePitchComparisonSession(
-    comparisons: [PitchComparison] = [
-        PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0))),
-        PitchComparison(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(-95.0)))
+func makePitchDiscriminationSession(
+    comparisons: [PitchDiscriminationTrial] = [
+        PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0))),
+        PitchDiscriminationTrial(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(-95.0)))
     ],
     resettables: [Resettable] = [],
     includeHaptic: Bool = false,
     notificationCenter: NotificationCenter? = nil
-) -> PitchComparisonSessionFixture {
+) -> PitchDiscriminationSessionFixture {
     let mockPlayer = MockNotePlayer()
     let mockDataStore = MockTrainingDataStore()
     let profile = PerceptualProfile()
-    let mockStrategy = MockNextPitchComparisonStrategy(comparisons: comparisons)
+    let mockStrategy = MockNextPitchDiscriminationStrategy(comparisons: comparisons)
 
-    var observers: [PitchComparisonObserver] = [mockDataStore, profile]
+    var observers: [PitchDiscriminationObserver] = [mockDataStore, profile]
     let mockHaptic: MockHapticFeedbackManager?
     if includeHaptic {
         let haptic = MockHapticFeedbackManager()
@@ -46,7 +46,7 @@ func makePitchComparisonSession(
         mockHaptic = nil
     }
 
-    let session = PitchComparisonSession(
+    let session = PitchDiscriminationSession(
         notePlayer: mockPlayer,
         strategy: mockStrategy,
         profile: profile,
@@ -55,7 +55,7 @@ func makePitchComparisonSession(
         notificationCenter: notificationCenter ?? .default
     )
 
-    return PitchComparisonSessionFixture(
+    return PitchDiscriminationSessionFixture(
         session: session,
         mockPlayer: mockPlayer,
         mockDataStore: mockDataStore,
@@ -68,7 +68,7 @@ func makePitchComparisonSession(
 
 // MARK: - Shared Async Test Helpers
 
-func waitForState(_ session: PitchComparisonSession, _ expectedState: PitchComparisonSessionState, timeout: Duration = .seconds(2)) async throws {
+func waitForState(_ session: PitchDiscriminationSession, _ expectedState: PitchDiscriminationSessionState, timeout: Duration = .seconds(2)) async throws {
     await Task.yield()
     if session.state == expectedState { return }
     let deadline = ContinuousClock.now + timeout
@@ -81,7 +81,7 @@ func waitForState(_ session: PitchComparisonSession, _ expectedState: PitchCompa
 }
 
 
-func waitForFeedbackToClear(_ session: PitchComparisonSession, timeout: Duration = .seconds(2)) async throws {
+func waitForFeedbackToClear(_ session: PitchDiscriminationSession, timeout: Duration = .seconds(2)) async throws {
     let deadline = ContinuousClock.now + timeout
     while ContinuousClock.now < deadline {
         if !session.showFeedback { return }

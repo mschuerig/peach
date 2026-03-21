@@ -2,64 +2,64 @@ import Testing
 import SwiftUI
 @testable import Peach
 
-/// Tests for PitchComparisonScreen layout adaptation based on vertical size class (Story 7.3)
-@Suite("PitchComparisonScreen Layout Tests")
-struct PitchComparisonScreenLayoutTests {
+/// Tests for PitchDiscriminationScreen layout adaptation based on vertical size class (Story 7.3)
+@Suite("PitchDiscriminationScreen Layout Tests")
+struct PitchDiscriminationScreenLayoutTests {
 
     // MARK: - Button Icon Size
 
     @Test("Button icon size is 60pt in compact mode")
     func buttonIconSizeCompact() async {
-        #expect(PitchComparisonScreen.buttonIconSize(isCompact: true) == 60)
+        #expect(PitchDiscriminationScreen.buttonIconSize(isCompact: true) == 60)
     }
 
     @Test("Button icon size is 80pt in regular mode")
     func buttonIconSizeRegular() async {
-        #expect(PitchComparisonScreen.buttonIconSize(isCompact: false) == 80)
+        #expect(PitchDiscriminationScreen.buttonIconSize(isCompact: false) == 80)
     }
 
     // MARK: - Button Min Height
 
     @Test("Button min height is 120pt in compact mode")
     func buttonMinHeightCompact() async {
-        #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) == 120)
+        #expect(PitchDiscriminationScreen.buttonMinHeight(isCompact: true) == 120)
     }
 
     @Test("Button min height is 200pt in regular mode")
     func buttonMinHeightRegular() async {
-        #expect(PitchComparisonScreen.buttonMinHeight(isCompact: false) == 200)
+        #expect(PitchDiscriminationScreen.buttonMinHeight(isCompact: false) == 200)
     }
 
     // MARK: - Button Text Font
 
     @Test("Button text font is title2 in compact mode")
     func buttonTextFontCompact() async {
-        #expect(PitchComparisonScreen.buttonTextFont(isCompact: true) == .title2)
+        #expect(PitchDiscriminationScreen.buttonTextFont(isCompact: true) == .title2)
     }
 
     @Test("Button text font is title in regular mode")
     func buttonTextFontRegular() async {
-        #expect(PitchComparisonScreen.buttonTextFont(isCompact: false) == .title)
+        #expect(PitchDiscriminationScreen.buttonTextFont(isCompact: false) == .title)
     }
 
     // MARK: - Compact vs Regular Consistency
 
     @Test("All compact dimensions are smaller than regular dimensions")
     func compactDimensionsSmallerThanRegular() async {
-        #expect(PitchComparisonScreen.buttonIconSize(isCompact: true) < PitchComparisonScreen.buttonIconSize(isCompact: false))
-        #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) < PitchComparisonScreen.buttonMinHeight(isCompact: false))
+        #expect(PitchDiscriminationScreen.buttonIconSize(isCompact: true) < PitchDiscriminationScreen.buttonIconSize(isCompact: false))
+        #expect(PitchDiscriminationScreen.buttonMinHeight(isCompact: true) < PitchDiscriminationScreen.buttonMinHeight(isCompact: false))
     }
 
     @Test("Compact button min height exceeds 44pt minimum tap target")
     func compactButtonMinHeightExceedsTapTarget() async {
-        #expect(PitchComparisonScreen.buttonMinHeight(isCompact: true) >= 44)
+        #expect(PitchDiscriminationScreen.buttonMinHeight(isCompact: true) >= 44)
     }
 
     // MARK: - Help Sections (Story 37.3)
 
     @Test("helpSections returns five sections for comparison training")
     func helpSectionsCount() async {
-        #expect(PitchComparisonScreen.helpSections.count == 5)
+        #expect(PitchDiscriminationScreen.helpSections.count == 5)
     }
 
     @Test("help section titles match expected order")
@@ -71,13 +71,13 @@ struct PitchComparisonScreenLayoutTests {
             String(localized: "Difficulty"),
             String(localized: "Intervals"),
         ]
-        let actualTitles = PitchComparisonScreen.helpSections.map(\.title)
+        let actualTitles = PitchDiscriminationScreen.helpSections.map(\.title)
         #expect(actualTitles == expectedTitles)
     }
 
     @Test("each help section has a non-empty body")
     func helpSectionBodiesNonEmpty() async {
-        for section in PitchComparisonScreen.helpSections {
+        for section in PitchDiscriminationScreen.helpSections {
             #expect(!section.body.isEmpty, "Section '\(section.title)' has empty body")
         }
     }
@@ -85,7 +85,7 @@ struct PitchComparisonScreenLayoutTests {
     @Test("intervals help section explains interval training")
     func intervalsHelpContainsKeyTerms() async {
         let intervalsTitle = String(localized: "Intervals")
-        let intervalsSection = PitchComparisonScreen.helpSections.first { $0.title == intervalsTitle }
+        let intervalsSection = PitchDiscriminationScreen.helpSections.first { $0.title == intervalsTitle }
         #expect(intervalsSection != nil)
         let body = intervalsSection?.body.lowercased() ?? ""
         #expect(body.contains("interval"))

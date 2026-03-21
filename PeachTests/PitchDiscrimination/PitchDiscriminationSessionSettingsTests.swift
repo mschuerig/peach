@@ -1,12 +1,12 @@
 import Testing
 @testable import Peach
 
-@Suite("PitchComparisonSession Settings Tests")
-struct PitchComparisonSessionSettingsTests {
+@Suite("PitchDiscriminationSession Settings Tests")
+struct PitchDiscriminationSessionSettingsTests {
 
     @Test("Strategy receives correct settings")
     func strategyReceivesCorrectSettings() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)),
@@ -22,7 +22,7 @@ struct PitchComparisonSessionSettingsTests {
 
     @Test("Strategy receives updated profile after answer")
     func strategyReceivesUpdatedProfileAfterAnswer() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -38,9 +38,9 @@ struct PitchComparisonSessionSettingsTests {
         #expect(f.profile.comparisonMean(for: .prime) != nil)
     }
 
-    @Test("PitchComparisonSession with custom settings uses those values")
+    @Test("PitchDiscriminationSession with custom settings uses those values")
     func customSettingsUsesValues() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)),
@@ -57,7 +57,7 @@ struct PitchComparisonSessionSettingsTests {
 
     @Test("noteDuration from settings takes effect")
     func noteDurationFromSettingsTakesEffect() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         let settings = PitchComparisonTrainingSettings(
             referencePitch: Frequency(440.0),

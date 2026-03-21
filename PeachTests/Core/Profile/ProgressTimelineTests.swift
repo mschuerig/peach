@@ -11,13 +11,13 @@ struct ProgressTimelineTests {
 
     /// Builds a ProgressTimeline by populating a PerceptualProfile from records via MetricPointMapper.
     private func makeTimeline(
-        pitchComparisonRecords: [PitchComparisonRecord] = [],
+        pitchComparisonRecords: [PitchDiscriminationRecord] = [],
         pitchMatchingRecords: [PitchMatchingRecord] = [],
         rhythmComparisonRecords: [RhythmComparisonRecord] = [],
         rhythmMatchingRecords: [RhythmMatchingRecord] = []
     ) -> ProgressTimeline {
         let profile = PerceptualProfile { builder in
-            MetricPointMapper.feedPitchComparisons(pitchComparisonRecords, into: builder)
+            MetricPointMapper.feedPitchDiscriminations(pitchComparisonRecords, into: builder)
             MetricPointMapper.feedPitchMatchings(pitchMatchingRecords, into: builder)
             MetricPointMapper.feedRhythmComparisons(rhythmComparisonRecords, into: builder)
             MetricPointMapper.feedRhythmMatchings(rhythmMatchingRecords, into: builder)
@@ -25,14 +25,14 @@ struct ProgressTimelineTests {
         return ProgressTimeline(profile: profile)
     }
 
-    private func makePitchComparisonRecord(
+    private func makePitchDiscriminationRecord(
         centOffset: Double,
         isCorrect: Bool = true,
         interval: Int = 0,
         hoursAgo: Double = 1,
         date: Date? = nil
-    ) -> PitchComparisonRecord {
-        PitchComparisonRecord(
+    ) -> PitchDiscriminationRecord {
+        PitchDiscriminationRecord(
             referenceNote: 60,
             targetNote: 60,
             centOffset: centOffset,
@@ -59,9 +59,9 @@ struct ProgressTimelineTests {
         )
     }
 
-    private func makePitchComparisonRecords(count: Int, centOffset: Double = 10.0, interval: Int = 0) -> [PitchComparisonRecord] {
+    private func makePitchDiscriminationRecords(count: Int, centOffset: Double = 10.0, interval: Int = 0) -> [PitchDiscriminationRecord] {
         (0..<count).map { i in
-            makePitchComparisonRecord(centOffset: centOffset, interval: interval, hoursAgo: Double(count - i))
+            makePitchDiscriminationRecord(centOffset: centOffset, interval: interval, hoursAgo: Double(count - i))
         }
     }
 
@@ -83,7 +83,7 @@ struct ProgressTimelineTests {
 
     @Test("any records transitions to active")
     func activeWithAnyData() async {
-        let records = makePitchComparisonRecords(count: 1)
+        let records = makePitchDiscriminationRecords(count: 1)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let state = timeline.state(for: .unisonPitchDiscrimination)
         #expect(state == .active)
@@ -91,7 +91,7 @@ struct ProgressTimelineTests {
 
     @Test("2+ records have trend available")
     func activeWithTrend() async {
-        let records = makePitchComparisonRecords(count: 100)
+        let records = makePitchDiscriminationRecords(count: 100)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend != nil)
@@ -102,8 +102,8 @@ struct ProgressTimelineTests {
     @Test("unison comparison uses interval 0 correct comparison records")
     func unisonComparisonMetric() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, isCorrect: true, interval: 0, hoursAgo: 2),
-            makePitchComparisonRecord(centOffset: 50.0, isCorrect: true, interval: 0, hoursAgo: 1),
+            makePitchDiscriminationRecord(centOffset: 10.0, isCorrect: true, interval: 0, hoursAgo: 2),
+            makePitchDiscriminationRecord(centOffset: 50.0, isCorrect: true, interval: 0, hoursAgo: 1),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -113,8 +113,8 @@ struct ProgressTimelineTests {
 
     @Test("interval comparison uses interval != 0 comparison records")
     func intervalComparisonRouting() async {
-        let unisonRecords = makePitchComparisonRecords(count: 5, interval: 0)
-        let intervalRecords = makePitchComparisonRecords(count: 3, centOffset: 15.0, interval: 7)
+        let unisonRecords = makePitchDiscriminationRecords(count: 5, interval: 0)
+        let intervalRecords = makePitchDiscriminationRecords(count: 3, centOffset: 15.0, interval: 7)
         let timeline = makeTimeline(pitchComparisonRecords: unisonRecords + intervalRecords)
         let unisonBuckets = timeline.buckets(for: .unisonPitchDiscrimination)
         let intervalBuckets = timeline.buckets(for: .intervalPitchDiscrimination)
@@ -152,10 +152,10 @@ struct ProgressTimelineTests {
     @Test("records within 24h are grouped by session proximity")
     func sessionBuckets() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 2.0),
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: 1.9),
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 2.0),
+            makePitchDiscriminationRecord(centOffset: 12.0, hoursAgo: 1.9),
             // Record 1 hour later should be in different session bucket
-            makePitchComparisonRecord(centOffset: 8.0, hoursAgo: 0.5),
+            makePitchDiscriminationRecord(centOffset: 8.0, hoursAgo: 0.5),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -171,9 +171,9 @@ struct ProgressTimelineTests {
         let noon3DaysAgo = calendar.startOfDay(for: now.addingTimeInterval(-3 * 86400)).addingTimeInterval(12 * 3600)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: noon3DaysAgo),
-            makePitchComparisonRecord(centOffset: 12.0, date: noon2DaysAgo),
-            makePitchComparisonRecord(centOffset: 14.0, date: noon2DaysAgo.addingTimeInterval(3600)),  // same day, 1h later
+            makePitchDiscriminationRecord(centOffset: 10.0, date: noon3DaysAgo),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: noon2DaysAgo),
+            makePitchDiscriminationRecord(centOffset: 14.0, date: noon2DaysAgo.addingTimeInterval(3600)),  // same day, 1h later
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -188,8 +188,8 @@ struct ProgressTimelineTests {
         let noon20DaysAgo = calendar.startOfDay(for: now.addingTimeInterval(-20 * 86400)).addingTimeInterval(12 * 3600)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: noon10DaysAgo),
-            makePitchComparisonRecord(centOffset: 12.0, date: noon20DaysAgo),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: noon10DaysAgo),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: noon20DaysAgo),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -202,8 +202,8 @@ struct ProgressTimelineTests {
     @Test("records older than 30 days are grouped by month")
     func monthBuckets() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 24 * 45),  // 45 days ago
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: 24 * 60),  // 60 days ago
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 24 * 45),  // 45 days ago
+            makePitchDiscriminationRecord(centOffset: 12.0, hoursAgo: 24 * 60),  // 60 days ago
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -216,7 +216,7 @@ struct ProgressTimelineTests {
     func ewmaSingleBucket() async {
         // All records in a single session bucket (close together, recent)
         let records = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 1.0 + Double(i) * 0.01)
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 1.0 + Double(i) * 0.01)
         }
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let ewma = timeline.currentEWMA(for: .unisonPitchDiscrimination)
@@ -234,10 +234,10 @@ struct ProgressTimelineTests {
         let midnight7DaysAgo = calendar.date(byAdding: .day, value: -7, to: midnightToday)!
 
         let olderRecords = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 20.0, date: midnight7DaysAgo.addingTimeInterval(12 * 3600 + Double(i) * 0.01))
+            makePitchDiscriminationRecord(centOffset: 20.0, date: midnight7DaysAgo.addingTimeInterval(12 * 3600 + Double(i) * 0.01))
         }
         let recentRecords = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60 + Double(i) * 0.01))
+            makePitchDiscriminationRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60 + Double(i) * 0.01))
         }
         let timeline = makeTimeline(pitchComparisonRecords: olderRecords + recentRecords)
         let ewma = timeline.currentEWMA(for: .unisonPitchDiscrimination)
@@ -252,7 +252,7 @@ struct ProgressTimelineTests {
     @Test("stddev is zero when all values in bucket are identical")
     func stddevZero() async {
         let records = (0..<5).map { i in
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 1.0 + Double(i) * 0.01)
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 1.0 + Double(i) * 0.01)
         }
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -265,9 +265,9 @@ struct ProgressTimelineTests {
     @Test("stddev is non-zero for varying values")
     func stddevNonZero() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 5.0, hoursAgo: 1.0),
-            makePitchComparisonRecord(centOffset: 15.0, hoursAgo: 0.99),
-            makePitchComparisonRecord(centOffset: 25.0, hoursAgo: 0.98),
+            makePitchDiscriminationRecord(centOffset: 5.0, hoursAgo: 1.0),
+            makePitchDiscriminationRecord(centOffset: 15.0, hoursAgo: 0.99),
+            makePitchDiscriminationRecord(centOffset: 25.0, hoursAgo: 0.98),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -286,13 +286,13 @@ struct ProgressTimelineTests {
 
         let referenceNote = MIDINote(60)
         let targetNote = DetunedMIDINote(note: referenceNote, offset: Cents(10.0))
-        let comparison = PitchComparison(referenceNote: referenceNote, targetNote: targetNote)
-        let completed = CompletedPitchComparison(
-            pitchComparison: comparison,
+        let comparison = PitchDiscriminationTrial(referenceNote: referenceNote, targetNote: targetNote)
+        let completed = CompletedPitchDiscriminationTrial(
+            trial: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(completed)
+        profile.pitchDiscriminationCompleted(completed)
 
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
         let totalRecords = buckets.reduce(0) { $0 + $1.recordCount }
@@ -326,13 +326,13 @@ struct ProgressTimelineTests {
 
         let referenceNote = MIDINote(60)
         let targetNote = DetunedMIDINote(note: MIDINote(67), offset: Cents(10.0))
-        let comparison = PitchComparison(referenceNote: referenceNote, targetNote: targetNote)
-        let completed = CompletedPitchComparison(
-            pitchComparison: comparison,
+        let comparison = PitchDiscriminationTrial(referenceNote: referenceNote, targetNote: targetNote)
+        let completed = CompletedPitchDiscriminationTrial(
+            trial: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(completed)
+        profile.pitchDiscriminationCompleted(completed)
 
         // Should route to interval comparison (interval != 0)
         let intervalBuckets = timeline.buckets(for: .intervalPitchDiscrimination)
@@ -352,21 +352,21 @@ struct ProgressTimelineTests {
 
         let referenceNote = MIDINote(60)
         let targetNote = DetunedMIDINote(note: referenceNote, offset: Cents(10.0))
-        let comparison = PitchComparison(referenceNote: referenceNote, targetNote: targetNote)
+        let comparison = PitchDiscriminationTrial(referenceNote: referenceNote, targetNote: targetNote)
 
-        let completed1 = CompletedPitchComparison(
-            pitchComparison: comparison,
+        let completed1 = CompletedPitchDiscriminationTrial(
+            trial: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(completed1)
+        profile.pitchDiscriminationCompleted(completed1)
 
-        let completed2 = CompletedPitchComparison(
-            pitchComparison: comparison,
+        let completed2 = CompletedPitchDiscriminationTrial(
+            trial: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(completed2)
+        profile.pitchDiscriminationCompleted(completed2)
 
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
         // Both records should be in the same session bucket
@@ -378,11 +378,11 @@ struct ProgressTimelineTests {
 
     @Test("improving trend when latest value is below EWMA and within stddev")
     func improvingTrend() async {
-        var records: [PitchComparisonRecord] = []
+        var records: [PitchDiscriminationRecord] = []
         for i in 0..<10 {
-            records.append(makePitchComparisonRecord(centOffset: 20.0, hoursAgo: Double(12 - i)))
+            records.append(makePitchDiscriminationRecord(centOffset: 20.0, hoursAgo: Double(12 - i)))
         }
-        records.append(makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 0.5))
+        records.append(makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 0.5))
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == .improving)
@@ -390,11 +390,11 @@ struct ProgressTimelineTests {
 
     @Test("declining trend when latest value is outside 1 stddev above mean")
     func decliningTrend() async {
-        var records: [PitchComparisonRecord] = []
+        var records: [PitchDiscriminationRecord] = []
         for i in 0..<10 {
-            records.append(makePitchComparisonRecord(centOffset: 10.0, hoursAgo: Double(12 - i)))
+            records.append(makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: Double(12 - i)))
         }
-        records.append(makePitchComparisonRecord(centOffset: 50.0, hoursAgo: 0.5))
+        records.append(makePitchDiscriminationRecord(centOffset: 50.0, hoursAgo: 0.5))
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == .declining)
@@ -402,7 +402,7 @@ struct ProgressTimelineTests {
 
     @Test("stable trend when latest value is within stddev and at or above EWMA")
     func stableTrend() async {
-        let records = makePitchComparisonRecords(count: 10, centOffset: 15.0)
+        let records = makePitchDiscriminationRecords(count: 10, centOffset: 15.0)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == .stable)
@@ -410,7 +410,7 @@ struct ProgressTimelineTests {
 
     @Test("no trend available with single record")
     func noTrendWithSingleRecord() async {
-        let records = makePitchComparisonRecords(count: 1)
+        let records = makePitchDiscriminationRecords(count: 1)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == nil)
@@ -418,7 +418,7 @@ struct ProgressTimelineTests {
 
     @Test("trend available with 2+ records")
     func trendWithTwoRecords() async {
-        let records = makePitchComparisonRecords(count: 2)
+        let records = makePitchDiscriminationRecords(count: 2)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend != nil)
@@ -427,26 +427,26 @@ struct ProgressTimelineTests {
     @Test("declining trend from high centOffset added via profile")
     func decliningTrendFromProfileUpdate() async {
         // Start with correct records at low centOffset
-        var records: [PitchComparisonRecord] = []
+        var records: [PitchDiscriminationRecord] = []
         for i in 0..<10 {
-            records.append(makePitchComparisonRecord(centOffset: 8.0, hoursAgo: Double(12 - i)))
+            records.append(makePitchDiscriminationRecord(centOffset: 8.0, hoursAgo: Double(12 - i)))
         }
 
         let profile = PerceptualProfile { builder in
-            MetricPointMapper.feedPitchComparisons(records, into: builder)
+            MetricPointMapper.feedPitchDiscriminations(records, into: builder)
         }
         let timeline = ProgressTimeline(profile: profile)
 
         // Add a high centOffset via profile observer
         let referenceNote = MIDINote(60)
         let targetNote = DetunedMIDINote(note: referenceNote, offset: Cents(50.0))
-        let comparison = PitchComparison(referenceNote: referenceNote, targetNote: targetNote)
-        let completed = CompletedPitchComparison(
-            pitchComparison: comparison,
+        let comparison = PitchDiscriminationTrial(referenceNote: referenceNote, targetNote: targetNote)
+        let completed = CompletedPitchDiscriminationTrial(
+            trial: comparison,
             userAnsweredHigher: true,
             tuningSystem: .equalTemperament
         )
-        profile.pitchComparisonCompleted(completed)
+        profile.pitchDiscriminationCompleted(completed)
 
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == .declining)
@@ -454,12 +454,12 @@ struct ProgressTimelineTests {
 
     @Test("value exactly at runningMean + stddev is stable, not declining")
     func boundaryAtMeanPlusStddev() async {
-        var records: [PitchComparisonRecord] = []
+        var records: [PitchDiscriminationRecord] = []
         for i in 0..<5 {
-            records.append(makePitchComparisonRecord(centOffset: 10.0, hoursAgo: Double(12 - i)))
+            records.append(makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: Double(12 - i)))
         }
         for i in 0..<5 {
-            records.append(makePitchComparisonRecord(centOffset: 20.0, hoursAgo: Double(7 - i)))
+            records.append(makePitchDiscriminationRecord(centOffset: 20.0, hoursAgo: Double(7 - i)))
         }
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
@@ -469,7 +469,7 @@ struct ProgressTimelineTests {
 
     @Test("value exactly at EWMA is stable, not improving")
     func boundaryAtEwma() async {
-        let records = makePitchComparisonRecords(count: 5, centOffset: 12.0)
+        let records = makePitchDiscriminationRecords(count: 5, centOffset: 12.0)
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let trend = timeline.trend(for: .unisonPitchDiscrimination)
         #expect(trend == .stable)
@@ -496,7 +496,7 @@ struct ProgressTimelineTests {
         let records = (0..<20).map { i in
             let dayOffset = Double(i % 28)
             let timestamp = monthStart.addingTimeInterval(dayOffset * 86400 + Double(i) * 60)
-            return PitchComparisonRecord(
+            return PitchDiscriminationRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: 10.0 + Double(i),
@@ -523,11 +523,11 @@ struct ProgressTimelineTests {
     func subBucketsDayToSession() async {
         let baseDateHoursAgo = 36.0  // 1.5 days ago
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: baseDateHoursAgo),
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: baseDateHoursAgo - 0.01),
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: baseDateHoursAgo),
+            makePitchDiscriminationRecord(centOffset: 12.0, hoursAgo: baseDateHoursAgo - 0.01),
             // 2 hours later = different session
-            makePitchComparisonRecord(centOffset: 8.0, hoursAgo: baseDateHoursAgo - 2.0),
-            makePitchComparisonRecord(centOffset: 9.0, hoursAgo: baseDateHoursAgo - 2.01),
+            makePitchDiscriminationRecord(centOffset: 8.0, hoursAgo: baseDateHoursAgo - 2.0),
+            makePitchDiscriminationRecord(centOffset: 9.0, hoursAgo: baseDateHoursAgo - 2.01),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -545,8 +545,8 @@ struct ProgressTimelineTests {
     @Test("subBuckets returns empty for session buckets (finest level)")
     func subBucketsSessionEmpty() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 1.0),
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: 0.99),
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 1.0),
+            makePitchDiscriminationRecord(centOffset: 12.0, hoursAgo: 0.99),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -571,9 +571,9 @@ struct ProgressTimelineTests {
         let sessionDate = midnightToday.addingTimeInterval(60)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: monthDate),
-            makePitchComparisonRecord(centOffset: 12.0, date: dayDate),
-            makePitchComparisonRecord(centOffset: 8.0, date: sessionDate),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: monthDate),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: dayDate),
+            makePitchDiscriminationRecord(centOffset: 8.0, date: sessionDate),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -591,8 +591,8 @@ struct ProgressTimelineTests {
         let midnightToday = calendar.startOfDay(for: now)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
-            makePitchComparisonRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(120)),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(120)),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -615,7 +615,7 @@ struct ProgressTimelineTests {
         let now = Date()
         let exactly30DaysAgo = now.addingTimeInterval(-30 * 86400)
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: exactly30DaysAgo),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: exactly30DaysAgo),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -629,7 +629,7 @@ struct ProgressTimelineTests {
         let now = Date()
         let exactly24HoursAgo = now.addingTimeInterval(-24 * 3600)
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: exactly24HoursAgo),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: exactly24HoursAgo),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -645,8 +645,8 @@ struct ProgressTimelineTests {
         let midnightToday = calendar.startOfDay(for: now)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
-            makePitchComparisonRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(660)),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(660)),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -667,9 +667,9 @@ struct ProgressTimelineTests {
         let sessionDate = midnightToday.addingTimeInterval(60)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 8.0, date: sessionDate),
-            makePitchComparisonRecord(centOffset: 10.0, date: monthDate),
-            makePitchComparisonRecord(centOffset: 12.0, date: dayDate),
+            makePitchDiscriminationRecord(centOffset: 8.0, date: sessionDate),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: monthDate),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: dayDate),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -690,9 +690,9 @@ struct ProgressTimelineTests {
         let sessionDate = midnightToday.addingTimeInterval(60)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: monthDate),
-            makePitchComparisonRecord(centOffset: 12.0, date: dayDate),
-            makePitchComparisonRecord(centOffset: 8.0, date: sessionDate),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: monthDate),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: dayDate),
+            makePitchDiscriminationRecord(centOffset: 8.0, date: sessionDate),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -723,8 +723,8 @@ struct ProgressTimelineTests {
         let sessionDate = midnightToday.addingTimeInterval(60)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 12.0, date: dayDate),
-            makePitchComparisonRecord(centOffset: 8.0, date: sessionDate),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: dayDate),
+            makePitchDiscriminationRecord(centOffset: 8.0, date: sessionDate),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -747,8 +747,8 @@ struct ProgressTimelineTests {
         let justBeforeMidnight = midnightToday.addingTimeInterval(-60)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: justBeforeMidnight),
-            makePitchComparisonRecord(centOffset: 12.0, date: justAfterMidnight),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: justBeforeMidnight),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: justAfterMidnight),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -770,8 +770,8 @@ struct ProgressTimelineTests {
         let inMonthZone = dayStart.addingTimeInterval(-3600)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: inMonthZone),
-            makePitchComparisonRecord(centOffset: 12.0, date: inDayZone),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: inMonthZone),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: inDayZone),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -793,8 +793,8 @@ struct ProgressTimelineTests {
         let inDayZone = dayStart.addingTimeInterval(86400 + 12 * 3600)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: inMonthZone),
-            makePitchComparisonRecord(centOffset: 12.0, date: inDayZone),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: inMonthZone),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: inDayZone),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -817,9 +817,9 @@ struct ProgressTimelineTests {
         let midnightToday = calendar.startOfDay(for: now)
 
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
-            makePitchComparisonRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(120)),
-            makePitchComparisonRecord(centOffset: 8.0, date: midnightToday.addingTimeInterval(180)),
+            makePitchDiscriminationRecord(centOffset: 10.0, date: midnightToday.addingTimeInterval(60)),
+            makePitchDiscriminationRecord(centOffset: 12.0, date: midnightToday.addingTimeInterval(120)),
+            makePitchDiscriminationRecord(centOffset: 8.0, date: midnightToday.addingTimeInterval(180)),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.allGranularityBuckets(for: .unisonPitchDiscrimination)
@@ -834,9 +834,9 @@ struct ProgressTimelineTests {
     @Test("existing buckets(for:) still returns identical results after adding allGranularityBuckets")
     func existingBucketsAPIUnchanged() async {
         let records = [
-            makePitchComparisonRecord(centOffset: 10.0, hoursAgo: 2.0),
-            makePitchComparisonRecord(centOffset: 12.0, hoursAgo: 1.9),
-            makePitchComparisonRecord(centOffset: 8.0, hoursAgo: 0.5),
+            makePitchDiscriminationRecord(centOffset: 10.0, hoursAgo: 2.0),
+            makePitchDiscriminationRecord(centOffset: 12.0, hoursAgo: 1.9),
+            makePitchDiscriminationRecord(centOffset: 8.0, hoursAgo: 0.5),
         ]
         let timeline = makeTimeline(pitchComparisonRecords: records)
         let buckets = timeline.buckets(for: .unisonPitchDiscrimination)
@@ -856,7 +856,7 @@ struct ProgressTimelineTests {
         let records = (0..<15).map { i in
             let dayOffset = Double(i)
             let timestamp = monthStart.addingTimeInterval(dayOffset * 86400 + Double(i) * 60)
-            return PitchComparisonRecord(
+            return PitchDiscriminationRecord(
                 referenceNote: 60,
                 targetNote: 60,
                 centOffset: 10.0,

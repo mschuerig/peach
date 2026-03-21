@@ -8,14 +8,14 @@ enum TrainingDataImporter {
     }
 
     struct ImportSummary {
-        let pitchComparisonsImported: Int
+        let pitchDiscriminationsImported: Int
         let pitchMatchingsImported: Int
-        let pitchComparisonsSkipped: Int
+        let pitchDiscriminationsSkipped: Int
         let pitchMatchingsSkipped: Int
         let parseErrorCount: Int
 
-        var totalImported: Int { pitchComparisonsImported + pitchMatchingsImported }
-        var totalSkipped: Int { pitchComparisonsSkipped + pitchMatchingsSkipped }
+        var totalImported: Int { pitchDiscriminationsImported + pitchMatchingsImported }
+        var totalSkipped: Int { pitchDiscriminationsSkipped + pitchMatchingsSkipped }
     }
 
     static func importData(
@@ -38,14 +38,14 @@ enum TrainingDataImporter {
         into store: TrainingDataStore
     ) throws -> ImportSummary {
         try store.replaceAllRecords(
-            pitchComparisons: parseResult.pitchComparisons,
+            pitchDiscriminations: parseResult.pitchDiscriminations,
             pitchMatchings: parseResult.pitchMatchings
         )
 
         return ImportSummary(
-            pitchComparisonsImported: parseResult.pitchComparisons.count,
+            pitchDiscriminationsImported: parseResult.pitchDiscriminations.count,
             pitchMatchingsImported: parseResult.pitchMatchings.count,
-            pitchComparisonsSkipped: 0,
+            pitchDiscriminationsSkipped: 0,
             pitchMatchingsSkipped: 0,
             parseErrorCount: parseResult.errors.count
         )
@@ -57,7 +57,7 @@ enum TrainingDataImporter {
         _ parseResult: CSVImportParser.ImportResult,
         into store: TrainingDataStore
     ) throws -> ImportSummary {
-        let existingComparisons = try store.fetchAllPitchComparisons()
+        let existingComparisons = try store.fetchAllPitchDiscriminations()
         let existingPitchMatchings = try store.fetchAllPitchMatchings()
 
         var existingKeys = Set<DuplicateKey>()
@@ -78,9 +78,9 @@ enum TrainingDataImporter {
             ))
         }
 
-        var pitchComparisonsImported = 0
-        var pitchComparisonsSkipped = 0
-        for record in parseResult.pitchComparisons {
+        var pitchDiscriminationsImported = 0
+        var pitchDiscriminationsSkipped = 0
+        for record in parseResult.pitchDiscriminations {
             let key = DuplicateKey(
                 timestamp: record.timestamp,
                 referenceNote: record.referenceNote,
@@ -88,11 +88,11 @@ enum TrainingDataImporter {
                 trainingType: TrainingType.pitchComparison
             )
             if existingKeys.contains(key) {
-                pitchComparisonsSkipped += 1
+                pitchDiscriminationsSkipped += 1
             } else {
                 try store.save(record)
                 existingKeys.insert(key)
-                pitchComparisonsImported += 1
+                pitchDiscriminationsImported += 1
             }
         }
 
@@ -115,9 +115,9 @@ enum TrainingDataImporter {
         }
 
         return ImportSummary(
-            pitchComparisonsImported: pitchComparisonsImported,
+            pitchDiscriminationsImported: pitchDiscriminationsImported,
             pitchMatchingsImported: pitchMatchingsImported,
-            pitchComparisonsSkipped: pitchComparisonsSkipped,
+            pitchDiscriminationsSkipped: pitchDiscriminationsSkipped,
             pitchMatchingsSkipped: pitchMatchingsSkipped,
             parseErrorCount: parseResult.errors.count
         )

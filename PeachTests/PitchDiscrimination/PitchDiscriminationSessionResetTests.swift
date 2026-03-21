@@ -2,28 +2,28 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Tests for PitchComparisonSession.resetTrainingData() — convergence chain reset behavior
-@Suite("PitchComparisonSession Reset Tests")
-struct PitchComparisonSessionResetTests {
+/// Tests for PitchDiscriminationSession.resetTrainingData() — convergence chain reset behavior
+@Suite("PitchDiscriminationSession Reset Tests")
+struct PitchDiscriminationSessionResetTests {
 
     // MARK: - Cold-Start Behavior After Reset
 
     @Test("after reset, PerceptualProfile comparison data is cleared")
     func resetTrainingDataClearsComparisonData() throws {
         let profile = PerceptualProfile()
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: MockNotePlayer(),
-            strategy: MockNextPitchComparisonStrategy(),
+            strategy: MockNextPitchDiscriminationStrategy(),
             profile: profile
         )
 
         // Simulate converged state via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(50.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 62, targetNote: DetunedMIDINote(note: 62, offset: Cents(50.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
         #expect(profile.comparisonMean(for: .prime) != nil)
@@ -40,15 +40,15 @@ struct PitchComparisonSessionResetTests {
     func afterResetFirstComparisonUses100Cents() throws {
         let profile = PerceptualProfile()
         let strategy = KazezNoteStrategy()
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile
         )
 
         // Simulate converged state via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 
@@ -56,11 +56,11 @@ struct PitchComparisonSessionResetTests {
         try session.resetTrainingData()
         profile.resetAll()
 
-        // Cold start: nil lastPitchComparison with reset profile → should return 100.0
-        let comparison = strategy.nextPitchComparison(
+        // Cold start: nil lastTrial with reset profile → should return 100.0
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime]),
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
         #expect(comparison.targetNote.offset.magnitude == 100.0)
@@ -70,7 +70,7 @@ struct PitchComparisonSessionResetTests {
     func afterResetWeightedEffectiveDifficultyReturnsDefault() throws {
         let profile = PerceptualProfile()
         let strategy = KazezNoteStrategy()
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: MockNotePlayer(),
             strategy: strategy,
             profile: profile
@@ -78,8 +78,8 @@ struct PitchComparisonSessionResetTests {
 
         // Set up trained data via observer
         for note in 55...65 {
-            profile.pitchComparisonCompleted(CompletedPitchComparison(
-                pitchComparison: PitchComparison(referenceNote: MIDINote(note), targetNote: DetunedMIDINote(note: MIDINote(note), offset: Cents(30.0))),
+            profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+                trial: PitchDiscriminationTrial(referenceNote: MIDINote(note), targetNote: DetunedMIDINote(note: MIDINote(note), offset: Cents(30.0))),
                 userAnsweredHigher: true, tuningSystem: .equalTemperament
             ))
         }
@@ -89,10 +89,10 @@ struct PitchComparisonSessionResetTests {
         profile.resetAll()
 
         // With all stats cleared, bootstrap should find no data → 100.0
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime]),
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
         #expect(comparison.targetNote.offset.magnitude == 100.0)
@@ -124,9 +124,9 @@ struct PitchComparisonSessionResetTests {
     func resetTrainingDataStopsActiveTraining() async throws {
         let mockPlayer = MockNotePlayer()
         let profile = PerceptualProfile()
-        let session = PitchComparisonSession(
+        let session = PitchDiscriminationSession(
             notePlayer: mockPlayer,
-            strategy: MockNextPitchComparisonStrategy(),
+            strategy: MockNextPitchDiscriminationStrategy(),
             profile: profile
         )
 
@@ -136,8 +136,8 @@ struct PitchComparisonSessionResetTests {
         #expect(session.state != .idle)
 
         // Simulate converged state via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 

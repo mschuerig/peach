@@ -2,15 +2,15 @@ import Testing
 import Foundation
 @testable import Peach
 
-/// Integration tests for PitchComparisonSession with NotePlayer, DataStore, and Profile
-@Suite("PitchComparisonSession Integration Tests")
-struct PitchComparisonSessionIntegrationTests {
+/// Integration tests for PitchDiscriminationSession with NotePlayer, DataStore, and Profile
+@Suite("PitchDiscriminationSession Integration Tests")
+struct PitchDiscriminationSessionIntegrationTests {
 
     // MARK: - NotePlayer Integration Tests
 
-    @Test("PitchComparisonSession calls play twice per comparison")
+    @Test("PitchDiscriminationSession calls play twice per comparison")
     func callsPlayTwicePerComparison() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -18,9 +18,9 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockPlayer.playCallCount == 2)
     }
 
-    @Test("PitchComparisonSession plays correct frequencies")
+    @Test("PitchDiscriminationSession plays correct frequencies")
     func playsCorrectFrequencies() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -30,9 +30,9 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockPlayer.lastFrequency! >= 100 && f.mockPlayer.lastFrequency! <= 1200)
     }
 
-    @Test("PitchComparisonSession passes correct duration to NotePlayer")
+    @Test("PitchDiscriminationSession passes correct duration to NotePlayer")
     func passesCorrectDuration() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -40,9 +40,9 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockPlayer.lastDuration == .seconds(1))
     }
 
-    @Test("PitchComparisonSession passes correct velocity to NotePlayer")
+    @Test("PitchDiscriminationSession passes correct velocity to NotePlayer")
     func passesCorrectVelocity() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -50,9 +50,9 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockPlayer.lastVelocity == 63)
     }
 
-    @Test("PitchComparisonSession passes default amplitudeDB 0.0 to NotePlayer for both notes")
+    @Test("PitchDiscriminationSession passes default amplitudeDB 0.0 to NotePlayer for both notes")
     func passesDefaultAmplitude() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -64,9 +64,9 @@ struct PitchComparisonSessionIntegrationTests {
 
     // MARK: - TrainingDataStore Integration Tests
 
-    @Test("PitchComparisonSession records comparison on answer")
+    @Test("PitchDiscriminationSession records comparison on answer")
     func recordsComparisonOnAnswer() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -77,9 +77,9 @@ struct PitchComparisonSessionIntegrationTests {
         #expect(f.mockDataStore.lastSavedRecord != nil)
     }
 
-    @Test("PitchComparisonRecord contains correct note data")
+    @Test("PitchDiscriminationRecord contains correct note data")
     func comparisonRecordContainsCorrectData() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -94,7 +94,7 @@ struct PitchComparisonSessionIntegrationTests {
 
     @Test("Data error does not stop training")
     func dataErrorDoesNotStopTraining() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
         f.mockDataStore.shouldThrowError = true
 
         f.session.start(settings: defaultTestSettings)
@@ -113,7 +113,7 @@ struct PitchComparisonSessionIntegrationTests {
 
     @Test("Profile is updated incrementally when comparison is recorded")
     func profileUpdatesIncrementallyAfterComparison() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -128,14 +128,14 @@ struct PitchComparisonSessionIntegrationTests {
 
     @Test("Profile updates use unsigned centOffset for threshold measurement")
     func profileUsesUnsignedCentOffset() async {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
-        f.profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
+        f.profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
-        f.profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
+        f.profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(30.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 
@@ -144,7 +144,7 @@ struct PitchComparisonSessionIntegrationTests {
 
     @Test("Profile statistics accumulate correctly over multiple comparisons")
     func profileAccumulatesMultipleComparisons() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -164,7 +164,7 @@ struct PitchComparisonSessionIntegrationTests {
 
     @Test("Incorrect answer is recorded but does not update profile statistics")
     func incorrectAnswerDoesNotUpdateProfile() async throws {
-        let f = makePitchComparisonSession()
+        let f = makePitchDiscriminationSession()
 
         f.session.start(settings: defaultTestSettings)
         try await waitForState(f.session, .awaitingAnswer)
@@ -182,13 +182,13 @@ struct PitchComparisonSessionIntegrationTests {
     @Test("Profile loaded from pre-populated data store reflects stored records")
     func profileLoadedFromDataStore() async {
         let records = [
-            PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
-            PitchComparisonRecord(referenceNote: 60, targetNote: 60, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
-            PitchComparisonRecord(referenceNote: 62, targetNote: 62, centOffset: -40.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: Date())
+            PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 50.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
+            PitchDiscriminationRecord(referenceNote: 60, targetNote: 60, centOffset: 30.0, isCorrect: true, interval: 0, tuningSystem: "equalTemperament", timestamp: Date()),
+            PitchDiscriminationRecord(referenceNote: 62, targetNote: 62, centOffset: -40.0, isCorrect: false, interval: 0, tuningSystem: "equalTemperament", timestamp: Date())
         ]
 
         let profile = PerceptualProfile { builder in
-            MetricPointMapper.feedPitchComparisons(records, into: builder)
+            MetricPointMapper.feedPitchDiscriminations(records, into: builder)
         }
 
         // Only correct answers contribute: mean of [50, 30] = 40.0
@@ -202,10 +202,10 @@ struct PitchComparisonSessionIntegrationTests {
         let profile = PerceptualProfile()
         let strategy = KazezNoteStrategy()
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime]),
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 

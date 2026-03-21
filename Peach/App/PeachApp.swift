@@ -7,7 +7,7 @@ import os
 struct PeachApp: App {
     @State private var modelContainer: ModelContainer
     @State private var dataStore: TrainingDataStore
-    @State private var pitchComparisonSession: PitchComparisonSession
+    @State private var pitchDiscriminationSession: PitchDiscriminationSession
     @State private var pitchMatchingSession: PitchMatchingSession
     @State private var profile: PerceptualProfile
     @State private var progressTimeline: ProgressTimeline
@@ -25,7 +25,7 @@ struct PeachApp: App {
     init() {
         do {
             let container = try ModelContainer(
-                for: PitchComparisonRecord.self,
+                for: PitchDiscriminationRecord.self,
                 PitchMatchingRecord.self,
                 RhythmComparisonRecord.self,
                 RhythmMatchingRecord.self
@@ -78,7 +78,7 @@ struct PeachApp: App {
 
             let strategy = KazezNoteStrategy()
 
-            _pitchComparisonSession = State(wrappedValue: Self.createPitchComparisonSession(
+            _pitchDiscriminationSession = State(wrappedValue: Self.createPitchDiscriminationSession(
                 notePlayer: notePlayer,
                 strategy: strategy,
                 profile: profile,
@@ -99,7 +99,7 @@ struct PeachApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.pitchComparisonSession, pitchComparisonSession)
+                .environment(\.pitchDiscriminationSession, pitchDiscriminationSession)
                 .environment(\.pitchMatchingSession, pitchMatchingSession)
                 .environment(\.activeSession, activeSession)
                 .environment(\.perceptualProfile, profile)
@@ -121,9 +121,9 @@ struct PeachApp: App {
                 .environment(\.soundPreviewStop, { [notePlayer] in
                     try? await notePlayer.stopAll()
                 })
-                .environment(\.dataStoreResetter, { [dataStore, pitchComparisonSession, profile, transferService] in
+                .environment(\.dataStoreResetter, { [dataStore, pitchDiscriminationSession, profile, transferService] in
                     try dataStore.deleteAll()
-                    try pitchComparisonSession.resetTrainingData()
+                    try pitchDiscriminationSession.resetTrainingData()
                     profile.resetAll()
                     transferService.refreshExport()
                 })
@@ -147,7 +147,7 @@ struct PeachApp: App {
                     notePlayer = newPlayer
 
                     let strategy = KazezNoteStrategy()
-                    pitchComparisonSession = Self.createPitchComparisonSession(
+                    pitchDiscriminationSession = Self.createPitchDiscriminationSession(
                         notePlayer: newPlayer,
                         strategy: strategy,
                         profile: profile,
@@ -159,13 +159,13 @@ struct PeachApp: App {
                         dataStore: dataStore
                     )
                 }
-                .onChange(of: pitchComparisonSession.isIdle) { _, isIdle in
+                .onChange(of: pitchDiscriminationSession.isIdle) { _, isIdle in
                     if !isIdle {
-                        if activeSession !== pitchComparisonSession {
+                        if activeSession !== pitchDiscriminationSession {
                             activeSession?.stop()
                         }
-                        activeSession = pitchComparisonSession
-                    } else if activeSession === pitchComparisonSession {
+                        activeSession = pitchDiscriminationSession
+                    } else if activeSession === pitchDiscriminationSession {
                         activeSession = nil
                     }
                 }
@@ -194,15 +194,15 @@ struct PeachApp: App {
         return profile
     }
 
-    private static func createPitchComparisonSession(
+    private static func createPitchDiscriminationSession(
         notePlayer: NotePlayer,
-        strategy: NextPitchComparisonStrategy,
+        strategy: NextPitchDiscriminationStrategy,
         profile: PerceptualProfile,
         dataStore: TrainingDataStore
-    ) -> PitchComparisonSession {
+    ) -> PitchDiscriminationSession {
         let hapticManager = HapticFeedbackManager()
-        let observers: [PitchComparisonObserver] = [dataStore, profile, hapticManager]
-        return PitchComparisonSession(
+        let observers: [PitchDiscriminationObserver] = [dataStore, profile, hapticManager]
+        return PitchDiscriminationSession(
             notePlayer: notePlayer,
             strategy: strategy,
             profile: profile,

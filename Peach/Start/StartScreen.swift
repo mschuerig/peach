@@ -70,8 +70,8 @@ struct StartScreen: View {
         }
         .navigationDestination(for: NavigationDestination.self) { destination in
             switch destination {
-            case .pitchComparison(let isIntervalMode):
-                PitchComparisonScreen(isIntervalMode: isIntervalMode)
+            case .pitchDiscrimination(let isIntervalMode):
+                PitchDiscriminationScreen(isIntervalMode: isIntervalMode)
             case .pitchMatching(let isIntervalMode):
                 PitchMatchingScreen(isIntervalMode: isIntervalMode)
             case .settings:
@@ -95,7 +95,7 @@ struct StartScreen: View {
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
-            NavigationLink(value: NavigationDestination.pitchComparison(isIntervalMode: false)) {
+            NavigationLink(value: NavigationDestination.pitchDiscrimination(isIntervalMode: false)) {
                 trainingCard("Hear & Compare", systemImage: "ear", mode: .unisonPitchDiscrimination)
             }
             .buttonStyle(TrainingCardButtonStyle())
@@ -113,7 +113,7 @@ struct StartScreen: View {
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
-            NavigationLink(value: NavigationDestination.pitchComparison(isIntervalMode: true)) {
+            NavigationLink(value: NavigationDestination.pitchDiscrimination(isIntervalMode: true)) {
                 trainingCard("Hear & Compare", systemImage: "ear", mode: .intervalPitchDiscrimination)
             }
             .buttonStyle(TrainingCardButtonStyle())

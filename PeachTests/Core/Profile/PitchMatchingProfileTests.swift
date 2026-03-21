@@ -43,8 +43,8 @@ struct PitchMatchingProfileTests {
     @Test("resetAll clears both comparison and matching")
     func resetAllClearsBoth() async {
         let profile = PerceptualProfile()
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(
                 referenceNote: MIDINote(60),
                 targetNote: DetunedMIDINote(note: MIDINote(60), offset: Cents(50.0))
             ),

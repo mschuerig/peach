@@ -7,12 +7,12 @@ struct TrainingDisciplineTests {
     // MARK: - Slug
 
     @Test("slug returns pitch-comparison for unison pitch comparison")
-    func slugUnisonPitchComparison() async {
+    func slugUnisonPitchDiscriminationTrial() async {
         #expect(TrainingDiscipline.unisonPitchDiscrimination.slug == "pitch-discrimination")
     }
 
     @Test("slug returns interval-comparison for interval pitch comparison")
-    func slugIntervalPitchComparison() async {
+    func slugIntervalPitchDiscriminationTrial() async {
         #expect(TrainingDiscipline.intervalPitchDiscrimination.slug == "interval-discrimination")
     }
 

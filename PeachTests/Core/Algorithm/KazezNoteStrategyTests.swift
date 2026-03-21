@@ -8,14 +8,14 @@ struct KazezNoteStrategyTests {
 
     // MARK: - Protocol Compliance
 
-    @Test("Conforms to NextPitchComparisonStrategy and returns valid PitchComparison")
+    @Test("Conforms to NextPitchDiscriminationStrategy and returns valid PitchDiscriminationTrial")
     func protocolCompliance() async {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime])
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -31,10 +31,10 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -46,10 +46,10 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(50.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -117,10 +117,10 @@ struct KazezNoteStrategyTests {
         // P=1: N = 1 × [1 - 0.05×1] = 0.95 → clamped to 5.0
         let last = makeCompleted(offset: 1.0, correct: true)
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: last,
+            lastTrial: last,
             interval: .prime,
         )
 
@@ -135,10 +135,10 @@ struct KazezNoteStrategyTests {
         // P=100 incorrect: N = 100 × [1 + 0.09×10] = 190 → clamped to 100
         let last = makeCompleted(offset: 100.0, correct: false)
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: last,
+            lastTrial: last,
             interval: .prime,
         )
 
@@ -153,10 +153,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<100 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .prime,
             )
             #expect(comparison.referenceNote >= 48 && comparison.referenceNote <= 72)
@@ -169,10 +169,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<100 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .prime,
             )
             #expect(comparison.referenceNote >= 60 && comparison.referenceNote <= 72)
@@ -187,10 +187,10 @@ struct KazezNoteStrategyTests {
         let profile = PerceptualProfile()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -202,21 +202,21 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train some notes via observer so comparisonMean returns a value
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(10.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(10.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(8.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(8.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -231,17 +231,17 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train a note with very small offset via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(0.05))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(0.05))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(1.0), maxCentDifference: Cents(100.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -254,17 +254,17 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let profile = PerceptualProfile()
         // Train with large offset via observer
-        profile.pitchComparisonCompleted(CompletedPitchComparison(
-            pitchComparison: PitchComparison(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(200.0))),
+        profile.pitchDiscriminationCompleted(CompletedPitchDiscriminationTrial(
+            trial: PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(200.0))),
             userAnsweredHigher: true, tuningSystem: .equalTemperament
         ))
 
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(100.0))
 
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: profile,
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
 
@@ -280,25 +280,25 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(1.0), maxCentDifference: Cents(100.0))
 
         // First comparison: 100 cents
-        var comparison = strategy.nextPitchComparison(
+        var comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: nil,
+            lastTrial: nil,
             interval: .prime,
         )
         #expect(comparison.targetNote.offset.magnitude == 100.0)
 
         // Simulate 10 consecutive correct answers
         for _ in 0..<10 {
-            let completed = CompletedPitchComparison(
-                pitchComparison: comparison,
+            let completed = CompletedPitchDiscriminationTrial(
+                trial: comparison,
                 userAnsweredHigher: comparison.isTargetHigher, // correct
                 tuningSystem: .equalTemperament
             )
-            comparison = strategy.nextPitchComparison(
+            comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: completed,
+                lastTrial: completed,
                 interval: .prime,
             )
         }
@@ -315,10 +315,10 @@ struct KazezNoteStrategyTests {
 
         // Start at 5 cents, get it wrong
         let last = makeCompleted(offset: 5.0, correct: false)
-        let comparison = strategy.nextPitchComparison(
+        let comparison = strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: last,
+            lastTrial: last,
             interval: .prime,
         )
 
@@ -335,10 +335,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<20 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .prime,
             )
             #expect(comparison.targetNote.note == comparison.referenceNote)
@@ -351,10 +351,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<20 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .up(.perfectFifth),
             )
             #expect(comparison.targetNote.note.rawValue == comparison.referenceNote.rawValue + 7)
@@ -367,10 +367,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(124)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<50 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .up(.perfectFifth),
             )
             #expect(comparison.referenceNote.rawValue <= 120)
@@ -384,10 +384,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<20 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .up(.octave),
             )
             #expect(comparison.targetNote.note.rawValue == comparison.referenceNote.rawValue + 12)
@@ -401,10 +401,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<20 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .down(.perfectFifth),
             )
             #expect(comparison.targetNote.note.rawValue == comparison.referenceNote.rawValue - 7)
@@ -418,10 +418,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<50 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .down(.perfectFifth),
             )
             // Reference note must be >= 7 so target (ref - 7) stays >= 0
@@ -436,10 +436,10 @@ struct KazezNoteStrategyTests {
         let settings = PitchComparisonTrainingSettings(noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)), referencePitch: .concert440, intervals: [.prime])
 
         for _ in 0..<50 {
-            let comparison = strategy.nextPitchComparison(
+            let comparison = strategy.nextPitchDiscriminationTrial(
                 profile: PerceptualProfile(),
                 settings: settings,
-                lastPitchComparison: nil,
+                lastTrial: nil,
                 interval: .down(.octave),
             )
             #expect(comparison.referenceNote.rawValue >= 12)
@@ -454,10 +454,10 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], minCentDifference: Cents(0.1))
         let last = makeCompleted(offset: p, correct: true)
-        return strategy.nextPitchComparison(
+        return strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: last,
+            lastTrial: last,
             interval: .prime,
         ).targetNote.offset.magnitude
     }
@@ -466,21 +466,21 @@ struct KazezNoteStrategyTests {
         let strategy = KazezNoteStrategy()
         let settings = PitchComparisonTrainingSettings(referencePitch: .concert440, intervals: [.prime], maxCentDifference: Cents(200.0))
         let last = makeCompleted(offset: p, correct: false)
-        return strategy.nextPitchComparison(
+        return strategy.nextPitchDiscriminationTrial(
             profile: PerceptualProfile(),
             settings: settings,
-            lastPitchComparison: last,
+            lastTrial: last,
             interval: .prime,
         ).targetNote.offset.magnitude
     }
 
-    private func makeCompleted(offset: Double, correct: Bool) -> CompletedPitchComparison {
-        let comp = PitchComparison(
+    private func makeCompleted(offset: Double, correct: Bool) -> CompletedPitchDiscriminationTrial {
+        let comp = PitchDiscriminationTrial(
             referenceNote: 60,
             targetNote: DetunedMIDINote(note: 60, offset: Cents(offset))
         )
-        return CompletedPitchComparison(
-            pitchComparison: comp,
+        return CompletedPitchDiscriminationTrial(
+            trial: comp,
             userAnsweredHigher: correct, // isTargetHigher is true (positive cents), so correct = higher
             tuningSystem: .equalTemperament
         )

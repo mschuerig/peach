@@ -2,7 +2,7 @@ import SwiftData
 import Foundation
 import os
 
-/// Pure persistence layer for PitchComparisonRecord and PitchMatchingRecord storage and retrieval
+/// Pure persistence layer for PitchDiscriminationRecord and PitchMatchingRecord storage and retrieval
 /// Responsibilities: CREATE, READ, DELETE operations only - no business logic
 final class TrainingDataStore {
     private static let logger = Logger(subsystem: "com.peach.app", category: "TrainingDataStore")
@@ -15,26 +15,26 @@ final class TrainingDataStore {
     }
 
     /// Saves a comparison record to persistent storage
-    /// - Parameter record: The PitchComparisonRecord to save
+    /// - Parameter record: The PitchDiscriminationRecord to save
     /// - Throws: DataStoreError.saveFailed if save operation fails
-    func save(_ record: PitchComparisonRecord) throws {
+    func save(_ record: PitchDiscriminationRecord) throws {
         do {
             try modelContext.transaction {
                 modelContext.insert(record)
             }
         } catch {
-            throw DataStoreError.saveFailed("Failed to save PitchComparisonRecord: \(error.localizedDescription)")
+            throw DataStoreError.saveFailed("Failed to save PitchDiscriminationRecord: \(error.localizedDescription)")
         }
     }
 
     /// Fetches all comparison records from persistent storage
-    /// - Returns: All PitchComparisonRecord instances sorted by timestamp (oldest first)
+    /// - Returns: All PitchDiscriminationRecord instances sorted by timestamp (oldest first)
     /// - Throws: DataStoreError.fetchFailed if fetch operation fails
     /// - Note: Loads all records into memory at once. For MVP with expected low data volumes (hundreds to low thousands
     ///   of records), this is acceptable. Future optimization: implement batched iteration if data volume becomes large
     ///   (tens of thousands of records or memory pressure observed).
-    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] {
-        let descriptor = FetchDescriptor<PitchComparisonRecord>(
+    func fetchAllPitchDiscriminations() throws -> [PitchDiscriminationRecord] {
+        let descriptor = FetchDescriptor<PitchDiscriminationRecord>(
             sortBy: [SortDescriptor(\.timestamp, order: .forward)]
         )
         do {
@@ -45,9 +45,9 @@ final class TrainingDataStore {
     }
 
     /// Deletes a comparison record from persistent storage
-    /// - Parameter record: The PitchComparisonRecord to delete
+    /// - Parameter record: The PitchDiscriminationRecord to delete
     /// - Throws: DataStoreError.deleteFailed if delete operation fails
-    func delete(_ record: PitchComparisonRecord) throws {
+    func delete(_ record: PitchDiscriminationRecord) throws {
         do {
             try modelContext.transaction {
                 modelContext.delete(record)
@@ -63,7 +63,7 @@ final class TrainingDataStore {
     func deleteAll() throws {
         do {
             try modelContext.transaction {
-                try modelContext.delete(model: PitchComparisonRecord.self)
+                try modelContext.delete(model: PitchDiscriminationRecord.self)
                 try modelContext.delete(model: PitchMatchingRecord.self)
                 try modelContext.delete(model: RhythmComparisonRecord.self)
                 try modelContext.delete(model: RhythmMatchingRecord.self)
@@ -76,20 +76,20 @@ final class TrainingDataStore {
     /// Atomically replaces all records: deletes existing data and inserts new records in a single transaction.
     /// If any insert fails, the entire operation rolls back and existing data is preserved.
     /// - Parameters:
-    ///   - pitchComparisons: Comparison records to insert
+    ///   - pitchDiscriminations: Comparison records to insert
     ///   - pitchMatchings: Pitch matching records to insert
     /// - Throws: DataStoreError.saveFailed if the transaction fails
     func replaceAllRecords(
-        pitchComparisons: [PitchComparisonRecord],
+        pitchDiscriminations: [PitchDiscriminationRecord],
         pitchMatchings: [PitchMatchingRecord]
     ) throws {
         do {
             try modelContext.transaction {
-                try modelContext.delete(model: PitchComparisonRecord.self)
+                try modelContext.delete(model: PitchDiscriminationRecord.self)
                 try modelContext.delete(model: PitchMatchingRecord.self)
                 try modelContext.delete(model: RhythmComparisonRecord.self)
                 try modelContext.delete(model: RhythmMatchingRecord.self)
-                for record in pitchComparisons {
+                for record in pitchDiscriminations {
                     modelContext.insert(record)
                 }
                 for record in pitchMatchings {
@@ -269,18 +269,18 @@ extension TrainingDataStore: PitchMatchingObserver {
     }
 }
 
-// MARK: - PitchComparisonObserver Conformance
+// MARK: - PitchDiscriminationObserver Conformance
 
-extension TrainingDataStore: PitchComparisonObserver {
+extension TrainingDataStore: PitchDiscriminationObserver {
     /// Observes pitch comparison completion and persists the result
     /// - Parameter completed: The completed pitch comparison with user's answer and result
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
-        let pitchComparison = completed.pitchComparison
-        let interval = (try? Interval.between(pitchComparison.referenceNote, pitchComparison.targetNote.note))?.rawValue ?? 0
-        let record = PitchComparisonRecord(
-            referenceNote: pitchComparison.referenceNote.rawValue,
-            targetNote: pitchComparison.targetNote.note.rawValue,
-            centOffset: pitchComparison.targetNote.offset.rawValue,
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
+        let trial = completed.trial
+        let interval = (try? Interval.between(trial.referenceNote, trial.targetNote.note))?.rawValue ?? 0
+        let record = PitchDiscriminationRecord(
+            referenceNote: trial.referenceNote.rawValue,
+            targetNote: trial.targetNote.note.rawValue,
+            centOffset: trial.targetNote.offset.rawValue,
             isCorrect: completed.isCorrect,
             interval: interval,
             tuningSystem: completed.tuningSystem.identifier,

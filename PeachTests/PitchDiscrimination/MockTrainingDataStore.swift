@@ -1,18 +1,18 @@
 import Foundation
 @testable import Peach
 
-final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparisonObserver, PitchMatchingObserver {
+final class MockTrainingDataStore: PitchDiscriminationRecordStoring, PitchDiscriminationObserver, PitchMatchingObserver {
     // MARK: - Comparison Test State Tracking
 
     var saveCallCount = 0
-    var lastSavedRecord: PitchComparisonRecord?
-    var savedRecords: [PitchComparisonRecord] = []
+    var lastSavedRecord: PitchDiscriminationRecord?
+    var savedRecords: [PitchDiscriminationRecord] = []
     var shouldThrowError = false
     var errorToThrow: DataStoreError = .saveFailed("Mock error")
 
     // MARK: - Observer Domain Object Tracking
 
-    var completedComparisons: [CompletedPitchComparison] = []
+    var completedTrials: [CompletedPitchDiscriminationTrial] = []
     var completedPitchMatchings: [CompletedPitchMatching] = []
 
     // MARK: - Pitch Matching Test State Tracking
@@ -26,12 +26,12 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
     var onSaveCalled: (() -> Void)?
     var onSavePitchMatchingCalled: (() -> Void)?
     var onFetchCalled: (() -> Void)?
-    var onPitchComparisonCompletedCalled: (() -> Void)?
+    var onPitchDiscriminationCompletedCalled: (() -> Void)?
     var onPitchMatchingCompletedCalled: (() -> Void)?
 
-    // MARK: - PitchComparisonRecordStoring Protocol
+    // MARK: - PitchDiscriminationRecordStoring Protocol
 
-    func save(_ record: PitchComparisonRecord) throws {
+    func save(_ record: PitchDiscriminationRecord) throws {
         saveCallCount += 1
         lastSavedRecord = record
 
@@ -44,7 +44,7 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
         savedRecords.append(record)
     }
 
-    func fetchAllPitchComparisons() throws -> [PitchComparisonRecord] {
+    func fetchAllPitchDiscriminations() throws -> [PitchDiscriminationRecord] {
         onFetchCalled?()
 
         if shouldThrowError {
@@ -83,7 +83,7 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
         saveCallCount = 0
         lastSavedRecord = nil
         savedRecords = []
-        completedComparisons = []
+        completedTrials = []
         completedPitchMatchings = []
         savePitchMatchingCallCount = 0
         lastSavedPitchMatchingRecord = nil
@@ -92,21 +92,21 @@ final class MockTrainingDataStore: PitchComparisonRecordStoring, PitchComparison
         onSaveCalled = nil
         onSavePitchMatchingCalled = nil
         onFetchCalled = nil
-        onPitchComparisonCompletedCalled = nil
+        onPitchDiscriminationCompletedCalled = nil
         onPitchMatchingCompletedCalled = nil
     }
 
-    // MARK: - PitchComparisonObserver Protocol
+    // MARK: - PitchDiscriminationObserver Protocol
 
-    func pitchComparisonCompleted(_ completed: CompletedPitchComparison) {
-        onPitchComparisonCompletedCalled?()
-        completedComparisons.append(completed)
+    func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
+        onPitchDiscriminationCompletedCalled?()
+        completedTrials.append(completed)
         // Create record for backward compatibility with tests that check savedRecords
-        let pitchComparison = completed.pitchComparison
-        let record = PitchComparisonRecord(
-            referenceNote: pitchComparison.referenceNote.rawValue,
-            targetNote: pitchComparison.targetNote.note.rawValue,
-            centOffset: pitchComparison.targetNote.offset.rawValue,
+        let trial = completed.trial
+        let record = PitchDiscriminationRecord(
+            referenceNote: trial.referenceNote.rawValue,
+            targetNote: trial.targetNote.note.rawValue,
+            centOffset: trial.targetNote.offset.rawValue,
             isCorrect: completed.isCorrect,
             interval: 0,
             tuningSystem: "equalTemperament",

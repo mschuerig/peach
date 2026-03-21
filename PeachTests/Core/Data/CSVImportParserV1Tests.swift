@@ -28,7 +28,7 @@ struct CSVImportParserV1Tests {
     func validHeaderPasses() async {
         let lines = [CSVExportSchema.headerRow, validComparisonRow]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.errors.isEmpty)
     }
 
@@ -57,10 +57,10 @@ struct CSVImportParserV1Tests {
     func parsesComparisonRow() async {
         let lines = [CSVExportSchema.headerRow, validComparisonRow]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.errors.isEmpty)
 
-        let record = result.pitchComparisons[0]
+        let record = result.pitchDiscriminations[0]
         #expect(record.referenceNote == 60)
         #expect(record.targetNote == 64)
         #expect(record.centOffset == 15.5)
@@ -88,7 +88,7 @@ struct CSVImportParserV1Tests {
     func parsesMixedRows() async {
         let lines = [CSVExportSchema.headerRow, validComparisonRow, validPitchMatchingRow]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.pitchMatchings.count == 1)
         #expect(result.errors.isEmpty)
     }
@@ -98,7 +98,7 @@ struct CSVImportParserV1Tests {
         let invalidRow = "pitchComparison,2026-03-03T14:30:00Z,999,C4,64,E4,M3,equalTemperament,15.5,true,,"
         let lines = [CSVExportSchema.headerRow, validComparisonRow, invalidRow]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.errors.count == 1)
     }
 
@@ -106,7 +106,7 @@ struct CSVImportParserV1Tests {
     func headerOnly() async {
         let lines = [CSVExportSchema.headerRow]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.isEmpty)
+        #expect(result.pitchDiscriminations.isEmpty)
         #expect(result.pitchMatchings.isEmpty)
         #expect(result.errors.isEmpty)
     }
@@ -115,7 +115,7 @@ struct CSVImportParserV1Tests {
     func emptyLinesSkipped() async {
         let lines = [CSVExportSchema.headerRow, "", validComparisonRow, ""]
         let result = parser.parse(lines: lines)
-        #expect(result.pitchComparisons.count == 1)
+        #expect(result.pitchDiscriminations.count == 1)
         #expect(result.errors.isEmpty)
     }
 }
