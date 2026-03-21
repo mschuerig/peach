@@ -1,7 +1,7 @@
 import Foundation
 import OSLog
 
-/// Adaptive pitch comparison selection using the Kazez difficulty adjustment formula.
+/// Adaptive pitch discrimination selection using the Kazez difficulty adjustment formula.
 ///
 /// After a correct answer the cent difference narrows; after an incorrect answer it widens.
 /// The adjustment is non-linear: `p * (1 +/- k * sqrt(p))`, where `k` is a coefficient

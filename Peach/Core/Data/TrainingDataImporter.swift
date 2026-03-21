@@ -57,11 +57,11 @@ enum TrainingDataImporter {
         _ parseResult: CSVImportParser.ImportResult,
         into store: TrainingDataStore
     ) throws -> ImportSummary {
-        let existingComparisons = try store.fetchAllPitchDiscriminations()
+        let existingDiscriminations = try store.fetchAllPitchDiscriminations()
         let existingPitchMatchings = try store.fetchAllPitchMatchings()
 
         var existingKeys = Set<DuplicateKey>()
-        for record in existingComparisons {
+        for record in existingDiscriminations {
             existingKeys.insert(DuplicateKey(
                 timestamp: record.timestamp,
                 referenceNote: record.referenceNote,

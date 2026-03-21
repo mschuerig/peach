@@ -7,19 +7,19 @@ struct PitchDiscriminationTrialTests {
 
     @Test("referenceFrequency calculates valid frequency for middle C")
     func referenceFrequencyCalculatesCorrectly() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
 
-        let freq = comparison.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
+        let freq = trial.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
 
         #expect(freq.rawValue >= 260 && freq.rawValue <= 263)
     }
 
     @Test("targetFrequency applies positive cent offset (higher)")
     func targetFrequencyAppliesCentOffsetHigher() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
 
-        let freq1 = comparison.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
-        let freq2 = comparison.targetFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
+        let freq1 = trial.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
+        let freq2 = trial.targetFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
 
         #expect(freq2 > freq1)
 
@@ -29,24 +29,24 @@ struct PitchDiscriminationTrialTests {
 
     @Test("targetFrequency applies negative cent offset (lower)")
     func targetFrequencyAppliesCentOffsetLower() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-100.0)))
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-100.0)))
 
-        let freq1 = comparison.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
-        let freq2 = comparison.targetFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
+        let freq1 = trial.referenceFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
+        let freq2 = trial.targetFrequency(tuningSystem: .equalTemperament, referencePitch: .concert440)
 
         #expect(freq2 < freq1)
     }
 
     @Test("isTargetHigher reflects positive cent difference")
     func isTargetHigherPositiveCents() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0)))
-        #expect(comparison.isTargetHigher == true)
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(50.0)))
+        #expect(trial.isTargetHigher == true)
     }
 
     @Test("isTargetHigher reflects negative cent difference")
     func isTargetHigherNegativeCents() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-50.0)))
-        #expect(comparison.isTargetHigher == false)
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(-50.0)))
+        #expect(trial.isTargetHigher == false)
     }
 
     @Test("isCorrect validates user answer against cent direction")
@@ -64,12 +64,12 @@ struct PitchDiscriminationTrialTests {
 @Suite("CompletedPitchDiscriminationTrial Tests")
 struct CompletedPitchDiscriminationTrialTests {
 
-    @Test("isCorrect delegates to comparison logic")
+    @Test("isCorrect delegates to discrimination logic")
     func isCorrectDelegatesToPitchDiscriminationTrial() async {
-        let comparison = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
+        let trial = PitchDiscriminationTrial(referenceNote: 60, targetNote: DetunedMIDINote(note: 60, offset: Cents(100.0)))
 
-        let correct = CompletedPitchDiscriminationTrial(trial: comparison, userAnsweredHigher: true, tuningSystem: .equalTemperament)
-        let incorrect = CompletedPitchDiscriminationTrial(trial: comparison, userAnsweredHigher: false, tuningSystem: .equalTemperament)
+        let correct = CompletedPitchDiscriminationTrial(trial: trial, userAnsweredHigher: true, tuningSystem: .equalTemperament)
+        let incorrect = CompletedPitchDiscriminationTrial(trial: trial, userAnsweredHigher: false, tuningSystem: .equalTemperament)
 
         #expect(correct.isCorrect == true)
         #expect(incorrect.isCorrect == false)

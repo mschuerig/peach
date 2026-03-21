@@ -1,8 +1,8 @@
 import Foundation
 
-/// Protocol for pitch comparison selection strategies in adaptive training
+/// Protocol for pitch discrimination selection strategies in adaptive training
 ///
-/// Defines the contract for algorithms that select the next pitch comparison
+/// Defines the contract for algorithms that select the next pitch discrimination
 /// based on the user's perceptual profile and training settings.
 ///
 /// # Architecture Boundary
@@ -23,14 +23,14 @@ import Foundation
 /// let trial = strategy.nextPitchDiscriminationTrial(profile: profile, settings: settings, lastTrial: nil, interval: .prime)
 /// ```
 protocol NextPitchDiscriminationStrategy {
-    /// Selects the next pitch comparison based on user's perceptual profile and settings
+    /// Selects the next pitch discrimination based on user's perceptual profile and settings
     ///
     /// Stateless selection - all inputs passed via parameters, output depends only on inputs.
     ///
     /// - Parameters:
     ///   - profile: User's perceptual profile with training statistics
     ///   - settings: Training configuration (note range, difficulty bounds, reference pitch)
-    ///   - lastTrial: The most recently completed pitch comparison (nil on first comparison)
+    ///   - lastTrial: The most recently completed pitch discrimination (nil on first discrimination)
     ///   - interval: The directed musical interval to apply between reference and target note.
     ///     `.prime` produces unison (target == reference); other intervals transpose the target
     ///     by the interval's semitone count via `MIDINote.transposed(by:)`.

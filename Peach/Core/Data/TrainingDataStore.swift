@@ -14,7 +14,7 @@ final class TrainingDataStore {
         self.modelContext = modelContext
     }
 
-    /// Saves a comparison record to persistent storage
+    /// Saves a pitch discrimination record to persistent storage
     /// - Parameter record: The PitchDiscriminationRecord to save
     /// - Throws: DataStoreError.saveFailed if save operation fails
     func save(_ record: PitchDiscriminationRecord) throws {
@@ -27,7 +27,7 @@ final class TrainingDataStore {
         }
     }
 
-    /// Fetches all comparison records from persistent storage
+    /// Fetches all pitch discrimination records from persistent storage
     /// - Returns: All PitchDiscriminationRecord instances sorted by timestamp (oldest first)
     /// - Throws: DataStoreError.fetchFailed if fetch operation fails
     /// - Note: Loads all records into memory at once. For MVP with expected low data volumes (hundreds to low thousands
@@ -44,7 +44,7 @@ final class TrainingDataStore {
         }
     }
 
-    /// Deletes a comparison record from persistent storage
+    /// Deletes a pitch discrimination record from persistent storage
     /// - Parameter record: The PitchDiscriminationRecord to delete
     /// - Throws: DataStoreError.deleteFailed if delete operation fails
     func delete(_ record: PitchDiscriminationRecord) throws {
@@ -76,7 +76,7 @@ final class TrainingDataStore {
     /// Atomically replaces all records: deletes existing data and inserts new records in a single transaction.
     /// If any insert fails, the entire operation rolls back and existing data is preserved.
     /// - Parameters:
-    ///   - pitchDiscriminations: Comparison records to insert
+    ///   - pitchDiscriminations: Pitch discrimination records to insert
     ///   - pitchMatchings: Pitch matching records to insert
     /// - Throws: DataStoreError.saveFailed if the transaction fails
     func replaceAllRecords(
@@ -272,8 +272,8 @@ extension TrainingDataStore: PitchMatchingObserver {
 // MARK: - PitchDiscriminationObserver Conformance
 
 extension TrainingDataStore: PitchDiscriminationObserver {
-    /// Observes pitch comparison completion and persists the result
-    /// - Parameter completed: The completed pitch comparison with user's answer and result
+    /// Observes pitch discrimination completion and persists the result
+    /// - Parameter completed: The completed pitch discrimination with user's answer and result
     func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial) {
         let trial = completed.trial
         let interval = (try? Interval.between(trial.referenceNote, trial.targetNote.note))?.rawValue ?? 0
@@ -291,10 +291,10 @@ extension TrainingDataStore: PitchDiscriminationObserver {
             try save(record)
         } catch let error as DataStoreError {
             // Data error - log but don't propagate (observers shouldn't fail training)
-            Self.logger.warning("Pitch comparison save error: \(error.localizedDescription)")
+            Self.logger.warning("Pitch discrimination save error: \(error.localizedDescription)")
         } catch {
             // Unexpected error - log but don't propagate
-            Self.logger.warning("Pitch comparison unexpected error: \(error.localizedDescription)")
+            Self.logger.warning("Pitch discrimination unexpected error: \(error.localizedDescription)")
         }
     }
 }

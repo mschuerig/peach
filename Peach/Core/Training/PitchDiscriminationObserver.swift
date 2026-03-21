@@ -1,15 +1,15 @@
 import Foundation
 
-/// Observer protocol for pitch comparison completion events
+/// Observer protocol for pitch discrimination completion events
 ///
-/// Observers are notified when a pitch comparison is completed during training.
+/// Observers are notified when a pitch discrimination is completed during training.
 /// This allows decoupling PitchDiscriminationSession from specific implementations
 /// of data storage, analytics, and feedback mechanisms.
 ///
 /// ## Conforming Types
-/// - TrainingDataStore: Persists pitch comparison results
+/// - TrainingDataStore: Persists pitch discrimination results
 /// - PerceptualProfile: Updates detection threshold statistics
-/// - ProgressTimeline: Tracks accuracy trends and timeline data per training mode
+/// - ProgressTimeline: Tracks accuracy trends and timeline data per training discipline
 /// - HapticFeedbackManager: Provides haptic feedback
 ///
 /// ## Usage
@@ -22,8 +22,8 @@ import Foundation
 /// }
 /// ```
 protocol PitchDiscriminationObserver {
-    /// Called when a pitch comparison is completed during training
+    /// Called when a pitch discrimination is completed during training
     ///
-    /// - Parameter completed: The completed pitch comparison with user's answer and result
+    /// - Parameter completed: The completed pitch discrimination with user's answer and result
     func pitchDiscriminationCompleted(_ completed: CompletedPitchDiscriminationTrial)
 }

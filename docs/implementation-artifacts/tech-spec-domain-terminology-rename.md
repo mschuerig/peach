@@ -2,8 +2,8 @@
 title: 'Domain Terminology Rename'
 slug: 'domain-terminology-rename'
 created: '2026-03-21'
-status: 'ready-for-dev'
-stepsCompleted: []
+status: 'done'
+stepsCompleted: ['phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'phase-7', 'phase-8']
 tech_stack: ['Swift 6.2', 'SwiftUI', 'SwiftData', 'Swift Testing']
 ---
 

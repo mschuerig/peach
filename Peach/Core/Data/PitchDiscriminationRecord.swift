@@ -16,13 +16,13 @@ final class PitchDiscriminationRecord {
     /// Did the user answer correctly?
     var isCorrect: Bool
 
-    /// When the comparison was answered
+    /// When the discrimination was answered
     var timestamp: Date
 
     /// Interval between reference and target notes (stored as semitone count)
     var interval: Int
 
-    /// Tuning system used for the comparison (stored as string identifier)
+    /// Tuning system used for the discrimination (stored as string identifier)
     var tuningSystem: String
 
     init(referenceNote: Int, targetNote: Int, centOffset: Double, isCorrect: Bool, interval: Int, tuningSystem: String, timestamp: Date = Date()) {

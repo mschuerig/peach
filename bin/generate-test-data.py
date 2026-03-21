@@ -7,18 +7,18 @@ Creates training records at multiple time ranges so all bucket types appear:
   - 2-3 days ago    -> day buckets   (tap to expand into sessions)
   - Today           -> session buckets (finest level, not expandable)
 
-Supports 4 training modes:
-  --comparison-unison     pitchComparison with P1 interval
-  --comparison-interval   pitchComparison with random non-unison intervals
-  --matching-unison       pitchMatching with P1 interval
-  --matching-interval     pitchMatching with random non-unison intervals
+Supports 4 training disciplines:
+  --discrimination-unison     pitchDiscrimination with P1 interval
+  --discrimination-interval   pitchDiscrimination with random non-unison intervals
+  --matching-unison           pitchMatching with P1 interval
+  --matching-interval         pitchMatching with random non-unison intervals
 
-Without any mode flags, generates records distributed across all 4 modes.
+Without any discipline flags, generates records distributed across all 4 disciplines.
 
 Usage:
-    python3 bin/generate-test-data.py                          # 100 records, all modes
-    python3 bin/generate-test-data.py --comparison-unison      # 100 comparison-unison
-    python3 bin/generate-test-data.py --count 50 output.csv    # 50 records to custom path
+    python3 bin/generate-test-data.py                              # 100 records, all disciplines
+    python3 bin/generate-test-data.py --discrimination-unison      # 100 discrimination-unison
+    python3 bin/generate-test-data.py --count 50 output.csv        # 50 records to custom path
 
 Then import the CSV in the app via Settings > Import Training Data (merge mode).
 """
@@ -83,11 +83,11 @@ def random_user_cent_error() -> float:
     return round(random.uniform(1, 15), 1)
 
 
-def pitch_comparison_row(timestamp: datetime, cent_offset: float,
-                         interval_abbrev: str, ref_note: int,
-                         target_note: int) -> list:
+def pitch_discrimination_row(timestamp: datetime, cent_offset: float,
+                             interval_abbrev: str, ref_note: int,
+                             target_note: int) -> list:
     return [
-        "pitchComparison",
+        "pitchDiscrimination",
         iso_timestamp(timestamp),
         str(ref_note), midi_name(ref_note),
         str(target_note), midi_name(target_note),
@@ -95,8 +95,8 @@ def pitch_comparison_row(timestamp: datetime, cent_offset: float,
         "equalTemperament",
         f"{cent_offset:.1f}",
         random.choice(["true", "false"]),
-        "",  # initialCentOffset (pitchComparison doesn't use)
-        "",  # userCentError (pitchComparison doesn't use)
+        "",  # initialCentOffset (pitchDiscrimination doesn't use)
+        "",  # userCentError (pitchDiscrimination doesn't use)
     ]
 
 
@@ -117,24 +117,24 @@ def pitch_matching_row(timestamp: datetime, initial_cent_offset: float,
     ]
 
 
-def make_row(mode: str, timestamp: datetime) -> list:
+def make_row(discipline: str, timestamp: datetime) -> list:
     ref = random_ref_note()
 
-    if mode == "comparison-unison":
-        return pitch_comparison_row(timestamp, random_cent_offset(), "P1", ref, ref)
+    if discipline == "discrimination-unison":
+        return pitch_discrimination_row(timestamp, random_cent_offset(), "P1", ref, ref)
 
-    elif mode == "comparison-interval":
+    elif discipline == "discrimination-interval":
         abbrev, semitones = random_interval()
         target = ref + semitones
         if target > 127:
             target = ref - semitones
-        return pitch_comparison_row(timestamp, random_cent_offset(), abbrev, ref, target)
+        return pitch_discrimination_row(timestamp, random_cent_offset(), abbrev, ref, target)
 
-    elif mode == "matching-unison":
+    elif discipline == "matching-unison":
         return pitch_matching_row(timestamp, random_initial_cent_offset(),
                                   random_user_cent_error(), "P1", ref, ref)
 
-    elif mode == "matching-interval":
+    elif discipline == "matching-interval":
         abbrev, semitones = random_interval()
         target = ref + semitones
         if target > 127:
@@ -143,7 +143,7 @@ def make_row(mode: str, timestamp: datetime) -> list:
                                   random_user_cent_error(), abbrev, ref, target)
 
     else:
-        raise ValueError(f"Unknown mode: {mode}")
+        raise ValueError(f"Unknown discipline: {discipline}")
 
 
 def generate_timestamps(count: int) -> list[datetime]:
@@ -179,49 +179,49 @@ def generate_timestamps(count: int) -> list[datetime]:
     return timestamps
 
 
-def generate_records(modes: list[str], count: int) -> list:
+def generate_records(disciplines: list[str], count: int) -> list:
     timestamps = generate_timestamps(count)
     rows = []
 
     for i, ts in enumerate(timestamps):
-        mode = modes[i % len(modes)]
-        rows.append(make_row(mode, ts))
+        discipline = disciplines[i % len(disciplines)]
+        rows.append(make_row(discipline, ts))
 
     return rows
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate CSV test data for Peach training modes.")
+        description="Generate CSV test data for Peach training disciplines.")
     parser.add_argument("output", nargs="?", default="test-data.csv",
                         help="Output CSV file path (default: test-data.csv)")
     parser.add_argument("--count", type=int, default=100,
                         help="Number of records to generate (default: 100)")
-    parser.add_argument("--comparison-unison", action="store_true",
-                        help="Generate pitch comparison unison records")
-    parser.add_argument("--comparison-interval", action="store_true",
-                        help="Generate pitch comparison interval records")
+    parser.add_argument("--discrimination-unison", action="store_true",
+                        help="Generate pitch discrimination unison records")
+    parser.add_argument("--discrimination-interval", action="store_true",
+                        help="Generate pitch discrimination interval records")
     parser.add_argument("--matching-unison", action="store_true",
                         help="Generate pitch matching unison records")
     parser.add_argument("--matching-interval", action="store_true",
                         help="Generate pitch matching interval records")
     args = parser.parse_args()
 
-    modes = []
-    if args.comparison_unison:
-        modes.append("comparison-unison")
-    if args.comparison_interval:
-        modes.append("comparison-interval")
+    disciplines = []
+    if args.discrimination_unison:
+        disciplines.append("discrimination-unison")
+    if args.discrimination_interval:
+        disciplines.append("discrimination-interval")
     if args.matching_unison:
-        modes.append("matching-unison")
+        disciplines.append("matching-unison")
     if args.matching_interval:
-        modes.append("matching-interval")
+        disciplines.append("matching-interval")
 
-    if not modes:
-        modes = ["comparison-unison", "comparison-interval",
-                 "matching-unison", "matching-interval"]
+    if not disciplines:
+        disciplines = ["discrimination-unison", "discrimination-interval",
+                       "matching-unison", "matching-interval"]
 
-    rows = generate_records(modes, args.count)
+    rows = generate_records(disciplines, args.count)
 
     with open(args.output, "w", newline="") as f:
         f.write(METADATA_LINE + "\n")
@@ -229,24 +229,24 @@ def main():
         writer.writerow(HEADER)
         writer.writerows(rows)
 
-    # Count per mode
-    mode_counts = {}
+    # Count per discipline
+    discipline_counts = {}
     for row in rows:
         training_type = row[0]
         interval = row[6]
-        if training_type == "pitchComparison" and interval == "P1":
-            key = "comparison-unison"
-        elif training_type == "pitchComparison":
-            key = "comparison-interval"
+        if training_type == "pitchDiscrimination" and interval == "P1":
+            key = "discrimination-unison"
+        elif training_type == "pitchDiscrimination":
+            key = "discrimination-interval"
         elif training_type == "pitchMatching" and interval == "P1":
             key = "matching-unison"
         else:
             key = "matching-interval"
-        mode_counts[key] = mode_counts.get(key, 0) + 1
+        discipline_counts[key] = discipline_counts.get(key, 0) + 1
 
     print(f"Written {len(rows)} records to {args.output}")
-    for mode, cnt in sorted(mode_counts.items()):
-        print(f"  {mode}: {cnt} records")
+    for discipline, cnt in sorted(discipline_counts.items()):
+        print(f"  {discipline}: {cnt} records")
     print()
     print("Import via: Settings > Import Training Data > Merge")
 
