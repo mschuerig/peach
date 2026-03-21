@@ -67,10 +67,10 @@ struct PitchMatchingSessionTests {
         #expect(session.state == .idle)
     }
 
-    @Test("currentChallenge is nil initially")
-    func currentChallengeNilInitially() async {
+    @Test("currentTrial is nil initially")
+    func currentTrialNilInitially() async {
         let (session, _, _, _) = makePitchMatchingSession()
-        #expect(session.currentChallenge == nil)
+        #expect(session.currentTrial == nil)
     }
 
     @Test("lastResult is nil initially")
@@ -79,10 +79,10 @@ struct PitchMatchingSessionTests {
         #expect(session.lastResult == nil)
     }
 
-    // MARK: - Task 2: Challenge Generation Tests
+    // MARK: - Task 2: Trial Generation Tests
 
-    @Test("challenge has note within configured range")
-    func challengeNoteWithinRange() async throws {
+    @Test("trial has note within configured range")
+    func trialNoteWithinRange() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         let settings = PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(48), upperBound: MIDINote(72)),
@@ -93,20 +93,20 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.referenceNote >= 48)
-        #expect(challenge.referenceNote <= 72)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.referenceNote >= 48)
+        #expect(trial.referenceNote <= 72)
     }
 
-    @Test("challenge has offset within ±20 cents")
-    func challengeOffsetWithinRange() async throws {
+    @Test("trial has offset within ±20 cents")
+    func trialOffsetWithinRange() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: defaultPitchMatchingTestSettings)
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.initialCentOffset >= -20)
-        #expect(challenge.initialCentOffset <= 20)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.initialCentOffset >= -20)
+        #expect(trial.initialCentOffset <= 20)
     }
 
     // MARK: - Task 3: State Transition Tests
@@ -134,8 +134,8 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        let expectedFreq = TuningSystem.equalTemperament.frequency(for: challenge.referenceNote, referencePitch: .concert440)
+        let trial = try #require(session.currentTrial)
+        let expectedFreq = TuningSystem.equalTemperament.frequency(for: trial.referenceNote, referencePitch: .concert440)
         #expect(notePlayer.playHistory.first != nil)
         let firstPlay = notePlayer.playHistory.first!
         #expect(abs(firstPlay.frequency - expectedFreq.rawValue) < 0.01)
@@ -190,13 +190,13 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
         let result = try #require(observer.lastResult)
         // Slider at 0 means "accept detuned pitch as-is" — error should equal initialCentOffset, not 0
-        #expect(abs(result.userCentError.rawValue - challenge.initialCentOffset.rawValue) < 0.01)
+        #expect(abs(result.userCentError.rawValue - trial.initialCentOffset.rawValue) < 0.01)
         // Only reference note played — no tunable note started (would be immediately orphaned)
         #expect(notePlayer.playCallCount == 1)
     }
@@ -209,7 +209,7 @@ struct PitchMatchingSessionTests {
 
         session.stop()
         #expect(session.state == .idle)
-        #expect(session.currentChallenge == nil)
+        #expect(session.currentTrial == nil)
         // Only reference note was played, no tunable note
         #expect(notePlayer.playCallCount == 1)
     }
@@ -226,9 +226,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
-        let baseFreq = TuningSystem.equalTemperament.frequency(for: challenge.referenceNote, referencePitch: .concert440)
-        let expectedTunableFreq = baseFreq.rawValue * pow(2.0, challenge.initialCentOffset.rawValue / 1200.0)
+        let trial = try #require(session.currentTrial)
+        let baseFreq = TuningSystem.equalTemperament.frequency(for: trial.referenceNote, referencePitch: .concert440)
+        let expectedTunableFreq = baseFreq.rawValue * pow(2.0, trial.initialCentOffset.rawValue / 1200.0)
 
         // The second play call (handle-returning) should be the tunable note
         #expect(notePlayer.playCallCount >= 2)
@@ -263,9 +263,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that cancels initialCentOffset → 0 cent error
-        let correctingValue = -challenge.initialCentOffset.rawValue / 20.0
+        let correctingValue = -trial.initialCentOffset.rawValue / 20.0
         session.commitPitch(correctingValue)
         try await waitForState(session, .showingFeedback)
 
@@ -285,9 +285,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that produces exactly +10 cents: initialCentOffset + value * 20 = 10
-        let value = (10.0 - challenge.initialCentOffset.rawValue) / 20.0
+        let value = (10.0 - trial.initialCentOffset.rawValue) / 20.0
         session.commitPitch(value)
         try await waitForState(session, .showingFeedback)
 
@@ -330,7 +330,7 @@ struct PitchMatchingSessionTests {
         session.commitPitch(0.0)
         try await waitForState(session, .showingFeedback)
 
-        // After feedback duration (~400ms), should auto-advance to next challenge
+        // After feedback duration (~400ms), should auto-advance to next trial
         try await waitForState(session, .awaitingSliderTouch, timeout: .seconds(3))
         #expect(session.state == .awaitingSliderTouch)
     }
@@ -375,9 +375,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that produces exactly -10 cents: initialCentOffset + value * 20 = -10
-        let value = (-10.0 - challenge.initialCentOffset.rawValue) / 20.0
+        let value = (-10.0 - trial.initialCentOffset.rawValue) / 20.0
         session.commitPitch(value)
         try await waitForState(session, .showingFeedback)
 
@@ -440,7 +440,7 @@ struct PitchMatchingSessionTests {
         session.stop()
         #expect(session.state == .idle)
 
-        // Verify session does NOT advance to next challenge after stop
+        // Verify session does NOT advance to next trial after stop
         try await Task.sleep(for: .milliseconds(600))
         #expect(session.state == .idle)
     }
@@ -465,15 +465,15 @@ struct PitchMatchingSessionTests {
         #expect(observer.pitchMatchingCompletedCallCount == 0)
     }
 
-    @Test("stop clears currentChallenge")
-    func stopClearsCurrentChallenge() async throws {
+    @Test("stop clears currentTrial")
+    func stopClearsCurrentTrial() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: defaultPitchMatchingTestSettings)
         try await waitForState(session, .awaitingSliderTouch)
-        #expect(session.currentChallenge != nil)
+        #expect(session.currentTrial != nil)
 
         session.stop()
-        #expect(session.currentChallenge == nil)
+        #expect(session.currentTrial == nil)
     }
 
     @Test("double stop is safe")
@@ -501,16 +501,16 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         let handle = try #require(notePlayer.lastHandle)
         let adjustCountBefore = handle.adjustFrequencyCallCount
 
         // Slider value that cancels initialCentOffset → exact target frequency
-        let correctingValue = -challenge.initialCentOffset.rawValue / 20.0
+        let correctingValue = -trial.initialCentOffset.rawValue / 20.0
         session.adjustPitch(correctingValue)
         try await Task.sleep(for: .milliseconds(50))
 
-        let expectedFreq = TuningSystem.equalTemperament.frequency(for: challenge.targetNote, referencePitch: .concert440)
+        let expectedFreq = TuningSystem.equalTemperament.frequency(for: trial.targetNote, referencePitch: .concert440)
         #expect(handle.adjustFrequencyCallCount == adjustCountBefore + 1)
         #expect(abs(handle.lastAdjustedFrequency! - expectedFreq.rawValue) < 0.01)
     }
@@ -527,14 +527,14 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         let handle = try #require(notePlayer.lastHandle)
         let adjustCountBefore = handle.adjustFrequencyCallCount
         session.adjustPitch(1.0)
         try await Task.sleep(for: .milliseconds(50))
 
-        let targetFreq = TuningSystem.equalTemperament.frequency(for: challenge.targetNote, referencePitch: .concert440).rawValue
-        let totalCentOffset = challenge.initialCentOffset.rawValue + 20.0
+        let targetFreq = TuningSystem.equalTemperament.frequency(for: trial.targetNote, referencePitch: .concert440).rawValue
+        let totalCentOffset = trial.initialCentOffset.rawValue + 20.0
         let expectedFreq = targetFreq * pow(2.0, totalCentOffset / 1200.0)
         #expect(handle.adjustFrequencyCallCount == adjustCountBefore + 1)
         #expect(abs(handle.lastAdjustedFrequency! - expectedFreq) < 0.01)
@@ -551,16 +551,16 @@ struct PitchMatchingSessionTests {
         ))
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         let handle = try #require(notePlayer.lastHandle)
         let adjustCountBefore = handle.adjustFrequencyCallCount
         // Slider value that cancels initialCentOffset → exact target frequency
-        let correctingValue = -challenge.initialCentOffset.rawValue / 20.0
+        let correctingValue = -trial.initialCentOffset.rawValue / 20.0
         session.adjustPitch(correctingValue)
         try await Task.sleep(for: .milliseconds(50))
 
         let expectedTargetFreq = TuningSystem.equalTemperament.frequency(
-            for: challenge.targetNote, referencePitch: .concert440)
+            for: trial.targetNote, referencePitch: .concert440)
         #expect(handle.adjustFrequencyCallCount == adjustCountBefore + 1)
         #expect(abs(handle.lastAdjustedFrequency! - expectedTargetFreq.rawValue) < 0.01)
     }
@@ -577,9 +577,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that cancels initialCentOffset → 0 cent error
-        let correctingValue = -challenge.initialCentOffset.rawValue / 20.0
+        let correctingValue = -trial.initialCentOffset.rawValue / 20.0
         session.commitPitch(correctingValue)
         try await waitForState(session, .showingFeedback)
 
@@ -599,9 +599,9 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that produces exactly +10 cents: initialCentOffset + value * 20 = 10
-        let value = (10.0 - challenge.initialCentOffset.rawValue) / 20.0
+        let value = (10.0 - trial.initialCentOffset.rawValue) / 20.0
         session.commitPitch(value)
         try await waitForState(session, .showingFeedback)
 
@@ -675,10 +675,10 @@ struct PitchMatchingSessionTests {
         #expect(session.isIntervalMode == false)
     }
 
-    // MARK: - Interval Challenge Generation Tests (Task 3)
+    // MARK: - Interval Trial Generation Tests (Task 3)
 
-    @Test("generateChallenge with prime produces targetNote equal to referenceNote")
-    func generateChallengePrimeTargetEqualsReference() async throws {
+    @Test("generateTrial with prime produces targetNote equal to referenceNote")
+    func generateTrialPrimeTargetEqualsReference() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         let settings = PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)),
@@ -689,12 +689,12 @@ struct PitchMatchingSessionTests {
         session.start(settings: settings)
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.targetNote == challenge.referenceNote)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.targetNote == trial.referenceNote)
     }
 
-    @Test("generateChallenge with perfectFifth produces target 7 semitones above reference")
-    func generateChallengePerfectFifthTarget() async throws {
+    @Test("generateTrial with perfectFifth produces target 7 semitones above reference")
+    func generateTrialPerfectFifthTarget() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)),
@@ -704,12 +704,12 @@ struct PitchMatchingSessionTests {
         ))
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.targetNote.rawValue == challenge.referenceNote.rawValue + 7)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.targetNote.rawValue == trial.referenceNote.rawValue + 7)
     }
 
-    @Test("generateChallenge constrains reference note range for interval")
-    func generateChallengeConstrainsRangeForInterval() async throws {
+    @Test("generateTrial constrains reference note range for interval")
+    func generateTrialConstrainsRangeForInterval() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(125)),
@@ -719,14 +719,14 @@ struct PitchMatchingSessionTests {
         ))
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Reference note must be <= 120 (127 - 7) to allow perfect fifth transposition
-        #expect(challenge.referenceNote.rawValue <= 120)
-        #expect(challenge.targetNote.rawValue <= 127)
+        #expect(trial.referenceNote.rawValue <= 120)
+        #expect(trial.targetNote.rawValue <= 127)
     }
 
-    @Test("generateChallenge with downward perfectFifth produces target 7 semitones below reference")
-    func generateChallengeDownwardPerfectFifthTarget() async throws {
+    @Test("generateTrial with downward perfectFifth produces target 7 semitones below reference")
+    func generateTrialDownwardPerfectFifthTarget() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(60), upperBound: MIDINote(72)),
@@ -736,12 +736,12 @@ struct PitchMatchingSessionTests {
         ))
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.targetNote.rawValue == challenge.referenceNote.rawValue - 7)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.targetNote.rawValue == trial.referenceNote.rawValue - 7)
     }
 
-    @Test("generateChallenge constrains reference note minimum for downward interval")
-    func generateChallengeConstrainsRangeForDownwardInterval() async throws {
+    @Test("generateTrial constrains reference note minimum for downward interval")
+    func generateTrialConstrainsRangeForDownwardInterval() async throws {
         let (session, _, _, _) = makePitchMatchingSession()
         session.start(settings: PitchMatchingTrainingSettings(
             noteRange: NoteRange(lowerBound: MIDINote(0), upperBound: MIDINote(84)),
@@ -751,10 +751,10 @@ struct PitchMatchingSessionTests {
         ))
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Reference note must be >= 7 so target (ref - 7) stays >= 0
-        #expect(challenge.referenceNote.rawValue >= 7)
-        #expect(challenge.targetNote.rawValue >= 0)
+        #expect(trial.referenceNote.rawValue >= 7)
+        #expect(trial.targetNote.rawValue >= 0)
     }
 
     // MARK: - Tuning System and Anchor Tests (Task 4)
@@ -770,11 +770,11 @@ struct PitchMatchingSessionTests {
         ))
         try await waitForState(session, .awaitingSliderTouch)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.targetNote.rawValue == challenge.referenceNote.rawValue + 7)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.targetNote.rawValue == trial.referenceNote.rawValue + 7)
         // referenceFrequency should be the target note frequency, not the reference note frequency
         let expectedTargetFreq = TuningSystem.equalTemperament.frequency(
-            for: challenge.targetNote, referencePitch: .concert440)
+            for: trial.targetNote, referencePitch: .concert440)
         let refFreq = try #require(session.referenceFrequency)
         #expect(abs(refFreq.rawValue - expectedTargetFreq.rawValue) < 0.01)
     }
@@ -790,12 +790,12 @@ struct PitchMatchingSessionTests {
         ))
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
-        #expect(challenge.targetNote.rawValue == challenge.referenceNote.rawValue + 7)
+        let trial = try #require(session.currentTrial)
+        #expect(trial.targetNote.rawValue == trial.referenceNote.rawValue + 7)
 
         // Tunable note should be detuned from TARGET (67), not reference (60)
         let expectedFreq = TuningSystem.equalTemperament.frequency(
-            for: DetunedMIDINote(note: challenge.targetNote, offset: challenge.initialCentOffset),
+            for: DetunedMIDINote(note: trial.targetNote, offset: trial.initialCentOffset),
             referencePitch: .concert440)
 
         #expect(notePlayer.playCallCount >= 2)
@@ -814,9 +814,9 @@ struct PitchMatchingSessionTests {
         ))
         try await transitionToPlayingTunable(session)
 
-        let challenge = try #require(session.currentChallenge)
+        let trial = try #require(session.currentTrial)
         // Slider value that cancels initialCentOffset → 0 cent error
-        let correctingValue = -challenge.initialCentOffset.rawValue / 20.0
+        let correctingValue = -trial.initialCentOffset.rawValue / 20.0
         session.commitPitch(correctingValue)
         try await waitForState(session, .showingFeedback)
 
@@ -824,7 +824,7 @@ struct PitchMatchingSessionTests {
         #expect(abs(result.userCentError.rawValue) < 0.01)
     }
 
-    @Test("CompletedPitchMatching carries session tuningSystem")
+    @Test("CompletedPitchMatchingTrial carries session tuningSystem")
     func completedPitchMatchingCarriesTuningSystem() async throws {
         let (session, _, _, observer) = makePitchMatchingSession()
         session.start(settings: defaultPitchMatchingTestSettings)
@@ -902,7 +902,7 @@ struct PitchMatchingSessionTests {
         try await waitForState(session, .showingFeedback)
         #expect(observer.pitchMatchingCompletedCallCount == 1)
 
-        // Wait for auto-advance to next challenge
+        // Wait for auto-advance to next trial
         try await waitForState(session, .awaitingSliderTouch, timeout: .seconds(3))
 
         session.adjustPitch(0.0)

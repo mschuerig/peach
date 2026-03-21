@@ -13,5 +13,5 @@ protocol PitchMatchingObserver {
     /// Called when a pitch matching exercise is completed
     ///
     /// - Parameter result: The completed pitch matching with user's accuracy
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching)
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial)
 }

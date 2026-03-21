@@ -1,6 +1,6 @@
 import Foundation
 
-struct CompletedPitchMatching {
+struct CompletedPitchMatchingTrial {
     let referenceNote: MIDINote
     let targetNote: MIDINote
     let initialCentOffset: Cents

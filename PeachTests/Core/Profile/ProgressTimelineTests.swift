@@ -305,7 +305,7 @@ struct ProgressTimelineTests {
         let timeline = ProgressTimeline(profile: profile)
         #expect(timeline.state(for: .unisonPitchMatching) == .noData)
 
-        let result = CompletedPitchMatching(
+        let result = CompletedPitchMatchingTrial(
             referenceNote: MIDINote(60),
             targetNote: MIDINote(60),
             initialCentOffset: 50.0,

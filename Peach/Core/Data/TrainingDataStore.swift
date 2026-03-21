@@ -247,7 +247,7 @@ extension TrainingDataStore: RhythmMatchingObserver {
 // MARK: - PitchMatchingObserver Conformance
 
 extension TrainingDataStore: PitchMatchingObserver {
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial) {
         let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
         let record = PitchMatchingRecord(
             referenceNote: result.referenceNote.rawValue,

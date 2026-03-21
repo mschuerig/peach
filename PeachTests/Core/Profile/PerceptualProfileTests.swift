@@ -28,8 +28,8 @@ struct PerceptualProfileTests {
         referenceNote: MIDINote = MIDINote(60),
         targetNote: MIDINote = MIDINote(60),
         centError: Cents
-    ) -> CompletedPitchMatching {
-        CompletedPitchMatching(
+    ) -> CompletedPitchMatchingTrial {
+        CompletedPitchMatchingTrial(
             referenceNote: referenceNote,
             targetNote: targetNote,
             initialCentOffset: 50.0,
@@ -119,7 +119,7 @@ struct PerceptualProfileTests {
     func pitchMatchingObserverRecordsCentErrorWithInterval() async throws {
         let profile = PerceptualProfile()
 
-        let completed = CompletedPitchMatching(
+        let completed = CompletedPitchMatchingTrial(
             referenceNote: MIDINote(60),
             targetNote: MIDINote(60).transposed(by: .up(.perfectFifth)),
             initialCentOffset: 30.0,

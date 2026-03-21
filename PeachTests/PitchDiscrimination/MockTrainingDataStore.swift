@@ -13,7 +13,7 @@ final class MockTrainingDataStore: PitchDiscriminationRecordStoring, PitchDiscri
     // MARK: - Observer Domain Object Tracking
 
     var completedTrials: [CompletedPitchDiscriminationTrial] = []
-    var completedPitchMatchings: [CompletedPitchMatching] = []
+    var completedPitchMatchings: [CompletedPitchMatchingTrial] = []
 
     // MARK: - Pitch Matching Test State Tracking
 
@@ -117,7 +117,7 @@ final class MockTrainingDataStore: PitchDiscriminationRecordStoring, PitchDiscri
 
     // MARK: - PitchMatchingObserver Protocol
 
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial) {
         onPitchMatchingCompletedCalled?()
         completedPitchMatchings.append(result)
         // Create record for backward compatibility with tests that check savedPitchMatchingRecords

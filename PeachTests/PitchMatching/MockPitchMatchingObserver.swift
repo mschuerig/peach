@@ -4,8 +4,8 @@ final class MockPitchMatchingObserver: PitchMatchingObserver {
     // MARK: - Test State Tracking
 
     var pitchMatchingCompletedCallCount = 0
-    var lastResult: CompletedPitchMatching?
-    var resultHistory: [CompletedPitchMatching] = []
+    var lastResult: CompletedPitchMatchingTrial?
+    var resultHistory: [CompletedPitchMatchingTrial] = []
 
     // MARK: - Test Control
 
@@ -13,7 +13,7 @@ final class MockPitchMatchingObserver: PitchMatchingObserver {
 
     // MARK: - PitchMatchingObserver Protocol
 
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial) {
         pitchMatchingCompletedCallCount += 1
         lastResult = result
         resultHistory.append(result)

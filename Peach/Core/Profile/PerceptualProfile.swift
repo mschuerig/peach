@@ -98,7 +98,7 @@ extension PerceptualProfile: PitchDiscriminationObserver {
 // MARK: - PitchMatchingObserver
 
 extension PerceptualProfile: PitchMatchingObserver {
-    func pitchMatchingCompleted(_ result: CompletedPitchMatching) {
+    func pitchMatchingCompleted(_ result: CompletedPitchMatchingTrial) {
         let interval = (try? Interval.between(result.referenceNote, result.targetNote))?.rawValue ?? 0
         let isUnison = interval == 0
         let mode: TrainingDiscipline = isUnison ? .unisonPitchMatching : .intervalPitchMatching

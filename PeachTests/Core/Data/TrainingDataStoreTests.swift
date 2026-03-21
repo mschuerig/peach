@@ -303,7 +303,7 @@ struct TrainingDataStoreTests {
         let store = TrainingDataStore(modelContext: context)
 
         let timestamp = Date()
-        let completed = CompletedPitchMatching(
+        let completed = CompletedPitchMatchingTrial(
             referenceNote: 69,
             targetNote: 69,
             initialCentOffset: 42.5,
@@ -332,7 +332,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let completed = CompletedPitchMatching(
+        let completed = CompletedPitchMatchingTrial(
             referenceNote: 69,
             targetNote: 69,
             initialCentOffset: 42.5,
@@ -416,7 +416,7 @@ struct TrainingDataStoreTests {
         let context = ModelContext(container)
         let store = TrainingDataStore(modelContext: context)
 
-        let completed = CompletedPitchMatching(
+        let completed = CompletedPitchMatchingTrial(
             referenceNote: MIDINote(60),
             targetNote: MIDINote(60).transposed(by: .up(.perfectFifth)),
             initialCentOffset: 30.0,
